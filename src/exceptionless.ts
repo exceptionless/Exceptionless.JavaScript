@@ -2,30 +2,24 @@
 
 // TODO: We'll need a poly fill for promises.
 module Exceptionless {
-  class ExceptionlessClient {
-    private _config:Configuration;
+  export class ExceptionlessClient {
+    public config:Configuration;
 
     constructor(apiKey:string, serverUrl?:string) {
-      this._config = new Configuration(apiKey, serverUrl);
-    }
-
-    apply(config:Configuration) {
-      for (var name in config || {}) {
-        this._config[name] = config[name];
-      }
+      this.config = new Configuration(apiKey, serverUrl);
     }
 
     submit(events:ExceptionlessEvent) {
-      if (!this._config.enabled) {
-        this._config.log.info('Event submission is currently disabled');
+      if (!this.config.enabled) {
+        this.config.log.info('Event submission is currently disabled');
         return;
       }
     }
   }
 
-  class Configuration {
+  export class Configuration {
     apiKey:string;
-    serverUrl = 'https://collector.exceptionless.io/api/v2';
+    serverUrl:string;
     enabled = true;
 
     log:ILog = new NullLog();
@@ -35,14 +29,14 @@ module Exceptionless {
     queue:IEventQueue;
 
     constructor(apiKey:string, serverUrl?:string) {
+      this.setApiKey(apiKey);
+      this.serverUrl = serverUrl || 'https://collector.exceptionless.io/api/v2';
+      this.queue = new EventQueue(this);
+    }
+
+    public setApiKey(apiKey:string) {
       this.apiKey = apiKey;
       this.enabled = !!apiKey;
-
-      if(!!serverUrl) {
-        this.serverUrl = serverUrl;
-      }
-
-      this.queue = new EventQueue(this);
     }
 
     public getQueueName(): string {
@@ -50,19 +44,19 @@ module Exceptionless {
     }
   }
 
-  interface ILog {
+  export interface ILog {
     info(message:string);
     warn(message:string);
     error(message:string);
   }
 
-  class NullLog implements ILog {
+  export class NullLog implements ILog {
     public info(message) {}
     public warn(message) {}
     public error(message) {}
   }
 
-  class ConsoleLog implements ILog {
+  export class ConsoleLog implements ILog {
     public info(message) {
       console.log('[INFO] Exceptionless:' + message)
     }
@@ -76,13 +70,13 @@ module Exceptionless {
     }
   }
 
-  interface IEventQueue {
+  export interface IEventQueue {
     enqueue(event:ExceptionlessEvent);
     process();
     suspendProcessing(durationInMinutes?:number, discardFutureQueuedItems?:boolean, clearQueue?:boolean);
   }
 
-  class EventQueue implements IEventQueue {
+  export class EventQueue implements IEventQueue {
     private _config:Configuration;
     private _areQueuedItemsDiscarded = false;
     private _suspendProcessingUntil:Date;
@@ -218,13 +212,13 @@ module Exceptionless {
     }
   }
 
-  interface ISubmissionClient {
+  export interface ISubmissionClient {
     submitEvents(events:ExceptionlessEvent[], config:Configuration): Promise<SubmissionResponse>;
     submitUserDescription(referenceId:string, description:UserDescription, config:Configuration): Promise<SubmissionResponse>;
     getSettings(config:Configuration): Promise<SettingsResponse>;
   }
 
-  class SubmissionClient implements ISubmissionClient {
+  export class SubmissionClient implements ISubmissionClient {
     public submitEvents(events:ExceptionlessEvent[], config:Configuration): Promise<SubmissionResponse> {
       var url = config.serverUrl + '/events?access_token=' + encodeURIComponent(config.apiKey);
       return this.sendRequest('POST', url, JSON.stringify(events)).then(
@@ -320,7 +314,7 @@ module Exceptionless {
     }
   }
 
-  class SubmissionResponse {
+  export class SubmissionResponse {
     success = false;
     badRequest = false;
     serviceUnavailable = false;
@@ -345,7 +339,7 @@ module Exceptionless {
     }
   }
 
-  class SettingsResponse {
+  export class SettingsResponse {
     success = false;
     settings:any;
     settingsVersion = -1;
@@ -361,13 +355,13 @@ module Exceptionless {
     }
   }
 
-  interface IStorage<T>{
+  export interface IStorage<T>{
     save<T>(path:string, value:T): boolean;
     get(searchPattern?:string, limit?:number): T[];
     clear(searchPattern?:string);
   }
 
-  class InMemoryStorage<T> implements IStorage<T> {
+  export class InMemoryStorage<T> implements IStorage<T> {
     public save<T>(path:string, value:T): boolean {
       return false;
     }
@@ -381,7 +375,7 @@ module Exceptionless {
     }
   }
 
-  class ExceptionlessEvent {}
+  export class ExceptionlessEvent {}
 
-  class UserDescription {}
+  export class UserDescription {}
 }
