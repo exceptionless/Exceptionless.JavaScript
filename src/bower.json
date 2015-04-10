@@ -8,7 +8,6 @@
     "bower_components"
   ],
   "dependencies": {
-    "stacktrace-js": "~0.6.4",
-    "DefinitelyTyped": "*"
+    "stacktrace-js": "~0.6.4"
   }
 }

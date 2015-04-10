@@ -8,8 +8,6 @@ module.exports = function (config) {
     files: [
       'bower_components/es5-shim/es5-shim.js',
       'bower_components/es6-shim/es6-shim.js',
-      'bower_components/DefinitelyTyped/es6-promise/es6-promise.d.ts',
-      'bower_components/DefinitelyTyped/jasmine/jasmine.d.ts',
       '**/*.ts'
     ],
     exclude: [],

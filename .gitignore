@@ -10,3 +10,4 @@ src/exceptionless.js
 src/exceptionless-spec.js
 src/exceptionless-spec.js.map
 /src/dist
+/src/typings

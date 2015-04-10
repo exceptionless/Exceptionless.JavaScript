@@ -1,4 +1,3 @@
-/// <reference path="bower_components/DefinitelyTyped/es6-promise/es6-promise.d.ts" />
 
 // TODO: We'll need a poly fill for promises.
 module Exceptionless {
@@ -95,7 +94,6 @@ module Exceptionless {
         return;
       }
 
-      var key = this.queuePath() + '-' +  + new Date().toJSON() + '-' + Math.floor(Math.random() * 9007199254740992);
       return this._config.storage.save(key, event);
     }
 
@@ -114,7 +112,6 @@ module Exceptionless {
 
       try {
         var events = this._config.storage.get(this.queuePath(), this._config.submissionBatchSize);
-        this._config.submissionClient.submitEvents(events, this._config)
           .then<any>((response:SubmissionResponse) => {
             if (response.success) {
               this._config.log.info('Sent ' + events.length + ' events to "' + this._config.serverUrl + '".');
@@ -170,7 +167,6 @@ module Exceptionless {
         durationInMinutes = 5;
       }
 
-      this._config.log.info('Suspending processing for: ' + durationInMinutes + 'minutes.');
       this._suspendProcessingUntil = new Date(new Date().getTime() + (durationInMinutes * 60000));
       //_queueTimer.Change(duration.Value, _processQueueInterval);
 
@@ -213,22 +209,16 @@ module Exceptionless {
   }
 
   export interface ISubmissionClient {
-    submitEvents(events:ExceptionlessEvent[], config:Configuration): Promise<SubmissionResponse>;
-    submitUserDescription(referenceId:string, description:UserDescription, config:Configuration): Promise<SubmissionResponse>;
     getSettings(config:Configuration): Promise<SettingsResponse>;
   }
 
   export class SubmissionClient implements ISubmissionClient {
-    public submitEvents(events:ExceptionlessEvent[], config:Configuration): Promise<SubmissionResponse> {
-      var url = config.serverUrl + '/events?access_token=' + encodeURIComponent(config.apiKey);
       return this.sendRequest('POST', url, JSON.stringify(events)).then(
           xhr => { return new SubmissionResponse(xhr.status, this.getResponseMessage(xhr)); },
           xhr => { return new SubmissionResponse(xhr.status || 500, this.getResponseMessage(xhr)); }
       );
     }
 
-    public submitUserDescription(referenceId:string, description:UserDescription, config:Configuration): Promise<SubmissionResponse> {
-      var url = config.serverUrl + '/events/by-ref/' + encodeURIComponent(referenceId) + '/user-description?access_token=' + encodeURIComponent(config.apiKey);
       return this.sendRequest('POST', url, JSON.stringify(description)).then(
           xhr => { return new SubmissionResponse(xhr.status, this.getResponseMessage(xhr)); },
           xhr => { return new SubmissionResponse(xhr.status || 500, this.getResponseMessage(xhr)); }
@@ -236,11 +226,9 @@ module Exceptionless {
     }
 
     public getSettings(config:Configuration): Promise<SettingsResponse> {
-      var url = config.serverUrl + '/projects/config?access_token=' + encodeURIComponent(config.apiKey);
       return this.sendRequest('GET', url).then(
           xhr => {
           if (xhr.status !== 200) {
-            return new SettingsResponse(false, null, -1, null, 'Unable to retrieve configuration settings: ' + this.getResponseMessage(xhr));
           }
 
           var settings = JSON.parse(xhr.responseText);

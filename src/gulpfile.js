@@ -9,10 +9,9 @@ var ts = require('gulp-typescript');
 
 var tsProject = ts.createProject({
   declarationFiles: true,
-  noExternalResolve: true,
   removeComments: true,
   sortOutput: true,
-  target: 'ES5'
+  target: 'ES6'
 });
 
 gulp.task('clean', function (cb) {
@@ -20,11 +19,7 @@ gulp.task('clean', function (cb) {
 });
 
 gulp.task('scripts', function() {
-  var files = [
-    'bower_components/DefinitelyTyped/es6-promise/es6-promise.d.ts',
-    'bower_components/DefinitelyTyped/jasmine/jasmine.d.ts',
-    'exceptionless.ts'
-  ]
+  var files = ['exceptionless.ts'];
   var tsResult = gulp.src(files)
                      .pipe(sourcemaps.init())
                      .pipe(ts(tsProject));
