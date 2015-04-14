@@ -9,7 +9,7 @@ module Exceptionless {
       this.config = new Configuration(apiKey, serverUrl);
     }
 
-    submit(events:ExceptionlessEvent) {
+    submit(events:IEvent) {
       if (!this.config.enabled) {
         this.config.log.info('Event submission is currently disabled');
         return;
@@ -71,7 +71,7 @@ module Exceptionless {
   }
 
   export interface IEventQueue {
-    enqueue(event:ExceptionlessEvent);
+    enqueue(event:IEvent);
     process();
     suspendProcessing(durationInMinutes?:number, discardFutureQueuedItems?:boolean, clearQueue?:boolean);
   }
@@ -82,20 +82,19 @@ module Exceptionless {
     private _suspendProcessingUntil:Date;
     private _discardQueuedItemsUntil:Date;
     private _processingQueue = false;
-
-    // TODO: Queue Timer;
+    private _queueTimer = setInterval(() => this.onProcessQueue(), 10000);
 
     constructor(config:Configuration) {
       this._config = config;
     }
 
-    public enqueue(event:ExceptionlessEvent) {
+    public enqueue(event:IEvent) {
       if (this.areQueuedItemsDiscarded()) {
         this._config.log.info('Queue items are currently being discarded. The event will not be queued.');
         return;
       }
 
-      var key = '${this.queuePath()}-${new Date().toJSON()}-${Math.floor(Math.random() * 9007199254740992)}';
+      var key = this.queuePath() + '-' + new Date().toJSON() + '-' + Math.floor(Math.random() * 9007199254740992);
       return this._config.storage.save(key, event);
     }
 
@@ -165,12 +164,18 @@ module Exceptionless {
       }
     }
 
+    private onProcessQueue() {
+      if (!this.isQueueProcessingSuspended() && !this._processingQueue) {
+        this.process();
+      }
+    }
+
     public suspendProcessing(durationInMinutes?:number, discardFutureQueuedItems?:boolean, clearQueue?:boolean) {
       if (!durationInMinutes || durationInMinutes <= 0) {
         durationInMinutes = 5;
       }
 
-      this._config.log.info('Suspending processing for ${durationInMinutes}minutes.');
+      this._config.log.info('Suspending processing for ' + durationInMinutes + 'minutes.');
       this._suspendProcessingUntil = new Date(new Date().getTime() + (durationInMinutes * 60000));
       //_queueTimer.Change(duration.Value, _processQueueInterval);
 
@@ -188,16 +193,11 @@ module Exceptionless {
       } catch (Exception) { }
     }
 
-    private requeueEvents(events:ExceptionlessEvent[]) {
+    private requeueEvents(events:IEvent[]) {
       for (var event in events || []) {
         this.enqueue(event);
       }
     }
-
-    //private void OnProcessQueue(object state) {
-    //  if (!IsQueueProcessingSuspended && !_processingQueue)
-    //  Process();
-    //}
 
     private isQueueProcessingSuspended(): boolean {
       return this._suspendProcessingUntil && this._suspendProcessingUntil > new Date();
@@ -213,22 +213,22 @@ module Exceptionless {
   }
 
   export interface ISubmissionClient {
-    submit(events:ExceptionlessEvent[], config:Configuration): Promise<SubmissionResponse>;
-    submitDescription(referenceId:string, description:UserDescription, config:Configuration): Promise<SubmissionResponse>;
+    submit(events:IEvent[], config:Configuration): Promise<SubmissionResponse>;
+    submitDescription(referenceId:string, description:IUserDescription, config:Configuration): Promise<SubmissionResponse>;
     getSettings(config:Configuration): Promise<SettingsResponse>;
   }
 
   export class SubmissionClient implements ISubmissionClient {
-    public submit(events:ExceptionlessEvent[], config:Configuration): Promise<SubmissionResponse> {
-      var url = '${config.serverUrl}/events?access_token=${encodeURIComponent(config.apiKey)}';
+    public submit(events:Event[], config:Configuration): Promise<SubmissionResponse> {
+      var url = config.serverUrl + '/events?access_token=' + encodeURIComponent(config.apiKey);
       return this.sendRequest('POST', url, JSON.stringify(events)).then(
           xhr => { return new SubmissionResponse(xhr.status, this.getResponseMessage(xhr)); },
           xhr => { return new SubmissionResponse(xhr.status || 500, this.getResponseMessage(xhr)); }
       );
     }
 
-    public submitDescription(referenceId:string, description:UserDescription, config:Configuration): Promise<SubmissionResponse> {
-      var url = '${config.serverUrl}/events/by-ref/${encodeURIComponent(referenceId)}/user-description?access_token=${encodeURIComponent(config.apiKey)}';
+    public submitDescription(referenceId:string, description:IUserDescription, config:Configuration): Promise<SubmissionResponse> {
+      var url = config.serverUrl + '/events/by-ref/' + encodeURIComponent(referenceId) + '/user-description?access_token=' + encodeURIComponent(config.apiKey);
       return this.sendRequest('POST', url, JSON.stringify(description)).then(
           xhr => { return new SubmissionResponse(xhr.status, this.getResponseMessage(xhr)); },
           xhr => { return new SubmissionResponse(xhr.status || 500, this.getResponseMessage(xhr)); }
@@ -236,11 +236,11 @@ module Exceptionless {
     }
 
     public getSettings(config:Configuration): Promise<SettingsResponse> {
-      var url = '${config.serverUrl}/projects/config?access_token=${encodeURIComponent(config.apiKey)}';
+      var url = config.serverUrl + '/projects/config?access_token=' + encodeURIComponent(config.apiKey);
       return this.sendRequest('GET', url).then(
           xhr => {
           if (xhr.status !== 200) {
-            return new SettingsResponse(false, null, -1, null, 'Unable to retrieve configuration settings: ${this.getResponseMessage(xhr)}');
+            return new SettingsResponse(false, null, -1, null, 'Unable to retrieve configuration settings: ' + this.getResponseMessage(xhr));
           }
 
           var settings = JSON.parse(xhr.responseText);
@@ -359,23 +359,74 @@ module Exceptionless {
     save<T>(path:string, value:T): boolean;
     get(searchPattern?:string, limit?:number): T[];
     clear(searchPattern?:string);
+    count(searchPattern?:string): number;
   }
 
   export class InMemoryStorage<T> implements IStorage<T> {
+    private _items = {};
+
     public save<T>(path:string, value:T): boolean {
-      return false;
+      this._items[path] = value;
+      return true;
     }
 
     public get(searchPattern?:string, limit?:number): T[] {
-      return [];
+      var regex = new RegExp(searchPattern || '.*');
+
+      var results = [];
+      for (var key in this._items) {
+        if (results.length < limit && regex.test(key)) {
+          results.push(this._items[key]);
+          delete this._items[key];
+        }
+      }
+
+      return results;
     }
 
     public clear(searchPattern?:string) {
+      if (!searchPattern) {
+        this._items = {};
+        return;
+      }
 
+      var regex = new RegExp(searchPattern);
+      for (var key in this._items) {
+        if (regex.test(key)) {
+          delete this._items[key];
+        }
+      }
+    }
+
+    public count(searchPattern?:string): number {
+      var regex = new RegExp(searchPattern || '.*');
+      var results = [];
+      for (var key in this._items) {
+        if (regex.test(key)) {
+          results.push(key);
+        }
+      }
+
+      return results.length;
     }
   }
 
-  export class ExceptionlessEvent {}
+  export interface IEvent {
+    type?: string;
+    source?: string;
+    date?: Date;
+    tags?: string[];
+    message?: string;
+    geo?: string;
+    value?: number;
+    data?: any;
+    reference_id?: string;
+    session_id?: string;
+  }
 
-  export class UserDescription {}
+  export interface IUserDescription {
+    email_address?: string;
+    description?: string;
+    data?: any;
+  }
 }

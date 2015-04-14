@@ -3,6 +3,7 @@
 module.exports = function (config) {
   config.set({
     basePath: '.',
+    browserNoActivityTimeout: 100000,
     browsers: ['PhantomJS'],
     frameworks: ['jasmine'],
     files: [
@@ -13,6 +14,16 @@ module.exports = function (config) {
     exclude: [],
     preprocessors: {
       '**/*.ts': ['typescript']
+    },
+    typescriptPreprocessor: {
+      options: {
+        sourceMap: true,
+        target: 'ES5',
+        noResolve: false
+      },
+      transformPath: function(path) {
+        return path.replace(/\.ts$/, '.js');
+      }
     },
     reporters: ['progress'],
     port: 9876,

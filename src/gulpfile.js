@@ -11,7 +11,8 @@ var tsProject = ts.createProject({
   declarationFiles: true,
   removeComments: true,
   sortOutput: true,
-  target: 'ES6'
+  sourceMap: true,
+  target: 'ES5'
 });
 
 gulp.task('clean', function (cb) {
@@ -37,7 +38,7 @@ gulp.task('watch', ['scripts'], function() {
 
 gulp.task('build', ['clean', 'scripts']);
 
-gulp.task('test', ['build'], function() {
+gulp.task('test', [], function() {
   return gulp.src(['*-spec.ts'])
              .pipe(karma({
                 configFile: 'karma.conf.js',
