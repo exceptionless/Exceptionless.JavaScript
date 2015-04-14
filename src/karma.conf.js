@@ -4,7 +4,7 @@ module.exports = function (config) {
   config.set({
     basePath: '.',
     browserNoActivityTimeout: 100000,
-    browsers: ['PhantomJS'],
+    browsers: ['Chrome'], // PhantomJS
     frameworks: ['jasmine'],
     files: [
       'bower_components/es5-shim/es5-shim.js',

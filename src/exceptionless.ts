@@ -30,7 +30,7 @@ module Exceptionless {
 
     constructor(apiKey:string, serverUrl?:string) {
       this.setApiKey(apiKey);
-      this.serverUrl = serverUrl || 'https://collector.exceptionless.io/api/v2';
+      this.serverUrl = serverUrl || 'https://collector.exceptionless.io';
       this.queue = new EventQueue(this);
     }
 
@@ -113,58 +113,68 @@ module Exceptionless {
 
       try {
         var events = this._config.storage.get(this.queuePath(), this._config.submissionBatchSize);
+        if (events.length == 0) {
+          this._config.log.info('There are currently no queued events to process.');
+          return;
+        }
+
         this._config.submissionClient.submit(events, this._config)
-          .then<any>((response:SubmissionResponse) => {
-            if (response.success) {
-              this._config.log.info('Sent ' + events.length + ' events to "' + this._config.serverUrl + '".');
-            } else if (response.serviceUnavailable) {
-              // You are currently over your rate limit or the servers are under stress.
-              this._config.log.error('Server returned service unavailable.');
-              this.suspendProcessing();
-              this.requeueEvents(events);
-            } else if (response.paymentRequired) {
-              // If the organization over the rate limit then discard the event.
-              this._config.log.info('Too many events have been submitted, please upgrade your plan.');
-              this.suspendProcessing(null, true, true);
-            } else if (response.unableToAuthenticate) {
-              // The api key was suspended or could not be authorized.
-              this._config.log.info('Unable to authenticate, please check your configuration. The event will not be submitted.');
-              this.suspendProcessing(15);
-            } else if (response.notFound || response.badRequest) {
-              // The service end point could not be found.
-              this._config.log.error('Error while trying to submit data: ' + response.message);
-              this.suspendProcessing(60 * 4);
-            } else if (response.requestEntityTooLarge) {
-              if (this._config.submissionBatchSize > 1) {
-                this._config.log.error('Event submission discarded for being too large. The event will be retried with a smaller events size.');
-                this._config.submissionBatchSize = Math.max(1, Math.round(this._config.submissionBatchSize / 1.5));
+          .then(
+            (response:SubmissionResponse) => {
+              if (response.success) {
+                this._config.log.info('Sent ' + events.length + ' events to "' + this._config.serverUrl + '".');
+              } else if (response.serviceUnavailable) {
+                // You are currently over your rate limit or the servers are under stress.
+                this._config.log.error('Server returned service unavailable.');
+                this.suspendProcessing();
                 this.requeueEvents(events);
-              } else {
-                this._config.log.error('Event submission discarded for being too large. The event will not be submitted.');
+              } else if (response.paymentRequired) {
+                // If the organization over the rate limit then discard the event.
+                this._config.log.info('Too many events have been submitted, please upgrade your plan.');
+                this.suspendProcessing(null, true, true);
+              } else if (response.unableToAuthenticate) {
+                // The api key was suspended or could not be authorized.
+                this._config.log.info('Unable to authenticate, please check your configuration. The event will not be submitted.');
+                this.suspendProcessing(15);
+              } else if (response.notFound || response.badRequest) {
+                // The service end point could not be found.
+                this._config.log.error('Error while trying to submit data: ' + response.message);
+                this.suspendProcessing(60 * 4);
+              } else if (response.requestEntityTooLarge) {
+                if (this._config.submissionBatchSize > 1) {
+                  this._config.log.error('Event submission discarded for being too large. The event will be retried with a smaller events size.');
+                  this._config.submissionBatchSize = Math.max(1, Math.round(this._config.submissionBatchSize / 1.5));
+                  this.requeueEvents(events);
+                } else {
+                  this._config.log.error('Event submission discarded for being too large. The event will not be submitted.');
+                }
+              } else if (!response.success) {
+                this._config.log.error('An error occurred while submitting events: ' + response.message);
+                this.suspendProcessing();
+                this.requeueEvents(events);
               }
-            } else if (!response.success) {
+            },
+            (response:SubmissionResponse) => {
               this._config.log.error('An error occurred while submitting events: ' + response.message);
               this.suspendProcessing();
               this.requeueEvents(events);
-            }
-          },
-          (response:SubmissionResponse) => {
-            this._config.log.error('An error occurred while submitting events: ' + response.message);
-            this.suspendProcessing();
-            this.requeueEvents(events);
-          })
+            })
         .then(() => {
+          this._config.log.info('Finished processing queue.');
           this._processingQueue = false;
         });
       } catch (ex) {
         this._config.log.error('An error occurred while processing the queue: ' + ex);
         this.suspendProcessing();
       } finally {
+        this._config.log.info('Finished processing queue.');
         this._processingQueue = false;
       }
     }
 
     private onProcessQueue() {
+      return false;
+
       if (!this.isQueueProcessingSuspended() && !this._processingQueue) {
         this.process();
       }
@@ -219,8 +229,8 @@ module Exceptionless {
   }
 
   export class SubmissionClient implements ISubmissionClient {
-    public submit(events:Event[], config:Configuration): Promise<SubmissionResponse> {
-      var url = config.serverUrl + '/events?access_token=' + encodeURIComponent(config.apiKey);
+    public submit(events:IEvent[], config:Configuration): Promise<SubmissionResponse> {
+      var url = config.serverUrl + '/api/v2/events?access_token=' + encodeURIComponent(config.apiKey);
       return this.sendRequest('POST', url, JSON.stringify(events)).then(
           xhr => { return new SubmissionResponse(xhr.status, this.getResponseMessage(xhr)); },
           xhr => { return new SubmissionResponse(xhr.status || 500, this.getResponseMessage(xhr)); }
@@ -228,7 +238,7 @@ module Exceptionless {
     }
 
     public submitDescription(referenceId:string, description:IUserDescription, config:Configuration): Promise<SubmissionResponse> {
-      var url = config.serverUrl + '/events/by-ref/' + encodeURIComponent(referenceId) + '/user-description?access_token=' + encodeURIComponent(config.apiKey);
+      var url = config.serverUrl + '/api/v2/events/by-ref/' + encodeURIComponent(referenceId) + '/user-description?access_token=' + encodeURIComponent(config.apiKey);
       return this.sendRequest('POST', url, JSON.stringify(description)).then(
           xhr => { return new SubmissionResponse(xhr.status, this.getResponseMessage(xhr)); },
           xhr => { return new SubmissionResponse(xhr.status || 500, this.getResponseMessage(xhr)); }
@@ -236,21 +246,29 @@ module Exceptionless {
     }
 
     public getSettings(config:Configuration): Promise<SettingsResponse> {
-      var url = config.serverUrl + '/projects/config?access_token=' + encodeURIComponent(config.apiKey);
+      var url = config.serverUrl + '/api/v2/projects/config?access_token=' + encodeURIComponent(config.apiKey);
       return this.sendRequest('GET', url).then(
           xhr => {
-          if (xhr.status !== 200) {
-            return new SettingsResponse(false, null, -1, null, 'Unable to retrieve configuration settings: ' + this.getResponseMessage(xhr));
-          }
+            if (xhr.status !== 200) {
+              return new SettingsResponse(false, null, -1, null, 'Unable to retrieve configuration settings: ' + this.getResponseMessage(xhr));
+            }
 
-          var settings = JSON.parse(xhr.responseText);
-          if (!settings.settings || !settings.version) {
-            return new SettingsResponse(true, null, -1, null, 'Invalid configuration settings.');
-          }
+            var settings;
+            try {
+              settings = JSON.parse(xhr.responseText);
+            } catch (e) {
+              config.log.error('An error occurred while parsing the settings response text: "' + xhr.responseText + '"');
+            }
 
-          return new SettingsResponse(true, settings.settings, settings.version);
+            if (!settings || !settings.settings || !settings.version) {
+              return new SettingsResponse(true, null, -1, null, 'Invalid configuration settings.');
+            }
+
+            return new SettingsResponse(true, settings.settings, settings.version);
         },
-          xhr => { return new SettingsResponse(false, null, -1, null, this.getResponseMessage(xhr)); }
+        xhr => {
+          return new SettingsResponse(false, null, -1, null, this.getResponseMessage(xhr));
+        }
       );
     }
 
@@ -259,7 +277,23 @@ module Exceptionless {
         return null;
       }
 
-      return  xhr.status == 404 ? "404 Page not found." : xhr.responseBody ? xhr.responseBody.message : '';
+      if (xhr.status === 0) {
+        return 'Unable to connect to server.';
+      }
+
+      if (xhr.responseBody) {
+        return xhr.responseBody.message;
+      }
+
+      if (xhr.responseText) {
+        try {
+          return JSON.parse(xhr.responseText).message;
+        } catch (e) {
+          return xhr.responseText;
+        }
+      }
+
+      return  xhr.statusText;
     }
 
     private createRequest(method:string, url:string): XMLHttpRequest {
@@ -274,6 +308,10 @@ module Exceptionless {
       }
 
       if (xhr) {
+        if (method === 'POST' && xhr.setRequestHeader) {
+          xhr.setRequestHeader('Content-Type', 'application/json');
+        }
+
         xhr.timeout = 10000;
       }
 
@@ -281,33 +319,31 @@ module Exceptionless {
     }
 
     private sendRequest(method:string, url:string, data?:string): Promise<any> {
-      return new Promise(function(resolve, reject) {
-        var xhr = this.createRequest(method || 'POST', url);
+      var xhr = this.createRequest(method || 'POST', url);
+
+      return new Promise((resolve, reject) => {
         if (!xhr) {
           return reject({ status: 503, message: 'CORS not supported.' });
         }
 
         if ('withCredentials' in xhr) {
-          xhr.onreadystatechange = function () {
-            if (xhr.readyState !== 4 && xhr.status === 202) {
-              return resolve(xhr);
+          xhr.onreadystatechange = () => {
+            // xhr not ready.
+            if (xhr.readyState !== 4) {
+              return;
             }
 
-            reject(xhr);
+            if (xhr.status >= 200 && xhr.status <= 299) {
+              resolve(xhr);
+            } else {
+              reject(xhr);
+            }
           };
         }
 
-        xhr.ontimeout = function () {
-          reject(xhr);
-        };
-
-        xhr.onload = function () {
-          return resolve(xhr);
-        };
-
-        xhr.onerror = function () {
-          reject(xhr);
-        };
+        xhr.ontimeout = () => reject(xhr);
+        xhr.onerror = () => reject(xhr);
+        xhr.onload = () => resolve(xhr);
 
         xhr.send(data);
       });
@@ -371,11 +407,15 @@ module Exceptionless {
     }
 
     public get(searchPattern?:string, limit?:number): T[] {
+      var results = [];
       var regex = new RegExp(searchPattern || '.*');
 
-      var results = [];
       for (var key in this._items) {
-        if (results.length < limit && regex.test(key)) {
+        if (results.length >= limit) {
+          break;
+        }
+
+        if (regex.test(key)) {
           results.push(this._items[key]);
           delete this._items[key];
         }
