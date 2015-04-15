@@ -9,11 +9,38 @@ module Exceptionless {
       this.config = new Configuration(apiKey, serverUrl);
     }
 
-    submit(events:IEvent) {
+    public register(handler: () => void) {}
+
+    //log(source:string, message:string, level?:string) {
+    //  if (!source) {
+    //    source =  (<any>(arguments.callee.caller)).name;
+    //  }
+    //
+    //  var event:IEvent = { type: 'log', source: source, message: message };
+    //  if (level) {
+    //    event.data['@level'] = level;
+    //  }
+    //
+    //  this.submit(event);
+    //}
+    //
+    //feature(feature:string) {
+    //  if (feature) {
+    //    this.submit({type: 'usage', source: feature});
+    //  }
+    //}
+    //
+    //error(exception:Error) {
+    //  // TODO:
+    //}
+
+    submit(event:IEvent, pluginContextData?:IContextData) {
       if (!this.config.enabled) {
         this.config.log.info('Event submission is currently disabled');
         return;
       }
+
+      this.config.queue.enqueue(event);
     }
   }
 
@@ -463,6 +490,113 @@ module Exceptionless {
     reference_id?: string;
     session_id?: string;
   }
+
+  export class EventBuilder {
+    target: IEvent;
+    client: ExceptionlessClient;
+    pluginContextData: IContextData;
+
+    constructor(event:IEvent, client:ExceptionlessClient, pluginContextData?:IContextData) {
+      this.target = event;
+      this.client = client;
+      this.pluginContextData = pluginContextData;
+    }
+
+    public setType(type:string): EventBuilder {
+      this.target.type = type;
+      return this;
+    }
+
+    public setSource(source:string): EventBuilder {
+      this.target.source = source;
+      return this;
+    }
+
+    public setSessionId(sessionId:string): EventBuilder {
+      if (!this.isValidIdentifier(sessionId)) {
+        throw new Error("SessionId must contain between 8 and 100 alphanumeric or '-' characters.");
+      }
+
+      this.target.session_id = sessionId;
+      return this;
+    }
+
+    public setReferenceId(referenceId:string): EventBuilder {
+      if (!this.isValidIdentifier(referenceId)) {
+        throw new Error("SessionId must contain between 8 and 100 alphanumeric or '-' characters.");
+      }
+
+      this.target.reference_id = referenceId;
+      return this;
+    }
+
+
+    private isValidIdentifier(value:string): boolean {
+      if (value == null) {
+        return true;
+      }
+
+      if (value.length < 8 || value.length > 100) {
+        return false;
+      }
+
+      //for (int index = 0; index < value.Length; index++) {
+      //  if (!Char.IsLetterOrDigit(value[index]) && value[index] != '-')
+      //    return false;
+      //}
+
+      return true;
+    }
+
+    public setMessage(message:string): EventBuilder {
+      this.target.message = message;
+      return this;
+    }
+
+    public setGeo(latitude: number, longitude: number): EventBuilder {
+      if (latitude < -90.0 || latitude > 90.0)
+        throw new Error('Must be a valid latitude value between -90.0 and 90.0.');
+      if (longitude < -180.0 || longitude > 180.0)
+        throw new Error('Must be a valid longitude value between -180.0 and 180.0.');
+
+      this.target.geo = latitude + ',' + longitude;
+      return this;
+    }
+
+    public setValue(value:number): EventBuilder {
+      this.target.value = value;
+      return this;
+    }
+
+    public addTags(tags:string[]): EventBuilder {
+      if (tags == null || tags.length === 0) {
+        return this;
+      }
+
+      //this.target.tags.AddRange(tags.Where(t => !String.IsNullOrWhiteSpace(t)).Select(t => t.Trim()));
+      return this;
+    }
+
+    public setProperty(name:string, value:any): EventBuilder {
+      this.target.data[name] = value;
+      return this;
+    }
+
+    public setCritical(critical:boolean): EventBuilder {
+      // check to see if it already contains the critical tag.
+      if (critical) {
+        this.target.tags.push('Critical');
+      }
+
+      return this;
+    }
+
+    public submit(): void {
+      this.client.submit(this.target, this.pluginContextData);
+    }
+  }
+
+  export interface IContextData {}
 
   export interface IUserDescription {
     email_address?: string;
