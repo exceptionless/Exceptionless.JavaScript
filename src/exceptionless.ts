@@ -9,32 +9,83 @@ module Exceptionless {
       this.config = new Configuration(apiKey, serverUrl);
     }
 
-    public register(handler: () => void) {}
+    createException(exception:Error): EventBuilder {
+      var pluginContextData = new ContextData();
+      pluginContextData.setException(exception);
+      return this.createEvent(pluginContextData).setType('error');
+    }
 
-    //log(source:string, message:string, level?:string) {
-    //  if (!source) {
-    //    source =  (<any>(arguments.callee.caller)).name;
-    //  }
-    //
-    //  var event:IEvent = { type: 'log', source: source, message: message };
-    //  if (level) {
-    //    event.data['@level'] = level;
-    //  }
-    //
-    //  this.submit(event);
-    //}
-    //
-    //feature(feature:string) {
-    //  if (feature) {
-    //    this.submit({type: 'usage', source: feature});
-    //  }
-    //}
-    //
-    //error(exception:Error) {
-    //  // TODO:
-    //}
+    submitException(exception:Error): void {
+      this.createException(exception).submit();
+    }
 
-    submit(event:IEvent, pluginContextData?:IContextData) {
+    submitUnhandledException(exception:Error): void {
+      var builder = this.createException(exception);
+      builder.pluginContextData.markAsUnhandledError();
+      builder.submit();
+    }
+
+    createFeatureUsage(feature:string): EventBuilder {
+      return this.createEvent().setType('usage').setSource(feature);
+    }
+
+    submitFeatureUsage(feature:string): void {
+      this.createFeatureUsage(feature).submit();
+    }
+
+    // createLog(source:string, message:string, level?:string): EventBuilder
+    createLog(...source_message_level:string[]): EventBuilder {
+      var builder = this.createEvent().setType('log');
+
+      switch(source_message_level ? source_message_level.length : 0) {
+        case 1:
+          var source = (<any>(arguments.callee.caller)).name;
+          builder = builder.setSource(source).setMessage(source_message_level[0]);
+          break;
+        case 2:
+          builder = builder.setSource(source_message_level[0]).setMessage(source_message_level[1]);
+        case 3:
+          builder = builder.setSource(source_message_level[0]).setMessage(source_message_level[1]).setProperty('@level', source_message_level[2]);
+          break;
+      }
+
+      return builder;
+    }
+
+    // submitLog(source:string, message:string, level?:string): void
+    submitLog(...source_message_level:string[]): void {
+      this.createLog(...source_message_level).submit();
+    }
+
+    createNotFound(resource:string): EventBuilder {
+      return this.createEvent().setType('404').setSource(resource);
+    }
+
+    submitNotFound(resource:string): void {
+      this.createNotFound(resource).submit();
+    }
+
+    createSessionStart(sessionId:string): EventBuilder {
+      return this.createEvent().setType('start').setSessionId(sessionId);
+    }
+
+    submitSessionStart(sessionId:string): void {
+      this.createSessionStart(sessionId).submit();
+    }
+
+    createSessionEnd(sessionId:string): EventBuilder {
+      return this.createEvent().setType('end').setSessionId(sessionId);
+    }
+
+    submitSessionEnd(sessionId:string): void {
+      this.createSessionEnd(sessionId).submit();
+    }
+
+    createEvent(pluginContextData?:ContextData): EventBuilder {
+      return new EventBuilder({ date: new Date() }, this, pluginContextData);
+    }
+
+    submitEvent(event:IEvent, pluginContextData?:ContextData) {
       if (!this.config.enabled) {
         this.config.log.info('Event submission is currently disabled');
         return;
@@ -85,15 +136,21 @@ module Exceptionless {
 
   export class ConsoleLog implements ILog {
     public info(message) {
-      console.log('[INFO] Exceptionless:' + message)
+      if (console && console.log) {
+        console.log('[INFO] Exceptionless:' + message)
+      }
     }
 
     public warn(message) {
-      console.log('[Warn] Exceptionless:' + message)
+      if (console && console.log) {
+        console.log('[Warn] Exceptionless:' + message)
+      }
     }
 
     public error(message) {
-      console.log('[Error] Exceptionless:' + message)
+      if (console && console.log) {
+        console.log('[Error] Exceptionless:' + message)
+      }
     }
   }
 
@@ -494,9 +551,9 @@ module Exceptionless {
   export class EventBuilder {
     target: IEvent;
     client: ExceptionlessClient;
-    pluginContextData: IContextData;
+    pluginContextData: ContextData;
 
-    constructor(event:IEvent, client:ExceptionlessClient, pluginContextData?:IContextData) {
+    constructor(event:IEvent, client:ExceptionlessClient, pluginContextData?:ContextData) {
       this.target = event;
       this.client = client;
       this.pluginContextData = pluginContextData;
@@ -530,24 +587,6 @@ module Exceptionless {
       return this;
     }
 
-
-    private isValidIdentifier(value:string): boolean {
-      if (value == null) {
-        return true;
-      }
-
-      if (value.length < 8 || value.length > 100) {
-        return false;
-      }
-
-      //for (int index = 0; index < value.Length; index++) {
-      //  if (!Char.IsLetterOrDigit(value[index]) && value[index] != '-')
-      //    return false;
-      //}
-
-      return true;
-    }
-
     public setMessage(message:string): EventBuilder {
       this.target.message = message;
       return this;
@@ -568,35 +607,115 @@ module Exceptionless {
       return this;
     }
 
-    public addTags(tags:string[]): EventBuilder {
+    public addTags(...tags:string[]): EventBuilder {
       if (tags == null || tags.length === 0) {
         return this;
       }
 
-      //this.target.tags.AddRange(tags.Where(t => !String.IsNullOrWhiteSpace(t)).Select(t => t.Trim()));
+      if (!this.target.tags) {
+        this.target.tags = [];
+      }
+
+      for(var tag in tags) {
+        if (tag && this.target.tags.indexOf(tag) < 0) {
+          this.target.tags.push(tag);
+        }
+      }
+
       return this;
     }
 
     public setProperty(name:string, value:any): EventBuilder {
+      if (!this.target.data) {
+        this.target.data = {};
+      }
+
       this.target.data[name] = value;
       return this;
     }
 
-    public setCritical(critical:boolean): EventBuilder {
-      // check to see if it already contains the critical tag.
+    public markAsCritical(critical:boolean): EventBuilder {
       if (critical) {
-        this.target.tags.push('Critical');
+        this.addTags('Critical');
       }
 
       return this;
     }
 
     public submit(): void {
-      this.client.submit(this.target, this.pluginContextData);
+      this.client.submitEvent(this.target, this.pluginContextData);
+    }
+
+    private isValidIdentifier(value:string): boolean {
+      if (value == null) {
+        return true;
+      }
+
+      if (value.length < 8 || value.length > 100) {
+        return false;
+      }
+
+      for (var index = 0; index < value.length; index++) {
+        var code = value.charCodeAt(index);
+        var isDigit = (code >= 48) && (code <= 57);
+        var isLetter = ((code >= 65) && (code <= 90)) || ((code >= 97) && (code <= 122));
+        var isMinus = code === 45;
+
+        if (!(isDigit || isLetter) && !isMinus) {
+          return false;
+        }
+      }
+
+      return true;
     }
   }
 
-  export interface IContextData {}
+  export class ContextData {
+    public setException(exception:Error): void {
+      this['@@_Exception'] = exception;
+    }
+
+    public hasException(): boolean {
+      return !!this['@@_Exception']
+    }
+
+    public getException(): Error {
+      if (!this.hasException()) {
+        return null;
+      }
+
+      return this['@@_Exception'];
+    }
+
+    /// <summary>
+    /// Marks the event as being a unhandled error occurrence.
+    /// </summary>
+    public markAsUnhandledError(): void {
+      this['@@_IsUnhandledError'] = true;
+    }
+
+    /// <summary>
+    /// Returns true if the event was an unhandled error.
+    /// </summary>
+    public isUnhandledError(): boolean {
+      return !!this['@@_IsUnhandledError'];
+    }
+
+    /// <summary>
+    /// Sets the submission method that created the event (E.G., UnobservedTaskException)
+    /// </summary>
+    public setSubmissionMethod(method:string): void {
+      this['@@_SubmissionMethod'] = method;
+    }
+
+    public getSubmissionMethod(): string {
+      if (!!this['@@_SubmissionMethod']) {
+        return null;
+      }
+
+      return this['@@_SubmissionMethod'];
+    }
+  }
 
   export interface IUserDescription {
     email_address?: string;
