@@ -3,6 +3,7 @@
 // TODO: We'll need a poly fill for promises.
 // TODO: Process Errors
 // TODO: Handle Server Settings
+// TODO: Lock configuration.
 
 module Exceptionless {
   export class ExceptionlessClient {
@@ -12,83 +13,85 @@ module Exceptionless {
       this.config = new Configuration(apiKey, serverUrl);
     }
 
-    createException(exception:Error): EventBuilder {
+    public createException(exception:Error): EventBuilder {
       var pluginContextData = new ContextData();
       pluginContextData.setException(exception);
       return this.createEvent(pluginContextData).setType('error');
     }
 
-    submitException(exception:Error): void {
+    public submitException(exception:Error): void {
       this.createException(exception).submit();
     }
 
-    submitUnhandledException(exception:Error): void {
+    public submitUnhandledException(exception:Error): void {
       var builder = this.createException(exception);
       builder.pluginContextData.markAsUnhandledError();
       builder.submit();
     }
 
-    createFeatureUsage(feature:string): EventBuilder {
+    public createFeatureUsage(feature:string): EventBuilder {
       return this.createEvent().setType('usage').setSource(feature);
     }
 
-    submitFeatureUsage(feature:string): void {
+    public submitFeatureUsage(feature:string): void {
       this.createFeatureUsage(feature).submit();
     }
 
-    // createLog(source:string, message:string, level?:string): EventBuilder
-    createLog(...source_message_level:string[]): EventBuilder {
+    public createLog(message:string): EventBuilder;
+    public createLog(source:string, message:string): EventBuilder;
+    public createLog(source:string, message:string, level:string): EventBuilder;
+    public createLog(sourceOrMessage:string, message?:string, level?:string): EventBuilder {
       var builder = this.createEvent().setType('log');
 
-      switch(source_message_level ? source_message_level.length : 0) {
-        case 1:
-          var source = (<any>(arguments.callee.caller)).name;
-          builder = builder.setSource(source).setMessage(source_message_level[0]);
-          break;
-        case 2:
-          builder = builder.setSource(source_message_level[0]).setMessage(source_message_level[1]);
-        case 3:
-          builder = builder.setSource(source_message_level[0]).setMessage(source_message_level[1]).setProperty('@level', source_message_level[2]);
-          break;
+      if (sourceOrMessage && message && level) {
+        builder = builder.setSource(sourceOrMessage).setMessage(message).setProperty('@level', level);
+      } else if (sourceOrMessage && message) {
+        builder = builder.setSource(sourceOrMessage).setMessage(message);
+      } else {
+        // TODO: Look into using https://www.stevefenton.co.uk/Content/Blog/Date/201304/Blog/Obtaining-A-Class-Name-At-Runtime-In-TypeScript/
+        var source = (<any>(arguments.callee.caller)).name;
+        builder = builder.setSource(source).setMessage(sourceOrMessage);
       }
 
       return builder;
     }
 
-    // submitLog(source:string, message:string, level?:string): void
-    submitLog(...source_message_level:string[]): void {
-      this.createLog(...source_message_level).submit();
+    public submitLog(message:string): void;
+    public submitLog(source:string, message:string): void;
+    public submitLog(source:string, message:string, level:string): void;
+    public submitLog(sourceOrMessage:string, message?:string, level?:string): void {
+      this.createLog(sourceOrMessage, message, level).submit();
     }
 
-    createNotFound(resource:string): EventBuilder {
+    public createNotFound(resource:string): EventBuilder {
       return this.createEvent().setType('404').setSource(resource);
     }
 
-    submitNotFound(resource:string): void {
+    public submitNotFound(resource:string): void {
       this.createNotFound(resource).submit();
     }
 
-    createSessionStart(sessionId:string): EventBuilder {
+    public createSessionStart(sessionId:string): EventBuilder {
       return this.createEvent().setType('start').setSessionId(sessionId);
     }
 
-    submitSessionStart(sessionId:string): void {
+    public submitSessionStart(sessionId:string): void {
       this.createSessionStart(sessionId).submit();
     }
 
-    createSessionEnd(sessionId:string): EventBuilder {
+    public createSessionEnd(sessionId:string): EventBuilder {
       return this.createEvent().setType('end').setSessionId(sessionId);
     }
 
-    submitSessionEnd(sessionId:string): void {
+    public submitSessionEnd(sessionId:string): void {
       this.createSessionEnd(sessionId).submit();
     }
 
-    createEvent(pluginContextData?:ContextData): EventBuilder {
+    public createEvent(pluginContextData?:ContextData): EventBuilder {
       return new EventBuilder({ date: new Date() }, this, pluginContextData);
     }
 
-    submitEvent(event:IEvent, pluginContextData?:ContextData) {
+    public submitEvent(event:IEvent, pluginContextData?:ContextData) {
       if (!this.config.enabled) {
         this.config.log.info('Event submission is currently disabled');
         return;
@@ -99,29 +102,89 @@ module Exceptionless {
   }
 
   export class Configuration {
-    apiKey:string;
-    serverUrl:string;
-    enabled = true;
+    private _apiKey:string;
+    private _enabled:boolean = false;
+    private _serverUrl:string = 'https://collector.exceptionless.io';
+    private _plugins:IEventPlugin[] = [];
 
-    log:ILog = new NullLog();
-    submissionBatchSize = 50;
-    submissionClient:ISubmissionClient = new SubmissionClient();
-    storage:IStorage<any> = new InMemoryStorage<any>();
-    queue:IEventQueue;
+    public log:ILog = new NullLog();
+    public submissionBatchSize = 50;
+    public submissionClient:ISubmissionClient = new SubmissionClient();
+    public storage:IStorage<any> = new InMemoryStorage<any>();
+    public queue:IEventQueue;
 
     constructor(apiKey:string, serverUrl?:string) {
-      this.setApiKey(apiKey);
-      this.serverUrl = serverUrl || 'https://collector.exceptionless.io';
+      this.apiKey = apiKey;
+      this.serverUrl = serverUrl;
       this.queue = new EventQueue(this);
     }
 
-    public setApiKey(apiKey:string) {
-      this.apiKey = apiKey;
-      this.enabled = !!apiKey;
+    public get apiKey(): string {
+      return this._apiKey;
     }
 
-    public getQueueName(): string {
-      return !!this.apiKey ? 'ex-' + this.apiKey.slice(0, 8) : null;
+    public set apiKey(value:string) {
+      this._apiKey = value;
+      this._enabled = !!value && value.length > 0;
+    }
+
+    public get serverUrl(): string {
+      return this._serverUrl;
+    }
+
+    public set serverUrl(value:string) {
+      if (!!value && value.length > 0) {
+        this._serverUrl = value;
+      }
+    }
+
+    public get enabled(): boolean {
+      return this._enabled;
+    }
+
+    public get plugins(): IEventPlugin[] {
+      return this._plugins.sort((p1:IEventPlugin, p2:IEventPlugin) => {
+        return (p1.priority < p2.priority) ? -1 : (p1.priority > p2.priority) ? 1 : 0;
+      });
+    }
+
+    public addPlugin(plugin:IEventPlugin): void;
+    public addPlugin(name:string, priority:number, pluginAction:(context:EventPluginContext) => void): void;
+    public addPlugin(pluginOrName:IEventPlugin|string, priority?:number, pluginAction?:(context:EventPluginContext) => void): void {
+      var plugin = !!pluginAction ? { name: pluginOrName, priority: priority, run: pluginAction } : plugin;
+      if (!plugin || !plugin.run) {
+        this.log.error('Unable to add plugin: No run method was found.');
+        return;
+      }
+
+      if (!plugin.name) {
+        plugin.name = Random.guid();
+      }
+
+      if (!plugin.priority) {
+        plugin.priority = 0;
+      }
+
+      var pluginExists:boolean = false;
+      for(var index = 0; index < this._plugins.length; index++) {
+        if (this._plugins[index].name === plugin.name) {
+          pluginExists = true;
+          break;
+        }
+      }
+
+      if (!pluginExists) {
+        this._plugins.push(plugin);
+      }
+    }
+
+    public removePlugin(name:string) {
+      for(var index = 0; index < this._plugins.length; index++) {
+        if (this._plugins[index].name === name) {
+          this._plugins.splice(index, 1);
+          break;
+        }
+      }
     }
   }
 
@@ -165,11 +228,10 @@ module Exceptionless {
 
   export class EventQueue implements IEventQueue {
     private _config:Configuration;
-    private _areQueuedItemsDiscarded = false;
     private _suspendProcessingUntil:Date;
     private _discardQueuedItemsUntil:Date;
-    private _processingQueue = false;
-    private _queueTimer = setInterval(() => this.onProcessQueue(), 10000);
+    private _processingQueue:boolean = false;
+    private _queueTimer:number = setInterval(() => this.onProcessQueue(), 10000);
 
     constructor(config:Configuration) {
       this._config = config;
@@ -181,7 +243,7 @@ module Exceptionless {
         return;
       }
 
-      var key = this.queuePath() + '-' + new Date().toJSON() + '-' + Math.floor(Math.random() * 9007199254740992);
+      var key = this.queuePath() + '-' + new Date().toJSON() + '-' + Random.number();
       this._config.log.info('Enqueuing event: ' + key);
       return this._config.storage.save(key, event);
     }
@@ -321,7 +383,7 @@ module Exceptionless {
     }
 
     private queuePath(): string {
-      return this._config.getQueueName() + '-q'
+      return !!this._config.apiKey ? 'ex-' + this._config.apiKey.slice(0, 8) + '-q' : null;
     }
   }
 
@@ -454,13 +516,13 @@ module Exceptionless {
   }
 
   export class SubmissionResponse {
-    success = false;
-    badRequest = false;
-    serviceUnavailable = false;
-    paymentRequired = false;
-    unableToAuthenticate = false;
-    notFound = false;
-    requestEntityTooLarge = false;
+    success:boolean = false;
+    badRequest:boolean = false;
+    serviceUnavailable:boolean = false;
+    paymentRequired:boolean = false;
+    unableToAuthenticate:boolean = false;
+    notFound:boolean = false;
+    requestEntityTooLarge:boolean = false;
     statusCode:number;
     message:string;
 
@@ -479,9 +541,9 @@ module Exceptionless {
   }
 
   export class SettingsResponse {
-    success = false;
+    success:boolean = false;
     settings:any;
-    settingsVersion = -1;
+    settingsVersion:number = -1;
     message:string;
     exception:any;
 
@@ -555,22 +617,22 @@ module Exceptionless {
   }
 
   export interface IEvent {
-    type?: string;
-    source?: string;
-    date?: Date;
-    tags?: string[];
-    message?: string;
-    geo?: string;
-    value?: number;
-    data?: any;
-    reference_id?: string;
-    session_id?: string;
+    type?:string;
+    source?:string;
+    date?:Date;
+    tags?:string[];
+    message?:string;
+    geo?:string;
+    value?:number;
+    data?:any;
+    reference_id?:string;
+    session_id?:string;
   }
 
   export class EventBuilder {
-    target: IEvent;
-    client: ExceptionlessClient;
-    pluginContextData: ContextData;
+    public target:IEvent;
+    public client:ExceptionlessClient;
+    public pluginContextData:ContextData;
 
     constructor(event:IEvent, client:ExceptionlessClient, pluginContextData?:ContextData) {
       this.target = event;
@@ -579,7 +641,7 @@ module Exceptionless {
     }
 
     public setType(type:string): EventBuilder {
-      if (type && type.length > 0) {
+      if (!!type && type.length > 0) {
         this.target.type = type;
       }
 
@@ -587,7 +649,7 @@ module Exceptionless {
     }
 
     public setSource(source:string): EventBuilder {
-      if (source && source.length > 0) {
+      if (!!source && source.length > 0) {
         this.target.source = source;
       }
 
@@ -613,7 +675,7 @@ module Exceptionless {
     }
 
     public setMessage(message:string): EventBuilder {
-      if (message && message.length > 0) {
+      if (!!message && message.length > 0) {
         this.target.message = message;
       }
 
@@ -631,7 +693,7 @@ module Exceptionless {
     }
 
     public setValue(value:number): EventBuilder {
-      if (value) {
+      if (!!value) {
         this.target.value = value;
       }
 
@@ -678,7 +740,7 @@ module Exceptionless {
     }
 
     private isValidIdentifier(value:string): boolean {
-      if (value == null) {
+      if (!value || !value.length) {
         return true;
       }
 
@@ -706,35 +768,26 @@ module Exceptionless {
       this['@@_Exception'] = exception;
     }
 
-    public hasException(): boolean {
+    public get hasException(): boolean {
       return !!this['@@_Exception']
     }
 
     public getException(): Error {
-      if (!this.hasException()) {
+      if (!this.hasException) {
         return null;
       }
 
       return this['@@_Exception'];
     }
 
-    /// <summary>
-    /// Marks the event as being a unhandled error occurrence.
-    /// </summary>
     public markAsUnhandledError(): void {
       this['@@_IsUnhandledError'] = true;
     }
 
-    /// <summary>
-    /// Returns true if the event was an unhandled error.
-    /// </summary>
-    public isUnhandledError(): boolean {
+    public get isUnhandledError(): boolean {
       return !!this['@@_IsUnhandledError'];
     }
 
-    /// <summary>
-    /// Sets the submission method that created the event (E.G., UnobservedTaskException)
-    /// </summary>
     public setSubmissionMethod(method:string): void {
       this['@@_SubmissionMethod'] = method;
     }
@@ -748,9 +801,46 @@ module Exceptionless {
     }
   }
 
+  export class EventPluginContext {
+    public client:ExceptionlessClient;
+    public event:IEvent;
+    public contextData:ContextData;
+    public cancel:boolean = false;
+
+    constructor(client:ExceptionlessClient, event:IEvent, contextData?:ContextData) {
+      this.client = client;
+      this.event = event;
+      this.contextData = contextData ? contextData : new ContextData();
+    }
+
+    public get log(): ILog {
+      return this.client.config.log;
+    }
+  }
+
+  export interface IEventPlugin {
+    priority?:number;
+    name?:string;
+    run(context:EventPluginContext): void;
+  }
+
   export interface IUserDescription {
-    email_address?: string;
-    description?: string;
-    data?: any;
+    email_address?:string;
+    description?:string;
+    data?:any;
+  }
+
+  class Random {
+    public static guid(): string {
+      function s4() {
+        return Math.floor((1 + Math.random()) * 0x10000).toString(16).substring(1);
+      }
+
+      return s4() + s4() + '-' + s4() + '-' + s4() + '-' + s4() + '-' + s4() + s4() + s4();
+    }
+
+    public static number(): number {
+      return Math.floor(Math.random() * 9007199254740992);
+    }
   }
 }
