@@ -93,12 +93,43 @@ module Exceptionless {
     }
 
     public submitEvent(event:IEvent, pluginContextData?:ContextData) {
+      if (!event) {
+        return;
+      }
+
       if (!this.config.enabled) {
         this.config.log.info('Event submission is currently disabled');
         return;
       }
 
+      var context = new EventPluginContext(this, event, pluginContextData);
+      EventPluginManager.run(context);
+      if (context.cancel) {
+        return;
+      }
+
+      // ensure all required data
+      if (!event.type || event.type.length === 0) {
+        event.type = 'log';
+      }
+
+      if (!event.date) {
+        event.date = new Date();
+      }
+
+      this.config.log.info('Submitting event: type=' + event.type + !!event.reference_id ? ' refid=' + event.reference_id : '');
       this.config.queue.enqueue(event);
+
+      if (!event.reference_id || event.reference_id.length === 0) {
+        return;
+      }
+
+      this.config.log.info('Setting last reference id "' + event.reference_id + '"');
+      this.config.lastReferenceIdManager.setLast(event.reference_id);
+    }
+
+    public getLastReferenceId(): string {
+      return this.config.lastReferenceIdManager.getLast();
     }
   }
 
@@ -108,6 +139,7 @@ module Exceptionless {
     private _serverUrl:string = 'https://collector.exceptionless.io';
     private _plugins:IEventPlugin[] = [];
 
+    public lastReferenceIdManager:ILastReferenceIdManager = new InMemoryLastReferenceIdManager();
     public log:ILog = new NullLog();
     public submissionBatchSize = 50;
     public submissionClient:ISubmissionClient = new SubmissionClient();
@@ -154,7 +186,7 @@ module Exceptionless {
     public addPlugin(plugin:IEventPlugin): void;
     public addPlugin(name:string, priority:number, pluginAction:(context:EventPluginContext) => void): void;
     public addPlugin(pluginOrName:IEventPlugin|string, priority?:number, pluginAction?:(context:EventPluginContext) => void): void {
-      var plugin = !!pluginAction ? { name: pluginOrName, priority: priority, run: pluginAction } : plugin;
+      var plugin:IEventPlugin = !!pluginAction ? { name: <string>pluginOrName, priority: priority, run: pluginAction } : <IEventPlugin>pluginOrName;
       if (!plugin || !plugin.run) {
         this.log.error('Unable to add plugin: No run method was found.');
         return;
@@ -196,6 +228,10 @@ module Exceptionless {
           break;
         }
       }
+    }
+
+    public useReferenceIds(): void {
+      this.addPlugin(new ReferenceIdPlugin());
     }
   }
 
@@ -360,7 +396,7 @@ module Exceptionless {
         durationInMinutes = 5;
       }
 
-      this._config.log.info('Suspending processing for ' + durationInMinutes + 'minutes.');
+      this._config.log.info('Suspending processing for ' + durationInMinutes + ' minutes.');
       this._suspendProcessingUntil = new Date(new Date().getTime() + (durationInMinutes * 60000));
 
       if (discardFutureQueuedItems) {
@@ -380,8 +416,8 @@ module Exceptionless {
     private requeueEvents(events:IEvent[]) {
       this._config.log.info('Requeuing ' + events.length + ' events.');
 
-      for (var event of events) {
-        this.enqueue(event);
+      for (var index = 0; index < events.length; index++) {
+        this.enqueue(events[index]);
       }
     }
 
@@ -627,6 +663,28 @@ module Exceptionless {
     }
   }
 
+  export interface ILastReferenceIdManager {
+    getLast(): string;
+    clearLast(): void;
+    setLast(eventId:string): void;
+  }
+
+  export class InMemoryLastReferenceIdManager implements ILastReferenceIdManager {
+    private _lastReferenceId:string = null;
+
+    getLast(): string {
+      return this._lastReferenceId;
+    }
+
+    clearLast():void {
+      this._lastReferenceId = null;
+    }
+
+    setLast(eventId:string):void {
+      this._lastReferenceId = eventId;
+    }
+  }
+
   export interface IEvent {
     type?:string;
     source?:string;
@@ -720,9 +778,9 @@ module Exceptionless {
         this.target.tags = [];
       }
 
-      for(var tag of tags) {
-        if (tag && this.target.tags.indexOf(tag) < 0) {
-          this.target.tags.push(tag);
+      for (var index = 0; index < tags.length; index++) {
+        if (tags[index] && this.target.tags.indexOf(tags[index]) < 0) {
+          this.target.tags.push(tags[index]);
         }
       }
 
@@ -837,8 +895,9 @@ module Exceptionless {
 
   class EventPluginManager {
     public static run(context:EventPluginContext): void {
-      for (var plugin of context.client.config.plugins) {
+      for (var index = 0; index < context.client.config.plugins.length; index++) {
         try {
+          var plugin = context.client.config.plugins[index];
           plugin.run(context);
           if (context.cancel) {
             context.log.info('Event submission cancelled by plugin "' + plugin.name + '": id=' + context.event.reference_id + ' type=' + context.event.type);
@@ -856,6 +915,19 @@ module Exceptionless {
       config.addPlugin(new ErrorPlugin());
       //config.AddPlugin<DuplicateCheckerPlugin>();
       //config.AddPlugin<SubmissionMethodPlugin>();
+    }
+  }
+
+  class ReferenceIdPlugin implements IEventPlugin {
+    public priority:number = 20;
+    public name:string = 'ReferenceIdPlugin';
+
+    run(context:Exceptionless.EventPluginContext): void {
+      if ((!!context.event.reference_id && context.event.reference_id.length > 0) || context.event.type !== 'error') {
+        return;
+      }
+
+      context.event.reference_id = Random.guid().replace('-', '').substring(0, 10);
     }
   }
 

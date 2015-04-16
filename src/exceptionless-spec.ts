@@ -3,6 +3,24 @@
 
 //import { Configuration, ExceptionlessClient } from 'Exceptionless';
 module Exceptionless {
+  describe('ExceptionlessClient', () => {
+    it('should use event reference ids', () => {
+      var error = new Error('From Unit Test');
+
+      var client = new ExceptionlessClient('LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw', 'http://localhost:50000');
+      expect(client.config.lastReferenceIdManager.getLast()).toBe(null);
+      client.submitException(error);
+      expect(client.config.lastReferenceIdManager.getLast()).toBe(null);
+
+      var numberOfPlugins = client.config.plugins.length;
+      client.config.useReferenceIds();
+      expect(client.config.plugins.length).toBe(numberOfPlugins + 1);
+
+      client.submitException(error);
+      expect(client.config.lastReferenceIdManager.getLast()).not.toBe(null);
+    });
+  });
+
   describe('Configuration', () => {
     it('should set the api key to null and enabled to false', () => {
       var config = new Configuration(null);
