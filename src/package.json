@@ -30,6 +30,7 @@
     "karma-phantomjs-launcher": "^0.1.4",
     "karma-typescript-preprocessor": "0.0.16",
     "rimraf": "^2.3.2",
+    "stacktrace-js": "^0.6.4",
     "typescript": "1.5.0-alpha"
   },
   "dependencies": {}

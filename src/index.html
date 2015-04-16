@@ -5,6 +5,7 @@
     <title>Exceptionless Test</title>
 </head>
 <body>
+<script type="application/javascript" src="node_modules/stacktrace-js/dist/stacktrace.js"></script>
 <script type="application/javascript" src="exceptionless.js"></script>
 <script type="application/javascript">
   "use strict"
@@ -13,6 +14,12 @@
   (function (Exceptionless) {
     var client = new Exceptionless.ExceptionlessClient('LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw', 'http://localhost:50000');
     client.config.log = new Exceptionless.ConsoleLog();
+    try {
+      throw new Error('From Sample');
+    } catch (e) {
+      client.submitException(e);
+    }
+
     client.submitFeatureUsage('JavaScript');
     client.submitLog('Log Message From JavaScript');
     client.createLog('Index', 'Log Message from JS', 'Info').setProperty('Blake', 'Is Awesome!').submit();

@@ -943,8 +943,17 @@ module Exceptionless {
 
       context.event.type = 'error';
 
-      // TODO Parse the error.
-      context.event.data['@error'] = exception;
+      StackTrace.fromError(exception).then(
+        (stackFrames: any[]) => this.processStackFrames(context, stackFrames),
+        () => {
+          context.log.error('Unable to parse the exceptions stack trace. This exception will be discarded.')
+          context.cancel = true;
+      });
+    }
+
+    private processStackFrames(context:Exceptionless.EventPluginContext, stackFrames: any[]) {
+      //console.log(stackFrames);
+      //context.event.data['@error'] = stackFrames;
     }
   }
 
@@ -967,4 +976,6 @@ module Exceptionless {
       return Math.floor(Math.random() * 9007199254740992);
     }
   }
+
+  declare var StackTrace: any;
 }
