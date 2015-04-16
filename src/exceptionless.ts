@@ -4,6 +4,7 @@
 // TODO: Process Errors
 // TODO: Handle Server Settings
 // TODO: Lock configuration.
+// TODO: Look into using templated strings `${1 + 1}`
 
 module Exceptionless {
   export class ExceptionlessClient {
@@ -117,6 +118,8 @@ module Exceptionless {
       this.apiKey = apiKey;
       this.serverUrl = serverUrl;
       this.queue = new EventQueue(this);
+
+      EventPluginManager.addDefaultPlugins(this);
     }
 
     public get apiKey(): string {
@@ -178,7 +181,15 @@ module Exceptionless {
       }
     }
 
-    public removePlugin(name:string) {
+    public removePlugin(plugin:IEventPlugin): void;
+    public removePlugin(name:string): void;
+    public removePlugin(pluginOrName:IEventPlugin|string): void {
+      var name:string = typeof pluginOrName === 'string' ? pluginOrName : pluginOrName.name;
+      if (!name) {
+        this.log.error('Unable to remove plugin: No plugin name was specified.');
+        return;
+      }
+
       for(var index = 0; index < this._plugins.length; index++) {
         if (this._plugins[index].name === name) {
           this._plugins.splice(index, 1);
@@ -369,7 +380,7 @@ module Exceptionless {
     private requeueEvents(events:IEvent[]) {
       this._config.log.info('Requeuing ' + events.length + ' events.');
 
-      for (var event in events) {
+      for (var event of events) {
         this.enqueue(event);
       }
     }
@@ -709,7 +720,7 @@ module Exceptionless {
         this.target.tags = [];
       }
 
-      for(var tag in tags) {
+      for(var tag of tags) {
         if (tag && this.target.tags.indexOf(tag) < 0) {
           this.target.tags.push(tag);
         }
@@ -822,6 +833,47 @@ module Exceptionless {
     priority?:number;
     name?:string;
     run(context:EventPluginContext): void;
+  }
+
+  class EventPluginManager {
+    public static run(context:EventPluginContext): void {
+      for (var plugin of context.client.config.plugins) {
+        try {
+          plugin.run(context);
+          if (context.cancel) {
+            context.log.info('Event submission cancelled by plugin "' + plugin.name + '": id=' + context.event.reference_id + ' type=' + context.event.type);
+            return;
+          }
+        } catch (e) {
+          context.log.error('An error occurred while running ' + plugin.name + '.run(): ' + e.message);
+        }
+      }
+    }
+
+    public static addDefaultPlugins(config:Configuration): void {
+      //config.AddPlugin<ConfigurationDefaultsPlugin>();
+      //config.AddPlugin<EnvironmentInfoPlugin>();
+      config.addPlugin(new ErrorPlugin());
+      //config.AddPlugin<DuplicateCheckerPlugin>();
+      //config.AddPlugin<SubmissionMethodPlugin>();
+    }
+  }
+
+  class ErrorPlugin implements IEventPlugin {
+    public priority:number = 50;
+    public name:string = 'ErrorPlugin';
+
+    run(context:Exceptionless.EventPluginContext): void {
+      var exception = context.contextData.getException();
+      if (exception == null) {
+        return;
+      }
+
+      context.event.type = 'error';
+
+      // TODO Parse the error.
+      context.event.data['@error'] = exception;
+    }
   }
 
   export interface IUserDescription {

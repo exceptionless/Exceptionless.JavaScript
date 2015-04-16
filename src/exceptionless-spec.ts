@@ -30,6 +30,10 @@ module Exceptionless {
     it('should not add duplicate plugin', () => {
       var config = new Configuration('LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw');
       expect(config.plugins).not.toBe(null);
+      for (var plugin of config.plugins) {
+        config.removePlugin(plugin);
+      }
+
       config.addPlugin('test', 20, (context:EventPluginContext) => {});
       config.addPlugin('test', 20, (context:EventPluginContext) => {});
       expect(config.plugins.length).toBe(1);
@@ -38,6 +42,10 @@ module Exceptionless {
     it('should generate plugin name and priority', () => {
       var config = new Configuration('LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw');
       expect(config.plugins).not.toBe(null);
+      for (var plugin of config.plugins) {
+        config.removePlugin(plugin);
+      }
+
       config.addPlugin(null, null, (context:EventPluginContext) => {});
       expect(config.plugins.length).toBe(1);
       expect(config.plugins[0].name).not.toBe(null);
@@ -47,6 +55,10 @@ module Exceptionless {
     it('should sort plugins by priority', () => {
       var config = new Configuration('LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw');
       expect(config.plugins).not.toBe(null);
+      for (var plugin of config.plugins) {
+        config.removePlugin(plugin);
+      }
+
       config.addPlugin('3', 3, (context:EventPluginContext) => {});
       config.addPlugin('1', 1, (context:EventPluginContext) => {});
       config.addPlugin('2', 2, (context:EventPluginContext) => {});
