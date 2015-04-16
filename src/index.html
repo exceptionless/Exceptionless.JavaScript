@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title>Exceptionless Test</title>
+</head>
+<body>
+<script type="application/javascript" src="exceptionless.js"></script>
+<script type="application/javascript">
+  "use strict"
+
+  var Exceptionless;
+  (function (Exceptionless) {
+    client.config.log = new Exceptionless.ConsoleLog();
+    client.submitFeatureUsage('JavaScript');
+    client.submitLog('Log Message From JavaScript');
+    client.createLog('Index', 'Log Message from JS', 'Info').setProperty('Blake', 'Is Awesome!').submit();
+  })(Exceptionless || (Exceptionless = {}));
+</script>
+</body>
+</html>
+

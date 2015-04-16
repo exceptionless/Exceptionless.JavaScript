@@ -179,6 +179,7 @@ module Exceptionless {
       }
 
       var key = this.queuePath() + '-' + new Date().toJSON() + '-' + Math.floor(Math.random() * 9007199254740992);
+      this._config.log.info('Enqueuing event: ' + key);
       return this._config.storage.save(key, event);
     }
 
@@ -197,16 +198,17 @@ module Exceptionless {
 
       try {
         var events = this._config.storage.get(this.queuePath(), this._config.submissionBatchSize);
-        if (events.length == 0) {
+        if (!events || events.length == 0) {
           this._config.log.info('There are currently no queued events to process.');
           return;
         }
 
+        this._config.log.info('Sending ' + events.length + ' events to ' + this._config.serverUrl + '.');
         this._config.submissionClient.submit(events, this._config)
           .then(
             (response:SubmissionResponse) => {
               if (response.success) {
-                this._config.log.info('Sent ' + events.length + ' events to "' + this._config.serverUrl + '".');
+                this._config.log.info('Sent ' + events.length + ' events to ' + this._config.serverUrl + '.');
               } else if (response.serviceUnavailable) {
                 // You are currently over your rate limit or the servers are under stress.
                 this._config.log.error('Server returned service unavailable.');
@@ -257,8 +259,6 @@ module Exceptionless {
     }
 
     private onProcessQueue() {
-      return false;
-
       if (!this.isQueueProcessingSuspended() && !this._processingQueue) {
         this.process();
       }
@@ -271,7 +271,6 @@ module Exceptionless {
 
       this._config.log.info('Suspending processing for ' + durationInMinutes + 'minutes.');
       this._suspendProcessingUntil = new Date(new Date().getTime() + (durationInMinutes * 60000));
-      //_queueTimer.Change(duration.Value, _processQueueInterval);
 
       if (discardFutureQueuedItems) {
         this._discardQueuedItemsUntil = new Date(new Date().getTime() + (durationInMinutes * 60000));
@@ -288,7 +287,9 @@ module Exceptionless {
     }
 
     private requeueEvents(events:IEvent[]) {
-      for (var event in events || []) {
+      this._config.log.info('Requeuing ' + events.length + ' events.');
+
+      for (var event in events) {
         this.enqueue(event);
       }
     }
@@ -560,12 +561,18 @@ module Exceptionless {
     }
 
     public setType(type:string): EventBuilder {
-      this.target.type = type;
+      if (type && type.length > 0) {
+        this.target.type = type;
+      }
+
       return this;
     }
 
     public setSource(source:string): EventBuilder {
-      this.target.source = source;
+      if (source && source.length > 0) {
+        this.target.source = source;
+      }
+
       return this;
     }
 
@@ -588,7 +595,10 @@ module Exceptionless {
     }
 
     public setMessage(message:string): EventBuilder {
-      this.target.message = message;
+      if (message && message.length > 0) {
+        this.target.message = message;
+      }
+
       return this;
     }
 
@@ -603,12 +613,15 @@ module Exceptionless {
     }
 
     public setValue(value:number): EventBuilder {
-      this.target.value = value;
+      if (value) {
+        this.target.value = value;
+      }
+
       return this;
     }
 
     public addTags(...tags:string[]): EventBuilder {
-      if (tags == null || tags.length === 0) {
+      if (!tags || tags.length === 0) {
         return this;
       }
 

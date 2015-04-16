@@ -59,7 +59,6 @@ module Exceptionless {
       expect(config.storage.count()).toBe(0);
     });
 
-/*
     it('should suspend processing', (done) => {
       var config = new Configuration('LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw', 'http://localhost:50000');
       expect(config.storage.count()).toBe(0);
@@ -74,7 +73,6 @@ module Exceptionless {
         done();
       }, 10000);
     }, 21000);
-*/
   });
 
   describe('SubmissionClient', () => {
