@@ -957,6 +957,58 @@ module Exceptionless {
     }
   }
 
+  interface IParameter {
+    data?:any;
+    generic_arguments?:IGenericArgument[];
+
+    name?:string;
+    type?:string;
+    type_namespace?:string;
+  }
+
+  interface IMethod {
+    data?:any;
+    generic_arguments?:IGenericArgument[];
+    parameters?:IParameter[];
+
+    is_signature_target?:boolean;
+    declaring_namespace?:string;
+    declaring_type?:string;
+    name?:string;
+    module_id?:number;
+  }
+
+  interface IStackFrame extends IMethod {
+    file_name:string;
+    line_number:number;
+    column:number;
+  }
+
+  interface IModule {
+    data?:any;
+
+    module_id?:number;
+    name?:string;
+    version?:string;
+    is_entry?:boolean;
+    created_date?:Date;
+    modified_date?:Date;
+  }
+
+  interface IInnerError {
+    message?:string;
+    type?:string;
+    code?:string;
+    data?:any;
+    inner?:IInnerError
+    stack_trace?:IStackFrame[];
+    target_method?:IMethod;
+  }
+
+  interface IError extends IInnerError {
+    modules?:IModule[]
+  }
+
   export interface IUserDescription {
     email_address?:string;
     description?:string;
