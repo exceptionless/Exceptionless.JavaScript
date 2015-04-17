@@ -1,5 +1,5 @@
 /// <reference path="typings/tsd.d.ts" />
-
+/// <reference path="stacktrace.d.ts" />
 // TODO: We'll need a poly fill for promises.
 // TODO: Process Errors
 // TODO: Handle Server Settings
@@ -952,8 +952,8 @@ module Exceptionless {
     }
 
     private processStackFrames(context:Exceptionless.EventPluginContext, stackFrames: any[]) {
-      //console.log(stackFrames);
-      //context.event.data['@error'] = stackFrames;
+
+      context.event.data['@error'] = stackFrames;
     }
   }
 
@@ -976,6 +976,4 @@ module Exceptionless {
       return Math.floor(Math.random() * 9007199254740992);
     }
   }
-
-  declare var StackTrace: any;
 }
