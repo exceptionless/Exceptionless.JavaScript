@@ -103,29 +103,36 @@ module Exceptionless {
       }
 
       var context = new EventPluginContext(this, event, pluginContextData);
-      EventPluginManager.run(context);
-      if (context.cancel) {
-        return;
-      }
+      EventPluginManager.run(context)
+        .then(() => {
+          if (context.cancel) {
+            context.log.info('Event submission cancelled by plugin": id=' + event.reference_id + ' type=' + event.type);
+            return;
+          }
 
-      // ensure all required data
-      if (!event.type || event.type.length === 0) {
-        event.type = 'log';
-      }
+          // ensure all required data
+          if (!event.type || event.type.length === 0) {
+            event.type = 'log';
+          }
 
-      if (!event.date) {
-        event.date = new Date();
-      }
+          if (!event.date) {
+            event.date = new Date();
+          }
 
-      this.config.log.info('Submitting event: type=' + event.type + !!event.reference_id ? ' refid=' + event.reference_id : '');
-      this.config.queue.enqueue(event);
+          this.config.log.info('Submitting event: type=' + event.type + !!event.reference_id ? ' refid=' + event.reference_id : '');
+          this.config.queue.enqueue(event);
 
-      if (!event.reference_id || event.reference_id.length === 0) {
-        return;
-      }
+          if (!event.reference_id || event.reference_id.length === 0) {
+            return;
+          }
 
-      this.config.log.info('Setting last reference id "' + event.reference_id + '"');
-      this.config.lastReferenceIdManager.setLast(event.reference_id);
+          this.config.log.info('Setting last reference id "' + event.reference_id + '"');
+          this.config.lastReferenceIdManager.setLast(event.reference_id);
+        })
+        .catch((error:Error) => {
+          var message:string = error && error.message ? error.message : <any>error;
+          this.config.log.error('Event submission cancelled. An error occurred while running the plugins: ' + message);
+        });
     }
 
     public getLastReferenceId(): string {
@@ -185,7 +192,7 @@ module Exceptionless {
 
     public addPlugin(plugin:IEventPlugin): void;
     public addPlugin(name:string, priority:number, pluginAction:(context:EventPluginContext) => void): void;
-    public addPlugin(pluginOrName:IEventPlugin|string, priority?:number, pluginAction?:(context:EventPluginContext) => void): void {
+    public addPlugin(pluginOrName:IEventPlugin|string, priority?:number, pluginAction?:(context:EventPluginContext) => Promise<any>): void {
       var plugin:IEventPlugin = !!pluginAction ? { name: <string>pluginOrName, priority: priority, run: pluginAction } : <IEventPlugin>pluginOrName;
       if (!plugin || !plugin.run) {
         this.log.error('Unable to add plugin: No run method was found.');
@@ -890,11 +897,18 @@ module Exceptionless {
   export interface IEventPlugin {
     priority?:number;
     name?:string;
-    run(context:EventPluginContext): void;
+    run(context:EventPluginContext): Promise<any>;
   }
 
   class EventPluginManager {
-    public static run(context:EventPluginContext): void {
+    public static run(context:EventPluginContext): Promise<any> {
+      return context.client.config.plugins.reduce((promise:Promise<any>, plugin:IEventPlugin) => {
+        return promise.then(() => {
+          return plugin.run(context);
+        });
+      }, Promise.resolve());
+
+/*
       for (var index = 0; index < context.client.config.plugins.length; index++) {
         try {
           var plugin = context.client.config.plugins[index];
@@ -907,6 +921,7 @@ module Exceptionless {
           context.log.error('An error occurred while running ' + plugin.name + '.run(): ' + e.message);
         }
       }
+*/
     }
 
     public static addDefaultPlugins(config:Configuration): void {
@@ -922,12 +937,12 @@ module Exceptionless {
     public priority:number = 20;
     public name:string = 'ReferenceIdPlugin';
 
-    run(context:Exceptionless.EventPluginContext): void {
-      if ((!!context.event.reference_id && context.event.reference_id.length > 0) || context.event.type !== 'error') {
-        return;
+    run(context:Exceptionless.EventPluginContext): Promise<any> {
+      if ((!context.event.reference_id || context.event.reference_id.length === 0) && context.event.type === 'error') {
+        context.event.reference_id = Random.guid().replace('-', '').substring(0, 10);
       }
 
-      context.event.reference_id = Random.guid().replace('-', '').substring(0, 10);
+      return Promise.resolve();
     }
   }
 
@@ -935,31 +950,61 @@ module Exceptionless {
     public priority:number = 50;
     public name:string = 'ErrorPlugin';
 
-    run(context:Exceptionless.EventPluginContext): void {
+    run(context:Exceptionless.EventPluginContext): Promise<any> {
       var exception = context.contextData.getException();
       if (exception == null) {
-        return;
+        return Promise.resolve();
+      }
+
+      if (!context.event.data) {
+        context.event.data = {};
       }
 
       context.event.type = 'error';
 
-      StackTrace.fromError(exception).then(
-        (stackFrames: any[]) => this.processStackFrames(context, stackFrames),
+      return StackTrace.fromError(exception).then(
+        (stackFrames: any[]) => this.processError(context, exception, stackFrames),
         () => {
-          context.log.error('Unable to parse the exceptions stack trace. This exception will be discarded.')
           context.cancel = true;
+          return Promise.reject(new Error('Unable to parse the exceptions stack trace. This exception will be discarded.'))
       });
     }
 
-    private processStackFrames(context:Exceptionless.EventPluginContext, stackFrames: any[]) {
+    private processError(context:Exceptionless.EventPluginContext, exception:Error, stackFrames: StackTrace.StackFrame[]) {
+      var error:IError = {
+        message: exception.message,
+        stack_trace: this.getStackFrames(context, stackFrames || []),
+        modules: this.getModules(context)
+      };
 
-      context.event.data['@error'] = stackFrames;
+      context.event.data['@error'] = error;
+    }
+
+    private getStackFrames(context:Exceptionless.EventPluginContext, stackFrames:StackTrace.StackFrame[]): IStackFrame[] {
+      var frames:IStackFrame[] = [];
+
+      for (var index = 0; index < stackFrames.length; index++) {
+        frames.push({
+          name: stackFrames[index].functionName,
+          //parameters: stackFrames[index].args, // TODO: need to verify arguments.
+          file_name: stackFrames[index].fileName,
+          line_number: stackFrames[index].lineNumber,
+          column: stackFrames[index].columnNumber
+        });
+      }
+
+      return frames;
+    }
+
+    private getModules(context:Exceptionless.EventPluginContext): IModule[] {
+      // TODO Get a list of all loaded scripts.
+      return [];
     }
   }
 
   interface IParameter {
     data?:any;
-    generic_arguments?:IGenericArgument[];
+    generic_arguments?:string[];
 
     name?:string;
     type?:string;
@@ -968,7 +1013,7 @@ module Exceptionless {
 
   interface IMethod {
     data?:any;
-    generic_arguments?:IGenericArgument[];
+    generic_arguments?:string[];
     parameters?:IParameter[];
 
     is_signature_target?:boolean;

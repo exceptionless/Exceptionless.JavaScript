@@ -8,21 +8,11 @@ declare module StackTrace {
   interface StackFrame {
     constructor(functionName:string, args:any, fileName:string, lineNumber:number, columnNumber:number);
 
-    getFunctionName():string;
-    setFunctionName(value:string);
-
-    getArgs():any;
-    setArgs(value:any);
-
-    getFileName():string;
-    setFileName(value:string);
-
-    getLineNumber():number;
-    setLineNumber(value:number);
-
-    getColumnNumber():number;
-    setColumnNumber(value:number);
-
+    functionName?:string;
+    args?:any;
+    fileName?:string;
+    lineNumber?:number;
+    columnNumber?:number;
     toString():string;
   }
 
@@ -39,7 +29,7 @@ declare module StackTrace {
    * @param options Object for options
    * @return Array[StackFrame]
    */
-  function fromError(error:Error, options:StackTraceOptions): Promise<StackFrame[]>;
+  function fromError(error:Error, options?:StackTraceOptions): Promise<StackFrame[]>;
 
   /**
    * Use StackGenerator to generate a backtrace.
