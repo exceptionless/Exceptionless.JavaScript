@@ -4,7 +4,9 @@
 // TODO: Process Errors
 // TODO: Handle Server Settings
 // TODO: Lock configuration.
-// TODO: Look into using templated strings `${1 + 1}`
+// TODO: Look into using templated strings `${1 + 1}`.
+// TODO: Add plugin for populating module info.
+// TODO: Add plugin for populating defaults.
 
 module Exceptionless {
   export class ExceptionlessClient {
@@ -24,10 +26,15 @@ module Exceptionless {
       this.createException(exception).submit();
     }
 
-    public submitUnhandledException(exception:Error): void {
+    public createUnhandledException(exception:Error): EventBuilder {
       var builder = this.createException(exception);
       builder.pluginContextData.markAsUnhandledError();
-      builder.submit();
+
+      return builder;
+    }
+
+    public submitUnhandledException(exception:Error): void {
+      this.createUnhandledException(exception).submit();
     }
 
     public createFeatureUsage(feature:string): EventBuilder {
@@ -137,6 +144,37 @@ module Exceptionless {
 
     public getLastReferenceId(): string {
       return this.config.lastReferenceIdManager.getLast();
+    }
+
+    public register(): void {
+      var oldOnErrorHandler:any = window.onerror;
+      (<any>window).onerror = (message:string, filename:string, lineno:number, colno:number, error:Error) => {
+        if(error !== null) {
+          this.submitUnhandledException(error);
+        } else {
+          // Only message, filename and lineno work here.
+          var e:IError = { message: message, stack_trace: [{ file_name: filename, line_number: lineno, column: colno }]};
+          this.createUnhandledException(new Error(message)).setMessage(message).setProperty('@error', e).submit();
+        }
+
+        if (oldOnErrorHandler) {
+          try {
+            return oldOnErrorHandler(message, filename, lineno, colno, error);
+          } catch(e) {
+            this.config.log.error('An error occurred while calling previous error handler: ' + e.message);
+          }
+        }
+
+        return false;
+      }
+    }
+
+    private static _instance:ExceptionlessClient = null;
+    public static get default() {
+      if(ExceptionlessClient._instance === null) {
+        ExceptionlessClient._instance = new ExceptionlessClient(null);
+      }
+      return ExceptionlessClient._instance;
     }
   }
 
@@ -285,13 +323,15 @@ module Exceptionless {
     private _suspendProcessingUntil:Date;
     private _discardQueuedItemsUntil:Date;
     private _processingQueue:boolean = false;
-    private _queueTimer:number = setInterval(() => this.onProcessQueue(), 10000);
+    private _queueTimer:number;
 
     constructor(config:Configuration) {
       this._config = config;
     }
 
     public enqueue(event:IEvent) {
+      this.ensureQueueTimer();
+
       if (this.areQueuedItemsDiscarded()) {
         this._config.log.info('Queue items are currently being discarded. The event will not be queued.');
         return;
@@ -303,6 +343,8 @@ module Exceptionless {
     }
 
     public process() {
+      this.ensureQueueTimer();
+
       if (this._processingQueue) {
         return;
       }
@@ -392,13 +434,19 @@ module Exceptionless {
       }
     }
 
-    private onProcessQueue() {
+    private ensureQueueTimer() : void {
+      if (!this._queueTimer) {
+        this._queueTimer = setInterval(() => this.onProcessQueue(), 10000);
+      }
+    }
+
+    private onProcessQueue(): void {
       if (!this.isQueueProcessingSuspended() && !this._processingQueue) {
         this.process();
       }
     }
 
-    public suspendProcessing(durationInMinutes?:number, discardFutureQueuedItems?:boolean, clearQueue?:boolean) {
+    public suspendProcessing(durationInMinutes?:number, discardFutureQueuedItems?:boolean, clearQueue?:boolean): void {
       if (!durationInMinutes || durationInMinutes <= 0) {
         durationInMinutes = 5;
       }
@@ -420,7 +468,7 @@ module Exceptionless {
       } catch (Exception) { }
     }
 
-    private requeueEvents(events:IEvent[]) {
+    private requeueEvents(events:IEvent[]): void {
       this._config.log.info('Requeuing ' + events.length + ' events.');
 
       for (var index = 0; index < events.length; index++) {
@@ -907,21 +955,6 @@ module Exceptionless {
           return plugin.run(context);
         });
       }, Promise.resolve());
-
-/*
-      for (var index = 0; index < context.client.config.plugins.length; index++) {
-        try {
-          var plugin = context.client.config.plugins[index];
-          plugin.run(context);
-          if (context.cancel) {
-            context.log.info('Event submission cancelled by plugin "' + plugin.name + '": id=' + context.event.reference_id + ' type=' + context.event.type);
-            return;
-          }
-        } catch (e) {
-          context.log.error('An error occurred while running ' + plugin.name + '.run(): ' + e.message);
-        }
-      }
-*/
     }
 
     public static addDefaultPlugins(config:Configuration): void {
@@ -961,23 +994,30 @@ module Exceptionless {
       }
 
       context.event.type = 'error';
+      if (!!context.event.data['@error']) {
+        return Promise.resolve();
+      }
 
       return StackTrace.fromError(exception).then(
-        (stackFrames: any[]) => this.processError(context, exception, stackFrames),
-        () => {
-          context.cancel = true;
-          return Promise.reject(new Error('Unable to parse the exceptions stack trace. This exception will be discarded.'))
-      });
+        (stackFrames: StackTrace.StackFrame[]) => this.processError(context, exception, stackFrames),
+        () => this.onParseError(context)
+      );
     }
 
-    private processError(context:Exceptionless.EventPluginContext, exception:Error, stackFrames: StackTrace.StackFrame[]) {
+    private processError(context:Exceptionless.EventPluginContext, exception:Error, stackFrames: StackTrace.StackFrame[]): Promise<any> {
       var error:IError = {
         message: exception.message,
         stack_trace: this.getStackFrames(context, stackFrames || []),
-        modules: this.getModules(context)
       };
 
       context.event.data['@error'] = error;
+
+      return Promise.resolve();
+    }
+
+    private onParseError(context:Exceptionless.EventPluginContext): Promise<any>  {
+      context.cancel = true;
+      return Promise.reject(new Error('Unable to parse the exceptions stack trace. This exception will be discarded.'))
     }
 
     private getStackFrames(context:Exceptionless.EventPluginContext, stackFrames:StackTrace.StackFrame[]): IStackFrame[] {
@@ -994,11 +1034,6 @@ module Exceptionless {
       }
 
       return frames;
-    }
-
-    private getModules(context:Exceptionless.EventPluginContext): IModule[] {
-      // TODO Get a list of all loaded scripts.
-      return [];
     }
   }
 

@@ -27,7 +27,7 @@ gulp.task('scripts', function() {
 
   return eventStream.merge(
     tsResult.dts.pipe(gulp.dest('dist')),
-    tsResult.js.pipe(sourcemaps.write())
+    tsResult.js.pipe(sourcemaps.write('/'))
                .pipe(gulp.dest('dist'))
   );
 });

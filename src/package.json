@@ -25,6 +25,7 @@
     "gulp-sourcemaps": "^1.5.1",
     "gulp-typescript": "^2.6.0",
     "gulp-util": "~3.0.4",
+    "jasmine-core": "^2.2.0",
     "karma": "~0.12.31",
     "karma-chrome-launcher": "^0.1.7",
     "karma-cli": "0.0.4",

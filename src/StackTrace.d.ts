@@ -2,7 +2,9 @@
 
 declare module StackTrace {
   interface StackTraceOptions {
-    filter: (stackFrame:StackFrame) => boolean;
+    filter?: (stackFrame:StackFrame) => boolean;
+    sourceCache?: { URL:string };
+    offline?: boolean;
   }
 
   interface StackFrame {
