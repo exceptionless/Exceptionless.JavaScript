@@ -18,13 +18,6 @@ build_script:
 test_script:
   - gulp test
 
-after_test:
-  - cd ..
-  - ps: nuget pack -Version $env:APPVEYOR_BUILD_VERSION
-
-artifacts:
-  - path: '*.nupkg'
-
 notifications:
   - provider: Slack
     auth_token:
