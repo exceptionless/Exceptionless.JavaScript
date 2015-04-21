@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+  <meta charset="UTF-8">
+  <title>Exceptionless Test</title>
+</head>
+<body>
+<script type="application/javascript" src="../node_modules/es6-promise/dist/es6-promise.js"></script>
+<script type="application/javascript" src="../node_modules/stackframe/dist/stackframe.js"></script>
+<script type="application/javascript" src="../node_modules/error-stack-parser/dist/error-stack-parser.js"></script>
+<script type="application/javascript" src="../node_modules/stack-generator/dist/stack-generator.js"></script>
+<script type="application/javascript" src="../node_modules/stacktrace-gps/dist/stacktrace-gps.js"></script>
+<script type="application/javascript" src="../node_modules/stacktrace-js/dist/stacktrace.js"></script>
+<script type="application/javascript" src="../dist/exceptionless.js"></script>
+
+<script type="application/javascript" src="math.js"></script>
+<script type="application/javascript" src="index.js"></script>
+<script type="application/javascript">
+  'use strict';
+
+  var client = Exceptionless.ExceptionlessClient.default;
+  client.config.apiKey = 'LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw';
+  client.config.serverUrl = 'http://localhost:50000';
+
+  client.config.log = new Exceptionless.ConsoleLog();
+  client.register();
+</script>
+
+<button onclick="throwDivisionByZero()">Division By Zero</button>
+<button onclick="throwIndexOutOfRange()">Index Out Of Range</button>
+</body>
+</html>

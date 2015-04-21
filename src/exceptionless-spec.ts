@@ -182,6 +182,12 @@ module Exceptionless {
         .then(processResponse, processResponse)
         .then(done);
     }, 5000);
+
+    it('should submit invalid object data', (done) => {
+      //{setPropertybject: {foo: 'bar'}}, function() {
+      //  throw new Error('foo');
+      //});
+    });
   });
 
   describe('Storage', () => {
@@ -256,6 +262,33 @@ module Exceptionless {
 
       storage.clear();
       expect(storage.count()).toBe(0);
+    });
+  });
+
+  // TODO: We should move this logic out into an exported utils class to make it easier to test.
+  describe('ModuleInfoPlugin', () => {
+    it('should parse version from script source', () => {
+      function getVersion(source:string) {
+        if (!source) {
+          return null;
+        }
+
+        var versionRegex = /(v?((\d+)\.(\d+)(\.(\d+))?)(?:-([\dA-Za-z\-]+(?:\.[\dA-Za-z\-]+)*))?(?:\+([\dA-Za-z\-]+(?:\.[\dA-Za-z\-]+)*))?)/;
+        var matches = versionRegex.exec(source);
+        if (matches && matches.length > 0) {
+          return matches[0];
+        }
+
+        return null;
+      }
+
+      expect(getVersion('https://code.jquery.com/jquery-2.1.3.js')).toBe('2.1.3');
+      expect(getVersion('//maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css')).toBe('3.3.4');
+      expect(getVersion('https://cdnjs.cloudflare.com/ajax/libs/1140/2.0/1140.css')).toBe('2.0');
+      expect(getVersion('https://cdnjs.cloudflare.com/ajax/libs/Base64/0.3.0/base64.min.js')).toBe('0.3.0');
+      expect(getVersion('https://cdnjs.cloudflare.com/ajax/libs/angular-google-maps/2.1.0-X.10/angular-google-maps.min.js')).toBe('2.1.0-X.10');
+      expect(getVersion('https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/2.1.8-M1/swagger-ui.min.js')).toBe('2.1.8-M1');
+      expect(getVersion('https://cdnjs.cloudflare.com/BLAH/BLAH.min.js')).toBe(null);
     });
   });
 }

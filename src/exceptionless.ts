@@ -1,12 +1,12 @@
 /// <reference path="typings/tsd.d.ts" />
 /// <reference path="stacktrace.d.ts" />
+
 // TODO: We'll need a poly fill for promises.
-// TODO: Process Errors
+// TODO: Verify that stack traces are parsed properly.
 // TODO: Handle Server Settings
 // TODO: Lock configuration.
 // TODO: Look into using templated strings `${1 + 1}`.
 // TODO: Add plugin for populating module info.
-// TODO: Add plugin for populating defaults.
 
 module Exceptionless {
   export class ExceptionlessClient {
@@ -190,6 +190,8 @@ module Exceptionless {
     public submissionClient:ISubmissionClient = new SubmissionClient();
     public storage:IStorage<any> = new InMemoryStorage<any>();
     public queue:IEventQueue;
+    public defaultTags:string[] = [];
+    public defaultData:Object = {};
 
     constructor(apiKey:string, serverUrl?:string) {
       this.apiKey = apiKey;
@@ -843,6 +845,10 @@ module Exceptionless {
     }
 
     public setProperty(name:string, value:any): EventBuilder {
+      if (!name || (value === undefined || value == null)) {
+        return this;
+      }
+
       if (!this.target.data) {
         this.target.data = {};
       }
@@ -958,11 +964,46 @@ module Exceptionless {
     }
 
     public static addDefaultPlugins(config:Configuration): void {
-      //config.AddPlugin<ConfigurationDefaultsPlugin>();
-      //config.AddPlugin<EnvironmentInfoPlugin>();
+      config.addPlugin(new ConfigurationDefaultsPlugin());
       config.addPlugin(new ErrorPlugin());
-      //config.AddPlugin<DuplicateCheckerPlugin>();
-      //config.AddPlugin<SubmissionMethodPlugin>();
+      config.addPlugin(new DuplicateCheckerPlugin());
+      config.addPlugin(new ModuleInfoPlugin());
+      config.addPlugin(new RequestInfoPlugin());
+      config.addPlugin(new SubmissionMethodPlugin());
+    }
+  }
+
+  class ConfigurationDefaultsPlugin implements IEventPlugin {
+    public priority:number = 10;
+    public name:string = 'ConfigurationDefaultsPlugin';
+
+    run(context:Exceptionless.EventPluginContext): Promise<any> {
+      if (!!context.client.config.defaultTags) {
+        if (!context.event.tags) {
+          context.event.tags = [];
+        }
+
+        for (var index = 0; index < context.client.config.defaultTags.length; index++) {
+          var tag = context.client.config.defaultTags[index];
+          if (tag && context.client.config.defaultTags.indexOf(tag) < 0) {
+            context.event.tags.push(tag)
+          }
+        }
+      }
+
+      if (!!context.client.config.defaultData) {
+        if (!context.event.data) {
+          context.event.data = {};
+        }
+
+        for (var key in context.client.config.defaultData) {
+          if (!!context.client.config.defaultData[key]) {
+            context.event.data[key] = context.client.config.defaultData[key];
+          }
+        }
+      }
+
+      return Promise.resolve();
     }
   }
 
@@ -980,7 +1021,7 @@ module Exceptionless {
   }
 
   class ErrorPlugin implements IEventPlugin {
-    public priority:number = 50;
+    public priority:number = 30;
     public name:string = 'ErrorPlugin';
 
     run(context:Exceptionless.EventPluginContext): Promise<any> {
@@ -1037,6 +1078,162 @@ module Exceptionless {
     }
   }
 
+  class ModuleInfoPlugin implements IEventPlugin {
+    public priority:number = 40;
+    public name:string = 'ModuleInfoPlugin';
+
+    run(context:Exceptionless.EventPluginContext):Promise<any> {
+      console.log(context);
+      if (!context.event.data || !context.event.data['@error'] || !!context.event.data['@error'].modules) {
+        return Promise.resolve();
+      }
+
+      try {
+        var modules:IModule[] = [];
+        var scripts = document.getElementsByTagName('script');
+        if (scripts && scripts.length > 0) {
+          for (var index = 0; index < scripts.length; index++) {
+            if (scripts[index].src) {
+              modules.push({ module_id: index, name: scripts[index].src, version: this.getVersion(scripts[index].src) });
+            } else if (!!scripts[index].innerHTML) {
+              modules.push({ module_id: index, name: 'Script Tag', version: this.getHashCode(scripts[index].innerHTML) });
+            }
+          }
+
+          context.event.data['@error'].modules = modules;
+        }
+      } catch (e) {
+        context.log.error('Unable to get module info. Exception: ' + e.message);
+      }
+
+      return Promise.resolve();
+    }
+
+    private getVersion(source:string): string {
+      if (!source) {
+        return null;
+      }
+
+      var versionRegex = /(v?((\d+)\.(\d+)(\.(\d+))?)(?:-([\dA-Za-z\-]+(?:\.[\dA-Za-z\-]+)*))?(?:\+([\dA-Za-z\-]+(?:\.[\dA-Za-z\-]+)*))?)/;
+      var matches = versionRegex.exec(source);
+      if (matches && matches.length > 0) {
+        return matches[0];
+      }
+
+      return null;
+    }
+
+    private getHashCode(source:string): string {
+      if (!source || source.length === 0) {
+        return null;
+      }
+
+      var hash:number = 0;
+      for (var index = 0; index < source.length; index++) {
+        var character   = source.charCodeAt(index);
+        hash  = ((hash << 5) - hash) + character;
+        hash |= 0;
+      }
+
+      return hash.toString();
+    }
+
+    private get
+  }
+
+  class DuplicateCheckerPlugin implements IEventPlugin {
+    public priority:number = 50;
+    public name:string = 'DuplicateCheckerPlugin';
+
+    run(context:Exceptionless.EventPluginContext):Promise<any> {
+      // TODO: Implement
+      return Promise.resolve();
+    }
+  }
+
+  class RequestInfoPlugin implements IEventPlugin {
+    public priority:number = 60;
+    public name:string = 'RequestInfoPlugin';
+
+    run(context:Exceptionless.EventPluginContext):Promise<any> {
+      if (!!context.event.data && !!context.event.data['@request']) {
+        return Promise.resolve();
+      }
+
+      if (!context.event.data) {
+        context.event.data = {};
+      }
+
+      var requestInfo:IRequestInfo = {
+        user_agent: navigator.userAgent,
+        is_secure: location.protocol === 'https:',
+        host: location.hostname,
+        port: location.port && location.port !== '' ? parseInt(location.port) : 80,
+        path: location.pathname,
+        //client_ip_address: 'TODO',
+        cookies: this.getCookies(),
+        query_string: this.getQueryString(),
+      };
+
+      if (document.referrer && document.referrer !== '') {
+        requestInfo.referrer = document.referrer;
+      }
+
+      context.event.data['@request'] = requestInfo;
+      return Promise.resolve();
+    }
+
+    private getCookies(): any {
+      if (!document.cookie) {
+        return null;
+      }
+
+      var result = {};
+
+      var cookies = document.cookie.split(', ');
+      for (var index = 0; index < cookies.length; index++) {
+        var cookie = cookies[index].split('=');
+        result[cookie[0]] = cookie[1];
+      }
+
+      return result;
+    }
+
+    private getQueryString(): any {
+      var query:string = location.search.substring(1);
+      var pairs = query.split('&');
+      if (pairs.length === 0) {
+        return null;
+      }
+
+      var result = {};
+      for (var index = 0; index < pairs.length; index++) {
+        var pair = pairs[index].split('=');
+        result[decodeURIComponent(pair[0])] = decodeURIComponent(pair[1]);
+      }
+
+      return result;
+    }
+  }
+
+  class SubmissionMethodPlugin implements IEventPlugin {
+    public priority:number = 100;
+    public name:string = 'SubmissionMethodPlugin';
+
+    run(context:Exceptionless.EventPluginContext):Promise<any> {
+      var submissionMethod:string = context.contextData.getSubmissionMethod();
+      if (!!submissionMethod) {
+        if (!context.event.data) {
+          context.event.data = {};
+        }
+
+        context.event.data['@submission_method'] = submissionMethod;
+      }
+
+      return Promise.resolve();
+    }
+  }
+
   interface IParameter {
     data?:any;
     generic_arguments?:string[];
@@ -1087,6 +1284,21 @@ module Exceptionless {
 
   interface IError extends IInnerError {
     modules?:IModule[]
+  }
+
+  interface IRequestInfo {
+    user_agent?:string;
+    http_method?:string;
+    is_secure?:boolean;
+    host?:string;
+    port?:number;
+    path?:string;
+    referrer?:string;
+    client_ip_address?:string;
+    cookies?:any;
+    post_data?:any;
+    query_string?:any;
+    data?:any
   }
 
   export interface IUserDescription {
