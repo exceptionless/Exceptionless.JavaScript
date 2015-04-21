@@ -242,7 +242,7 @@ module Exceptionless {
       }
 
       if (!plugin.name) {
-        plugin.name = Random.guid();
+        plugin.name = Utils.guid();
       }
 
       if (!plugin.priority) {
@@ -341,7 +341,7 @@ module Exceptionless {
         return;
       }
 
-      var key = this.queuePath() + '-' + new Date().toJSON() + '-' + Random.number();
+      var key = this.queuePath() + '-' + new Date().toJSON() + '-' + Utils.randomNumber();
       this._config.log.info('Enqueuing event: ' + key);
       return this._config.storage.save(key, event);
     }
@@ -1015,7 +1015,7 @@ module Exceptionless {
 
     run(context:Exceptionless.EventPluginContext): Promise<any> {
       if ((!context.event.reference_id || context.event.reference_id.length === 0) && context.event.type === 'error') {
-        context.event.reference_id = Random.guid().replace('-', '').substring(0, 10);
+        context.event.reference_id = Utils.guid().replace('-', '').substring(0, 10);
       }
 
       return Promise.resolve();
@@ -1080,7 +1080,7 @@ module Exceptionless {
     }
   }
 
-  export class ModuleInfoPlugin implements IEventPlugin {
+  class ModuleInfoPlugin implements IEventPlugin {
     public priority:number = 40;
     public name:string = 'ModuleInfoPlugin';
 
@@ -1096,9 +1096,9 @@ module Exceptionless {
         if (scripts && scripts.length > 0) {
           for (var index = 0; index < scripts.length; index++) {
             if (scripts[index].src) {
-              modules.push({ module_id: index, name: scripts[index].src, version: this.getVersion(scripts[index].src) });
+              modules.push({ module_id: index, name: scripts[index].src, version: Utils.parseVersion(scripts[index].src) });
             } else if (!!scripts[index].innerHTML) {
-              modules.push({ module_id: index, name: 'Script Tag', version: this.getHashCode(scripts[index].innerHTML) });
+              modules.push({ module_id: index, name: 'Script Tag', version: Utils.getHashCode(scripts[index].innerHTML) });
             }
           }
 
@@ -1110,37 +1110,6 @@ module Exceptionless {
 
       return Promise.resolve();
     }
-
-    public getVersion(source:string): string {
-      if (!source) {
-        return null;
-      }
-
-      var versionRegex = /(v?((\d+)\.(\d+)(\.(\d+))?)(?:-([\dA-Za-z\-]+(?:\.[\dA-Za-z\-]+)*))?(?:\+([\dA-Za-z\-]+(?:\.[\dA-Za-z\-]+)*))?)/;
-      var matches = versionRegex.exec(source);
-      if (matches && matches.length > 0) {
-        return matches[0];
-      }
-
-      return null;
-    }
-
-    public getHashCode(source:string): string {
-      if (!source || source.length === 0) {
-        return null;
-      }
-
-      var hash:number = 0;
-      for (var index = 0; index < source.length; index++) {
-        var character   = source.charCodeAt(index);
-        hash  = ((hash << 5) - hash) + character;
-        hash |= 0;
-      }
-
-      return hash.toString();
-    }
-
-    private get
   }
 
   class DuplicateCheckerPlugin implements IEventPlugin {
@@ -1174,7 +1143,7 @@ module Exceptionless {
         path: location.pathname,
         //client_ip_address: 'TODO',
         cookies: this.getCookies(),
-        query_string: this.getQueryString(),
+        query_string: Utils.parseQueryString(location.search.substring(1)),
       };
 
       if (document.referrer && document.referrer !== '') {
@@ -1196,22 +1165,6 @@ module Exceptionless {
       for (var index = 0; index < cookies.length; index++) {
         var cookie = cookies[index].split('=');
         result[cookie[0]] = cookie[1];
-      }
-
-      return result;
-    }
-
-    private getQueryString(): any {
-      var query:string = location.search.substring(1);
-      var pairs = query.split('&');
-      if (pairs.length === 0) {
-        return null;
-      }
-
-      var result = {};
-      for (var index = 0; index < pairs.length; index++) {
-        var pair = pairs[index].split('=');
-        result[decodeURIComponent(pair[0])] = decodeURIComponent(pair[1]);
       }
 
       return result;
@@ -1309,7 +1262,22 @@ module Exceptionless {
     data?:any;
   }
 
-  class Random {
+  export class Utils {
+    public static getHashCode(source:string): string {
+      if (!source || source.length === 0) {
+        return null;
+      }
+
+      var hash:number = 0;
+      for (var index = 0; index < source.length; index++) {
+        var character   = source.charCodeAt(index);
+        hash  = ((hash << 5) - hash) + character;
+        hash |= 0;
+      }
+
+      return hash.toString();
+    }
+
     public static guid(): string {
       function s4() {
         return Math.floor((1 + Math.random()) * 0x10000).toString(16).substring(1);
@@ -1318,7 +1286,40 @@ module Exceptionless {
       return s4() + s4() + '-' + s4() + '-' + s4() + '-' + s4() + '-' + s4() + s4() + s4();
     }
 
-    public static number(): number {
+     public static parseVersion(source:string): string {
+      if (!source) {
+        return null;
+      }
+
+      var versionRegex = /(v?((\d+)\.(\d+)(\.(\d+))?)(?:-([\dA-Za-z\-]+(?:\.[\dA-Za-z\-]+)*))?(?:\+([\dA-Za-z\-]+(?:\.[\dA-Za-z\-]+)*))?)/;
+      var matches = versionRegex.exec(source);
+      if (matches && matches.length > 0) {
+        return matches[0];
+      }
+
+      return null;
+    }
+
+    public static parseQueryString(query:string) {
+      if (!query || query.length === 0) {
+        return null;
+      }
+
+      var pairs = query.split('&');
+      if (pairs.length === 0) {
+        return null;
+      }
+
+      var result = {};
+      for (var index = 0; index < pairs.length; index++) {
+        var pair = pairs[index].split('=');
+        result[decodeURIComponent(pair[0])] = decodeURIComponent(pair[1]);
+      }
+
+      return result;
+    }
+
+    public static randomNumber(): number {
       return Math.floor(Math.random() * 9007199254740992);
     }
   }
