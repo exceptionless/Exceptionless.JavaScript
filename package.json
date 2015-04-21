@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "description": "JavaScript client for Exceptionless",
   "license": "Apache",
-  "main": "gulpfile.js",
+  "main": "dist/exceptionless.js",
   "scripts": {
     "prepublish": "bower install",
     "start": "gulp",
@@ -11,7 +11,12 @@
     "test": "gulp test"
   },
   "keywords": [
-    "exceptionless"
+    "exceptionless",
+    "error",
+    "feature",
+    "logging",
+    "tracking",
+    "reporting"
   ],
   "devDependencies": {
     "bower": "~1.4.1",

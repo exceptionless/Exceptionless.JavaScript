@@ -1,4 +1,4 @@
-/// <reference path="typings/tsd.d.ts" />
+/// <reference path="../typings/tsd.d.ts" />
 /// <reference path="exceptionless.ts" />
 
 //import { Configuration, ExceptionlessClient } from 'Exceptionless';

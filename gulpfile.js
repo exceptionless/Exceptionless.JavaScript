@@ -53,7 +53,7 @@ gulp.task('watch', ['scripts'], function() {
 gulp.task('build', ['clean', 'scripts']);
 
 gulp.task('test', [], function() {
-  return gulp.src(['*-spec.ts'])
+  return gulp.src(['src/*-spec.ts'])
              .pipe(karma({
                 configFile: 'karma.conf.js',
                 action: 'run'

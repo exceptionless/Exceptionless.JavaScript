@@ -1,0 +1,21 @@
+{
+  "name": "exceptionless",
+  "version": "0.1.0",
+  "description": "JavaScript client for Exceptionless",
+  "license": "Apache",
+  "main": "dist/exceptionless.js",
+  "keywords": [
+    "exceptionless",
+    "error",
+    "feature",
+    "logging",
+    "tracking",
+    "reporting"
+  ],
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components"
+  ],
+  "dependencies": {}
+}

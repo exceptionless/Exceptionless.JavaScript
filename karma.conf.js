@@ -2,7 +2,7 @@
 
 module.exports = function (config) {
   config.set({
-    basePath: '.',
+    basePath: 'src',
     browserNoActivityTimeout: 100000,
     browsers: ['Chrome'],
     frameworks: ['jasmine'],
@@ -16,7 +16,7 @@ module.exports = function (config) {
       'node_modules/stacktrace-gps/dist/stacktrace-gps.js',
       'node_modules/stacktrace-js/dist/stacktrace.js',
 
-      '**/*.ts'
+      'src/*.ts'
     ],
     exclude: [],
     preprocessors: {

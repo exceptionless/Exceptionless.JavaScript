@@ -1,4 +1,4 @@
-/// <reference path="typings/tsd.d.ts" />
+/// <reference path="../typings/tsd.d.ts" />
 /// <reference path="stacktrace.d.ts" />
 
 // TODO: We'll need a poly fill for promises.
