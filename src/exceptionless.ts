@@ -11,8 +11,9 @@ module Exceptionless {
   export class ExceptionlessClient {
     public config:Configuration;
 
-    constructor(apiKey:string, serverUrl?:string) {
-      this.config = new Configuration(apiKey, serverUrl);
+    constructor(apiKey?:string, serverUrl?:string) {
+      var settings = this.getSettingsFromScriptTag() || {};
+      this.config = new Configuration(apiKey || settings.apiKey, serverUrl || settings.serverUrl);
     }
 
     public createException(exception:Error): EventBuilder {
@@ -169,6 +170,18 @@ module Exceptionless {
 
         return false;
       }
+    }
+
+    private getSettingsFromScriptTag(): any {
+      var scripts = document.getElementsByTagName('script');
+
+      for (var index = 0; index < scripts.length; index++) {
+        if (scripts[index].src && scripts[index].src.indexOf('/exceptionless') > -1) {
+          return Utils.parseQueryString(scripts[index].src.split('?').pop());
+        }
+      }
+
+      return null;
     }
 
     private static _instance:ExceptionlessClient = null;
