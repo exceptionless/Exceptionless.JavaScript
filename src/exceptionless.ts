@@ -1,7 +1,6 @@
 /// <reference path="../typings/tsd.d.ts" />
 /// <reference path="stacktrace.d.ts" />
 
-// TODO: We'll need a poly fill for promises.
 // TODO: Verify that stack traces are parsed properly.
 // TODO: Handle Server Settings
 // TODO: Lock configuration.
