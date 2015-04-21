@@ -4,21 +4,26 @@
 //import { Configuration, ExceptionlessClient } from 'Exceptionless';
 module Exceptionless {
   describe('ExceptionlessClient', () => {
-    it('should use event reference ids', () => {
+    it('should use event reference ids', (done) => {
       var error = new Error('From Unit Test');
 
       var client = new ExceptionlessClient('LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw', 'http://localhost:50000');
       expect(client.config.lastReferenceIdManager.getLast()).toBe(null);
-      client.submitException(error);
-      expect(client.config.lastReferenceIdManager.getLast()).toBe(null);
+      client.submitException(error).then(
+        () => expect(client.config.lastReferenceIdManager.getLast()).toBe(null),
+        () => expect(client.config.lastReferenceIdManager.getLast()).toBe(null)
+      );
 
       var numberOfPlugins = client.config.plugins.length;
       client.config.useReferenceIds();
       expect(client.config.plugins.length).toBe(numberOfPlugins + 1);
 
-      client.submitException(error);
-      expect(client.config.lastReferenceIdManager.getLast()).not.toBe(null);
-    });
+      client.submitException(error)
+        .then(
+          () => expect(client.config.lastReferenceIdManager.getLast()).not.toBe(null),
+          () => expect(client.config.lastReferenceIdManager.getLast()).toBe(null))
+        .then(done);
+    }, 5000);
   });
 
   describe('Configuration', () => {
@@ -48,8 +53,8 @@ module Exceptionless {
     it('should not add duplicate plugin', () => {
       var config = new Configuration('LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw');
       expect(config.plugins).not.toBe(null);
-      for (var plugin of config.plugins) {
-        config.removePlugin(plugin);
+      while(config.plugins.length > 0) {
+        config.removePlugin(config.plugins[0]);
       }
 
       config.addPlugin('test', 20, (context:EventPluginContext) => {});
@@ -60,8 +65,8 @@ module Exceptionless {
     it('should generate plugin name and priority', () => {
       var config = new Configuration('LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw');
       expect(config.plugins).not.toBe(null);
-      for (var plugin of config.plugins) {
-        config.removePlugin(plugin);
+      while(config.plugins.length > 0) {
+        config.removePlugin(config.plugins[0]);
       }
 
       config.addPlugin(null, null, (context:EventPluginContext) => {});
@@ -73,8 +78,8 @@ module Exceptionless {
     it('should sort plugins by priority', () => {
       var config = new Configuration('LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw');
       expect(config.plugins).not.toBe(null);
-      for (var plugin of config.plugins) {
-        config.removePlugin(plugin);
+      while(config.plugins.length > 0) {
+        config.removePlugin(config.plugins[0]);
       }
 
       config.addPlugin('3', 3, (context:EventPluginContext) => {});
@@ -149,6 +154,28 @@ module Exceptionless {
         .then(done);
     }, 5000);
 
+
+    it('should submit invalid object data', (done) => {
+      function processResponse(response:SubmissionResponse) {
+        if (response.success) {
+          expect(response.message).toBe(null);
+        } else {
+          expect(response.message).toBe('Unable to connect to server.');
+        }
+      }
+
+      var config = new Configuration('LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw', 'http://localhost:50000');
+      var event:IEvent = { type: 'log', message: 'From js client', reference_id: '123454321', data: {
+        name: 'blake',
+        age: function() { throw new Error('Test'); }
+      }};
+
+      var submissionClient = new SubmissionClient();
+      submissionClient.submit([event], config)
+        .then(processResponse, processResponse)
+        .then(done);
+    }, 5000);
+
     it('should submit user description', (done) => {
       function processResponse(response:SubmissionResponse) {
         if (response.success) {
@@ -182,12 +209,6 @@ module Exceptionless {
         .then(processResponse, processResponse)
         .then(done);
     }, 5000);
-
-    it('should submit invalid object data', (done) => {
-      //{setPropertybject: {foo: 'bar'}}, function() {
-      //  throw new Error('foo');
-      //});
-    });
   });
 
   describe('Storage', () => {
@@ -265,30 +286,16 @@ module Exceptionless {
     });
   });
 
-  // TODO: We should move this logic out into an exported utils class to make it easier to test.
   describe('ModuleInfoPlugin', () => {
-    it('should parse version from script source', () => {
-      function getVersion(source:string) {
-        if (!source) {
-          return null;
-        }
-
-        var versionRegex = /(v?((\d+)\.(\d+)(\.(\d+))?)(?:-([\dA-Za-z\-]+(?:\.[\dA-Za-z\-]+)*))?(?:\+([\dA-Za-z\-]+(?:\.[\dA-Za-z\-]+)*))?)/;
-        var matches = versionRegex.exec(source);
-        if (matches && matches.length > 0) {
-          return matches[0];
-        }
-
-        return null;
-      }
-
-      expect(getVersion('https://code.jquery.com/jquery-2.1.3.js')).toBe('2.1.3');
-      expect(getVersion('//maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css')).toBe('3.3.4');
-      expect(getVersion('https://cdnjs.cloudflare.com/ajax/libs/1140/2.0/1140.css')).toBe('2.0');
-      expect(getVersion('https://cdnjs.cloudflare.com/ajax/libs/Base64/0.3.0/base64.min.js')).toBe('0.3.0');
-      expect(getVersion('https://cdnjs.cloudflare.com/ajax/libs/angular-google-maps/2.1.0-X.10/angular-google-maps.min.js')).toBe('2.1.0-X.10');
-      expect(getVersion('https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/2.1.8-M1/swagger-ui.min.js')).toBe('2.1.8-M1');
-      expect(getVersion('https://cdnjs.cloudflare.com/BLAH/BLAH.min.js')).toBe(null);
-    });
+      it('should parse version from script source', () => {
+        var mi = new Exceptionless.ModuleInfoPlugin();
+        expect(mi.getVersion('https://code.jquery.com/jquery-2.1.3.js')).toBe('2.1.3');
+        expect(mi.getVersion('//maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css')).toBe('3.3.4');
+        expect(mi.getVersion('https://cdnjs.cloudflare.com/ajax/libs/1140/2.0/1140.css')).toBe('2.0');
+        expect(mi.getVersion('https://cdnjs.cloudflare.com/ajax/libs/Base64/0.3.0/base64.min.js')).toBe('0.3.0');
+        expect(mi.getVersion('https://cdnjs.cloudflare.com/ajax/libs/angular-google-maps/2.1.0-X.10/angular-google-maps.min.js')).toBe('2.1.0-X.10');
+        expect(mi.getVersion('https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/2.1.8-M1/swagger-ui.min.js')).toBe('2.1.8-M1');
+        expect(mi.getVersion('https://cdnjs.cloudflare.com/BLAH/BLAH.min.js')).toBe(null);
+      });
   });
 }

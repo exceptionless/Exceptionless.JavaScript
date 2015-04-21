@@ -6,7 +6,6 @@
 // TODO: Handle Server Settings
 // TODO: Lock configuration.
 // TODO: Look into using templated strings `${1 + 1}`.
-// TODO: Add plugin for populating module info.
 
 module Exceptionless {
   export class ExceptionlessClient {
@@ -22,8 +21,8 @@ module Exceptionless {
       return this.createEvent(pluginContextData).setType('error');
     }
 
-    public submitException(exception:Error): void {
-      this.createException(exception).submit();
+    public submitException(exception:Error): Promise<any> {
+      return this.createException(exception).submit();
     }
 
     public createUnhandledException(exception:Error): EventBuilder {
@@ -33,16 +32,16 @@ module Exceptionless {
       return builder;
     }
 
-    public submitUnhandledException(exception:Error): void {
-      this.createUnhandledException(exception).submit();
+    public submitUnhandledException(exception:Error): Promise<any> {
+      return this.createUnhandledException(exception).submit();
     }
 
     public createFeatureUsage(feature:string): EventBuilder {
       return this.createEvent().setType('usage').setSource(feature);
     }
 
-    public submitFeatureUsage(feature:string): void {
-      this.createFeatureUsage(feature).submit();
+    public submitFeatureUsage(feature:string): Promise<any> {
+      return this.createFeatureUsage(feature).submit();
     }
 
     public createLog(message:string): EventBuilder;
@@ -64,57 +63,59 @@ module Exceptionless {
       return builder;
     }
 
-    public submitLog(message:string): void;
-    public submitLog(source:string, message:string): void;
-    public submitLog(source:string, message:string, level:string): void;
-    public submitLog(sourceOrMessage:string, message?:string, level?:string): void {
-      this.createLog(sourceOrMessage, message, level).submit();
+    public submitLog(message:string): Promise<any>;
+    public submitLog(source:string, message:string): Promise<any>;
+    public submitLog(source:string, message:string, level:string): Promise<any>;
+    public submitLog(sourceOrMessage:string, message?:string, level?:string): Promise<any> {
+      return this.createLog(sourceOrMessage, message, level).submit();
     }
 
     public createNotFound(resource:string): EventBuilder {
       return this.createEvent().setType('404').setSource(resource);
     }
 
-    public submitNotFound(resource:string): void {
-      this.createNotFound(resource).submit();
+    public submitNotFound(resource:string): Promise<any> {
+      return this.createNotFound(resource).submit();
     }
 
     public createSessionStart(sessionId:string): EventBuilder {
       return this.createEvent().setType('start').setSessionId(sessionId);
     }
 
-    public submitSessionStart(sessionId:string): void {
-      this.createSessionStart(sessionId).submit();
+    public submitSessionStart(sessionId:string): Promise<any> {
+      return this.createSessionStart(sessionId).submit();
     }
 
     public createSessionEnd(sessionId:string): EventBuilder {
       return this.createEvent().setType('end').setSessionId(sessionId);
     }
 
-    public submitSessionEnd(sessionId:string): void {
-      this.createSessionEnd(sessionId).submit();
+    public submitSessionEnd(sessionId:string): Promise<any> {
+      return this.createSessionEnd(sessionId).submit();
     }
 
     public createEvent(pluginContextData?:ContextData): EventBuilder {
       return new EventBuilder({ date: new Date() }, this, pluginContextData);
     }
 
-    public submitEvent(event:IEvent, pluginContextData?:ContextData) {
+    public submitEvent(event:IEvent, pluginContextData?:ContextData): Promise<any> {
       if (!event) {
-        return;
+        return Promise.reject(new Error('Unable to submit undefined event.'));
       }
 
       if (!this.config.enabled) {
-        this.config.log.info('Event submission is currently disabled');
-        return;
+        var message:string = 'Event submission is currently disabled.';
+        this.config.log.info(message);
+        return Promise.reject(new Error(message));
       }
 
       var context = new EventPluginContext(this, event, pluginContextData);
-      EventPluginManager.run(context)
+      return EventPluginManager.run(context)
         .then(() => {
           if (context.cancel) {
-            context.log.info('Event submission cancelled by plugin": id=' + event.reference_id + ' type=' + event.type);
-            return;
+            var message:string = 'Event submission cancelled by plugin": id=' + event.reference_id + ' type=' + event.type;
+            this.config.log.info(message);
+            return Promise.reject(new Error(message));
           }
 
           // ensure all required data
@@ -129,16 +130,17 @@ module Exceptionless {
           this.config.log.info('Submitting event: type=' + event.type + !!event.reference_id ? ' refid=' + event.reference_id : '');
           this.config.queue.enqueue(event);
 
-          if (!event.reference_id || event.reference_id.length === 0) {
-            return;
+          if (event.reference_id && event.reference_id.length > 0) {
+            this.config.log.info('Setting last reference id "' + event.reference_id + '"');
+            this.config.lastReferenceIdManager.setLast(event.reference_id);
           }
 
-          this.config.log.info('Setting last reference id "' + event.reference_id + '"');
-          this.config.lastReferenceIdManager.setLast(event.reference_id);
+          return Promise.resolve();
         })
         .catch((error:Error) => {
-          var message:string = error && error.message ? error.message : <any>error;
-          this.config.log.error('Event submission cancelled. An error occurred while running the plugins: ' + message);
+          var message:string = 'Event submission cancelled. An error occurred while running the plugins: ' + error && error.message ? error.message : <any>error;
+          this.config.log.error(message);
+          return Promise.reject(new Error(message));
         });
     }
 
@@ -865,8 +867,8 @@ module Exceptionless {
       return this;
     }
 
-    public submit(): void {
-      this.client.submitEvent(this.target, this.pluginContextData);
+    public submit(): Promise<any> {
+      return this.client.submitEvent(this.target, this.pluginContextData);
     }
 
     private isValidIdentifier(value:string): boolean {
@@ -1078,7 +1080,7 @@ module Exceptionless {
     }
   }
 
-  class ModuleInfoPlugin implements IEventPlugin {
+  export class ModuleInfoPlugin implements IEventPlugin {
     public priority:number = 40;
     public name:string = 'ModuleInfoPlugin';
 
@@ -1109,7 +1111,7 @@ module Exceptionless {
       return Promise.resolve();
     }
 
-    private getVersion(source:string): string {
+    public getVersion(source:string): string {
       if (!source) {
         return null;
       }
@@ -1123,7 +1125,7 @@ module Exceptionless {
       return null;
     }
 
-    private getHashCode(source:string): string {
+    public getHashCode(source:string): string {
       if (!source || source.length === 0) {
         return null;
       }
