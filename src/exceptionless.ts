@@ -152,7 +152,7 @@ module Exceptionless {
     public register(): void {
       var oldOnErrorHandler:any = window.onerror;
       (<any>window).onerror = (message:string, filename:string, lineno:number, colno:number, error:Error) => {
-        if(error !== null) {
+        if(error !== null && typeof error === 'object') {
           this.submitUnhandledException(error);
         } else {
           // Only message, filename and lineno work here.
@@ -1063,7 +1063,7 @@ module Exceptionless {
     private processError(context:Exceptionless.EventPluginContext, exception:Error, stackFrames: StackTrace.StackFrame[]): Promise<any> {
       var error:IError = {
         message: exception.message,
-        stack_trace: this.getStackFrames(context, stackFrames || []),
+        stack_trace: this.getStackFrames(context, stackFrames || [])
       };
 
       context.event.data['@error'] = error;
@@ -1156,7 +1156,7 @@ module Exceptionless {
         path: location.pathname,
         //client_ip_address: 'TODO',
         cookies: this.getCookies(),
-        query_string: Utils.parseQueryString(location.search.substring(1)),
+        query_string: Utils.parseQueryString(location.search.substring(1))
       };
 
       if (document.referrer && document.referrer !== '') {
