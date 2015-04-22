@@ -8,10 +8,9 @@ var sourcemaps = require('gulp-sourcemaps');
 var ts = require('gulp-typescript');
 var uglify = require('gulp-uglify');
 
-
 var tsProject = ts.createProject({
   declarationFiles: true,
-  module: 'amd',
+  module: 'AMD',
   removeComments: true,
   sortOutput: true,
   sourceMap: true,
@@ -23,27 +22,27 @@ gulp.task('clean', function (cb) {
 });
 
 gulp.task('scripts', function() {
- var tsResult = gulp.src('exceptionless.ts')
- .pipe(ts(tsProject));
+  var files = [
+    'node_modules/es6-promise/dist/es6-promise.js',
+    'node_modules/stackframe/dist/stackframe.js',
+    'node_modules/error-stack-parser/dist/error-stack-parser.js',
+    'node_modules/stack-generator/dist/stack-generator.js',
+    'node_modules/stacktrace-gps/dist/stacktrace-gps.js',
+    'node_modules/stacktrace-js/dist/stacktrace.js'
+  ];
 
- var files = [
- 'node_modules/es6-promise/dist/es6-promise.js',
- 'node_modules/stackframe/dist/stackframe.js',
- 'node_modules/error-stack-parser/dist/error-stack-parser.js',
- 'node_modules/stack-generator/dist/stack-generator.js',
- 'node_modules/stacktrace-gps/dist/stacktrace-gps.js',
- 'node_modules/stacktrace-js/dist/stacktrace.js'
- ];
-
- tsResult.dts.pipe(gulp.dest('dist'));
- return merge2(gulp.src(files), tsResult.js)
-   .pipe(sourcemaps.init())
-   .pipe(concat('exceptionless.js'))
-   .pipe(gulp.dest('dist'))
-   .pipe(rename('exceptionless.min.js'))
-   .pipe(uglify())
-   .pipe(sourcemaps.write('.'))
-   .pipe(gulp.dest('dist'));
+  var tsResult = gulp.src(['src/exceptionless.ts']).pipe(ts(tsProject));
+  return merge2(
+    tsResult.dts.pipe(gulp.dest('dist')),
+    merge2(gulp.src(files), tsResult.js)
+      .pipe(sourcemaps.init())
+      .pipe(concat('exceptionless.js'))
+      .pipe(gulp.dest('dist'))
+      .pipe(rename('exceptionless.min.js'))
+      .pipe(uglify())
+      .pipe(sourcemaps.write('.'))
+      .pipe(gulp.dest('dist'))
+  );
 });
 
 gulp.task('watch', ['scripts'], function() {
@@ -54,14 +53,14 @@ gulp.task('build', ['clean', 'scripts']);
 
 gulp.task('test', [], function() {
   return gulp.src(['src/*-spec.ts'])
-             .pipe(karma({
-                configFile: 'karma.conf.js',
-                action: 'run'
-             }))
-             .on('error', function(err) {
-               console.log('karma tests failed: ' + err);
-               throw err;
-             });
+    .pipe(karma({
+      configFile: 'karma.conf.js',
+      action: 'run'
+    }))
+    .on('error', function(err) {
+     console.log('karma tests failed: ' + err);
+     throw err;
+    });
 });
 
 gulp.task('default', ['watch', 'build', 'test']);
