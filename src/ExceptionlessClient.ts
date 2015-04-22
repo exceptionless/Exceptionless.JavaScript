@@ -9,9 +9,18 @@ module Exceptionless {
   export class ExceptionlessClient {
     public config:Configuration;
 
-    constructor(apiKey?:string, serverUrl?:string) {
-      var settings = this.getSettingsFromScriptTag() || {};
-      this.config = new Configuration(apiKey || settings.apiKey, serverUrl || settings.serverUrl);
+    constructor();
+    constructor(settings:IConfigurationSettings);
+    constructor(apiKey:string, serverUrl?:string);
+    constructor(settingsOrApiKey?:IConfigurationSettings|string, serverUrl?:string) {
+      // TODO: populate this in a plugin..
+      //var settings = this.getSettingsFromScriptTag() || {};
+
+      if (typeof settingsOrApiKey !== 'object') {
+        this.config = new Configuration(settingsOrApiKey);
+      } else {
+        this.config = new Configuration({ apiKey: <string>settingsOrApiKey, serverUrl: serverUrl });
+      }
     }
 
     public createException(exception:Error): EventBuilder {
@@ -170,17 +179,17 @@ module Exceptionless {
       }
     }
 
-    private getSettingsFromScriptTag(): any {
-      var scripts = document.getElementsByTagName('script');
+    //private getSettingsFromScriptTag(): any {
+    //  var scripts = document.getElementsByTagName('script');
 
-      for (var index = 0; index < scripts.length; index++) {
-        if (scripts[index].src && scripts[index].src.indexOf('/exceptionless') > -1) {
-          return Utils.parseQueryString(scripts[index].src.split('?').pop());
-        }
-      }
+    //  for (var index = 0; index < scripts.length; index++) {
+    //    if (scripts[index].src && scripts[index].src.indexOf('/exceptionless') > -1) {
+    //      return Utils.parseQueryString(scripts[index].src.split('?').pop());
+    //    }
+    //  }
 
-      return null;
-    }
+    //  return null;
+    //}
 
     private static _instance:ExceptionlessClient = null;
     public static get default() {

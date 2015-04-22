@@ -11,7 +11,7 @@ module Exceptionless {
         }
       }
 
-      var config = new Configuration('LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw', 'http://localhost:50000');
+      var config = new Configuration({ apiKey:'LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw', serverUrl:'http://localhost:50000'});
       var submissionClient = new DefaultSubmissionClient();
       submissionClient.submit([{ type: 'log', message: 'From js client', reference_id: '123454321' }], config)
         .then(processResponse, processResponse)
@@ -28,7 +28,7 @@ module Exceptionless {
         }
       }
 
-      var config = new Configuration('LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw', 'http://localhost:50000');
+      var config = new Configuration({ apiKey:'LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw', serverUrl:'http://localhost:50000'});
       var event:IEvent = { type: 'log', message: 'From js client', reference_id: '123454321', data: {
         name: 'blake',
         age: function() { throw new Error('Test'); }
@@ -49,7 +49,7 @@ module Exceptionless {
         }
       }
 
-      var config = new Configuration('LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw', 'http://localhost:50000');
+      var config = new Configuration({ apiKey:'LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw', serverUrl:'http://localhost:50000'});
       var submissionClient = new DefaultSubmissionClient();
       submissionClient.submitDescription('123454321', { email_address: 'norply@exceptionless.io', description: 'unit test' } , config)
         .then(processResponse, processResponse)
@@ -67,7 +67,7 @@ module Exceptionless {
         }
       }
 
-      var config = new Configuration('LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw', 'http://localhost:50000');
+      var config = new Configuration({ apiKey:'LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw', serverUrl:'http://localhost:50000'});
       var submissionClient = new DefaultSubmissionClient();
       submissionClient.getSettings(config)
         .then(processResponse, processResponse)

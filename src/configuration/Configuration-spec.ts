@@ -9,10 +9,34 @@ module Exceptionless {
     });
 
     it('should set the api key and enabled to true', () => {
-      var config = new Configuration('LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw', 'http://localhost:50000');
+      var config = new Configuration({ apiKey:'LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw', serverUrl:'http://localhost:50000'});
       expect(config).not.toBe(null);
       expect(config.apiKey).toBe('LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw');
       expect(config.enabled).toBe(true);
+    });
+
+    it('should override configuration defaults', () => {
+      var config = new Configuration();
+      expect(config.apiKey).toBe(null);
+      expect(config.enabled).toBe(false);
+
+      Configuration.defaults.apiKey = 'test';
+      config = new Configuration();
+      expect(config.apiKey).toBe('test');
+      expect(config.enabled).toBe(true);
+
+      config = new Configuration({ apiKey:'LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw', serverUrl:'http://localhost:50000'});
+      expect(config.apiKey).toBe('LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw');
+      expect(config.enabled).toBe(true);
+
+      config = new Configuration({ apiKey:null });
+      expect(config.apiKey).toBe('test');
+      expect(config.enabled).toBe(true);
+
+      delete Configuration.defaults.apiKey;
+      var config = new Configuration();
+      expect(config.apiKey).toBe(null);
+      expect(config.enabled).toBe(false);
     });
 
     it('apply client configuration', () => {
@@ -26,7 +50,7 @@ module Exceptionless {
     });
 
     it('should not add duplicate plugin', () => {
-      var config = new Configuration('LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw');
+      var config = new Configuration({ apiKey:'LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw', serverUrl:'http://localhost:50000'});
       expect(config.plugins).not.toBe(null);
       while(config.plugins.length > 0) {
         config.removePlugin(config.plugins[0]);
@@ -38,7 +62,7 @@ module Exceptionless {
     });
 
     it('should generate plugin name and priority', () => {
-      var config = new Configuration('LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw');
+      var config = new Configuration({ apiKey:'LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw', serverUrl:'http://localhost:50000'});
       expect(config.plugins).not.toBe(null);
       while(config.plugins.length > 0) {
         config.removePlugin(config.plugins[0]);
@@ -51,7 +75,7 @@ module Exceptionless {
     });
 
     it('should sort plugins by priority', () => {
-      var config = new Configuration('LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw');
+      var config = new Configuration({ apiKey:'LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw', serverUrl:'http://localhost:50000'});
       expect(config.plugins).not.toBe(null);
       while(config.plugins.length > 0) {
         config.removePlugin(config.plugins[0]);

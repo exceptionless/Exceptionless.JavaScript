@@ -1,7 +1,7 @@
 /// <reference path="../typings/tsd.d.ts" />
 
 /// <reference path="configuration/Configuration.ts" />
-/// <reference path="configuration/IConfigurationOptions.ts" />
+/// <reference path="configuration/IConfigurationSettings.ts" />
 /// <reference path="lastReferenceIdManager/ILastReferenceIdManager.ts" />
 /// <reference path="lastReferenceIdManager/InMemoryLastReferenceIdManager.ts" />
 /// <reference path="logging/ConsoleLog.ts" />
