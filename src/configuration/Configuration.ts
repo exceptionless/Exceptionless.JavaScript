@@ -1,25 +1,36 @@
 /// <reference path="../references.ts" />
 
 module Exceptionless {
-  export class Configuration {
+  export class Configuration implements IConfigurationSettings{
     private _apiKey:string;
     private _enabled:boolean = false;
     private _serverUrl:string = 'https://collector.exceptionless.io';
     private _plugins:IEventPlugin[] = [];
 
     public lastReferenceIdManager:ILastReferenceIdManager = new InMemoryLastReferenceIdManager();
-    public log:ILog = new NullLog();
-    public submissionBatchSize = 50;
-    public submissionClient:ISubmissionClient = new DefaultSubmissionClient();
-    public storage:IStorage<any> = new InMemoryStorage<any>();
+    public log:ILog;
+    public submissionBatchSize;
+    public submissionClient:ISubmissionClient;
+    public storage:IStorage<any>;
     public queue:IEventQueue;
     public defaultTags:string[] = [];
     public defaultData:Object = {};
 
-    constructor(apiKey:string, serverUrl?:string) {
-      this.apiKey = apiKey;
-      this.serverUrl = serverUrl;
-      this.queue = new DefaultEventQueue(this);
+    constructor(settings?:IConfigurationSettings) {
+      function inject(fn:any) {
+        return typeof fn === 'function' ? fn(this) : fn;
+      }
+
+      settings = Utils.merge(Configuration.defaults, settings);
+
+      this.apiKey = settings.apiKey;
+      this.serverUrl = settings.serverUrl;
+      this.lastReferenceIdManager = inject(settings.lastReferenceIdManager) || new InMemoryLastReferenceIdManager();
+      this.log = inject(settings.log) || new NullLog();
+      this.submissionBatchSize = inject(settings.submissionBatchSize) || 50;
+      this.submissionClient = inject(settings.submissionClient) || new DefaultSubmissionClient();
+      this.storage = inject(settings.storage) || new InMemoryStorage<any>();
+      this.queue = inject(settings.queue) || new DefaultEventQueue(this);
 
       EventPluginManager.addDefaultPlugins(this);
     }
@@ -29,7 +40,7 @@ module Exceptionless {
     }
 
     public set apiKey(value:string) {
-      this._apiKey = value;
+      this._apiKey = value || null;
       this._enabled = !!value && value.length > 0;
     }
 
@@ -102,6 +113,15 @@ module Exceptionless {
 
     public useReferenceIds(): void {
       this.addPlugin(new ReferenceIdPlugin());
+    }
+
+    private static _defaultSettings:IConfigurationSettings = null;
+    public static get defaults() {
+      if(Configuration._defaultSettings === null) {
+        Configuration._defaultSettings = {};
+      }
+
+      return Configuration._defaultSettings;
     }
   }
 }

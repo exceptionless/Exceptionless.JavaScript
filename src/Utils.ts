@@ -25,6 +25,24 @@ module Exceptionless {
       return s4() + s4() + '-' + s4() + '-' + s4() + '-' + s4() + '-' + s4() + s4() + s4();
     }
 
+    public static merge(defaultValues:any, values:any) {
+      var result = {};
+
+      for (var key in defaultValues || {}) {
+        if (!!defaultValues[key]) {
+          result[key] = defaultValues[key];
+        }
+      }
+
+      for (var key in values || {}) {
+        if (!!values[key]) {
+          result[key] = values[key];
+        }
+      }
+
+      return result;
+    }
+
     public static parseVersion(source:string): string {
       if (!source) {
         return null;
