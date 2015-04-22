@@ -16,7 +16,7 @@ module.exports = function (config) {
       'node_modules/stacktrace-gps/dist/stacktrace-gps.js',
       'node_modules/stacktrace-js/dist/stacktrace.js',
 
-      'src/*.ts'
+      'src/**/*.ts'
     ],
     exclude: [],
     preprocessors: {

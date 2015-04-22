@@ -6,22 +6,22 @@ var rename = require('gulp-rename');
 var rimraf = require('rimraf');
 var sourcemaps = require('gulp-sourcemaps');
 var ts = require('gulp-typescript');
+var tsProject = require('tsproject');
 var uglify = require('gulp-uglify');
-
-var tsProject = ts.createProject({
-  declarationFiles: true,
-  module: 'AMD',
-  removeComments: true,
-  sortOutput: true,
-  sourceMap: true,
-  target: 'ES5'
-});
 
 gulp.task('clean', function (cb) {
   rimraf('./dist', cb);
 });
 
 gulp.task('scripts', function() {
+  function fixFilePath(files){
+    for (var index = 0; index < files.length; index++) {
+      files[index] = 'src/' + files[index];
+    }
+
+    return files;
+  }
+
   var files = [
     'node_modules/es6-promise/dist/es6-promise.js',
     'node_modules/stackframe/dist/stackframe.js',
@@ -31,7 +31,13 @@ gulp.task('scripts', function() {
     'node_modules/stacktrace-js/dist/stacktrace.js'
   ];
 
-  var tsResult = gulp.src(['src/exceptionless.ts']).pipe(ts(tsProject));
+  var tsconfig = require('./src/tsconfig.json');
+  var tsResult = gulp.src(fixFilePath(tsconfig.files))
+    .pipe(ts(tsconfig.compilerOptions));
+
+  //var tsResult = tsProject.src('./src');
+
+  // TODO: Look into using https://www.npmjs.com/package/gulp-wrap-umd
   return merge2(
     tsResult.dts.pipe(gulp.dest('dist')),
     merge2(gulp.src(files), tsResult.js)
@@ -52,7 +58,7 @@ gulp.task('watch', ['scripts'], function() {
 gulp.task('build', ['clean', 'scripts']);
 
 gulp.task('test', [], function() {
-  return gulp.src(['src/*-spec.ts'])
+  return gulp.src(['src/**/*-spec.ts'])
     .pipe(karma({
       configFile: 'karma.conf.js',
       action: 'run'
