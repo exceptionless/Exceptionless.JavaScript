@@ -31,24 +31,16 @@ gulp.task('scripts', function() {
     'node_modules/stacktrace-js/dist/stacktrace.js'
   ];
 
-  var tsconfig = require('./src/tsconfig.json');
-  var tsResult = gulp.src(fixFilePath(tsconfig.files))
-    .pipe(ts(tsconfig.compilerOptions));
-
-  //var tsResult = tsProject.src('./src');
-
   // TODO: Look into using https://www.npmjs.com/package/gulp-wrap-umd
-  return merge2(
-    tsResult.dts.pipe(gulp.dest('dist')),
-    merge2(gulp.src(files), tsResult.js)
-      .pipe(sourcemaps.init())
-      .pipe(concat('exceptionless.js'))
-      .pipe(gulp.dest('dist'))
-      .pipe(rename('exceptionless.min.js'))
-      .pipe(uglify())
-      .pipe(sourcemaps.write('.'))
-      .pipe(gulp.dest('dist'))
-  );
+  var tsResult = tsProject.src('./src');
+  return merge2(gulp.src(files), tsResult)
+    .pipe(sourcemaps.init())
+    .pipe(concat('exceptionless.js'))
+    .pipe(gulp.dest('dist'))
+    .pipe(rename('exceptionless.min.js'))
+    .pipe(uglify())
+    .pipe(sourcemaps.write('.'))
+    .pipe(gulp.dest('dist'));
 });
 
 gulp.task('watch', ['scripts'], function() {

@@ -1,15 +1,14 @@
 {
   "compilerOptions": {
-    "declarationFiles": true,
     "module": "amd",
+    "out": "../../dist/exceptionless.js",
     "removeComments": true,
-    "sortOutput": true,
     "sourceMap": true,
     "target": "es5"
   },
   "files": [
     "configuration/Configuration.ts",
-    "configuration/IConfigurationOptions.ts",
+    "configuration/IConfigurationSettings.ts",
     "lastReferenceIdManager/ILastReferenceIdManager.ts",
     "lastReferenceIdManager/InMemoryLastReferenceIdManager.ts",
     "logging/ConsoleLog.ts",
