@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "declaration": true,
     "module": "amd",
     "out": "../../dist/exceptionless.js",
     "removeComments": true,
