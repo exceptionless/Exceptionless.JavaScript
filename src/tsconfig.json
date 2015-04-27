@@ -1,8 +1,7 @@
 {
   "compilerOptions": {
     "declaration": true,
-    "module": "amd",
-    "out": "../../dist/exceptionless.js",
+    "module": "commonjs",
     "removeComments": true,
     "sourceMap": true,
     "target": "es5"
@@ -46,5 +45,19 @@
     "EventBuilder.ts",
     "ExceptionlessClient.ts",
     "Utils.ts"
-  ]
+  ],
+  "bundles": {
+    "exceptionless.es5": {
+      "source": "ExceptionlessClient.ts",
+      "options": {
+        "target": "es5"
+      }
+    },
+    "exceptionless.es6": {
+      "source": "ExceptionlessClient.ts",
+      "options": {
+        "target": "es6"
+      }
+    }
+  }
 }

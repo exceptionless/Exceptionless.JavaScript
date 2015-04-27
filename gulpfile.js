@@ -13,7 +13,7 @@ gulp.task('clean', function (cb) {
 });
 
 gulp.task('typescript', function() {
-  tsProject.src('./src').pipe(gulp.dest('./dist'));
+  tsProject.src('./src', { logLevel: 0 }).pipe(gulp.dest('./dist'));
 });
 
 gulp.task('scripts', ['typescript'], function() {
