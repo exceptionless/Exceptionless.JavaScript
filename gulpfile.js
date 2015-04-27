@@ -12,11 +12,11 @@ gulp.task('clean', function () {
   del.sync(['dist'], { force: true });
 });
 
-gulp.task('typescript-es5', function() {
-    return tsProject.src('src/tsconfig-es5.json', {logLevel: 5}).pipe(gulp.dest('dist/temp'));
+gulp.task('typescript.es5', function() {
+    return tsProject.src('src/tsconfig-es5.json').pipe(gulp.dest('dist/temp'));
 });
 
-gulp.task('exceptionless-es5', ['typescript-es5'], function() {
+gulp.task('exceptionless.es5', ['typescript.es5'], function() {
   gulp.src('dist/temp/exceptionless.es5.d.ts')
     .pipe(replace('/// <reference path="typings/tsd.d.ts" />\n', ''))
     .pipe(gulp.dest('dist'));
@@ -49,7 +49,7 @@ gulp.task('watch', ['build'], function() {
   gulp.watch('*.ts', ['build']);
 });
 
-gulp.task('build', ['clean', 'exceptionless-es5'], function() {
+gulp.task('build', ['clean', 'exceptionless.es5'], function() {
   del.sync(['dist/temp'], { force: true });
 });
 
