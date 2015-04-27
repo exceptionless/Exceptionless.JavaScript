@@ -23,7 +23,7 @@
     "error-stack-parser": "^1.2.0",
     "es5-shim": "^4.1.1",
     "es6-promise": "^2.1.1",
-    "es6-shim": "^0.28.1",
+    "es6-shim": "^0.30.0",
     "gulp": "^3.8.11",
     "gulp-concat": "^2.5.2",
     "gulp-karma": "0.0.4",
@@ -42,7 +42,7 @@
     "stackframe": "^0.2.2",
     "stacktrace-gps": "^2.1.2",
     "stacktrace-js": "git://github.com/stacktracejs/stacktrace.js.git",
-    "tsproject": "^0.7.2",
+    "tsproject": "^0.7.6",
     "typescript": "1.5.0-alpha"
   },
   "dependencies": {}
