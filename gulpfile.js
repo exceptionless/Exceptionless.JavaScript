@@ -50,6 +50,7 @@ gulp.task('watch', ['build'], function() {
 });
 
 gulp.task('build', ['clean', 'exceptionless-es5'], function() {
+  del.sync(['dist/temp']);
 });
 
 gulp.task('test', [], function() {
