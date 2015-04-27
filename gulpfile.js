@@ -1,20 +1,19 @@
-var gulp = require('gulp');
 var concat = require('gulp-concat');
+var del = require('del');
+var gulp = require('gulp');
 var karma = require('gulp-karma');
 var rename = require('gulp-rename');
 var replace = require('gulp-replace');
-var rimraf = require('rimraf');
 var sourcemaps = require('gulp-sourcemaps');
 var tsProject = require('tsproject');
 var uglify = require('gulp-uglify');
 
-gulp.task('clean', function (cb) {
-  rimraf('dist', cb);
+gulp.task('clean', function () {
+  del.sync(['dist']);
 });
 
-gulp.task('typescript-es5', function() {
-  tsProject.src('src/tsconfig-es5.json')
-    .pipe(gulp.dest('dist/temp'));
+gulp.task('typescript-es5', function(cb) {
+  tsProject.src('src/tsconfig-es5.json').pipe(gulp.dest('dist/temp'));
 });
 
 gulp.task('exceptionless-es5', ['typescript-es5'], function() {
@@ -50,8 +49,7 @@ gulp.task('watch', ['build'], function() {
   gulp.watch('*.ts', ['build']);
 });
 
-gulp.task('build', ['clean', 'exceptionless-es5'], function(cb) {
-  rimraf('dist/temp', cb);
+gulp.task('build', ['clean', 'exceptionless-es5'], function() {
 });
 
 gulp.task('test', [], function() {
