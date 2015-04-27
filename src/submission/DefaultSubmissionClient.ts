@@ -123,3 +123,5 @@ module Exceptionless {
     }
   }
 }
+
+declare var XDomainRequest: { new (): XDomainRequest; prototype: XDomainRequest; create(): XDomainRequest; };

@@ -15,8 +15,8 @@ module.exports = function (config) {
       'node_modules/stack-generator/dist/stack-generator.js',
       'node_modules/stacktrace-gps/dist/stacktrace-gps.js',
       'node_modules/stacktrace-js/dist/stacktrace.js',
-
-      'src/**/*.ts'
+      'typings/tsd.d.ts',
+      '**/*.ts'
     ],
     exclude: [],
     preprocessors: {
@@ -25,8 +25,7 @@ module.exports = function (config) {
     typescriptPreprocessor: {
       options: {
         sourceMap: true,
-        target: 'ES5',
-        noResolve: false
+        target: 'ES5'
       },
       transformPath: function(path) {
         return path.replace(/\.ts$/, '.js');
