@@ -9,11 +9,11 @@ var tsProject = require('tsproject');
 var uglify = require('gulp-uglify');
 
 gulp.task('clean', function () {
-  del.sync(['dist']);
+  del.sync(['dist'], { force: true });
 });
 
-gulp.task('typescript-es5', function(cb) {
-  tsProject.src('src/tsconfig-es5.json').pipe(gulp.dest('dist/temp'));
+gulp.task('typescript-es5', function() {
+    return tsProject.src('src/tsconfig-es5.json', {logLevel: 5}).pipe(gulp.dest('dist/temp'));
 });
 
 gulp.task('exceptionless-es5', ['typescript-es5'], function() {
@@ -50,7 +50,7 @@ gulp.task('watch', ['build'], function() {
 });
 
 gulp.task('build', ['clean', 'exceptionless-es5'], function() {
-  del.sync(['dist/temp']);
+  del.sync(['dist/temp'], { force: true });
 });
 
 gulp.task('test', [], function() {
