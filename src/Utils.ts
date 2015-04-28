@@ -79,5 +79,22 @@ module Exceptionless {
     public static randomNumber(): number {
       return Math.floor(Math.random() * 9007199254740992);
     }
+
+    public static stringify(data:any): string {
+      var cache = [];
+
+      return JSON.stringify(data, function(key, value) {
+        if (typeof value === 'object' && value !== null) {
+          if (cache.indexOf(value) !== -1) {
+            // Circular reference found, discard key
+            return;
+          }
+
+          cache.push(value);
+        }
+
+        return value;
+      });
+    }
   }
 }

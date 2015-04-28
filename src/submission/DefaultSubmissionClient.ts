@@ -4,7 +4,7 @@ module Exceptionless {
   export class DefaultSubmissionClient implements ISubmissionClient {
     public submit(events:IEvent[], config:Configuration): Promise<SubmissionResponse> {
       var url = config.serverUrl + '/api/v2/events?access_token=' + encodeURIComponent(config.apiKey);
-      return this.sendRequest('POST', url, JSON.stringify(events)).then(
+      return this.sendRequest('POST', url, Utils.stringify(events)).then(
           xhr => { return new SubmissionResponse(xhr.status, this.getResponseMessage(xhr)); },
           xhr => { return new SubmissionResponse(xhr.status || 500, this.getResponseMessage(xhr)); }
       );
@@ -12,7 +12,7 @@ module Exceptionless {
 
     public submitDescription(referenceId:string, description:IUserDescription, config:Configuration): Promise<SubmissionResponse> {
       var url = config.serverUrl + '/api/v2/events/by-ref/' + encodeURIComponent(referenceId) + '/user-description?access_token=' + encodeURIComponent(config.apiKey);
-      return this.sendRequest('POST', url, JSON.stringify(description)).then(
+      return this.sendRequest('POST', url, Utils.stringify(description)).then(
           xhr => { return new SubmissionResponse(xhr.status, this.getResponseMessage(xhr)); },
           xhr => { return new SubmissionResponse(xhr.status || 500, this.getResponseMessage(xhr)); }
       );
