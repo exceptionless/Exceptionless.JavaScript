@@ -1,4 +1,4 @@
-import { Utils } from './Utils';
+import { Utils } from 'Utils';
 
 describe('Utils', () => {
   it('should stringify circular reference', () => {

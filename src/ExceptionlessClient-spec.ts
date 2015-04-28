@@ -1,4 +1,4 @@
-import { ExceptionlessClient } from './ExceptionlessClient';
+import { ExceptionlessClient } from 'ExceptionlessClient';
 
 describe('ExceptionlessClient', () => {
   it('should use event reference ids', (done) => {

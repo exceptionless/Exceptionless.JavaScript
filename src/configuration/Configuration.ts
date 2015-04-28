@@ -1,4 +1,4 @@
-import { IConfigurationSettings } from './IConfigurationSettings';
+import { IConfigurationSettings } from 'IConfigurationSettings';
 import { ILastReferenceIdManager } from '../lastReferenceIdManager/ILastReferenceIdManager';
 import { InMemoryLastReferenceIdManager } from '../lastReferenceIdManager/InMemoryLastReferenceIdManager';
 import { ILog } from '../logging/ILog';
@@ -12,7 +12,6 @@ import { DefaultEventQueue } from '../queue/DefaultEventQueue';
 import { IStorage } from '../storage/IStorage';
 import { InMemoryStorage } from '../storage/InMemoryStorage';
 import { ISubmissionClient } from '../submission/ISubmissionClient';
-import { DefaultSubmissionClient } from '../submission/DefaultSubmissionClient';
 import { Utils } from '../Utils';
 
 export class Configuration implements IConfigurationSettings {
@@ -42,7 +41,7 @@ export class Configuration implements IConfigurationSettings {
     this.lastReferenceIdManager = inject(settings.lastReferenceIdManager) || new InMemoryLastReferenceIdManager();
     this.log = inject(settings.log) || new NullLog();
     this.submissionBatchSize = inject(settings.submissionBatchSize) || 50;
-    this.submissionClient = inject(settings.submissionClient) || new DefaultSubmissionClient();
+    this.submissionClient = inject(settings.submissionClient);
     this.storage = inject(settings.storage) || new InMemoryStorage<any>();
     this.queue = inject(settings.queue) || new DefaultEventQueue(this);
 

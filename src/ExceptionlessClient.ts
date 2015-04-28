@@ -162,41 +162,6 @@ export class ExceptionlessClient {
     return this.config.lastReferenceIdManager.getLast();
   }
 
-  public register(): void {
-    var oldOnErrorHandler:any = window.onerror;
-    (<any>window).onerror = (message:string, filename:string, lineno:number, colno:number, error:Error) => {
-      if(error !== null && typeof error === 'object') {
-        this.submitUnhandledException(error);
-      } else {
-        // Only message, filename and lineno work here.
-        var e:IError = { message: message, stack_trace: [{ file_name: filename, line_number: lineno, column: colno }]};
-        this.createUnhandledException(new Error(message)).setMessage(message).setProperty('@error', e).submit();
-      }
-
-      if (oldOnErrorHandler) {
-        try {
-          return oldOnErrorHandler(message, filename, lineno, colno, error);
-        } catch(e) {
-          this.config.log.error('An error occurred while calling previous error handler: ' + e.message);
-        }
-      }
-
-      return false;
-    }
-  }
-
-  //private getSettingsFromScriptTag(): any {
-  //  var scripts = document.getElementsByTagName('script');
-
-  //  for (var index = 0; index < scripts.length; index++) {
-  //    if (scripts[index].src && scripts[index].src.indexOf('/exceptionless') > -1) {
-  //      return Utils.parseQueryString(scripts[index].src.split('?').pop());
-  //    }
-  //  }
-
-  //  return null;
-  //}
-
   private static _instance:ExceptionlessClient = null;
   public static get default() {
     if(ExceptionlessClient._instance === null) {
