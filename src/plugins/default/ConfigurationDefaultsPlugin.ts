@@ -1,37 +1,36 @@
-/// <reference path="../../references.ts" />
+import { IEventPlugin } from '../IEventPlugin';
+import { EventPluginContext } from '../EventPluginContext';
 
-module Exceptionless {
-  export class ConfigurationDefaultsPlugin implements IEventPlugin {
-    public priority:number = 10;
-    public name:string = 'ConfigurationDefaultsPlugin';
+export class ConfigurationDefaultsPlugin implements IEventPlugin {
+  public priority:number = 10;
+  public name:string = 'ConfigurationDefaultsPlugin';
 
-    run(context:Exceptionless.EventPluginContext): Promise<any> {
-      if (!!context.client.config.defaultTags) {
-        if (!context.event.tags) {
-          context.event.tags = [];
-        }
-
-        for (var index = 0; index < context.client.config.defaultTags.length; index++) {
-          var tag = context.client.config.defaultTags[index];
-          if (tag && context.client.config.defaultTags.indexOf(tag) < 0) {
-            context.event.tags.push(tag)
-          }
-        }
+  run(context:EventPluginContext): Promise<any> {
+    if (!!context.client.config.defaultTags) {
+      if (!context.event.tags) {
+        context.event.tags = [];
       }
 
-      if (!!context.client.config.defaultData) {
-        if (!context.event.data) {
-          context.event.data = {};
-        }
-
-        for (var key in context.client.config.defaultData) {
-          if (!!context.client.config.defaultData[key]) {
-            context.event.data[key] = context.client.config.defaultData[key];
-          }
+      for (var index = 0; index < context.client.config.defaultTags.length; index++) {
+        var tag = context.client.config.defaultTags[index];
+        if (tag && context.client.config.defaultTags.indexOf(tag) < 0) {
+          context.event.tags.push(tag)
         }
       }
-
-      return Promise.resolve();
     }
+
+    if (!!context.client.config.defaultData) {
+      if (!context.event.data) {
+        context.event.data = {};
+      }
+
+      for (var key in context.client.config.defaultData) {
+        if (!!context.client.config.defaultData[key]) {
+          context.event.data[key] = context.client.config.defaultData[key];
+        }
+      }
+    }
+
+    return Promise.resolve();
   }
 }

@@ -1,13 +1,12 @@
-/// <reference path="../../references.ts" />
+import { IEventPlugin } from '../IEventPlugin';
+import { EventPluginContext } from '../EventPluginContext';
 
-module Exceptionless {
-  export class DuplicateCheckerPlugin implements IEventPlugin {
-    public priority:number = 50;
-    public name:string = 'DuplicateCheckerPlugin';
+export class DuplicateCheckerPlugin implements IEventPlugin {
+  public priority:number = 50;
+  public name:string = 'DuplicateCheckerPlugin';
 
-    run(context:Exceptionless.EventPluginContext):Promise<any> {
-      // TODO: Implement
-      return Promise.resolve();
-    }
+  run(context:EventPluginContext):Promise<any> {
+    // TODO: Implement
+    return Promise.resolve();
   }
 }

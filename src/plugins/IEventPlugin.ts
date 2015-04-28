@@ -1,9 +1,8 @@
-/// <reference path="../references.ts" />
+import { IEventPlugin } from './IEventPlugin';
+import { EventPluginContext } from './EventPluginContext';
 
-module Exceptionless {
-  export interface IEventPlugin {
-    priority?:number;
-    name?:string;
-    run(context:EventPluginContext): Promise<any>;
-  }
+export interface IEventPlugin {
+  priority?:number;
+  name?:string;
+  run(context:EventPluginContext): Promise<any>;
 }

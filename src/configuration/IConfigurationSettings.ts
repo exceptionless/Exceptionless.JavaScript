@@ -1,14 +1,16 @@
-/// <reference path="../references.ts" />
+import { ILastReferenceIdManager } from '../lastReferenceIdManager/ILastReferenceIdManager';
+import { ILog } from '../logging/ILog';
+import { IEventQueue } from '../queue/IEventQueue';
+import { IStorage } from '../storage/IStorage';
+import { ISubmissionClient } from '../submission/ISubmissionClient';
 
-module Exceptionless {
-  export interface IConfigurationSettings {
-    apiKey?:string;
-    serverUrl?:string;
-    lastReferenceIdManager?:ILastReferenceIdManager;
-    log?:ILog;
-    submissionBatchSize?:number;
-    submissionClient?:ISubmissionClient;
-    storage?:IStorage<any>;
-    queue?:IEventQueue;
-  }
+export interface IConfigurationSettings {
+  apiKey?:string;
+  serverUrl?:string;
+  lastReferenceIdManager?:ILastReferenceIdManager;
+  log?:ILog;
+  submissionBatchSize?:number;
+  submissionClient?:ISubmissionClient;
+  storage?:IStorage<any>;
+  queue?:IEventQueue;
 }

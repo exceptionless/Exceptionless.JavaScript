@@ -1,7 +1,6 @@
-/// <reference path="../references.ts" />
+import { IInnerError } from './IInnerError';
+import { IModule } from './IModule';
 
-module Exceptionless {
-  export interface IError extends IInnerError {
-    modules?:IModule[]
-  }
+export interface IError extends IInnerError {
+  modules?:IModule[]
 }

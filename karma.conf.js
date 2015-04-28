@@ -24,6 +24,8 @@ module.exports = function (config) {
     },
     typescriptPreprocessor: {
       options: {
+        module: 'commonjs',
+        noResolve: true,
         sourceMap: true,
         target: 'ES5'
       },

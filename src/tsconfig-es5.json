@@ -2,7 +2,6 @@
   "compilerOptions": {
     "declaration": true,
     "module": "commonjs",
-    "noResolve": true,
     "out": "exceptionless.es5.js",
     "removeComments": true,
     "sourceMap": true,

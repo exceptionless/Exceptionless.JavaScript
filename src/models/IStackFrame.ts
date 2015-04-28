@@ -1,9 +1,7 @@
-/// <reference path="../references.ts" />
+import { IMethod } from './IMethod';
 
-module Exceptionless {
-  export interface IStackFrame extends IMethod {
-    file_name:string;
-    line_number:number;
-    column:number;
-  }
+export interface IStackFrame extends IMethod {
+  file_name:string;
+  line_number:number;
+  column:number;
 }

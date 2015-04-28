@@ -1,16 +1,12 @@
-/// <reference path="../references.ts" />
-
-module Exceptionless {
-  export interface IEvent {
-    type?:string;
-    source?:string;
-    date?:Date;
-    tags?:string[];
-    message?:string;
-    geo?:string;
-    value?:number;
-    data?:any;
-    reference_id?:string;
-    session_id?:string;
-  }
+export interface IEvent {
+  type?:string;
+  source?:string;
+  date?:Date;
+  tags?:string[];
+  message?:string;
+  geo?:string;
+  value?:number;
+  data?:any;
+  reference_id?:string;
+  session_id?:string;
 }

@@ -1,9 +1,7 @@
-/// <reference path="../references.ts" />
+import { IEvent } from '../models/IEvent';
 
-module Exceptionless {
-  export interface IEventQueue {
-    enqueue(event:IEvent);
-    process();
-    suspendProcessing(durationInMinutes?:number, discardFutureQueuedItems?:boolean, clearQueue?:boolean);
-  }
+export interface IEventQueue {
+  enqueue(event:IEvent);
+  process();
+  suspendProcessing(durationInMinutes?:number, discardFutureQueuedItems?:boolean, clearQueue?:boolean);
 }

@@ -1,15 +1,13 @@
-/// <reference path="../references.ts" />
+import { IParameter } from './IParameter';
 
-module Exceptionless {
-  export interface IMethod {
-    data?:any;
-    generic_arguments?:string[];
-    parameters?:IParameter[];
+export interface IMethod {
+  data?:any;
+  generic_arguments?:string[];
+  parameters?:IParameter[];
 
-    is_signature_target?:boolean;
-    declaring_namespace?:string;
-    declaring_type?:string;
-    name?:string;
-    module_id?:number;
-  }
+  is_signature_target?:boolean;
+  declaring_namespace?:string;
+  declaring_type?:string;
+  name?:string;
+  module_id?:number;
 }

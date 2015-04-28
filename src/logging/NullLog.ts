@@ -1,9 +1,7 @@
-/// <reference path="../references.ts" />
+import { ILog } from './ILog';
 
-module Exceptionless {
-  export class NullLog implements ILog {
-    public info(message) {}
-    public warn(message) {}
-    public error(message) {}
-  }
+export class NullLog implements ILog {
+  public info(message) {}
+  public warn(message) {}
+  public error(message) {}
 }
