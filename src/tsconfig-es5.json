@@ -2,7 +2,6 @@
   "compilerOptions": {
     "declaration": true,
     "module": "commonjs",
-    "out": "exceptionless.es5.js",
     "removeComments": true,
     "sourceMap": true,
     "target": "es5"
@@ -47,5 +46,10 @@
     "EventBuilder.ts",
     "ExceptionlessClient.ts",
     "Utils.ts"
-  ]
+  ],
+  "bundles": {
+    "exceptionless.es5": {
+      "source": "ExceptionlessClient.ts"
+    }
+  }
 }
