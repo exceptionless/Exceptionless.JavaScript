@@ -1,0 +1,14 @@
+{
+  "name": "exapp",
+  "version": "1.0.0",
+  "description": "Exceptionless Sample Node App",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "Apache",
+  "dependencies": {
+    "express": "^4.12.3"
+  }
+}
