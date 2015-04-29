@@ -46,5 +46,12 @@
     "EventBuilder.ts",
     "ExceptionlessClient.ts",
     "Utils.ts"
-  ]
+  ],
+  "bundles": {
+    "exceptionless.es5": {
+      "files": [
+        "ExceptionlessClient.ts"
+      ]
+    }
+  }
 }

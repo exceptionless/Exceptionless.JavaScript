@@ -49,7 +49,10 @@
   ],
   "bundles": {
     "exceptionless.es5": {
-      "source": "ExceptionlessClient.ts"
+      "files": [
+        "../typings/es6-promise/es6-promise.d.ts",
+        "ExceptionlessClient.ts"
+      ]
     }
   }
 }

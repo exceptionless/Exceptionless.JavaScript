@@ -43,7 +43,7 @@
     "stackframe": "^0.2.2",
     "stacktrace-gps": "^2.1.2",
     "stacktrace-js": "git://github.com/stacktracejs/stacktrace.js.git",
-    "tsproject": "^0.7.9",
+    "tsproject": "^0.8.0",
     "typescript": "1.5.0-alpha"
   },
   "dependencies": {}
