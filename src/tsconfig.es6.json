@@ -1,8 +1,6 @@
 {
   "compilerOptions": {
     "declaration": true,
-    "noResolve": true,
-    "out": "exceptionless.es6.js",
     "removeComments": true,
     "sourceMap": true,
     "target": "es6"
@@ -44,13 +42,14 @@
     "submission/SettingsResponse.ts",
     "submission/SubmissionResponse.ts",
     "EventBuilder.ts",
+    "Exceptionless.ts",
     "ExceptionlessClient.ts",
     "Utils.ts"
   ],
   "bundles": {
-    "exceptionless.es5": {
+    "exceptionless.es6": {
       "files": [
-        "ExceptionlessClient.ts"
+        "Exceptionless.ts"
       ]
     }
   }

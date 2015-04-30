@@ -1609,129 +1609,7 @@
     };
 }));
 
-/// <reference path="../references.ts" />
-var Exceptionless;
-(function (Exceptionless) {
-    var Configuration = (function () {
-        function Configuration(settings) {
-            this._enabled = false;
-            this._serverUrl = 'https://collector.exceptionless.io';
-            this._plugins = [];
-            this.lastReferenceIdManager = new Exceptionless.InMemoryLastReferenceIdManager();
-            this.defaultTags = [];
-            this.defaultData = {};
-            function inject(fn) {
-                return typeof fn === 'function' ? fn(this) : fn;
-            }
-            settings = Exceptionless.Utils.merge(Configuration.defaults, settings);
-            this.apiKey = settings.apiKey;
-            this.serverUrl = settings.serverUrl;
-            this.lastReferenceIdManager = inject(settings.lastReferenceIdManager) || new Exceptionless.InMemoryLastReferenceIdManager();
-            this.log = inject(settings.log) || new Exceptionless.NullLog();
-            this.submissionBatchSize = inject(settings.submissionBatchSize) || 50;
-            this.submissionClient = inject(settings.submissionClient) || new Exceptionless.DefaultSubmissionClient();
-            this.storage = inject(settings.storage) || new Exceptionless.InMemoryStorage();
-            this.queue = inject(settings.queue) || new Exceptionless.DefaultEventQueue(this);
-            Exceptionless.EventPluginManager.addDefaultPlugins(this);
-        }
-        Object.defineProperty(Configuration.prototype, "apiKey", {
-            get: function () {
-                return this._apiKey;
-            },
-            set: function (value) {
-                this._apiKey = value || null;
-                this._enabled = !!value && value.length > 0;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(Configuration.prototype, "serverUrl", {
-            get: function () {
-                return this._serverUrl;
-            },
-            set: function (value) {
-                if (!!value && value.length > 0) {
-                    this._serverUrl = value;
-                }
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(Configuration.prototype, "enabled", {
-            get: function () {
-                return this._enabled;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(Configuration.prototype, "plugins", {
-            get: function () {
-                return this._plugins.sort(function (p1, p2) {
-                    return (p1.priority < p2.priority) ? -1 : (p1.priority > p2.priority) ? 1 : 0;
-                });
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Configuration.prototype.addPlugin = function (pluginOrName, priority, pluginAction) {
-            var plugin = !!pluginAction ? { name: pluginOrName, priority: priority, run: pluginAction } : pluginOrName;
-            if (!plugin || !plugin.run) {
-                this.log.error('Unable to add plugin: No run method was found.');
-                return;
-            }
-            if (!plugin.name) {
-                plugin.name = Exceptionless.Utils.guid();
-            }
-            if (!plugin.priority) {
-                plugin.priority = 0;
-            }
-            var pluginExists = false;
-            for (var index = 0; index < this._plugins.length; index++) {
-                if (this._plugins[index].name === plugin.name) {
-                    pluginExists = true;
-                    break;
-                }
-            }
-            if (!pluginExists) {
-                this._plugins.push(plugin);
-            }
-        };
-        Configuration.prototype.removePlugin = function (pluginOrName) {
-            var name = typeof pluginOrName === 'string' ? pluginOrName : pluginOrName.name;
-            if (!name) {
-                this.log.error('Unable to remove plugin: No plugin name was specified.');
-                return;
-            }
-            for (var index = 0; index < this._plugins.length; index++) {
-                if (this._plugins[index].name === name) {
-                    this._plugins.splice(index, 1);
-                    break;
-                }
-            }
-        };
-        Configuration.prototype.useReferenceIds = function () {
-            this.addPlugin(new Exceptionless.ReferenceIdPlugin());
-        };
-        Object.defineProperty(Configuration, "defaults", {
-            get: function () {
-                if (Configuration._defaultSettings === null) {
-                    Configuration._defaultSettings = {};
-                }
-                return Configuration._defaultSettings;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Configuration._defaultSettings = null;
-        return Configuration;
-    })();
-    Exceptionless.Configuration = Configuration;
-})(Exceptionless || (Exceptionless = {}));
-/// <reference path="../references.ts" />
-/// <reference path="../references.ts" />
-/// <reference path="../references.ts" />
-var Exceptionless;
-(function (Exceptionless) {
+define(["require", "exports"], function (require, exports) {
     var InMemoryLastReferenceIdManager = (function () {
         function InMemoryLastReferenceIdManager() {
             this._lastReferenceId = null;
@@ -1747,37 +1625,7 @@ var Exceptionless;
         };
         return InMemoryLastReferenceIdManager;
     })();
-    Exceptionless.InMemoryLastReferenceIdManager = InMemoryLastReferenceIdManager;
-})(Exceptionless || (Exceptionless = {}));
-/// <reference path="../references.ts" />
-var Exceptionless;
-(function (Exceptionless) {
-    var ConsoleLog = (function () {
-        function ConsoleLog() {
-        }
-        ConsoleLog.prototype.info = function (message) {
-            if (console && console.log) {
-                console.log('[INFO] Exceptionless:' + message);
-            }
-        };
-        ConsoleLog.prototype.warn = function (message) {
-            if (console && console.log) {
-                console.log('[Warn] Exceptionless:' + message);
-            }
-        };
-        ConsoleLog.prototype.error = function (message) {
-            if (console && console.log) {
-                console.log('[Error] Exceptionless:' + message);
-            }
-        };
-        return ConsoleLog;
-    })();
-    Exceptionless.ConsoleLog = ConsoleLog;
-})(Exceptionless || (Exceptionless = {}));
-/// <reference path="../references.ts" />
-/// <reference path="../references.ts" />
-var Exceptionless;
-(function (Exceptionless) {
+    exports.InMemoryLastReferenceIdManager = InMemoryLastReferenceIdManager;
     var NullLog = (function () {
         function NullLog() {
         }
@@ -1786,71 +1634,13 @@ var Exceptionless;
         NullLog.prototype.error = function (message) { };
         return NullLog;
     })();
-    Exceptionless.NullLog = NullLog;
-})(Exceptionless || (Exceptionless = {}));
-/// <reference path="../references.ts" />
-/// <reference path="../references.ts" />
-/// <reference path="../references.ts" />
-/// <reference path="../references.ts" />
-/// <reference path="../references.ts" />
-/// <reference path="../references.ts" />
-/// <reference path="../references.ts" />
-/// <reference path="../references.ts" />
-/// <reference path="../references.ts" />
-/// <reference path="../references.ts" />
-var Exceptionless;
-(function (Exceptionless) {
-    var ContextData = (function () {
-        function ContextData() {
-        }
-        ContextData.prototype.setException = function (exception) {
-            this['@@_Exception'] = exception;
-        };
-        Object.defineProperty(ContextData.prototype, "hasException", {
-            get: function () {
-                return !!this['@@_Exception'];
-            },
-            enumerable: true,
-            configurable: true
-        });
-        ContextData.prototype.getException = function () {
-            if (!this.hasException) {
-                return null;
-            }
-            return this['@@_Exception'];
-        };
-        ContextData.prototype.markAsUnhandledError = function () {
-            this['@@_IsUnhandledError'] = true;
-        };
-        Object.defineProperty(ContextData.prototype, "isUnhandledError", {
-            get: function () {
-                return !!this['@@_IsUnhandledError'];
-            },
-            enumerable: true,
-            configurable: true
-        });
-        ContextData.prototype.setSubmissionMethod = function (method) {
-            this['@@_SubmissionMethod'] = method;
-        };
-        ContextData.prototype.getSubmissionMethod = function () {
-            if (!!this['@@_SubmissionMethod']) {
-                return null;
-            }
-            return this['@@_SubmissionMethod'];
-        };
-        return ContextData;
-    })();
-    Exceptionless.ContextData = ContextData;
-})(Exceptionless || (Exceptionless = {}));
-/// <reference path="../references.ts" />
-var Exceptionless;
-(function (Exceptionless) {
+    exports.NullLog = NullLog;
     var EventPluginContext = (function () {
         function EventPluginContext(client, event, contextData) {
             this.cancel = false;
             this.client = client;
             this.event = event;
-            this.contextData = contextData ? contextData : new Exceptionless.ContextData();
+            this.contextData = contextData ? contextData : new ContextData();
         }
         Object.defineProperty(EventPluginContext.prototype, "log", {
             get: function () {
@@ -1861,11 +1651,7 @@ var Exceptionless;
         });
         return EventPluginContext;
     })();
-    Exceptionless.EventPluginContext = EventPluginContext;
-})(Exceptionless || (Exceptionless = {}));
-/// <reference path="../references.ts" />
-var Exceptionless;
-(function (Exceptionless) {
+    exports.EventPluginContext = EventPluginContext;
     var EventPluginManager = (function () {
         function EventPluginManager() {
         }
@@ -1877,160 +1663,16 @@ var Exceptionless;
             }, Promise.resolve());
         };
         EventPluginManager.addDefaultPlugins = function (config) {
-            config.addPlugin(new Exceptionless.ConfigurationDefaultsPlugin());
-            config.addPlugin(new Exceptionless.ErrorPlugin());
-            config.addPlugin(new Exceptionless.DuplicateCheckerPlugin());
-            config.addPlugin(new Exceptionless.ModuleInfoPlugin());
-            config.addPlugin(new Exceptionless.RequestInfoPlugin());
-            config.addPlugin(new Exceptionless.SubmissionMethodPlugin());
+            config.addPlugin(new ConfigurationDefaultsPlugin());
+            config.addPlugin(new ErrorPlugin());
+            config.addPlugin(new DuplicateCheckerPlugin());
+            config.addPlugin(new ModuleInfoPlugin());
+            config.addPlugin(new RequestInfoPlugin());
+            config.addPlugin(new SubmissionMethodPlugin());
         };
         return EventPluginManager;
     })();
-    Exceptionless.EventPluginManager = EventPluginManager;
-})(Exceptionless || (Exceptionless = {}));
-/// <reference path="../references.ts" />
-/// <reference path="../../references.ts" />
-var Exceptionless;
-(function (Exceptionless) {
-    var ConfigurationDefaultsPlugin = (function () {
-        function ConfigurationDefaultsPlugin() {
-            this.priority = 10;
-            this.name = 'ConfigurationDefaultsPlugin';
-        }
-        ConfigurationDefaultsPlugin.prototype.run = function (context) {
-            if (!!context.client.config.defaultTags) {
-                if (!context.event.tags) {
-                    context.event.tags = [];
-                }
-                for (var index = 0; index < context.client.config.defaultTags.length; index++) {
-                    var tag = context.client.config.defaultTags[index];
-                    if (tag && context.client.config.defaultTags.indexOf(tag) < 0) {
-                        context.event.tags.push(tag);
-                    }
-                }
-            }
-            if (!!context.client.config.defaultData) {
-                if (!context.event.data) {
-                    context.event.data = {};
-                }
-                for (var key in context.client.config.defaultData) {
-                    if (!!context.client.config.defaultData[key]) {
-                        context.event.data[key] = context.client.config.defaultData[key];
-                    }
-                }
-            }
-            return Promise.resolve();
-        };
-        return ConfigurationDefaultsPlugin;
-    })();
-    Exceptionless.ConfigurationDefaultsPlugin = ConfigurationDefaultsPlugin;
-})(Exceptionless || (Exceptionless = {}));
-/// <reference path="../../references.ts" />
-var Exceptionless;
-(function (Exceptionless) {
-    var DuplicateCheckerPlugin = (function () {
-        function DuplicateCheckerPlugin() {
-            this.priority = 50;
-            this.name = 'DuplicateCheckerPlugin';
-        }
-        DuplicateCheckerPlugin.prototype.run = function (context) {
-            return Promise.resolve();
-        };
-        return DuplicateCheckerPlugin;
-    })();
-    Exceptionless.DuplicateCheckerPlugin = DuplicateCheckerPlugin;
-})(Exceptionless || (Exceptionless = {}));
-/// <reference path="../../references.ts" />
-var Exceptionless;
-(function (Exceptionless) {
-    var ErrorPlugin = (function () {
-        function ErrorPlugin() {
-            this.priority = 30;
-            this.name = 'ErrorPlugin';
-        }
-        ErrorPlugin.prototype.run = function (context) {
-            var _this = this;
-            var exception = context.contextData.getException();
-            if (exception == null) {
-                return Promise.resolve();
-            }
-            if (!context.event.data) {
-                context.event.data = {};
-            }
-            context.event.type = 'error';
-            if (!!context.event.data['@error']) {
-                return Promise.resolve();
-            }
-            return StackTrace.fromError(exception).then(function (stackFrames) { return _this.processError(context, exception, stackFrames); }, function () { return _this.onParseError(context); });
-        };
-        ErrorPlugin.prototype.processError = function (context, exception, stackFrames) {
-            var error = {
-                message: exception.message,
-                stack_trace: this.getStackFrames(context, stackFrames || [])
-            };
-            context.event.data['@error'] = error;
-            return Promise.resolve();
-        };
-        ErrorPlugin.prototype.onParseError = function (context) {
-            context.cancel = true;
-            return Promise.reject(new Error('Unable to parse the exceptions stack trace. This exception will be discarded.'));
-        };
-        ErrorPlugin.prototype.getStackFrames = function (context, stackFrames) {
-            var frames = [];
-            for (var index = 0; index < stackFrames.length; index++) {
-                frames.push({
-                    name: stackFrames[index].functionName,
-                    file_name: stackFrames[index].fileName,
-                    line_number: stackFrames[index].lineNumber,
-                    column: stackFrames[index].columnNumber
-                });
-            }
-            return frames;
-        };
-        return ErrorPlugin;
-    })();
-    Exceptionless.ErrorPlugin = ErrorPlugin;
-})(Exceptionless || (Exceptionless = {}));
-/// <reference path="../../references.ts" />
-var Exceptionless;
-(function (Exceptionless) {
-    var ModuleInfoPlugin = (function () {
-        function ModuleInfoPlugin() {
-            this.priority = 40;
-            this.name = 'ModuleInfoPlugin';
-        }
-        ModuleInfoPlugin.prototype.run = function (context) {
-            console.log(context);
-            if (!context.event.data || !context.event.data['@error'] || !!context.event.data['@error'].modules) {
-                return Promise.resolve();
-            }
-            try {
-                var modules = [];
-                var scripts = document.getElementsByTagName('script');
-                if (scripts && scripts.length > 0) {
-                    for (var index = 0; index < scripts.length; index++) {
-                        if (scripts[index].src) {
-                            modules.push({ module_id: index, name: scripts[index].src, version: Exceptionless.Utils.parseVersion(scripts[index].src) });
-                        }
-                        else if (!!scripts[index].innerHTML) {
-                            modules.push({ module_id: index, name: 'Script Tag', version: Exceptionless.Utils.getHashCode(scripts[index].innerHTML) });
-                        }
-                    }
-                    context.event.data['@error'].modules = modules;
-                }
-            }
-            catch (e) {
-                context.log.error('Unable to get module info. Exception: ' + e.message);
-            }
-            return Promise.resolve();
-        };
-        return ModuleInfoPlugin;
-    })();
-    Exceptionless.ModuleInfoPlugin = ModuleInfoPlugin;
-})(Exceptionless || (Exceptionless = {}));
-/// <reference path="../../references.ts" />
-var Exceptionless;
-(function (Exceptionless) {
+    exports.EventPluginManager = EventPluginManager;
     var ReferenceIdPlugin = (function () {
         function ReferenceIdPlugin() {
             this.priority = 20;
@@ -2038,85 +1680,13 @@ var Exceptionless;
         }
         ReferenceIdPlugin.prototype.run = function (context) {
             if ((!context.event.reference_id || context.event.reference_id.length === 0) && context.event.type === 'error') {
-                context.event.reference_id = Exceptionless.Utils.guid().replace('-', '').substring(0, 10);
+                context.event.reference_id = Utils.guid().replace('-', '').substring(0, 10);
             }
             return Promise.resolve();
         };
         return ReferenceIdPlugin;
     })();
-    Exceptionless.ReferenceIdPlugin = ReferenceIdPlugin;
-})(Exceptionless || (Exceptionless = {}));
-/// <reference path="../../references.ts" />
-var Exceptionless;
-(function (Exceptionless) {
-    var RequestInfoPlugin = (function () {
-        function RequestInfoPlugin() {
-            this.priority = 60;
-            this.name = 'RequestInfoPlugin';
-        }
-        RequestInfoPlugin.prototype.run = function (context) {
-            if (!!context.event.data && !!context.event.data['@request']) {
-                return Promise.resolve();
-            }
-            if (!context.event.data) {
-                context.event.data = {};
-            }
-            var requestInfo = {
-                user_agent: navigator.userAgent,
-                is_secure: location.protocol === 'https:',
-                host: location.hostname,
-                port: location.port && location.port !== '' ? parseInt(location.port) : 80,
-                path: location.pathname,
-                cookies: this.getCookies(),
-                query_string: Exceptionless.Utils.parseQueryString(location.search.substring(1))
-            };
-            if (document.referrer && document.referrer !== '') {
-                requestInfo.referrer = document.referrer;
-            }
-            context.event.data['@request'] = requestInfo;
-            return Promise.resolve();
-        };
-        RequestInfoPlugin.prototype.getCookies = function () {
-            if (!document.cookie) {
-                return null;
-            }
-            var result = {};
-            var cookies = document.cookie.split(', ');
-            for (var index = 0; index < cookies.length; index++) {
-                var cookie = cookies[index].split('=');
-                result[cookie[0]] = cookie[1];
-            }
-            return result;
-        };
-        return RequestInfoPlugin;
-    })();
-    Exceptionless.RequestInfoPlugin = RequestInfoPlugin;
-})(Exceptionless || (Exceptionless = {}));
-/// <reference path="../../references.ts" />
-var Exceptionless;
-(function (Exceptionless) {
-    var SubmissionMethodPlugin = (function () {
-        function SubmissionMethodPlugin() {
-            this.priority = 100;
-            this.name = 'SubmissionMethodPlugin';
-        }
-        SubmissionMethodPlugin.prototype.run = function (context) {
-            var submissionMethod = context.contextData.getSubmissionMethod();
-            if (!!submissionMethod) {
-                if (!context.event.data) {
-                    context.event.data = {};
-                }
-                context.event.data['@submission_method'] = submissionMethod;
-            }
-            return Promise.resolve();
-        };
-        return SubmissionMethodPlugin;
-    })();
-    Exceptionless.SubmissionMethodPlugin = SubmissionMethodPlugin;
-})(Exceptionless || (Exceptionless = {}));
-/// <reference path="../references.ts" />
-var Exceptionless;
-(function (Exceptionless) {
+    exports.ReferenceIdPlugin = ReferenceIdPlugin;
     var DefaultEventQueue = (function () {
         function DefaultEventQueue(config) {
             this._processingQueue = false;
@@ -2128,7 +1698,7 @@ var Exceptionless;
                 this._config.log.info('Queue items are currently being discarded. The event will not be queued.');
                 return;
             }
-            var key = this.queuePath() + '-' + new Date().toJSON() + '-' + Exceptionless.Utils.randomNumber();
+            var key = this.queuePath() + '-' + new Date().toJSON() + '-' + Utils.randomNumber();
             this._config.log.info('Enqueuing event: ' + key);
             return this._config.storage.save(key, event);
         };
@@ -2252,12 +1822,7 @@ var Exceptionless;
         };
         return DefaultEventQueue;
     })();
-    Exceptionless.DefaultEventQueue = DefaultEventQueue;
-})(Exceptionless || (Exceptionless = {}));
-/// <reference path="../references.ts" />
-/// <reference path="../references.ts" />
-var Exceptionless;
-(function (Exceptionless) {
+    exports.DefaultEventQueue = DefaultEventQueue;
     var InMemoryStorage = (function () {
         function InMemoryStorage() {
             this._items = {};
@@ -2304,120 +1869,200 @@ var Exceptionless;
         };
         return InMemoryStorage;
     })();
-    Exceptionless.InMemoryStorage = InMemoryStorage;
-})(Exceptionless || (Exceptionless = {}));
-/// <reference path="../references.ts" />
-/// <reference path="../references.ts" />
-var Exceptionless;
-(function (Exceptionless) {
-    var DefaultSubmissionClient = (function () {
-        function DefaultSubmissionClient() {
+    exports.InMemoryStorage = InMemoryStorage;
+    var Utils = (function () {
+        function Utils() {
         }
-        DefaultSubmissionClient.prototype.submit = function (events, config) {
-            var _this = this;
-            var url = config.serverUrl + '/api/v2/events?access_token=' + encodeURIComponent(config.apiKey);
-            return this.sendRequest('POST', url, JSON.stringify(events)).then(function (xhr) { return new Exceptionless.SubmissionResponse(xhr.status, _this.getResponseMessage(xhr)); }, function (xhr) { return new Exceptionless.SubmissionResponse(xhr.status || 500, _this.getResponseMessage(xhr)); });
-        };
-        DefaultSubmissionClient.prototype.submitDescription = function (referenceId, description, config) {
-            var _this = this;
-            var url = config.serverUrl + '/api/v2/events/by-ref/' + encodeURIComponent(referenceId) + '/user-description?access_token=' + encodeURIComponent(config.apiKey);
-            return this.sendRequest('POST', url, JSON.stringify(description)).then(function (xhr) { return new Exceptionless.SubmissionResponse(xhr.status, _this.getResponseMessage(xhr)); }, function (xhr) { return new Exceptionless.SubmissionResponse(xhr.status || 500, _this.getResponseMessage(xhr)); });
-        };
-        DefaultSubmissionClient.prototype.getSettings = function (config) {
-            var _this = this;
-            var url = config.serverUrl + '/api/v2/projects/config?access_token=' + encodeURIComponent(config.apiKey);
-            return this.sendRequest('GET', url).then(function (xhr) {
-                if (xhr.status !== 200) {
-                    return new Exceptionless.SettingsResponse(false, null, -1, null, 'Unable to retrieve configuration settings: ' + _this.getResponseMessage(xhr));
-                }
-                var settings;
-                try {
-                    settings = JSON.parse(xhr.responseText);
-                }
-                catch (e) {
-                    config.log.error('An error occurred while parsing the settings response text: "' + xhr.responseText + '"');
-                }
-                if (!settings || !settings.settings || !settings.version) {
-                    return new Exceptionless.SettingsResponse(true, null, -1, null, 'Invalid configuration settings.');
-                }
-                return new Exceptionless.SettingsResponse(true, settings.settings, settings.version);
-            }, function (xhr) {
-                return new Exceptionless.SettingsResponse(false, null, -1, null, _this.getResponseMessage(xhr));
-            });
-        };
-        DefaultSubmissionClient.prototype.getResponseMessage = function (xhr) {
-            if (!xhr || (xhr.status >= 200 && xhr.status <= 299)) {
+        Utils.getHashCode = function (source) {
+            if (!source || source.length === 0) {
                 return null;
             }
-            if (xhr.status === 0) {
-                return 'Unable to connect to server.';
+            var hash = 0;
+            for (var index = 0; index < source.length; index++) {
+                var character = source.charCodeAt(index);
+                hash = ((hash << 5) - hash) + character;
+                hash |= 0;
             }
-            if (xhr.responseBody) {
-                return xhr.responseBody.message;
-            }
-            if (xhr.responseText) {
-                try {
-                    return JSON.parse(xhr.responseText).message;
-                }
-                catch (e) {
-                    return xhr.responseText;
-                }
-            }
-            return xhr.statusText;
+            return hash.toString();
         };
-        DefaultSubmissionClient.prototype.createRequest = function (method, url) {
-            var xhr = new XMLHttpRequest();
-            if ('withCredentials' in xhr) {
-                xhr.open(method, url, true);
+        Utils.guid = function () {
+            function s4() {
+                return Math.floor((1 + Math.random()) * 0x10000).toString(16).substring(1);
             }
-            else if (typeof XDomainRequest != 'undefined') {
-                xhr = new XDomainRequest();
-                xhr.open(method, url);
-            }
-            else {
-                xhr = null;
-            }
-            if (xhr) {
-                if (method === 'POST' && xhr.setRequestHeader) {
-                    xhr.setRequestHeader('Content-Type', 'application/json');
-                }
-                xhr.timeout = 10000;
-            }
-            return xhr;
+            return s4() + s4() + '-' + s4() + '-' + s4() + '-' + s4() + '-' + s4() + s4() + s4();
         };
-        DefaultSubmissionClient.prototype.sendRequest = function (method, url, data) {
-            var xhr = this.createRequest(method || 'POST', url);
-            return new Promise(function (resolve, reject) {
-                if (!xhr) {
-                    return reject({ status: 503, message: 'CORS not supported.' });
+        Utils.merge = function (defaultValues, values) {
+            var result = {};
+            for (var key in defaultValues || {}) {
+                if (!!defaultValues[key]) {
+                    result[key] = defaultValues[key];
                 }
-                if ('withCredentials' in xhr) {
-                    xhr.onreadystatechange = function () {
-                        if (xhr.readyState !== 4) {
-                            return;
-                        }
-                        if (xhr.status >= 200 && xhr.status <= 299) {
-                            resolve(xhr);
-                        }
-                        else {
-                            reject(xhr);
-                        }
-                    };
+            }
+            for (var key in values || {}) {
+                if (!!values[key]) {
+                    result[key] = values[key];
                 }
-                xhr.ontimeout = function () { return reject(xhr); };
-                xhr.onerror = function () { return reject(xhr); };
-                xhr.onload = function () { return resolve(xhr); };
-                xhr.send(data);
+            }
+            return result;
+        };
+        Utils.parseVersion = function (source) {
+            if (!source) {
+                return null;
+            }
+            var versionRegex = /(v?((\d+)\.(\d+)(\.(\d+))?)(?:-([\dA-Za-z\-]+(?:\.[\dA-Za-z\-]+)*))?(?:\+([\dA-Za-z\-]+(?:\.[\dA-Za-z\-]+)*))?)/;
+            var matches = versionRegex.exec(source);
+            if (matches && matches.length > 0) {
+                return matches[0];
+            }
+            return null;
+        };
+        Utils.parseQueryString = function (query) {
+            if (!query || query.length === 0) {
+                return null;
+            }
+            var pairs = query.split('&');
+            if (pairs.length === 0) {
+                return null;
+            }
+            var result = {};
+            for (var index = 0; index < pairs.length; index++) {
+                var pair = pairs[index].split('=');
+                result[decodeURIComponent(pair[0])] = decodeURIComponent(pair[1]);
+            }
+            return result;
+        };
+        Utils.randomNumber = function () {
+            return Math.floor(Math.random() * 9007199254740992);
+        };
+        Utils.stringify = function (data) {
+            var cache = [];
+            return JSON.stringify(data, function (key, value) {
+                if (typeof value === 'object' && value !== null) {
+                    if (cache.indexOf(value) !== -1) {
+                        return;
+                    }
+                    cache.push(value);
+                }
+                return value;
             });
         };
-        return DefaultSubmissionClient;
+        return Utils;
     })();
-    Exceptionless.DefaultSubmissionClient = DefaultSubmissionClient;
-})(Exceptionless || (Exceptionless = {}));
-/// <reference path="../references.ts" />
-/// <reference path="../references.ts" />
-var Exceptionless;
-(function (Exceptionless) {
+    exports.Utils = Utils;
+    var Configuration = (function () {
+        function Configuration(settings) {
+            this._enabled = false;
+            this._serverUrl = 'https://collector.exceptionless.io';
+            this._plugins = [];
+            this.lastReferenceIdManager = new InMemoryLastReferenceIdManager();
+            this.defaultTags = [];
+            this.defaultData = {};
+            function inject(fn) {
+                return typeof fn === 'function' ? fn(this) : fn;
+            }
+            settings = Utils.merge(Configuration.defaults, settings);
+            this.apiKey = settings.apiKey;
+            this.serverUrl = settings.serverUrl;
+            this.lastReferenceIdManager = inject(settings.lastReferenceIdManager) || new InMemoryLastReferenceIdManager();
+            this.log = inject(settings.log) || new NullLog();
+            this.submissionBatchSize = inject(settings.submissionBatchSize) || 50;
+            this.submissionClient = inject(settings.submissionClient);
+            this.storage = inject(settings.storage) || new InMemoryStorage();
+            this.queue = inject(settings.queue) || new DefaultEventQueue(this);
+            EventPluginManager.addDefaultPlugins(this);
+        }
+        Object.defineProperty(Configuration.prototype, "apiKey", {
+            get: function () {
+                return this._apiKey;
+            },
+            set: function (value) {
+                this._apiKey = value || null;
+                this._enabled = !!value && value.length > 0;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Configuration.prototype, "serverUrl", {
+            get: function () {
+                return this._serverUrl;
+            },
+            set: function (value) {
+                if (!!value && value.length > 0) {
+                    this._serverUrl = value;
+                }
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Configuration.prototype, "enabled", {
+            get: function () {
+                return this._enabled;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Configuration.prototype, "plugins", {
+            get: function () {
+                return this._plugins.sort(function (p1, p2) {
+                    return (p1.priority < p2.priority) ? -1 : (p1.priority > p2.priority) ? 1 : 0;
+                });
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Configuration.prototype.addPlugin = function (pluginOrName, priority, pluginAction) {
+            var plugin = !!pluginAction ? { name: pluginOrName, priority: priority, run: pluginAction } : pluginOrName;
+            if (!plugin || !plugin.run) {
+                this.log.error('Unable to add plugin: No run method was found.');
+                return;
+            }
+            if (!plugin.name) {
+                plugin.name = Utils.guid();
+            }
+            if (!plugin.priority) {
+                plugin.priority = 0;
+            }
+            var pluginExists = false;
+            for (var index = 0; index < this._plugins.length; index++) {
+                if (this._plugins[index].name === plugin.name) {
+                    pluginExists = true;
+                    break;
+                }
+            }
+            if (!pluginExists) {
+                this._plugins.push(plugin);
+            }
+        };
+        Configuration.prototype.removePlugin = function (pluginOrName) {
+            var name = typeof pluginOrName === 'string' ? pluginOrName : pluginOrName.name;
+            if (!name) {
+                this.log.error('Unable to remove plugin: No plugin name was specified.');
+                return;
+            }
+            for (var index = 0; index < this._plugins.length; index++) {
+                if (this._plugins[index].name === name) {
+                    this._plugins.splice(index, 1);
+                    break;
+                }
+            }
+        };
+        Configuration.prototype.useReferenceIds = function () {
+            this.addPlugin(new ReferenceIdPlugin());
+        };
+        Object.defineProperty(Configuration, "defaults", {
+            get: function () {
+                if (Configuration._defaultSettings === null) {
+                    Configuration._defaultSettings = {};
+                }
+                return Configuration._defaultSettings;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Configuration._defaultSettings = null;
+        return Configuration;
+    })();
+    exports.Configuration = Configuration;
     var SettingsResponse = (function () {
         function SettingsResponse(success, settings, settingsVersion, exception, message) {
             if (settingsVersion === void 0) { settingsVersion = -1; }
@@ -2433,11 +2078,7 @@ var Exceptionless;
         }
         return SettingsResponse;
     })();
-    Exceptionless.SettingsResponse = SettingsResponse;
-})(Exceptionless || (Exceptionless = {}));
-/// <reference path="../references.ts" />
-var Exceptionless;
-(function (Exceptionless) {
+    exports.SettingsResponse = SettingsResponse;
     var SubmissionResponse = (function () {
         function SubmissionResponse(statusCode, message) {
             this.success = false;
@@ -2459,11 +2100,48 @@ var Exceptionless;
         }
         return SubmissionResponse;
     })();
-    Exceptionless.SubmissionResponse = SubmissionResponse;
-})(Exceptionless || (Exceptionless = {}));
-/// <reference path="references.ts" />
-var Exceptionless;
-(function (Exceptionless) {
+    exports.SubmissionResponse = SubmissionResponse;
+    var ContextData = (function () {
+        function ContextData() {
+        }
+        ContextData.prototype.setException = function (exception) {
+            this['@@_Exception'] = exception;
+        };
+        Object.defineProperty(ContextData.prototype, "hasException", {
+            get: function () {
+                return !!this['@@_Exception'];
+            },
+            enumerable: true,
+            configurable: true
+        });
+        ContextData.prototype.getException = function () {
+            if (!this.hasException) {
+                return null;
+            }
+            return this['@@_Exception'];
+        };
+        ContextData.prototype.markAsUnhandledError = function () {
+            this['@@_IsUnhandledError'] = true;
+        };
+        Object.defineProperty(ContextData.prototype, "isUnhandledError", {
+            get: function () {
+                return !!this['@@_IsUnhandledError'];
+            },
+            enumerable: true,
+            configurable: true
+        });
+        ContextData.prototype.setSubmissionMethod = function (method) {
+            this['@@_SubmissionMethod'] = method;
+        };
+        ContextData.prototype.getSubmissionMethod = function () {
+            if (!!this['@@_SubmissionMethod']) {
+                return null;
+            }
+            return this['@@_SubmissionMethod'];
+        };
+        return ContextData;
+    })();
+    exports.ContextData = ContextData;
     var EventBuilder = (function () {
         function EventBuilder(event, client, pluginContextData) {
             this.target = event;
@@ -2573,24 +2251,20 @@ var Exceptionless;
         };
         return EventBuilder;
     })();
-    Exceptionless.EventBuilder = EventBuilder;
-})(Exceptionless || (Exceptionless = {}));
-/// <reference path="references.ts" />
-var Exceptionless;
-(function (Exceptionless) {
+    exports.EventBuilder = EventBuilder;
     var ExceptionlessClient = (function () {
         function ExceptionlessClient(settingsOrApiKey, serverUrl) {
             // TODO: populate this in a plugin..
             //var settings = this.getSettingsFromScriptTag() || {};
             if (typeof settingsOrApiKey !== 'object') {
-                this.config = new Exceptionless.Configuration(settingsOrApiKey);
+                this.config = new Configuration(settingsOrApiKey);
             }
             else {
-                this.config = new Exceptionless.Configuration({ apiKey: settingsOrApiKey, serverUrl: serverUrl });
+                this.config = new Configuration({ apiKey: settingsOrApiKey, serverUrl: serverUrl });
             }
         }
         ExceptionlessClient.prototype.createException = function (exception) {
-            var pluginContextData = new Exceptionless.ContextData();
+            var pluginContextData = new ContextData();
             pluginContextData.setException(exception);
             return this.createEvent(pluginContextData).setType('error');
         };
@@ -2647,7 +2321,7 @@ var Exceptionless;
             return this.createSessionEnd(sessionId).submit();
         };
         ExceptionlessClient.prototype.createEvent = function (pluginContextData) {
-            return new Exceptionless.EventBuilder({ date: new Date() }, this, pluginContextData);
+            return new EventBuilder({ date: new Date() }, this, pluginContextData);
         };
         ExceptionlessClient.prototype.submitEvent = function (event, pluginContextData) {
             var _this = this;
@@ -2659,8 +2333,8 @@ var Exceptionless;
                 this.config.log.info(message);
                 return Promise.reject(new Error(message));
             }
-            var context = new Exceptionless.EventPluginContext(this, event, pluginContextData);
-            return Exceptionless.EventPluginManager.run(context)
+            var context = new EventPluginContext(this, event, pluginContextData);
+            return EventPluginManager.run(context)
                 .then(function () {
                 if (context.cancel) {
                     var message = 'Event submission cancelled by plugin": id=' + event.reference_id + ' type=' + event.type;
@@ -2690,28 +2364,6 @@ var Exceptionless;
         ExceptionlessClient.prototype.getLastReferenceId = function () {
             return this.config.lastReferenceIdManager.getLast();
         };
-        ExceptionlessClient.prototype.register = function () {
-            var _this = this;
-            var oldOnErrorHandler = window.onerror;
-            window.onerror = function (message, filename, lineno, colno, error) {
-                if (error !== null && typeof error === 'object') {
-                    _this.submitUnhandledException(error);
-                }
-                else {
-                    var e = { message: message, stack_trace: [{ file_name: filename, line_number: lineno, column: colno }] };
-                    _this.createUnhandledException(new Error(message)).setMessage(message).setProperty('@error', e).submit();
-                }
-                if (oldOnErrorHandler) {
-                    try {
-                        return oldOnErrorHandler(message, filename, lineno, colno, error);
-                    }
-                    catch (e) {
-                        _this.config.log.error('An error occurred while calling previous error handler: ' + e.message);
-                    }
-                }
-                return false;
-            };
-        };
         Object.defineProperty(ExceptionlessClient, "default", {
             get: function () {
                 if (ExceptionlessClient._instance === null) {
@@ -2725,78 +2377,373 @@ var Exceptionless;
         ExceptionlessClient._instance = null;
         return ExceptionlessClient;
     })();
-    Exceptionless.ExceptionlessClient = ExceptionlessClient;
-})(Exceptionless || (Exceptionless = {}));
-/// <reference path="references.ts" />
-var Exceptionless;
-(function (Exceptionless) {
-    var Utils = (function () {
-        function Utils() {
+    exports.ExceptionlessClient = ExceptionlessClient;
+    var ConfigurationDefaultsPlugin = (function () {
+        function ConfigurationDefaultsPlugin() {
+            this.priority = 10;
+            this.name = 'ConfigurationDefaultsPlugin';
         }
-        Utils.getHashCode = function (source) {
-            if (!source || source.length === 0) {
-                return null;
-            }
-            var hash = 0;
-            for (var index = 0; index < source.length; index++) {
-                var character = source.charCodeAt(index);
-                hash = ((hash << 5) - hash) + character;
-                hash |= 0;
-            }
-            return hash.toString();
-        };
-        Utils.guid = function () {
-            function s4() {
-                return Math.floor((1 + Math.random()) * 0x10000).toString(16).substring(1);
-            }
-            return s4() + s4() + '-' + s4() + '-' + s4() + '-' + s4() + '-' + s4() + s4() + s4();
-        };
-        Utils.merge = function (defaultValues, values) {
-            var result = {};
-            for (var key in defaultValues || {}) {
-                if (!!defaultValues[key]) {
-                    result[key] = defaultValues[key];
+        ConfigurationDefaultsPlugin.prototype.run = function (context) {
+            if (!!context.client.config.defaultTags) {
+                if (!context.event.tags) {
+                    context.event.tags = [];
+                }
+                for (var index = 0; index < context.client.config.defaultTags.length; index++) {
+                    var tag = context.client.config.defaultTags[index];
+                    if (tag && context.client.config.defaultTags.indexOf(tag) < 0) {
+                        context.event.tags.push(tag);
+                    }
                 }
             }
-            for (var key in values || {}) {
-                if (!!values[key]) {
-                    result[key] = values[key];
+            if (!!context.client.config.defaultData) {
+                if (!context.event.data) {
+                    context.event.data = {};
+                }
+                for (var key in context.client.config.defaultData) {
+                    if (!!context.client.config.defaultData[key]) {
+                        context.event.data[key] = context.client.config.defaultData[key];
+                    }
                 }
             }
-            return result;
+            return Promise.resolve();
         };
-        Utils.parseVersion = function (source) {
-            if (!source) {
-                return null;
-            }
-            var versionRegex = /(v?((\d+)\.(\d+)(\.(\d+))?)(?:-([\dA-Za-z\-]+(?:\.[\dA-Za-z\-]+)*))?(?:\+([\dA-Za-z\-]+(?:\.[\dA-Za-z\-]+)*))?)/;
-            var matches = versionRegex.exec(source);
-            if (matches && matches.length > 0) {
-                return matches[0];
-            }
-            return null;
-        };
-        Utils.parseQueryString = function (query) {
-            if (!query || query.length === 0) {
-                return null;
-            }
-            var pairs = query.split('&');
-            if (pairs.length === 0) {
-                return null;
-            }
-            var result = {};
-            for (var index = 0; index < pairs.length; index++) {
-                var pair = pairs[index].split('=');
-                result[decodeURIComponent(pair[0])] = decodeURIComponent(pair[1]);
-            }
-            return result;
-        };
-        Utils.randomNumber = function () {
-            return Math.floor(Math.random() * 9007199254740992);
-        };
-        return Utils;
+        return ConfigurationDefaultsPlugin;
     })();
-    Exceptionless.Utils = Utils;
-})(Exceptionless || (Exceptionless = {}));
-
-//# sourceMappingURL=exceptionless-es5.js.map
+    exports.ConfigurationDefaultsPlugin = ConfigurationDefaultsPlugin;
+    var ErrorPlugin = (function () {
+        function ErrorPlugin() {
+            this.priority = 30;
+            this.name = 'ErrorPlugin';
+        }
+        ErrorPlugin.prototype.run = function (context) {
+            var _this = this;
+            var exception = context.contextData.getException();
+            if (exception == null) {
+                return Promise.resolve();
+            }
+            if (!context.event.data) {
+                context.event.data = {};
+            }
+            context.event.type = 'error';
+            if (!!context.event.data['@error']) {
+                return Promise.resolve();
+            }
+            return StackTrace.fromError(exception).then(function (stackFrames) { return _this.processError(context, exception, stackFrames); }, function () { return _this.onParseError(context); });
+        };
+        ErrorPlugin.prototype.processError = function (context, exception, stackFrames) {
+            var error = {
+                message: exception.message,
+                stack_trace: this.getStackFrames(context, stackFrames || [])
+            };
+            context.event.data['@error'] = error;
+            return Promise.resolve();
+        };
+        ErrorPlugin.prototype.onParseError = function (context) {
+            context.cancel = true;
+            return Promise.reject(new Error('Unable to parse the exceptions stack trace. This exception will be discarded.'));
+        };
+        ErrorPlugin.prototype.getStackFrames = function (context, stackFrames) {
+            var frames = [];
+            for (var index = 0; index < stackFrames.length; index++) {
+                frames.push({
+                    name: stackFrames[index].functionName,
+                    file_name: stackFrames[index].fileName,
+                    line_number: stackFrames[index].lineNumber,
+                    column: stackFrames[index].columnNumber
+                });
+            }
+            return frames;
+        };
+        return ErrorPlugin;
+    })();
+    exports.ErrorPlugin = ErrorPlugin;
+    var DuplicateCheckerPlugin = (function () {
+        function DuplicateCheckerPlugin() {
+            this.priority = 50;
+            this.name = 'DuplicateCheckerPlugin';
+        }
+        DuplicateCheckerPlugin.prototype.run = function (context) {
+            return Promise.resolve();
+        };
+        return DuplicateCheckerPlugin;
+    })();
+    exports.DuplicateCheckerPlugin = DuplicateCheckerPlugin;
+    var ModuleInfoPlugin = (function () {
+        function ModuleInfoPlugin() {
+            this.priority = 40;
+            this.name = 'ModuleInfoPlugin';
+        }
+        ModuleInfoPlugin.prototype.run = function (context) {
+            if (!context.event.data || !context.event.data['@error'] || !!context.event.data['@error'].modules) {
+                return Promise.resolve();
+            }
+            try {
+                if (document && document.getElementsByTagName) {
+                    var modules = this.getFromDocument();
+                    if (modules && modules.length > 0) {
+                        context.event.data['@error'].modules = modules;
+                    }
+                }
+            }
+            catch (e) {
+                context.log.error('Unable to get module info. Exception: ' + e.message);
+            }
+            return Promise.resolve();
+        };
+        ModuleInfoPlugin.prototype.getFromDocument = function () {
+            var modules = [];
+            var scripts = document.getElementsByTagName('script');
+            if (scripts && scripts.length > 0) {
+                for (var index = 0; index < scripts.length; index++) {
+                    if (scripts[index].src) {
+                        modules.push({
+                            module_id: index,
+                            name: scripts[index].src,
+                            version: Utils.parseVersion(scripts[index].src)
+                        });
+                    }
+                    else if (!!scripts[index].innerHTML) {
+                        modules.push({
+                            module_id: index,
+                            name: 'Script Tag',
+                            version: Utils.getHashCode(scripts[index].innerHTML)
+                        });
+                    }
+                }
+            }
+            return modules;
+        };
+        return ModuleInfoPlugin;
+    })();
+    exports.ModuleInfoPlugin = ModuleInfoPlugin;
+    var RequestInfoPlugin = (function () {
+        function RequestInfoPlugin() {
+            this.priority = 60;
+            this.name = 'RequestInfoPlugin';
+        }
+        RequestInfoPlugin.prototype.run = function (context) {
+            if (!!context.event.data && !!context.event.data['@request']) {
+                return Promise.resolve();
+            }
+            if (!context.event.data) {
+                context.event.data = {};
+            }
+            var requestInfo = {
+                user_agent: navigator.userAgent,
+                is_secure: location.protocol === 'https:',
+                host: location.hostname,
+                port: location.port && location.port !== '' ? parseInt(location.port) : 80,
+                path: location.pathname,
+                cookies: this.getCookies(),
+                query_string: Utils.parseQueryString(location.search.substring(1))
+            };
+            if (document.referrer && document.referrer !== '') {
+                requestInfo.referrer = document.referrer;
+            }
+            context.event.data['@request'] = requestInfo;
+            return Promise.resolve();
+        };
+        RequestInfoPlugin.prototype.getCookies = function () {
+            if (!document.cookie) {
+                return null;
+            }
+            var result = {};
+            var cookies = document.cookie.split(', ');
+            for (var index = 0; index < cookies.length; index++) {
+                var cookie = cookies[index].split('=');
+                result[cookie[0]] = cookie[1];
+            }
+            return result;
+        };
+        return RequestInfoPlugin;
+    })();
+    exports.RequestInfoPlugin = RequestInfoPlugin;
+    var SubmissionMethodPlugin = (function () {
+        function SubmissionMethodPlugin() {
+            this.priority = 100;
+            this.name = 'SubmissionMethodPlugin';
+        }
+        SubmissionMethodPlugin.prototype.run = function (context) {
+            var submissionMethod = context.contextData.getSubmissionMethod();
+            if (!!submissionMethod) {
+                if (!context.event.data) {
+                    context.event.data = {};
+                }
+                context.event.data['@submission_method'] = submissionMethod;
+            }
+            return Promise.resolve();
+        };
+        return SubmissionMethodPlugin;
+    })();
+    exports.SubmissionMethodPlugin = SubmissionMethodPlugin;
+    var ConsoleLog = (function () {
+        function ConsoleLog() {
+        }
+        ConsoleLog.prototype.info = function (message) {
+            if (console && console.log) {
+                console.log('[INFO] Exceptionless:' + message);
+            }
+        };
+        ConsoleLog.prototype.warn = function (message) {
+            if (console && console.log) {
+                console.log('[Warn] Exceptionless:' + message);
+            }
+        };
+        ConsoleLog.prototype.error = function (message) {
+            if (console && console.log) {
+                console.log('[Error] Exceptionless:' + message);
+            }
+        };
+        return ConsoleLog;
+    })();
+    exports.ConsoleLog = ConsoleLog;
+    var DefaultSubmissionClient = (function () {
+        function DefaultSubmissionClient() {
+        }
+        DefaultSubmissionClient.prototype.submit = function (events, config) {
+            var _this = this;
+            var url = config.serverUrl + '/api/v2/events?access_token=' + encodeURIComponent(config.apiKey);
+            return this.sendRequest('POST', url, Utils.stringify(events)).then(function (xhr) { return new SubmissionResponse(xhr.status, _this.getResponseMessage(xhr)); }, function (xhr) { return new SubmissionResponse(xhr.status || 500, _this.getResponseMessage(xhr)); });
+        };
+        DefaultSubmissionClient.prototype.submitDescription = function (referenceId, description, config) {
+            var _this = this;
+            var url = config.serverUrl + '/api/v2/events/by-ref/' + encodeURIComponent(referenceId) + '/user-description?access_token=' + encodeURIComponent(config.apiKey);
+            return this.sendRequest('POST', url, Utils.stringify(description)).then(function (xhr) { return new SubmissionResponse(xhr.status, _this.getResponseMessage(xhr)); }, function (xhr) { return new SubmissionResponse(xhr.status || 500, _this.getResponseMessage(xhr)); });
+        };
+        DefaultSubmissionClient.prototype.getSettings = function (config) {
+            var _this = this;
+            var url = config.serverUrl + '/api/v2/projects/config?access_token=' + encodeURIComponent(config.apiKey);
+            return this.sendRequest('GET', url).then(function (xhr) {
+                if (xhr.status !== 200) {
+                    return new SettingsResponse(false, null, -1, null, 'Unable to retrieve configuration settings: ' + _this.getResponseMessage(xhr));
+                }
+                var settings;
+                try {
+                    settings = JSON.parse(xhr.responseText);
+                }
+                catch (e) {
+                    config.log.error('An error occurred while parsing the settings response text: "' + xhr.responseText + '"');
+                }
+                if (!settings || !settings.settings || !settings.version) {
+                    return new SettingsResponse(true, null, -1, null, 'Invalid configuration settings.');
+                }
+                return new SettingsResponse(true, settings.settings, settings.version);
+            }, function (xhr) {
+                return new SettingsResponse(false, null, -1, null, _this.getResponseMessage(xhr));
+            });
+        };
+        DefaultSubmissionClient.prototype.getResponseMessage = function (xhr) {
+            if (!xhr || (xhr.status >= 200 && xhr.status <= 299)) {
+                return null;
+            }
+            if (xhr.status === 0) {
+                return 'Unable to connect to server.';
+            }
+            if (xhr.responseBody) {
+                return xhr.responseBody.message;
+            }
+            if (xhr.responseText) {
+                try {
+                    return JSON.parse(xhr.responseText).message;
+                }
+                catch (e) {
+                    return xhr.responseText;
+                }
+            }
+            return xhr.statusText;
+        };
+        DefaultSubmissionClient.prototype.createRequest = function (method, url) {
+            var xhr = new XMLHttpRequest();
+            if ('withCredentials' in xhr) {
+                xhr.open(method, url, true);
+            }
+            else if (typeof XDomainRequest != 'undefined') {
+                xhr = new XDomainRequest();
+                xhr.open(method, url);
+            }
+            else {
+                xhr = null;
+            }
+            if (xhr) {
+                if (method === 'POST' && xhr.setRequestHeader) {
+                    xhr.setRequestHeader('Content-Type', 'application/json');
+                }
+                xhr.timeout = 10000;
+            }
+            return xhr;
+        };
+        DefaultSubmissionClient.prototype.sendRequest = function (method, url, data) {
+            var xhr = this.createRequest(method || 'POST', url);
+            return new Promise(function (resolve, reject) {
+                if (!xhr) {
+                    return reject({ status: 503, message: 'CORS not supported.' });
+                }
+                if ('withCredentials' in xhr) {
+                    xhr.onreadystatechange = function () {
+                        if (xhr.readyState !== 4) {
+                            return;
+                        }
+                        if (xhr.status >= 200 && xhr.status <= 299) {
+                            resolve(xhr);
+                        }
+                        else {
+                            reject(xhr);
+                        }
+                    };
+                }
+                xhr.ontimeout = function () { return reject(xhr); };
+                xhr.onerror = function () { return reject(xhr); };
+                xhr.onload = function () { return resolve(xhr); };
+                xhr.send(data);
+            });
+        };
+        return DefaultSubmissionClient;
+    })();
+    exports.DefaultSubmissionClient = DefaultSubmissionClient;
+    function getDefaultsSettingsFromScriptTag() {
+        if (!document || !document.getElementsByTagName) {
+            return null;
+        }
+        var scripts = document.getElementsByTagName('script');
+        for (var index = 0; index < scripts.length; index++) {
+            if (scripts[index].src && scripts[index].src.indexOf('/exceptionless') > -1) {
+                return Utils.parseQueryString(scripts[index].src.split('?').pop());
+            }
+        }
+        return null;
+    }
+    function handleWindowOnError() {
+        if (!window || !window.onerror) {
+            return;
+        }
+        var _oldOnErrorHandler = window.onerror;
+        window.onerror = function (message, filename, lineno, colno, error) {
+            var client = ExceptionlessClient.default;
+            if (error !== null && typeof error === 'object') {
+                client.submitUnhandledException(error);
+            }
+            else {
+                var e = { message: message, stack_trace: [{ file_name: filename, line_number: lineno, column: colno }] };
+                client.createUnhandledException(new Error(message)).setMessage(message).setProperty('@error', e).submit();
+            }
+            if (_oldOnErrorHandler) {
+                try {
+                    return _oldOnErrorHandler(message, filename, lineno, colno, error);
+                }
+                catch (e) {
+                    client.config.log.error('An error occurred while calling previous error handler: ' + e.message);
+                }
+            }
+            return false;
+        };
+    }
+    var settings = getDefaultsSettingsFromScriptTag();
+    if (settings && (settings.apiKey || settings.serverUrl)) {
+        Configuration.defaults.apiKey = settings.apiKey;
+        Configuration.defaults.serverUrl = settings.serverUrl;
+    }
+    Configuration.defaults.submissionClient = new DefaultSubmissionClient();
+    handleWindowOnError();
+});
+//# sourceMappingURL=exceptionless.es5.js.map
+//# sourceMappingURL=exceptionless.es5.js.map

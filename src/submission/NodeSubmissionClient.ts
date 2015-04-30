@@ -78,7 +78,7 @@ export class NodeSubmissionClient implements ISubmissionClient {
       if (method === 'POST') {
         options.headers = {
           'Content-Type': 'application/json',
-          'Content-Length': data.length,
+          'Content-Length': data.length
         }
       }
 

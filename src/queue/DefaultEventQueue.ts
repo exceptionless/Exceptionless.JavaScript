@@ -9,7 +9,7 @@ export class DefaultEventQueue implements IEventQueue {
   private _suspendProcessingUntil:Date;
   private _discardQueuedItemsUntil:Date;
   private _processingQueue:boolean = false;
-  private _queueTimer:number;
+  private _queueTimer:any;
 
   constructor(config:Configuration) {
     this._config = config;

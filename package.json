@@ -29,7 +29,6 @@
     "gulp-concat": "^2.5.2",
     "gulp-karma": "0.0.4",
     "gulp-rename": "^1.2.2",
-    "gulp-replace": "^0.5.3",
     "gulp-sourcemaps": "^1.5.2",
     "gulp-uglify": "^1.2.0",
     "jasmine-core": "^2.3.0",
@@ -38,13 +37,13 @@
     "karma-cli": "0.0.4",
     "karma-jasmine": "~0.3.5",
     "karma-typescript-preprocessor": "0.0.16",
-    "rimraf": "^2.3.2",
+    "rimraf": "^2.3.3",
     "stack-generator": "^1.0.3",
     "stackframe": "^0.2.2",
     "stacktrace-gps": "^2.1.2",
     "stacktrace-js": "git://github.com/stacktracejs/stacktrace.js.git",
-    "tsproject": "^0.8.0",
-    "typescript": "1.5.0-alpha"
+    "tsproject": "^0.8.2",
+    "typescript": "1.5.0-beta"
   },
   "dependencies": {}
 }

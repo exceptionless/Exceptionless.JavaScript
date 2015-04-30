@@ -317,11 +317,10 @@ export declare class ConsoleLog implements ILog {
     warn(message: any): void;
     error(message: any): void;
 }
-export declare class DefaultSubmissionClient implements ISubmissionClient {
+export declare class NodeSubmissionClient implements ISubmissionClient {
     submit(events: IEvent[], config: Configuration): Promise<SubmissionResponse>;
     submitDescription(referenceId: string, description: IUserDescription, config: Configuration): Promise<SubmissionResponse>;
     getSettings(config: Configuration): Promise<SettingsResponse>;
-    private getResponseMessage(xhr);
-    private createRequest(method, url);
-    private sendRequest(method, url, data?);
+    private getResponseMessage(msg);
+    private sendRequest(method, host, path, data?);
 }

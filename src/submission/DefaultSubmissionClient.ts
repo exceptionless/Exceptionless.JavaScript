@@ -6,6 +6,8 @@ import { SettingsResponse } from './SettingsResponse';
 import { SubmissionResponse } from './SubmissionResponse';
 import { Utils } from '../Utils';
 
+declare var XDomainRequest: { new (); create(); };
+
 export class DefaultSubmissionClient implements ISubmissionClient {
   public submit(events:IEvent[], config:Configuration): Promise<SubmissionResponse> {
     var url = config.serverUrl + '/api/v2/events?access_token=' + encodeURIComponent(config.apiKey);
@@ -127,5 +129,3 @@ export class DefaultSubmissionClient implements ISubmissionClient {
     });
   }
 }
-
-declare var XDomainRequest: { new (): XDomainRequest; prototype: XDomainRequest; create(): XDomainRequest; };
