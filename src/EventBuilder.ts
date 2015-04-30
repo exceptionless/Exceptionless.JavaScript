@@ -63,7 +63,7 @@ export class EventBuilder {
     if (longitude < -180.0 || longitude > 180.0)
       throw new Error('Must be a valid longitude value between -180.0 and 180.0.');
 
-    this.target.geo = latitude + ',' + longitude;
+    this.target.geo = `${latitude},${longitude}`;
     return this;
   }
 

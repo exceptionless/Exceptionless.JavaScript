@@ -127,7 +127,7 @@ export class ExceptionlessClient {
     return EventPluginManager.run(context)
       .then(() => {
         if (context.cancel) {
-          var message:string = 'Event submission cancelled by plugin": id=' + event.reference_id + ' type=' + event.type;
+          var message:string = `Event submission cancelled by plugin": id=${event.reference_id} type=${event.type}`;
           this.config.log.info(message);
           return Promise.reject(new Error(message));
         }
@@ -141,18 +141,18 @@ export class ExceptionlessClient {
           event.date = new Date();
         }
 
-        this.config.log.info('Submitting event: type=' + event.type + !!event.reference_id ? ' refid=' + event.reference_id : '');
+        this.config.log.info(`Submitting event: type=${event.type} ${!!event.reference_id ? 'refid=' + event.reference_id : ''}`);
         this.config.queue.enqueue(event);
 
         if (event.reference_id && event.reference_id.length > 0) {
-          this.config.log.info('Setting last reference id "' + event.reference_id + '"');
+          this.config.log.info(`Setting last reference id "${event.reference_id}"`);
           this.config.lastReferenceIdManager.setLast(event.reference_id);
         }
 
         return Promise.resolve();
       })
       .catch((error:Error) => {
-        var message:string = 'Event submission cancelled. An error occurred while running the plugins: ' + error && error.message ? error.message : <any>error;
+        var message:string = `Event submission cancelled. An error occurred while running the plugins: ${error && error.message ? error.message : <any>error}`;
         this.config.log.error(message);
         return Promise.reject(new Error(message));
       });

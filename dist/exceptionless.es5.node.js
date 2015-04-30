@@ -1697,8 +1697,8 @@ var DefaultEventQueue = (function () {
             this._config.log.info('Queue items are currently being discarded. The event will not be queued.');
             return;
         }
-        var key = this.queuePath() + '-' + new Date().toJSON() + '-' + Utils.randomNumber();
-        this._config.log.info('Enqueuing event: ' + key);
+        var key = this.queuePath() + "-" + new Date().toJSON() + "-" + Utils.randomNumber();
+        this._config.log.info("Enqueuing event: " + key);
         return this._config.storage.save(key, event);
     };
     DefaultEventQueue.prototype.process = function () {
@@ -1719,7 +1719,7 @@ var DefaultEventQueue = (function () {
                 this._config.log.info('There are currently no queued events to process.');
                 return;
             }
-            this._config.log.info('Sending ' + events.length + ' events to ' + this._config.serverUrl + '.');
+            this._config.log.info("Sending " + events.length + " events to " + this._config.serverUrl + ".");
             this._config.submissionClient.submit(events, this._config)
                 .then(function (response) { return _this.processSubmissionResponse(response, events); }, function (response) { return _this.processSubmissionResponse(response, events); })
                 .then(function () {
@@ -1728,14 +1728,14 @@ var DefaultEventQueue = (function () {
             });
         }
         catch (ex) {
-            this._config.log.error('An error occurred while processing the queue: ' + ex);
+            this._config.log.error("An error occurred while processing the queue: " + ex);
             this.suspendProcessing();
             this._processingQueue = false;
         }
     };
     DefaultEventQueue.prototype.processSubmissionResponse = function (response, events) {
         if (response.success) {
-            this._config.log.info('Sent ' + events.length + ' events to ' + this._config.serverUrl + '.');
+            this._config.log.info("Sent " + events.length + " events to " + this._config.serverUrl + ".");
             return;
         }
         if (response.serviceUnavailable) {
@@ -1755,7 +1755,7 @@ var DefaultEventQueue = (function () {
             return;
         }
         if (response.notFound || response.badRequest) {
-            this._config.log.error('Error while trying to submit data: ' + response.message);
+            this._config.log.error("Error while trying to submit data: " + response.message);
             this.suspendProcessing(60 * 4);
             return;
         }
@@ -1771,7 +1771,7 @@ var DefaultEventQueue = (function () {
             return;
         }
         if (!response.success) {
-            this._config.log.error('An error occurred while submitting events: ' + response.message);
+            this._config.log.error("An error occurred while submitting events: " + response.message);
             this.suspendProcessing();
             this.requeueEvents(events);
         }
@@ -1791,7 +1791,7 @@ var DefaultEventQueue = (function () {
         if (!durationInMinutes || durationInMinutes <= 0) {
             durationInMinutes = 5;
         }
-        this._config.log.info('Suspending processing for ' + durationInMinutes + ' minutes.');
+        this._config.log.info("Suspending processing for " + durationInMinutes + " minutes.");
         this._suspendProcessingUntil = new Date(new Date().getTime() + (durationInMinutes * 60000));
         if (discardFutureQueuedItems) {
             this._discardQueuedItemsUntil = new Date(new Date().getTime() + (durationInMinutes * 60000));
@@ -1805,7 +1805,7 @@ var DefaultEventQueue = (function () {
         catch (Exception) { }
     };
     DefaultEventQueue.prototype.requeueEvents = function (events) {
-        this._config.log.info('Requeuing ' + events.length + ' events.');
+        this._config.log.info("Requeuing " + events.length + " events.");
         for (var index = 0; index < events.length; index++) {
             this.enqueue(events[index]);
         }
@@ -1817,7 +1817,7 @@ var DefaultEventQueue = (function () {
         return this._discardQueuedItemsUntil && this._discardQueuedItemsUntil > new Date();
     };
     DefaultEventQueue.prototype.queuePath = function () {
-        return !!this._config.apiKey ? 'ex-' + this._config.apiKey.slice(0, 8) + '-q' : null;
+        return !!this._config.apiKey ? "ex-" + this._config.apiKey.slice(0, 8) + "-q" : null;
     };
     return DefaultEventQueue;
 })();
@@ -2184,7 +2184,7 @@ var EventBuilder = (function () {
             throw new Error('Must be a valid latitude value between -90.0 and 90.0.');
         if (longitude < -180.0 || longitude > 180.0)
             throw new Error('Must be a valid longitude value between -180.0 and 180.0.');
-        this.target.geo = latitude + ',' + longitude;
+        this.target.geo = latitude + "," + longitude;
         return this;
     };
     EventBuilder.prototype.setValue = function (value) {
@@ -2336,7 +2336,7 @@ var ExceptionlessClient = (function () {
         return EventPluginManager.run(context)
             .then(function () {
             if (context.cancel) {
-                var message = 'Event submission cancelled by plugin": id=' + event.reference_id + ' type=' + event.type;
+                var message = "Event submission cancelled by plugin\": id=" + event.reference_id + " type=" + event.type;
                 _this.config.log.info(message);
                 return Promise.reject(new Error(message));
             }
@@ -2346,16 +2346,16 @@ var ExceptionlessClient = (function () {
             if (!event.date) {
                 event.date = new Date();
             }
-            _this.config.log.info('Submitting event: type=' + event.type + !!event.reference_id ? ' refid=' + event.reference_id : '');
+            _this.config.log.info("Submitting event: type=" + event.type + " " + (!!event.reference_id ? 'refid=' + event.reference_id : ''));
             _this.config.queue.enqueue(event);
             if (event.reference_id && event.reference_id.length > 0) {
-                _this.config.log.info('Setting last reference id "' + event.reference_id + '"');
+                _this.config.log.info("Setting last reference id \"" + event.reference_id + "\"");
                 _this.config.lastReferenceIdManager.setLast(event.reference_id);
             }
             return Promise.resolve();
         })
             .catch(function (error) {
-            var message = 'Event submission cancelled. An error occurred while running the plugins: ' + error && error.message ? error.message : error;
+            var message = "Event submission cancelled. An error occurred while running the plugins: " + (error && error.message ? error.message : error);
             _this.config.log.error(message);
             return Promise.reject(new Error(message));
         });
@@ -2485,7 +2485,7 @@ var ModuleInfoPlugin = (function () {
             }
         }
         catch (e) {
-            context.log.error('Unable to get module info. Exception: ' + e.message);
+            context.log.error("Unable to get module info. Exception: " + e.message);
         }
         return Promise.resolve();
     };
@@ -2580,17 +2580,17 @@ var ConsoleLog = (function () {
     }
     ConsoleLog.prototype.info = function (message) {
         if (console && console.log) {
-            console.log('[INFO] Exceptionless:' + message);
+            console.log("[INFO] Exceptionless:" + message);
         }
     };
     ConsoleLog.prototype.warn = function (message) {
         if (console && console.log) {
-            console.log('[Warn] Exceptionless:' + message);
+            console.log("[Warn] Exceptionless:" + message);
         }
     };
     ConsoleLog.prototype.error = function (message) {
         if (console && console.log) {
-            console.log('[Error] Exceptionless:' + message);
+            console.log("[Error] Exceptionless:" + message);
         }
     };
     return ConsoleLog;
@@ -2602,12 +2602,12 @@ var NodeSubmissionClient = (function () {
     }
     NodeSubmissionClient.prototype.submit = function (events, config) {
         var _this = this;
-        var path = '/api/v2/events?access_token=' + encodeURIComponent(config.apiKey);
+        var path = "/api/v2/events?access_token=" + encodeURIComponent(config.apiKey);
         return this.sendRequest('POST', config.serverUrl, path, Utils.stringify(events)).then(function (msg) { return new SubmissionResponse(msg.statusCode, _this.getResponseMessage(msg)); }, function (msg) { return new SubmissionResponse(msg.statusCode || 500, _this.getResponseMessage(msg)); });
     };
     NodeSubmissionClient.prototype.submitDescription = function (referenceId, description, config) {
         var _this = this;
-        var path = '/api/v2/events/by-ref/' + encodeURIComponent(referenceId) + '/user-description?access_token=' + encodeURIComponent(config.apiKey);
+        var path = "/api/v2/events/by-ref/" + encodeURIComponent(referenceId) + "/user-description?access_token=" + encodeURIComponent(config.apiKey);
         return this.sendRequest('POST', config.serverUrl, path, Utils.stringify(description)).then(function (msg) { return new SubmissionResponse(msg.statusCode, _this.getResponseMessage(msg)); }, function (msg) { return new SubmissionResponse(msg.statusCode || 500, _this.getResponseMessage(msg)); });
     };
     NodeSubmissionClient.prototype.getSettings = function (config) {
@@ -2615,14 +2615,14 @@ var NodeSubmissionClient = (function () {
         var path = config.serverUrl + '/api/v2/projects/config?access_token=' + encodeURIComponent(config.apiKey);
         return this.sendRequest('GET', config.serverUrl, path).then(function (msg) {
             if (msg.statusCode !== 200 || !msg.responseText) {
-                return new SettingsResponse(false, null, -1, null, 'Unable to retrieve configuration settings: ' + _this.getResponseMessage(msg));
+                return new SettingsResponse(false, null, -1, null, "Unable to retrieve configuration settings: " + _this.getResponseMessage(msg));
             }
             var settings;
             try {
                 settings = JSON.parse(msg.responseText);
             }
             catch (e) {
-                config.log.error('An error occurred while parsing the settings response text: "' + msg.responseText + '"');
+                config.log.error("An error occurred while parsing the settings response text: \"" + msg.responseText + "\"");
             }
             if (!settings || !settings.settings || !settings.version) {
                 return new SettingsResponse(true, null, -1, null, 'Invalid configuration settings.');
@@ -2652,7 +2652,7 @@ var NodeSubmissionClient = (function () {
             if (method === 'POST') {
                 options.headers = {
                     'Content-Type': 'application/json',
-                    'Content-Length': data.length
+                    'Content-Length': data.length,
                 };
             }
             var request = https.request(options, function (response) {

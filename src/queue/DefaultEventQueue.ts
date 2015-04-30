@@ -23,8 +23,8 @@ export class DefaultEventQueue implements IEventQueue {
       return;
     }
 
-    var key = this.queuePath() + '-' + new Date().toJSON() + '-' + Utils.randomNumber();
-    this._config.log.info('Enqueuing event: ' + key);
+    var key = `${this.queuePath()}-${new Date().toJSON()}-${Utils.randomNumber()}`;
+    this._config.log.info(`Enqueuing event: ${key}`);
     return this._config.storage.save(key, event);
   }
 
@@ -50,7 +50,7 @@ export class DefaultEventQueue implements IEventQueue {
         return;
       }
 
-      this._config.log.info('Sending ' + events.length + ' events to ' + this._config.serverUrl + '.');
+      this._config.log.info(`Sending ${events.length} events to ${this._config.serverUrl}.`);
       this._config.submissionClient.submit(events, this._config)
         .then(
         (response:SubmissionResponse) => this.processSubmissionResponse(response, events),
@@ -60,7 +60,7 @@ export class DefaultEventQueue implements IEventQueue {
           this._processingQueue = false;
         });
     } catch (ex) {
-      this._config.log.error('An error occurred while processing the queue: ' + ex);
+      this._config.log.error(`An error occurred while processing the queue: ${ex}`);
       this.suspendProcessing();
       this._processingQueue = false;
     }
@@ -68,7 +68,7 @@ export class DefaultEventQueue implements IEventQueue {
 
   private processSubmissionResponse(response:SubmissionResponse, events:IEvent[]){
     if (response.success) {
-      this._config.log.info('Sent ' + events.length + ' events to ' + this._config.serverUrl + '.');
+      this._config.log.info(`Sent ${events.length} events to ${this._config.serverUrl}.`);
       return;
     }
 
@@ -96,7 +96,7 @@ export class DefaultEventQueue implements IEventQueue {
 
     if (response.notFound || response.badRequest) {
       // The service end point could not be found.
-      this._config.log.error('Error while trying to submit data: ' + response.message);
+      this._config.log.error(`Error while trying to submit data: ${response.message}`);
       this.suspendProcessing(60 * 4);
       return;
     }
@@ -114,7 +114,7 @@ export class DefaultEventQueue implements IEventQueue {
     }
 
     if (!response.success) {
-      this._config.log.error('An error occurred while submitting events: ' + response.message);
+      this._config.log.error(`An error occurred while submitting events: ${ response.message}`);
       this.suspendProcessing();
       this.requeueEvents(events);
     }
@@ -137,7 +137,7 @@ export class DefaultEventQueue implements IEventQueue {
       durationInMinutes = 5;
     }
 
-    this._config.log.info('Suspending processing for ' + durationInMinutes + ' minutes.');
+    this._config.log.info(`Suspending processing for ${durationInMinutes} minutes.`);
     this._suspendProcessingUntil = new Date(new Date().getTime() + (durationInMinutes * 60000));
 
     if (discardFutureQueuedItems) {
@@ -155,7 +155,7 @@ export class DefaultEventQueue implements IEventQueue {
   }
 
   private requeueEvents(events:IEvent[]): void {
-    this._config.log.info('Requeuing ' + events.length + ' events.');
+    this._config.log.info(`Requeuing ${events.length} events.`);
 
     for (var index = 0; index < events.length; index++) {
       this.enqueue(events[index]);
@@ -171,6 +171,6 @@ export class DefaultEventQueue implements IEventQueue {
   }
 
   private queuePath(): string {
-    return !!this._config.apiKey ? 'ex-' + this._config.apiKey.slice(0, 8) + '-q' : null;
+    return !!this._config.apiKey ? `ex-${this._config.apiKey.slice(0, 8)}-q` : null;
   }
 }

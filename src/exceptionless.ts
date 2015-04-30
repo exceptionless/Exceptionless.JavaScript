@@ -72,7 +72,7 @@ function handleWindowOnError() {
       try {
         return _oldOnErrorHandler(message, filename, lineno, colno, error);
       } catch (e) {
-        client.config.log.error('An error occurred while calling previous error handler: ' + e.message);
+        client.config.log.error(`An error occurred while calling previous error handler: ${e.message}`);
       }
     }
 

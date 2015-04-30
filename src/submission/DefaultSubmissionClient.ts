@@ -10,7 +10,7 @@ declare var XDomainRequest: { new (); create(); };
 
 export class DefaultSubmissionClient implements ISubmissionClient {
   public submit(events:IEvent[], config:Configuration): Promise<SubmissionResponse> {
-    var url = config.serverUrl + '/api/v2/events?access_token=' + encodeURIComponent(config.apiKey);
+    var url = `${config.serverUrl}/api/v2/events?access_token=${encodeURIComponent(config.apiKey)}`;
     return this.sendRequest('POST', url, Utils.stringify(events)).then(
         xhr => { return new SubmissionResponse(xhr.status, this.getResponseMessage(xhr)); },
         xhr => { return new SubmissionResponse(xhr.status || 500, this.getResponseMessage(xhr)); }
@@ -18,7 +18,7 @@ export class DefaultSubmissionClient implements ISubmissionClient {
   }
 
   public submitDescription(referenceId:string, description:IUserDescription, config:Configuration): Promise<SubmissionResponse> {
-    var url = config.serverUrl + '/api/v2/events/by-ref/' + encodeURIComponent(referenceId) + '/user-description?access_token=' + encodeURIComponent(config.apiKey);
+    var url = `${config.serverUrl}/api/v2/events/by-ref/${encodeURIComponent(referenceId)}/user-description?access_token=${encodeURIComponent(config.apiKey)}`;
     return this.sendRequest('POST', url, Utils.stringify(description)).then(
         xhr => { return new SubmissionResponse(xhr.status, this.getResponseMessage(xhr)); },
         xhr => { return new SubmissionResponse(xhr.status || 500, this.getResponseMessage(xhr)); }
@@ -26,18 +26,18 @@ export class DefaultSubmissionClient implements ISubmissionClient {
   }
 
   public getSettings(config:Configuration): Promise<SettingsResponse> {
-    var url = config.serverUrl + '/api/v2/projects/config?access_token=' + encodeURIComponent(config.apiKey);
+    var url = `${config.serverUrl}/api/v2/projects/config?access_token=${encodeURIComponent(config.apiKey)}`;
     return this.sendRequest('GET', url).then(
         xhr => {
         if (xhr.status !== 200) {
-          return new SettingsResponse(false, null, -1, null, 'Unable to retrieve configuration settings: ' + this.getResponseMessage(xhr));
+          return new SettingsResponse(false, null, -1, null, `Unable to retrieve configuration settings: ${this.getResponseMessage(xhr)}`);
         }
 
         var settings;
         try {
           settings = JSON.parse(xhr.responseText);
         } catch (e) {
-          config.log.error('An error occurred while parsing the settings response text: "' + xhr.responseText + '"');
+          config.log.error(`An error occurred while parsing the settings response text: "${xhr.responseText}"`);
         }
 
         if (!settings || !settings.settings || !settings.version) {

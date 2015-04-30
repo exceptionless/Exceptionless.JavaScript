@@ -20,7 +20,7 @@ export class ModuleInfoPlugin implements IEventPlugin {
         }
       }
     } catch (e) {
-      context.log.error('Unable to get module info. Exception: ' + e.message);
+      context.log.error(`Unable to get module info. Exception: ${e.message}`);
     }
 
     return Promise.resolve();

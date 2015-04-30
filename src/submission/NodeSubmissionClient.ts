@@ -10,9 +10,8 @@ import http = require('http');
 import https = require('https');
 
 export class NodeSubmissionClient implements ISubmissionClient {
-
   public submit(events:IEvent[], config:Configuration): Promise<SubmissionResponse> {
-    var path = '/api/v2/events?access_token=' + encodeURIComponent(config.apiKey);
+    var path = `/api/v2/events?access_token=${encodeURIComponent(config.apiKey)}`;
     return this.sendRequest('POST', config.serverUrl, path, Utils.stringify(events)).then(
       msg => { return new SubmissionResponse(msg.statusCode, this.getResponseMessage(msg)); },
       msg => { return new SubmissionResponse(msg.statusCode || 500, this.getResponseMessage(msg)); }
@@ -20,7 +19,7 @@ export class NodeSubmissionClient implements ISubmissionClient {
   }
 
   public submitDescription(referenceId:string, description:IUserDescription, config:Configuration): Promise<SubmissionResponse> {
-    var path = '/api/v2/events/by-ref/' + encodeURIComponent(referenceId) + '/user-description?access_token=' + encodeURIComponent(config.apiKey);
+    var path = `/api/v2/events/by-ref/${encodeURIComponent(referenceId)}/user-description?access_token=${encodeURIComponent(config.apiKey)}`;
     return this.sendRequest('POST', config.serverUrl, path, Utils.stringify(description)).then(
       msg => { return new SubmissionResponse(msg.statusCode, this.getResponseMessage(msg)); },
       msg => { return new SubmissionResponse(msg.statusCode || 500, this.getResponseMessage(msg)); }
@@ -32,14 +31,14 @@ export class NodeSubmissionClient implements ISubmissionClient {
     return this.sendRequest('GET', config.serverUrl, path).then(
       msg => {
         if (msg.statusCode !== 200 || !(<any>msg).responseText) {
-          return new SettingsResponse(false, null, -1, null, 'Unable to retrieve configuration settings: ' + this.getResponseMessage(msg));
+          return new SettingsResponse(false, null, -1, null, `Unable to retrieve configuration settings: ${this.getResponseMessage(msg)}`);
         }
 
         var settings;
         try {
           settings = JSON.parse((<any>msg).responseText);
         } catch (e) {
-          config.log.error('An error occurred while parsing the settings response text: "' + (<any>msg).responseText + '"');
+          config.log.error(`An error occurred while parsing the settings response text: "${(<any>msg).responseText}"`);
         }
 
         if (!settings || !settings.settings || !settings.version) {
@@ -78,7 +77,7 @@ export class NodeSubmissionClient implements ISubmissionClient {
       if (method === 'POST') {
         options.headers = {
           'Content-Type': 'application/json',
-          'Content-Length': data.length
+          'Content-Length': data.length,
         }
       }
 
