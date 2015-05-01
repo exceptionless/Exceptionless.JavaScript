@@ -2,17 +2,26 @@ var concat = require('gulp-concat');
 var del = require('del');
 var gulp = require('gulp');
 var karma = require('gulp-karma');
-var rename = require('gulp-rename');
 var sourcemaps = require('gulp-sourcemaps');
 var tsProject = require('tsproject');
 var uglify = require('gulp-uglify');
+var umd = require('gulp-wrap-umd');
 
 gulp.task('clean', function () {
   del.sync(['dist'], { force: true });
 });
 
 gulp.task('typescript.es5', function() {
-  return tsProject.src('src/tsconfig.es5.json').pipe(gulp.dest('dist/temp'));
+  tsProject.src('src/tsconfig.es5.json').pipe(gulp.dest('dist/temp'));
+  return gulp.src('dist/temp/src/exceptionless.es5.js')
+    .pipe(sourcemaps.init({ loadMaps: true }))
+    .pipe(umd({
+      exports: '{ Exceptionless : exports }',
+      globalName: 'Exceptionless',
+      namespace: 'Exceptionless'
+    }))
+    .pipe(sourcemaps.write('.'))
+    .pipe(gulp.dest('dist/temp'));
 });
 
 gulp.task('exceptionless.es5', ['typescript.es5'], function() {
@@ -25,7 +34,7 @@ gulp.task('exceptionless.es5', ['typescript.es5'], function() {
     'node_modules/stack-generator/dist/stack-generator.js',
     'node_modules/stacktrace-gps/dist/stacktrace-gps.js',
     'node_modules/stacktrace-js/dist/stacktrace.js',
-    'dist/temp/src/exceptionless.es5.js'
+    'dist/temp/exceptionless.es5.js'
   ];
 
   gulp.src(files)
@@ -36,7 +45,7 @@ gulp.task('exceptionless.es5', ['typescript.es5'], function() {
 
   return gulp.src(files)
     .pipe(sourcemaps.init({ loadMaps: true }))
-    .pipe(rename('exceptionless.es5.min.js'))
+    .pipe(concat('exceptionless.es5.min.js'))
     .pipe(uglify())
     .pipe(sourcemaps.write('.'))
     .pipe(gulp.dest('dist'))
@@ -67,7 +76,7 @@ gulp.task('exceptionless.es5.node', ['typescript.es5.node'], function() {
 
   return gulp.src(files)
     .pipe(sourcemaps.init({ loadMaps: true }))
-    .pipe(rename('exceptionless.es5.node.min.js'))
+    .pipe(concat('exceptionless.es5.node.min.js'))
     .pipe(uglify())
     .pipe(sourcemaps.write('.'))
     .pipe(gulp.dest('dist'))
