@@ -82,16 +82,12 @@ export class NodeSubmissionClient implements ISubmissionClient {
       }
 
       var request:http.ClientRequest = https.request(options, (response:http.IncomingMessage) => {
-        if (method === 'GET') {
-          var body = '';
-          response.on('data', chunk => body += chunk);
-          response.on('end', () => {
-            (<any>response).responseText = body;
-            resolve(response);
-          });
-        } else {
+        var body = '';
+        response.on('data', chunk => body += chunk);
+        response.on('end', () => {
+          (<any>response).responseText = body;
           resolve(response);
-        }
+        });
       });
 
       request.on('error', function(e) {
