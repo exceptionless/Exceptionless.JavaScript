@@ -1,3 +1,6 @@
+export interface IBootstrapper {
+    register(): void;
+}
 export interface ILastReferenceIdManager {
     getLast(): string;
     clearLast(): void;
@@ -312,10 +315,16 @@ export declare class SubmissionMethodPlugin implements IEventPlugin {
     name: string;
     run(context: EventPluginContext): Promise<any>;
 }
-export declare class ConsoleLog implements ILog {
-    info(message: any): void;
-    warn(message: any): void;
-    error(message: any): void;
+export declare class NodeSubmissionClient implements ISubmissionClient {
+    submit(events: IEvent[], config: Configuration): Promise<SubmissionResponse>;
+    submitDescription(referenceId: string, description: IUserDescription, config: Configuration): Promise<SubmissionResponse>;
+    getSettings(config: Configuration): Promise<SettingsResponse>;
+    private getResponseMessage(msg);
+    private sendRequest(method, host, path, data?);
+}
+export declare class NodeBootstrapper implements IBootstrapper {
+    register(): void;
+    private isNode();
 }
 export declare class DefaultSubmissionClient implements ISubmissionClient {
     submit(events: IEvent[], config: Configuration): Promise<SubmissionResponse>;
@@ -324,4 +333,14 @@ export declare class DefaultSubmissionClient implements ISubmissionClient {
     private getResponseMessage(xhr);
     private createRequest(method, url);
     private sendRequest(method, url, data?);
+}
+export declare class WindowBootstrapper implements IBootstrapper {
+    register(): void;
+    private getDefaultsSettingsFromScriptTag();
+    private handleWindowOnError();
+}
+export declare class ConsoleLog implements ILog {
+    info(message: any): void;
+    warn(message: any): void;
+    error(message: any): void;
 }

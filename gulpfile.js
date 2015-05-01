@@ -13,7 +13,10 @@ gulp.task('clean', function () {
 });
 
 gulp.task('typescript.es5', function() {
-  tsProject.src('src/tsconfig.es5.json').pipe(gulp.dest('dist/temp'));
+  return tsProject.src('src/tsconfig.es5.json').pipe(gulp.dest('dist/temp'));
+});
+
+gulp.task('exceptionless.es5.umd', ['typescript.es5'], function() {
   return gulp.src('dist/temp/src/exceptionless.es5.js')
     .pipe(sourcemaps.init({ loadMaps: true }))
     .pipe(umd({
@@ -21,12 +24,12 @@ gulp.task('typescript.es5', function() {
       globalName: 'Exceptionless',
       namespace: 'Exceptionless'
     }))
-    .pipe(replace('}(this, function(require, exports, module) {', '}(this, function(require, exports, module) {\nif (!exports) {\n\texports = {};\n}'))
+    .pipe(replace('}(this, function(require, exports, module) {', '}(this, function(require, exports, module) {\nif (!exports) {\n\tvar exports = {};\n}\nif (!require) {\n\tvar require = function(){};\n}\n'))
     .pipe(sourcemaps.write('.'))
     .pipe(gulp.dest('dist/temp'));
 });
 
-gulp.task('exceptionless.es5', ['typescript.es5'], function() {
+gulp.task('exceptionless.es5', ['exceptionless.es5.umd'], function() {
   gulp.src('dist/temp/src/exceptionless.es5.d.ts').pipe(gulp.dest('dist'));
 
   var files = [
@@ -48,37 +51,6 @@ gulp.task('exceptionless.es5', ['typescript.es5'], function() {
   return gulp.src(files)
     .pipe(sourcemaps.init({ loadMaps: true }))
     .pipe(concat('exceptionless.es5.min.js'))
-    .pipe(uglify())
-    .pipe(sourcemaps.write('.'))
-    .pipe(gulp.dest('dist'))
-});
-
-gulp.task('typescript.es5.node', function() {
-  return tsProject.src('src/tsconfig.es5.node.json').pipe(gulp.dest('dist/temp'));
-});
-
-gulp.task('exceptionless.es5.node', ['typescript.es5.node'], function() {
-  gulp.src('dist/temp/src/exceptionless.es5.node.d.ts').pipe(gulp.dest('dist'));
-
-  var files = [
-    'node_modules/es6-promise/dist/es6-promise.js',
-    'node_modules/stackframe/dist/stackframe.js',
-    'node_modules/error-stack-parser/dist/error-stack-parser.js',
-    'node_modules/stack-generator/dist/stack-generator.js',
-    'node_modules/stacktrace-gps/dist/stacktrace-gps.js',
-    'node_modules/stacktrace-js/dist/stacktrace.js',
-    'dist/temp/src/exceptionless.es5.node.js'
-  ];
-
-  gulp.src(files)
-    .pipe(sourcemaps.init({ loadMaps: true }))
-    .pipe(concat('exceptionless.es5.node.js'))
-    .pipe(sourcemaps.write('.'))
-    .pipe(gulp.dest('dist'));
-
-  return gulp.src(files)
-    .pipe(sourcemaps.init({ loadMaps: true }))
-    .pipe(concat('exceptionless.es5.node.min.js'))
     .pipe(uglify())
     .pipe(sourcemaps.write('.'))
     .pipe(gulp.dest('dist'))
@@ -111,7 +83,7 @@ gulp.task('watch', ['build'], function() {
   gulp.watch('*.ts', ['build']);
 });
 
-gulp.task('build', ['clean', 'exceptionless.es5', 'exceptionless.es5.node']);
+gulp.task('build', ['clean', 'exceptionless.es5']);
 
 gulp.task('test', [], function() {
   return gulp.src(['src/**/*-spec.ts'])

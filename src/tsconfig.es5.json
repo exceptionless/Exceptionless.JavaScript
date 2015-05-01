@@ -8,6 +8,7 @@
   },
   "files": [
     "../typings/es6-promise/es6-promise.d.ts",
+    "../typings/node/node.d.ts",
     "configuration/Configuration.ts",
     "configuration/IConfigurationSettings.ts",
     "lastReferenceIdManager/ILastReferenceIdManager.ts",
@@ -41,6 +42,7 @@
     "storage/IStorage.ts",
     "submission/DefaultSubmissionClient.ts",
     "submission/ISubmissionClient.ts",
+    "submission/NodeSubmissionClient",
     "submission/SettingsResponse.ts",
     "submission/SubmissionResponse.ts",
     "EventBuilder.ts",
@@ -52,6 +54,7 @@
     "exceptionless.es5": {
       "files": [
         "../typings/es6-promise/es6-promise.d.ts",
+        "../typings/node/node.d.ts",
         "Exceptionless.ts"
       ]
     }

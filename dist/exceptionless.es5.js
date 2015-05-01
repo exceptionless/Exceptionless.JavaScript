@@ -1620,8 +1620,12 @@
   }
 }(this, function(require, exports, module) {
 if (!exports) {
-	exports = {};
+	var exports = {};
 }
+if (!require) {
+	var require = function(){};
+}
+
 
 var InMemoryLastReferenceIdManager = (function () {
     function InMemoryLastReferenceIdManager() {
@@ -2589,27 +2593,103 @@ var SubmissionMethodPlugin = (function () {
     return SubmissionMethodPlugin;
 })();
 exports.SubmissionMethodPlugin = SubmissionMethodPlugin;
-var ConsoleLog = (function () {
-    function ConsoleLog() {
+var https = require('https');
+var NodeSubmissionClient = (function () {
+    function NodeSubmissionClient() {
     }
-    ConsoleLog.prototype.info = function (message) {
-        if (console && console.log) {
-            console.log("[INFO] Exceptionless:" + message);
-        }
+    NodeSubmissionClient.prototype.submit = function (events, config) {
+        var _this = this;
+        var path = "/api/v2/events?access_token=" + encodeURIComponent(config.apiKey);
+        return this.sendRequest('POST', config.serverUrl, path, Utils.stringify(events)).then(function (msg) { return new SubmissionResponse(msg.statusCode, _this.getResponseMessage(msg)); }, function (msg) { return new SubmissionResponse(msg.statusCode || 500, _this.getResponseMessage(msg)); });
     };
-    ConsoleLog.prototype.warn = function (message) {
-        if (console && console.log) {
-            console.log("[Warn] Exceptionless:" + message);
-        }
+    NodeSubmissionClient.prototype.submitDescription = function (referenceId, description, config) {
+        var _this = this;
+        var path = "/api/v2/events/by-ref/" + encodeURIComponent(referenceId) + "/user-description?access_token=" + encodeURIComponent(config.apiKey);
+        return this.sendRequest('POST', config.serverUrl, path, Utils.stringify(description)).then(function (msg) { return new SubmissionResponse(msg.statusCode, _this.getResponseMessage(msg)); }, function (msg) { return new SubmissionResponse(msg.statusCode || 500, _this.getResponseMessage(msg)); });
     };
-    ConsoleLog.prototype.error = function (message) {
-        if (console && console.log) {
-            console.log("[Error] Exceptionless:" + message);
-        }
+    NodeSubmissionClient.prototype.getSettings = function (config) {
+        var _this = this;
+        var path = config.serverUrl + '/api/v2/projects/config?access_token=' + encodeURIComponent(config.apiKey);
+        return this.sendRequest('GET', config.serverUrl, path).then(function (msg) {
+            if (msg.statusCode !== 200 || !msg.responseText) {
+                return new SettingsResponse(false, null, -1, null, "Unable to retrieve configuration settings: " + _this.getResponseMessage(msg));
+            }
+            var settings;
+            try {
+                settings = JSON.parse(msg.responseText);
+            }
+            catch (e) {
+                config.log.error("An error occurred while parsing the settings response text: \"" + msg.responseText + "\"");
+            }
+            if (!settings || !settings.settings || !settings.version) {
+                return new SettingsResponse(true, null, -1, null, 'Invalid configuration settings.');
+            }
+            return new SettingsResponse(true, settings.settings, settings.version);
+        }, function (msg) {
+            return new SettingsResponse(false, null, -1, null, _this.getResponseMessage(msg));
+        });
     };
-    return ConsoleLog;
+    NodeSubmissionClient.prototype.getResponseMessage = function (msg) {
+        if (!msg || (msg.statusCode >= 200 && msg.statusCode <= 299)) {
+            return null;
+        }
+        if (msg.statusCode === 0) {
+            return 'Unable to connect to server.';
+        }
+        return msg.statusMessage || msg.message;
+    };
+    NodeSubmissionClient.prototype.sendRequest = function (method, host, path, data) {
+        return new Promise(function (resolve, reject) {
+            var options = {
+                host: host,
+                method: method,
+                port: 443,
+                path: path
+            };
+            if (method === 'POST') {
+                options.headers = {
+                    'Content-Type': 'application/json',
+                    'Content-Length': data.length,
+                };
+            }
+            var request = https.request(options, function (response) {
+                if (method === 'GET') {
+                    var body = '';
+                    response.on('data', function (chunk) { return body += chunk; });
+                    response.on('end', function () {
+                        response.responseText = body;
+                        resolve(response);
+                    });
+                }
+                else {
+                    resolve(response);
+                }
+            });
+            request.on('error', function (e) {
+                reject(e);
+            });
+            request.write(data);
+            request.end();
+        });
+    };
+    return NodeSubmissionClient;
 })();
-exports.ConsoleLog = ConsoleLog;
+exports.NodeSubmissionClient = NodeSubmissionClient;
+var NodeBootstrapper = (function () {
+    function NodeBootstrapper() {
+    }
+    NodeBootstrapper.prototype.register = function () {
+        if (!this.isNode()) {
+            return;
+        }
+        Configuration.defaults.submissionClient = new NodeSubmissionClient();
+    };
+    NodeBootstrapper.prototype.isNode = function () {
+        return !window && typeof global !== "undefined" && {}.toString.call(global) === '[object global]';
+    };
+    return NodeBootstrapper;
+})();
+exports.NodeBootstrapper = NodeBootstrapper;
 var DefaultSubmissionClient = (function () {
     function DefaultSubmissionClient() {
     }
@@ -2713,50 +2793,88 @@ var DefaultSubmissionClient = (function () {
     return DefaultSubmissionClient;
 })();
 exports.DefaultSubmissionClient = DefaultSubmissionClient;
-function getDefaultsSettingsFromScriptTag() {
-    if (!document || !document.getElementsByTagName) {
-        return null;
+var WindowBootstrapper = (function () {
+    function WindowBootstrapper() {
     }
-    var scripts = document.getElementsByTagName('script');
-    for (var index = 0; index < scripts.length; index++) {
-        if (scripts[index].src && scripts[index].src.indexOf('/exceptionless') > -1) {
-            return Utils.parseQueryString(scripts[index].src.split('?').pop());
+    WindowBootstrapper.prototype.register = function () {
+        if (!window || !document) {
+            return;
         }
-    }
-    return null;
-}
-function handleWindowOnError() {
-    if (!window || !window.onerror) {
-        return;
-    }
-    var _oldOnErrorHandler = window.onerror;
-    window.onerror = function (message, filename, lineno, colno, error) {
-        var client = ExceptionlessClient.default;
-        if (error !== null && typeof error === 'object') {
-            client.submitUnhandledException(error);
+        var settings = this.getDefaultsSettingsFromScriptTag();
+        if (settings && (settings.apiKey || settings.serverUrl)) {
+            Configuration.defaults.apiKey = settings.apiKey;
+            Configuration.defaults.serverUrl = settings.serverUrl;
         }
-        else {
-            var e = { message: message, stack_trace: [{ file_name: filename, line_number: lineno, column: colno }] };
-            client.createUnhandledException(new Error(message)).setMessage(message).setProperty('@error', e).submit();
-        }
-        if (_oldOnErrorHandler) {
-            try {
-                return _oldOnErrorHandler(message, filename, lineno, colno, error);
-            }
-            catch (e) {
-                client.config.log.error("An error occurred while calling previous error handler: " + e.message);
-            }
-        }
-        return false;
+        Configuration.defaults.submissionClient = new DefaultSubmissionClient();
+        this.handleWindowOnError();
     };
-}
-var settings = getDefaultsSettingsFromScriptTag();
-if (settings && (settings.apiKey || settings.serverUrl)) {
-    Configuration.defaults.apiKey = settings.apiKey;
-    Configuration.defaults.serverUrl = settings.serverUrl;
-}
-Configuration.defaults.submissionClient = new DefaultSubmissionClient();
-handleWindowOnError();
+    WindowBootstrapper.prototype.getDefaultsSettingsFromScriptTag = function () {
+        if (!document || !document.getElementsByTagName) {
+            return null;
+        }
+        var scripts = document.getElementsByTagName('script');
+        for (var index = 0; index < scripts.length; index++) {
+            if (scripts[index].src && scripts[index].src.indexOf('/exceptionless') > -1) {
+                return Utils.parseQueryString(scripts[index].src.split('?').pop());
+            }
+        }
+        return null;
+    };
+    WindowBootstrapper.prototype.handleWindowOnError = function () {
+        var _oldOnErrorHandler = window.onerror;
+        window.onerror = function (message, filename, lineno, colno, error) {
+            var client = ExceptionlessClient.default;
+            if (error !== null && typeof error === 'object') {
+                client.submitUnhandledException(error);
+            }
+            else {
+                var e = {
+                    message: message,
+                    stack_trace: [{
+                            file_name: filename,
+                            line_number: lineno,
+                            column: colno
+                        }]
+                };
+                client.createUnhandledException(new Error(message)).setMessage(message).setProperty('@error', e).submit();
+            }
+            if (_oldOnErrorHandler) {
+                try {
+                    return _oldOnErrorHandler(message, filename, lineno, colno, error);
+                }
+                catch (e) {
+                    client.config.log.error("An error occurred while calling previous error handler: " + e.message);
+                }
+            }
+            return false;
+        };
+    };
+    return WindowBootstrapper;
+})();
+exports.WindowBootstrapper = WindowBootstrapper;
+var ConsoleLog = (function () {
+    function ConsoleLog() {
+    }
+    ConsoleLog.prototype.info = function (message) {
+        if (console && console.log) {
+            console.log("[INFO] Exceptionless:" + message);
+        }
+    };
+    ConsoleLog.prototype.warn = function (message) {
+        if (console && console.log) {
+            console.log("[Warn] Exceptionless:" + message);
+        }
+    };
+    ConsoleLog.prototype.error = function (message) {
+        if (console && console.log) {
+            console.log("[Error] Exceptionless:" + message);
+        }
+    };
+    return ConsoleLog;
+})();
+exports.ConsoleLog = ConsoleLog;
+new NodeBootstrapper().register();
+new WindowBootstrapper().register();
 
 return exports;
 
