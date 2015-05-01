@@ -1647,18 +1647,18 @@ var ConsoleLog = (function () {
     function ConsoleLog() {
     }
     ConsoleLog.prototype.info = function (message) {
-        if (console && console.log) {
-            console.log("[INFO] Exceptionless:" + message);
+        if (console && console.info) {
+            console.info("[INFO] Exceptionless:" + message);
         }
     };
     ConsoleLog.prototype.warn = function (message) {
-        if (console && console.log) {
-            console.log("[Warn] Exceptionless:" + message);
+        if (console && console.warn) {
+            console.warn("[Warn] Exceptionless:" + message);
         }
     };
     ConsoleLog.prototype.error = function (message) {
-        if (console && console.log) {
-            console.log("[Error] Exceptionless:" + message);
+        if (console && console.error) {
+            console.error("[Error] Exceptionless:" + message);
         }
     };
     return ConsoleLog;
@@ -2682,17 +2682,12 @@ var NodeSubmissionClient = (function () {
                 };
             }
             var request = https.request(options, function (response) {
-                if (method === 'GET') {
-                    var body = '';
-                    response.on('data', function (chunk) { return body += chunk; });
-                    response.on('end', function () {
-                        response.responseText = body;
-                        resolve(response);
-                    });
-                }
-                else {
+                var body = '';
+                response.on('data', function (chunk) { return body += chunk; });
+                response.on('end', function () {
+                    response.responseText = body;
                     resolve(response);
-                }
+                });
             });
             request.on('error', function (e) {
                 reject(e);
