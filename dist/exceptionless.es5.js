@@ -2708,10 +2708,58 @@ var NodeBootstrapper = (function () {
     function NodeBootstrapper() {
     }
     NodeBootstrapper.prototype.register = function () {
+        var _this = this;
         if (!this.isNode()) {
             return;
         }
         Configuration.defaults.submissionClient = new NodeSubmissionClient();
+        process.on('uncaughtException', function (error) {
+            ExceptionlessClient.default.submitUnhandledException(error);
+        });
+        process.on('beforeExit', function (code) {
+            var client = ExceptionlessClient.default;
+            var message = _this.getExitCodeReason(code);
+            if (message !== null) {
+                client.submitLog('beforeExit', message, 'Error');
+            }
+            client.config.queue.process();
+        });
+    };
+    NodeBootstrapper.prototype.getExitCodeReason = function (code) {
+        if (code === 1) {
+            return 'Uncaught Fatal Exception';
+        }
+        if (code === 3) {
+            return 'Internal JavaScript Parse Error';
+        }
+        if (code === 4) {
+            return 'Internal JavaScript Evaluation Failure';
+        }
+        if (code === 5) {
+            return 'Fatal Exception';
+        }
+        if (code === 6) {
+            return 'Non-function Internal Exception Handler ';
+        }
+        if (code === 7) {
+            return 'Internal Exception Handler Run-Time Failure';
+        }
+        if (code === 8) {
+            return 'Uncaught Exception';
+        }
+        if (code === 9) {
+            return 'Invalid Argument';
+        }
+        if (code === 10) {
+            return 'Internal JavaScript Run-Time Failure';
+        }
+        if (code === 12) {
+            return 'Invalid Debug Argument';
+        }
+        if (code > 128) {
+            return 'Signal Exits';
+        }
+        return null;
     };
     NodeBootstrapper.prototype.isNode = function () {
         return typeof window === 'undefined' && typeof global !== 'undefined' && {}.toString.call(global) === '[object global]';

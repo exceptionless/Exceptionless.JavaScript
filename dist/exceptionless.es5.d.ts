@@ -331,6 +331,7 @@ export declare class NodeSubmissionClient implements ISubmissionClient {
 }
 export declare class NodeBootstrapper implements IBootstrapper {
     register(): void;
+    private getExitCodeReason(code);
     private isNode();
 }
 export declare class DefaultSubmissionClient implements ISubmissionClient {
