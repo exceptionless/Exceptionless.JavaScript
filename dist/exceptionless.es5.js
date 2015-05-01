@@ -1619,6 +1619,9 @@
     root.Exceptionless = factory();
   }
 }(this, function(require, exports, module) {
+if (!exports) {
+	exports = {};
+}
 
 var InMemoryLastReferenceIdManager = (function () {
     function InMemoryLastReferenceIdManager() {
@@ -2755,7 +2758,7 @@ if (settings && (settings.apiKey || settings.serverUrl)) {
 Configuration.defaults.submissionClient = new DefaultSubmissionClient();
 handleWindowOnError();
 
-return { Exceptionless : exports };
+return exports;
 
 }));
 

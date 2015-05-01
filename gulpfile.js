@@ -2,6 +2,7 @@ var concat = require('gulp-concat');
 var del = require('del');
 var gulp = require('gulp');
 var karma = require('gulp-karma');
+var replace = require('gulp-replace');
 var sourcemaps = require('gulp-sourcemaps');
 var tsProject = require('tsproject');
 var uglify = require('gulp-uglify');
@@ -16,10 +17,11 @@ gulp.task('typescript.es5', function() {
   return gulp.src('dist/temp/src/exceptionless.es5.js')
     .pipe(sourcemaps.init({ loadMaps: true }))
     .pipe(umd({
-      exports: '{ Exceptionless : exports }',
+      exports: 'exports',
       globalName: 'Exceptionless',
       namespace: 'Exceptionless'
     }))
+    .pipe(replace('}(this, function(require, exports, module) {', '}(this, function(require, exports, module) {\nif (!exports) {\n\texports = {};\n}'))
     .pipe(sourcemaps.write('.'))
     .pipe(gulp.dest('dist/temp'));
 });
