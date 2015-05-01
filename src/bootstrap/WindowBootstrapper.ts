@@ -8,7 +8,7 @@ import { Utils } from '../Utils';
 
 export class WindowBootstrapper implements IBootstrapper {
   public register(): void {
-    if (!window || !document) {
+    if (typeof window === 'undefined' || typeof document === 'undefined') {
       return;
     }
 

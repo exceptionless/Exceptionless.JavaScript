@@ -50,6 +50,11 @@ export declare class InMemoryLastReferenceIdManager implements ILastReferenceIdM
     clearLast(): void;
     setLast(eventId: string): void;
 }
+export declare class ConsoleLog implements ILog {
+    info(message: any): void;
+    warn(message: any): void;
+    error(message: any): void;
+}
 export declare class NullLog implements ILog {
     info(message: any): void;
     warn(message: any): void;
@@ -138,7 +143,9 @@ export declare class Configuration implements IConfigurationSettings {
     addPlugin(name: string, priority: number, pluginAction: (context: EventPluginContext) => void): void;
     removePlugin(plugin: IEventPlugin): void;
     removePlugin(name: string): void;
+    setVersion(version: string): void;
     useReferenceIds(): void;
+    useDebugLogger(): void;
     private static _defaultSettings;
     static defaults: IConfigurationSettings;
 }
@@ -339,8 +346,28 @@ export declare class WindowBootstrapper implements IBootstrapper {
     private getDefaultsSettingsFromScriptTag();
     private handleWindowOnError();
 }
-export declare class ConsoleLog implements ILog {
-    info(message: any): void;
-    warn(message: any): void;
-    error(message: any): void;
+export interface IEnvironmentInfo {
+    processor_count?: number;
+    total_physical_memory?: number;
+    available_physical_memory?: number;
+    command_line?: string;
+    process_name?: string;
+    process_id?: string;
+    process_memory_size?: number;
+    thread_id?: string;
+    architecture?: string;
+    o_s_name?: string;
+    o_s_version?: string;
+    ip_address?: string;
+    machine_name?: string;
+    install_id?: string;
+    runtime_version?: string;
+    data?: any;
+}
+export interface IEnvironmentInfoCollector {
+    GetEnvironmentInfo(): IEnvironmentInfo;
+}
+export declare class NodeEnvironmentInfoCollector implements IEnvironmentInfoCollector {
+    GetEnvironmentInfo(): IEnvironmentInfo;
+    private getIpAddresses();
 }

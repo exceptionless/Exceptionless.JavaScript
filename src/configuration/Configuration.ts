@@ -1,6 +1,7 @@
 import { IConfigurationSettings } from 'IConfigurationSettings';
 import { ILastReferenceIdManager } from '../lastReferenceIdManager/ILastReferenceIdManager';
 import { InMemoryLastReferenceIdManager } from '../lastReferenceIdManager/InMemoryLastReferenceIdManager';
+import { ConsoleLog } from '../logging/ConsoleLog';
 import { ILog } from '../logging/ILog';
 import { NullLog } from '../logging/NullLog';
 import { IEventPlugin } from '../plugins/IEventPlugin';
@@ -124,8 +125,19 @@ export class Configuration implements IConfigurationSettings {
     }
   }
 
+  public setVersion(version:string): void {
+    if (!!version && version.length > 0) {
+      this.defaultData['@version'] = version;
+    }
+  }
+
   public useReferenceIds(): void {
     this.addPlugin(new ReferenceIdPlugin());
+  }
+
+  // TODO: Support a min log level.
+  public useDebugLogger(): void {
+    this.log = new ConsoleLog();
   }
 
   private static _defaultSettings:IConfigurationSettings = null;

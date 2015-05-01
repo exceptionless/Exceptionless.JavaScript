@@ -16,6 +16,6 @@ export class NodeBootstrapper implements IBootstrapper {
   }
 
   private isNode(): boolean {
-    return !window && typeof global !== "undefined" && {}.toString.call(global) === '[object global]';
+    return typeof window === 'undefined' && typeof global !== 'undefined' && {}.toString.call(global) === '[object global]';
   }
 }

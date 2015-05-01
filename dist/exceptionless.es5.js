@@ -1643,6 +1643,27 @@ var InMemoryLastReferenceIdManager = (function () {
     return InMemoryLastReferenceIdManager;
 })();
 exports.InMemoryLastReferenceIdManager = InMemoryLastReferenceIdManager;
+var ConsoleLog = (function () {
+    function ConsoleLog() {
+    }
+    ConsoleLog.prototype.info = function (message) {
+        if (console && console.log) {
+            console.log("[INFO] Exceptionless:" + message);
+        }
+    };
+    ConsoleLog.prototype.warn = function (message) {
+        if (console && console.log) {
+            console.log("[Warn] Exceptionless:" + message);
+        }
+    };
+    ConsoleLog.prototype.error = function (message) {
+        if (console && console.log) {
+            console.log("[Error] Exceptionless:" + message);
+        }
+    };
+    return ConsoleLog;
+})();
+exports.ConsoleLog = ConsoleLog;
 var NullLog = (function () {
     function NullLog() {
     }
@@ -2063,8 +2084,16 @@ var Configuration = (function () {
             }
         }
     };
+    Configuration.prototype.setVersion = function (version) {
+        if (!!version && version.length > 0) {
+            this.defaultData['@version'] = version;
+        }
+    };
     Configuration.prototype.useReferenceIds = function () {
         this.addPlugin(new ReferenceIdPlugin());
+    };
+    Configuration.prototype.useDebugLogger = function () {
+        this.log = new ConsoleLog();
     };
     Object.defineProperty(Configuration, "defaults", {
         get: function () {
@@ -2685,7 +2714,7 @@ var NodeBootstrapper = (function () {
         Configuration.defaults.submissionClient = new NodeSubmissionClient();
     };
     NodeBootstrapper.prototype.isNode = function () {
-        return !window && typeof global !== "undefined" && {}.toString.call(global) === '[object global]';
+        return typeof window === 'undefined' && typeof global !== 'undefined' && {}.toString.call(global) === '[object global]';
     };
     return NodeBootstrapper;
 })();
@@ -2797,7 +2826,7 @@ var WindowBootstrapper = (function () {
     function WindowBootstrapper() {
     }
     WindowBootstrapper.prototype.register = function () {
-        if (!window || !document) {
+        if (typeof window === 'undefined' || typeof document === 'undefined') {
             return;
         }
         var settings = this.getDefaultsSettingsFromScriptTag();
@@ -2852,29 +2881,58 @@ var WindowBootstrapper = (function () {
     return WindowBootstrapper;
 })();
 exports.WindowBootstrapper = WindowBootstrapper;
-var ConsoleLog = (function () {
-    function ConsoleLog() {
+var os = require('os');
+var NodeEnvironmentInfoCollector = (function () {
+    function NodeEnvironmentInfoCollector() {
     }
-    ConsoleLog.prototype.info = function (message) {
-        if (console && console.log) {
-            console.log("[INFO] Exceptionless:" + message);
+    NodeEnvironmentInfoCollector.prototype.GetEnvironmentInfo = function () {
+        if (!os) {
+            return null;
         }
-    };
-    ConsoleLog.prototype.warn = function (message) {
-        if (console && console.log) {
-            console.log("[Warn] Exceptionless:" + message);
+        var environmentInfo = {
+            processor_count: os.cpus().length,
+            total_physical_memory: os.totalmem(),
+            available_physical_memory: os.freemem(),
+            command_line: process.argv.join(' '),
+            process_name: process.title,
+            process_id: process.pid + '',
+            process_memory_size: process.memoryUsage().heapTotal,
+            architecture: os.arch(),
+            o_s_name: os.type(),
+            o_s_version: os.release(),
+            ip_address: this.getIpAddresses(),
+            machine_name: os.hostname(),
+            runtime_version: process.version,
+            data: {
+                loadavg: os.loadavg(),
+                platform: os.platform(),
+                tmpdir: os.tmpdir(),
+                uptime: os.uptime()
+            }
+        };
+        if (os.endianness) {
+            environmentInfo.data.endianness = os.endianness();
         }
+        return environmentInfo;
     };
-    ConsoleLog.prototype.error = function (message) {
-        if (console && console.log) {
-            console.log("[Error] Exceptionless:" + message);
-        }
+    NodeEnvironmentInfoCollector.prototype.getIpAddresses = function () {
+        var ips = [];
+        var interfaces = os.networkInterfaces();
+        Object.keys(interfaces).forEach(function (name) {
+            interfaces[name].forEach(function (iface) {
+                if ('IPv4' === iface.family && !iface.internal) {
+                    ips.push(iface.address);
+                }
+            });
+        });
+        return ips.join(', ');
     };
-    return ConsoleLog;
+    return NodeEnvironmentInfoCollector;
 })();
-exports.ConsoleLog = ConsoleLog;
+exports.NodeEnvironmentInfoCollector = NodeEnvironmentInfoCollector;
 new NodeBootstrapper().register();
 new WindowBootstrapper().register();
+Error.stackTraceLimit = Infinity;
 
 return exports;
 

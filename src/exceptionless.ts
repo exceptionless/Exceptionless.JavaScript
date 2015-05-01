@@ -1,3 +1,10 @@
+// TODO: Verify that stack traces are parsed properly.
+// TODO: Handle Server Settings
+// TODO: Lock configuration.
+// TODO: Look into using templated strings `${1 + 1}`.
+// TODO: Set Submission method info.
+// TODO: Move this into an static array and dynamically call all registered bootstrappers.
+
 import { IBootstrapper } from './bootstrap/IBootstrapper';
 import { NodeBootstrapper } from './bootstrap/NodeBootstrapper';
 import { WindowBootstrapper } from './bootstrap/WindowBootstrapper';
@@ -8,6 +15,7 @@ import { InMemoryLastReferenceIdManager } from './lastReferenceIdManager/InMemor
 import { ConsoleLog } from './logging/ConsoleLog';
 import { ILog } from './logging/ILog';
 import { NullLog } from './logging/NullLog';
+import { IEnvironmentInfo } from './models/IEnvironmentInfo';
 import { IError } from './models/IError';
 import { IEvent } from './models/IEvent';
 import { IInnerError } from './models/IInnerError';
@@ -30,6 +38,8 @@ import { RequestInfoPlugin } from './plugins/default/RequestInfoPlugin';
 import { SubmissionMethodPlugin } from './plugins/default/SubmissionMethodPlugin';
 import { DefaultEventQueue } from './queue/DefaultEventQueue';
 import { IEventQueue } from './queue/IEventQueue';
+import { IEnvironmentInfoCollector } from './services/IEnvironmentInfoCollector';
+import { NodeEnvironmentInfoCollector } from './services/NodeEnvironmentInfoCollector';
 import { InMemoryStorage } from './storage/InMemoryStorage';
 import { IStorage } from './storage/IStorage';
 import { DefaultSubmissionClient } from './submission/DefaultSubmissionClient';
@@ -41,6 +51,6 @@ import { EventBuilder } from 'EventBuilder';
 import { ExceptionlessClient } from 'ExceptionlessClient';
 import { Utils } from 'Utils';
 
-// TODO: Move this into an static array and dynamically call all registered bootstrappers.
 new NodeBootstrapper().register();
 new WindowBootstrapper().register();
+(<any>Error).stackTraceLimit = Infinity;

@@ -1,8 +1,3 @@
-// TODO: Verify that stack traces are parsed properly.
-// TODO: Handle Server Settings
-// TODO: Lock configuration.
-// TODO: Look into using templated strings `${1 + 1}`.
-
 import { IConfigurationSettings } from './configuration/IConfigurationSettings';
 import { Configuration } from './configuration/Configuration';
 import { EventBuilder } from './EventBuilder';

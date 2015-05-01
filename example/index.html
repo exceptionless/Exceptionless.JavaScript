@@ -14,7 +14,7 @@
 
   var client = Exceptionless.ExceptionlessClient.default;
   client.config.serverUrl = 'http://localhost:50000';
-  client.config.log = new Exceptionless.ConsoleLog();
+  client.config.useDebugLogger();
 </script>
 
 <button onclick="throwDivisionByZero()">Division By Zero</button>

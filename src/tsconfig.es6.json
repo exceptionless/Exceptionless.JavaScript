@@ -6,6 +6,10 @@
     "target": "es6"
   },
   "files": [
+    "../typings/node/node.d.ts",
+    "bootstrap/IBootstrapper",
+    "bootstrap/NodeBootstrapper",
+    "bootstrap/WindowBootstrapper",
     "configuration/Configuration.ts",
     "configuration/IConfigurationSettings.ts",
     "lastReferenceIdManager/ILastReferenceIdManager.ts",
@@ -13,6 +17,7 @@
     "logging/ConsoleLog.ts",
     "logging/ILog.ts",
     "logging/NullLog.ts",
+    "models/IEnvironmentInfo.ts",
     "models/IError.ts",
     "models/IEvent.ts",
     "models/IInnerError.ts",
@@ -35,10 +40,13 @@
     "plugins/default/SubmissionMethodPlugin.ts",
     "queue/DefaultEventQueue.ts",
     "queue/IEventQueue.ts",
+    "services/IEnvironmentInfoCollector.ts",
+    "services/NodeEnvironmentInfoCollector.ts",
     "storage/InMemoryStorage.ts",
     "storage/IStorage.ts",
     "submission/DefaultSubmissionClient.ts",
     "submission/ISubmissionClient.ts",
+    "submission/NodeSubmissionClient",
     "submission/SettingsResponse.ts",
     "submission/SubmissionResponse.ts",
     "EventBuilder.ts",
@@ -49,6 +57,7 @@
   "bundles": {
     "exceptionless.es6": {
       "files": [
+        "../typings/node/node.d.ts",
         "Exceptionless.ts"
       ]
     }
