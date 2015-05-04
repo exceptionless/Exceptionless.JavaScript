@@ -21,12 +21,12 @@ app.get('/boom', function (req, res) {
 
 
 app.use(function(err, req, res, next) {
-  client.submitUnhandledException(err, 'express');
+  client.createUnhandledException(err, 'express').addRequestInfo(req).submit();
   res.status(500).send('Something broke!');
 });
 
 app.use(function(req, res, next) {
-  client.submitNotFound(req.originalUrl);
+  client.createNotFound(req.originalUrl).addRequestInfo(req).submit();
   res.status(404).send('Sorry cant find that!');
 });
 
