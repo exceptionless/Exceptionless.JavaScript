@@ -8,27 +8,26 @@ import { Utils } from '../Utils';
 
 import http = require('http');
 import https = require('https');
+import url = require('url');
 
 export class NodeSubmissionClient implements ISubmissionClient {
   public submit(events:IEvent[], config:Configuration): Promise<SubmissionResponse> {
-    var path = `/api/v2/events?access_token=${encodeURIComponent(config.apiKey)}`;
-    return this.sendRequest('POST', config.serverUrl, path, Utils.stringify(events)).then(
+    return this.sendRequest('POST', config.serverUrl, '/api/v2/events', config.apiKey, Utils.stringify(events)).then(
       msg => { return new SubmissionResponse(msg.statusCode, this.getResponseMessage(msg)); },
       msg => { return new SubmissionResponse(msg.statusCode || 500, this.getResponseMessage(msg)); }
     );
   }
 
   public submitDescription(referenceId:string, description:IUserDescription, config:Configuration): Promise<SubmissionResponse> {
-    var path = `/api/v2/events/by-ref/${encodeURIComponent(referenceId)}/user-description?access_token=${encodeURIComponent(config.apiKey)}`;
-    return this.sendRequest('POST', config.serverUrl, path, Utils.stringify(description)).then(
+    var path = `/api/v2/events/by-ref/${encodeURIComponent(referenceId)}/user-description`;
+    return this.sendRequest('POST', config.serverUrl, path, config.apiKey, Utils.stringify(description)).then(
       msg => { return new SubmissionResponse(msg.statusCode, this.getResponseMessage(msg)); },
       msg => { return new SubmissionResponse(msg.statusCode || 500, this.getResponseMessage(msg)); }
     );
   }
 
   public getSettings(config:Configuration): Promise<SettingsResponse> {
-    var path = config.serverUrl + '/api/v2/projects/config?access_token=' + encodeURIComponent(config.apiKey);
-    return this.sendRequest('GET', config.serverUrl, path).then(
+    return this.sendRequest('GET', config.serverUrl, '/api/v2/projects/config', config.apiKey).then(
       msg => {
         if (msg.statusCode !== 200 || !(<any>msg).responseText) {
           return new SettingsResponse(false, null, -1, null, `Unable to retrieve configuration settings: ${this.getResponseMessage(msg)}`);
@@ -65,19 +64,21 @@ export class NodeSubmissionClient implements ISubmissionClient {
     return msg.statusMessage || (<any>msg).message;
   }
 
-  private sendRequest(method:string, host:string, path:string, data?:string): Promise<http.IncomingMessage> {
+  private sendRequest(method:string, host:string, path:string, apiKey:string, data?:string): Promise<http.IncomingMessage> {
     return new Promise((resolve, reject) => {
+      var parsedHost = url.parse(host);
       var options:https.RequestOptions = {
-        host: host,
+        auth: `client:${apiKey}`,
+        hostname: parsedHost.hostname,
         method: method,
-        port: 443, // TODO: Detect if the host is secure.
+        port: parsedHost.port && parseInt(parsedHost.port),
         path: path
       };
 
       if (method === 'POST') {
         options.headers = {
           'Content-Type': 'application/json',
-          'Content-Length': data.length,
+          'Content-Length': data.length
         }
       }
 

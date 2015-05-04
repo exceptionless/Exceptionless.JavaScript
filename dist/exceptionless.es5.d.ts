@@ -28,17 +28,57 @@ export interface IEventQueue {
     process(): any;
     suspendProcessing(durationInMinutes?: number, discardFutureQueuedItems?: boolean, clearQueue?: boolean): any;
 }
+export interface IEnvironmentInfo {
+    processor_count?: number;
+    total_physical_memory?: number;
+    available_physical_memory?: number;
+    command_line?: string;
+    process_name?: string;
+    process_id?: string;
+    process_memory_size?: number;
+    thread_id?: string;
+    architecture?: string;
+    o_s_name?: string;
+    o_s_version?: string;
+    ip_address?: string;
+    machine_name?: string;
+    install_id?: string;
+    runtime_version?: string;
+    data?: any;
+}
+export declare class ContextData {
+    setException(exception: Error): void;
+    hasException: boolean;
+    getException(): Error;
+    markAsUnhandledError(): void;
+    isUnhandledError: boolean;
+    setSubmissionMethod(method: string): void;
+    getSubmissionMethod(): string;
+}
+export interface IEnvironmentInfoCollector {
+    getEnvironmentInfo(context: EventPluginContext): IEnvironmentInfo;
+}
+export interface IRequestInfoCollector {
+    getRequestInfo(context: EventPluginContext): IRequestInfo;
+}
 export interface IStorage<T> {
     save<T>(path: string, value: T): boolean;
     get(searchPattern?: string, limit?: number): T[];
     clear(searchPattern?: string): any;
     count(searchPattern?: string): number;
 }
+export interface ISubmissionClient {
+    submit(events: IEvent[], config: Configuration): Promise<SubmissionResponse>;
+    submitDescription(referenceId: string, description: IUserDescription, config: Configuration): Promise<SubmissionResponse>;
+    getSettings(config: Configuration): Promise<SettingsResponse>;
+}
 export interface IConfigurationSettings {
     apiKey?: string;
     serverUrl?: string;
+    environmentInfoCollector?: IEnvironmentInfoCollector;
     lastReferenceIdManager?: ILastReferenceIdManager;
     log?: ILog;
+    requestInfoCollector?: IRequestInfoCollector;
     submissionBatchSize?: number;
     submissionClient?: ISubmissionClient;
     storage?: IStorage<any>;
@@ -107,11 +147,6 @@ export declare class InMemoryStorage<T> implements IStorage<T> {
     clear(searchPattern?: string): void;
     count(searchPattern?: string): number;
 }
-export interface ISubmissionClient {
-    submit(events: IEvent[], config: Configuration): Promise<SubmissionResponse>;
-    submitDescription(referenceId: string, description: IUserDescription, config: Configuration): Promise<SubmissionResponse>;
-    getSettings(config: Configuration): Promise<SettingsResponse>;
-}
 export declare class Utils {
     static getHashCode(source: string): string;
     static guid(): string;
@@ -126,8 +161,10 @@ export declare class Configuration implements IConfigurationSettings {
     private _enabled;
     private _serverUrl;
     private _plugins;
+    environmentInfoCollector: IEnvironmentInfoCollector;
     lastReferenceIdManager: ILastReferenceIdManager;
     log: ILog;
+    requestInfoCollector: IRequestInfoCollector;
     submissionBatchSize: any;
     submissionClient: ISubmissionClient;
     storage: IStorage<any>;
@@ -148,40 +185,6 @@ export declare class Configuration implements IConfigurationSettings {
     useDebugLogger(): void;
     private static _defaultSettings;
     static defaults: IConfigurationSettings;
-}
-export interface IUserDescription {
-    email_address?: string;
-    description?: string;
-    data?: any;
-}
-export declare class SettingsResponse {
-    success: boolean;
-    settings: any;
-    settingsVersion: number;
-    message: string;
-    exception: any;
-    constructor(success: boolean, settings: any, settingsVersion?: number, exception?: any, message?: string);
-}
-export declare class SubmissionResponse {
-    success: boolean;
-    badRequest: boolean;
-    serviceUnavailable: boolean;
-    paymentRequired: boolean;
-    unableToAuthenticate: boolean;
-    notFound: boolean;
-    requestEntityTooLarge: boolean;
-    statusCode: number;
-    message: string;
-    constructor(statusCode: number, message?: string);
-}
-export declare class ContextData {
-    setException(exception: Error): void;
-    hasException: boolean;
-    getException(): Error;
-    markAsUnhandledError(): void;
-    isUnhandledError: boolean;
-    setSubmissionMethod(method: string): void;
-    getSubmissionMethod(): string;
 }
 export declare class EventBuilder {
     target: IEvent;
@@ -315,24 +318,64 @@ export declare class RequestInfoPlugin implements IEventPlugin {
     priority: number;
     name: string;
     run(context: EventPluginContext): Promise<any>;
-    private getCookies();
+}
+export declare class EnvironmentInfoPlugin implements IEventPlugin {
+    priority: number;
+    name: string;
+    run(context: EventPluginContext): Promise<any>;
 }
 export declare class SubmissionMethodPlugin implements IEventPlugin {
     priority: number;
     name: string;
     run(context: EventPluginContext): Promise<any>;
 }
+export interface IUserDescription {
+    email_address?: string;
+    description?: string;
+    data?: any;
+}
+export declare class SettingsResponse {
+    success: boolean;
+    settings: any;
+    settingsVersion: number;
+    message: string;
+    exception: any;
+    constructor(success: boolean, settings: any, settingsVersion?: number, exception?: any, message?: string);
+}
+export declare class SubmissionResponse {
+    success: boolean;
+    badRequest: boolean;
+    serviceUnavailable: boolean;
+    paymentRequired: boolean;
+    unableToAuthenticate: boolean;
+    notFound: boolean;
+    requestEntityTooLarge: boolean;
+    statusCode: number;
+    message: string;
+    constructor(statusCode: number, message?: string);
+}
+export declare class NodeEnvironmentInfoCollector implements IEnvironmentInfoCollector {
+    getEnvironmentInfo(context: EventPluginContext): IEnvironmentInfo;
+    private getIpAddresses();
+}
+export declare class NodeRequestInfoCollector implements IRequestInfoCollector {
+    getRequestInfo(context: EventPluginContext): IRequestInfo;
+}
 export declare class NodeSubmissionClient implements ISubmissionClient {
     submit(events: IEvent[], config: Configuration): Promise<SubmissionResponse>;
     submitDescription(referenceId: string, description: IUserDescription, config: Configuration): Promise<SubmissionResponse>;
     getSettings(config: Configuration): Promise<SettingsResponse>;
     private getResponseMessage(msg);
-    private sendRequest(method, host, path, data?);
+    private sendRequest(method, host, path, apiKey, data?);
 }
 export declare class NodeBootstrapper implements IBootstrapper {
     register(): void;
     private getExitCodeReason(code);
     private isNode();
+}
+export declare class WebRequestInfoCollector implements IRequestInfoCollector {
+    getRequestInfo(context: EventPluginContext): IRequestInfo;
+    private getCookies();
 }
 export declare class DefaultSubmissionClient implements ISubmissionClient {
     submit(events: IEvent[], config: Configuration): Promise<SubmissionResponse>;
@@ -346,29 +389,4 @@ export declare class WindowBootstrapper implements IBootstrapper {
     register(): void;
     private getDefaultsSettingsFromScriptTag();
     private handleWindowOnError();
-}
-export interface IEnvironmentInfo {
-    processor_count?: number;
-    total_physical_memory?: number;
-    available_physical_memory?: number;
-    command_line?: string;
-    process_name?: string;
-    process_id?: string;
-    process_memory_size?: number;
-    thread_id?: string;
-    architecture?: string;
-    o_s_name?: string;
-    o_s_version?: string;
-    ip_address?: string;
-    machine_name?: string;
-    install_id?: string;
-    runtime_version?: string;
-    data?: any;
-}
-export interface IEnvironmentInfoCollector {
-    GetEnvironmentInfo(): IEnvironmentInfo;
-}
-export declare class NodeEnvironmentInfoCollector implements IEnvironmentInfoCollector {
-    GetEnvironmentInfo(): IEnvironmentInfo;
-    private getIpAddresses();
 }

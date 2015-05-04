@@ -1,10 +1,11 @@
 import { IEnvironmentInfo } from '../models/IEnvironmentInfo';
 import { IEnvironmentInfoCollector } from './IEnvironmentInfoCollector';
+import { EventPluginContext } from '../plugins/EventPluginContext';
 
 import os = require('os');
 
 export class NodeEnvironmentInfoCollector implements IEnvironmentInfoCollector {
-  public GetEnvironmentInfo(): IEnvironmentInfo {
+  public getEnvironmentInfo(context:EventPluginContext): IEnvironmentInfo {
     if (!os) {
       return null;
     }

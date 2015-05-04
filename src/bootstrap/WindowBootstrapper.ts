@@ -2,6 +2,7 @@ import { IBootstrapper } from 'IBootstrapper';
 import { Configuration } from '../configuration/Configuration';
 import { IConfigurationSettings } from '../configuration/IConfigurationSettings';
 import { IError } from '../models/IError';
+import { WebRequestInfoCollector } from '../services/WebRequestInfoCollector';
 import { DefaultSubmissionClient } from '../submission/DefaultSubmissionClient';
 import { ExceptionlessClient } from '../ExceptionlessClient';
 import { Utils } from '../Utils';
@@ -18,6 +19,7 @@ export class WindowBootstrapper implements IBootstrapper {
       Configuration.defaults.serverUrl = settings.serverUrl;
     }
 
+    Configuration.defaults.requestInfoCollector = new WebRequestInfoCollector();
     Configuration.defaults.submissionClient = new DefaultSubmissionClient();
     this.handleWindowOnError();
   }

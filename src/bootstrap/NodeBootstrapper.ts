@@ -2,6 +2,8 @@ import { IBootstrapper } from 'IBootstrapper';
 import { Configuration } from '../configuration/Configuration';
 import { IConfigurationSettings } from '../configuration/IConfigurationSettings';
 import { IError } from '../models/IError';
+import { NodeEnvironmentInfoCollector } from '../services/NodeEnvironmentInfoCollector';
+import { NodeRequestInfoCollector } from '../services/NodeRequestInfoCollector';
 import { NodeSubmissionClient } from '../submission/NodeSubmissionClient';
 import { ExceptionlessClient } from '../ExceptionlessClient';
 import { Utils } from '../Utils';
@@ -12,6 +14,8 @@ export class NodeBootstrapper implements IBootstrapper {
       return;
     }
 
+    Configuration.defaults.environmentInfoCollector = new NodeEnvironmentInfoCollector();
+    Configuration.defaults.requestInfoCollector = new NodeRequestInfoCollector();
     Configuration.defaults.submissionClient = new NodeSubmissionClient();
     process.on('uncaughtException', function(error) {
       ExceptionlessClient.default.submitUnhandledException(error);

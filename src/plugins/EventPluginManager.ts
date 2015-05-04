@@ -6,6 +6,7 @@ import { ErrorPlugin } from './default/ErrorPlugin';
 import { DuplicateCheckerPlugin } from './default/DuplicateCheckerPlugin';
 import { ModuleInfoPlugin } from './default/ModuleInfoPlugin';
 import { RequestInfoPlugin } from './default/RequestInfoPlugin';
+import { EnvironmentInfoPlugin } from './default/EnvironmentInfoPlugin';
 import { SubmissionMethodPlugin } from './default/SubmissionMethodPlugin';
 
 export class EventPluginManager {
@@ -23,6 +24,7 @@ export class EventPluginManager {
     config.addPlugin(new DuplicateCheckerPlugin());
     config.addPlugin(new ModuleInfoPlugin());
     config.addPlugin(new RequestInfoPlugin());
+    config.addPlugin(new EnvironmentInfoPlugin())
     config.addPlugin(new SubmissionMethodPlugin());
   }
 }

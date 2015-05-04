@@ -1234,7 +1234,6 @@
     if (typeof define === 'function' && define.amd) {
         define('stacktrace-gps', ['source-map', 'es6-promise', 'stackframe'], factory);
     } else if (typeof exports === 'object') {
-        module.exports = factory(require('source-map/lib/source-map/source-map-consumer'), require('es6-promise'), require('stackframe'));
     } else {
         root.StackTraceGPS = factory(root.SourceMap, root.ES6Promise, root.StackFrame);
     }

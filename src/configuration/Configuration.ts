@@ -10,6 +10,8 @@ import { EventPluginManager } from '../plugins/EventPluginManager';
 import { ReferenceIdPlugin } from '../plugins/default/ReferenceIdPlugin';
 import { IEventQueue } from '../queue/IEventQueue';
 import { DefaultEventQueue } from '../queue/DefaultEventQueue';
+import { IEnvironmentInfoCollector } from '../services/IEnvironmentInfoCollector';
+import { IRequestInfoCollector } from '../services/IRequestInfoCollector';
 import { IStorage } from '../storage/IStorage';
 import { InMemoryStorage } from '../storage/InMemoryStorage';
 import { ISubmissionClient } from '../submission/ISubmissionClient';
@@ -21,8 +23,10 @@ export class Configuration implements IConfigurationSettings {
   private _serverUrl:string = 'https://collector.exceptionless.io';
   private _plugins:IEventPlugin[] = [];
 
+  public environmentInfoCollector:IEnvironmentInfoCollector;
   public lastReferenceIdManager:ILastReferenceIdManager = new InMemoryLastReferenceIdManager();
   public log:ILog;
+  public requestInfoCollector:IRequestInfoCollector;
   public submissionBatchSize;
   public submissionClient:ISubmissionClient;
   public storage:IStorage<any>;
@@ -39,8 +43,10 @@ export class Configuration implements IConfigurationSettings {
 
     this.apiKey = settings.apiKey;
     this.serverUrl = settings.serverUrl;
+    this.environmentInfoCollector = inject(settings.environmentInfoCollector);
     this.lastReferenceIdManager = inject(settings.lastReferenceIdManager) || new InMemoryLastReferenceIdManager();
     this.log = inject(settings.log) || new NullLog();
+    this.requestInfoCollector = inject(settings.requestInfoCollector);
     this.submissionBatchSize = inject(settings.submissionBatchSize) || 50;
     this.submissionClient = inject(settings.submissionClient);
     this.storage = inject(settings.storage) || new InMemoryStorage<any>();

@@ -45,12 +45,14 @@ gulp.task('exceptionless.es5', ['exceptionless.es5.umd'], function() {
   gulp.src(files)
     .pipe(sourcemaps.init({ loadMaps: true }))
     .pipe(concat('exceptionless.es5.js'))
+    .pipe(replace('require(\'source-map/lib/source-map/source-map-consumer\')', '{}')) // needed for node until source maps dependency is fixed
     .pipe(sourcemaps.write('.'))
     .pipe(gulp.dest('dist'));
 
   return gulp.src(files)
     .pipe(sourcemaps.init({ loadMaps: true }))
     .pipe(concat('exceptionless.es5.min.js'))
+    .pipe(replace('require(\'source-map/lib/source-map/source-map-consumer\')', '{}')) // needed for node until source maps dependency is fixed
     .pipe(uglify())
     .pipe(sourcemaps.write('.'))
     .pipe(gulp.dest('dist'))

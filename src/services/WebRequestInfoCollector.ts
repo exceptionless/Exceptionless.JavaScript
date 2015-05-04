@@ -1,19 +1,12 @@
-import { IEventPlugin } from '../IEventPlugin';
-import { EventPluginContext } from '../EventPluginContext';
-import { IRequestInfo } from '../../models/IRequestInfo';
-import { Utils } from '../../Utils';
+import { IRequestInfo } from '../models/IRequestInfo';
+import { IRequestInfoCollector } from 'IRequestInfoCollector';
+import { EventPluginContext } from '../plugins/EventPluginContext';
+import { Utils } from '../Utils';
 
-export class RequestInfoPlugin implements IEventPlugin {
-  public priority:number = 60;
-  public name:string = 'RequestInfoPlugin';
-
-  run(context:EventPluginContext):Promise<any> {
-    if (!!context.event.data && !!context.event.data['@request']) {
-      return Promise.resolve();
-    }
-
-    if (!context.event.data) {
-      context.event.data = {};
+export class WebRequestInfoCollector implements IRequestInfoCollector {
+  public getRequestInfo(context:EventPluginContext): IRequestInfo {
+    if (!navigator || !location) {
+      return null;
     }
 
     var requestInfo:IRequestInfo = {
@@ -30,9 +23,6 @@ export class RequestInfoPlugin implements IEventPlugin {
     if (document.referrer && document.referrer !== '') {
       requestInfo.referrer = document.referrer;
     }
-
-    context.event.data['@request'] = requestInfo;
-    return Promise.resolve();
   }
 
   private getCookies(): any {
