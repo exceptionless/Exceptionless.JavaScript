@@ -3,9 +3,9 @@
   "version": "0.1.0",
   "description": "JavaScript client for Exceptionless",
   "license": "Apache",
-  "main": "dist/exceptionless.js",
+  "main": "dist/exceptionless.es5.js",
   "scripts": {
-    "prepublish": "bower install",
+    "prepublish": "tsd reinstall -s",
     "start": "gulp",
     "build": "gulp build",
     "test": "gulp test"
