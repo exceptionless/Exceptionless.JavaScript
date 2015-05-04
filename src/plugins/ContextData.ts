@@ -24,7 +24,9 @@ export class ContextData {
   }
 
   public setSubmissionMethod(method:string): void {
-    this['@@_SubmissionMethod'] = method;
+    if (method && method.length > 0) {
+      this['@@_SubmissionMethod'] = method;
+    }
   }
 
   public getSubmissionMethod(): string {

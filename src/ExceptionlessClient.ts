@@ -34,15 +34,16 @@ export class ExceptionlessClient {
     return this.createException(exception).submit();
   }
 
-  public createUnhandledException(exception:Error): EventBuilder {
+  public createUnhandledException(exception:Error, submissionMethod?:string): EventBuilder {
     var builder = this.createException(exception);
     builder.pluginContextData.markAsUnhandledError();
+    builder.pluginContextData.setSubmissionMethod(submissionMethod);
 
     return builder;
   }
 
-  public submitUnhandledException(exception:Error): Promise<any> {
-    return this.createUnhandledException(exception).submit();
+  public submitUnhandledException(exception:Error, submissionMethod?:string): Promise<any> {
+    return this.createUnhandledException(exception, submissionMethod).submit();
   }
 
   public createFeatureUsage(feature:string): EventBuilder {

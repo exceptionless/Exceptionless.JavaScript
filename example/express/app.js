@@ -21,7 +21,7 @@ app.get('/boom', function (req, res) {
 
 
 app.use(function(err, req, res, next) {
-  client.submitException(err);
+  client.submitUnhandledException(err, 'express');
   res.status(500).send('Something broke!');
 });
 

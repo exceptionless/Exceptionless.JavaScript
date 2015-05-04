@@ -44,7 +44,7 @@ export class WindowBootstrapper implements IBootstrapper {
       var client = ExceptionlessClient.default;
 
       if (error !== null && typeof error === 'object') {
-        client.submitUnhandledException(error);
+        client.submitUnhandledException(error, 'onerror');
       } else {
         // Only message, filename and lineno work here.
         var e:IError = {
@@ -56,7 +56,7 @@ export class WindowBootstrapper implements IBootstrapper {
           }]
         };
 
-        client.createUnhandledException(new Error(message)).setMessage(message).setProperty('@error', e).submit();
+        client.createUnhandledException(new Error(message), 'onerror').setMessage(message).setProperty('@error', e).submit();
       }
 
       if (_oldOnErrorHandler) {
