@@ -1234,6 +1234,7 @@
     if (typeof define === 'function' && define.amd) {
         define('stacktrace-gps', ['source-map', 'es6-promise', 'stackframe'], factory);
     } else if (typeof exports === 'object') {
+        module.exports = factory({}, require('es6-promise'), require('stackframe'));
     } else {
         root.StackTraceGPS = factory(root.SourceMap, root.ES6Promise, root.StackFrame);
     }
@@ -1626,6 +1627,47 @@ if (!require) {
 }
 
 
+var ContextData = (function () {
+    function ContextData() {
+    }
+    ContextData.prototype.setException = function (exception) {
+        this['@@_Exception'] = exception;
+    };
+    Object.defineProperty(ContextData.prototype, "hasException", {
+        get: function () {
+            return !!this['@@_Exception'];
+        },
+        enumerable: true,
+        configurable: true
+    });
+    ContextData.prototype.getException = function () {
+        if (!this.hasException) {
+            return null;
+        }
+        return this['@@_Exception'];
+    };
+    ContextData.prototype.markAsUnhandledError = function () {
+        this['@@_IsUnhandledError'] = true;
+    };
+    Object.defineProperty(ContextData.prototype, "isUnhandledError", {
+        get: function () {
+            return !!this['@@_IsUnhandledError'];
+        },
+        enumerable: true,
+        configurable: true
+    });
+    ContextData.prototype.setSubmissionMethod = function (method) {
+        this['@@_SubmissionMethod'] = method;
+    };
+    ContextData.prototype.getSubmissionMethod = function () {
+        if (!!this['@@_SubmissionMethod']) {
+            return null;
+        }
+        return this['@@_SubmissionMethod'];
+    };
+    return ContextData;
+})();
+exports.ContextData = ContextData;
 var InMemoryLastReferenceIdManager = (function () {
     function InMemoryLastReferenceIdManager() {
         this._lastReferenceId = null;
@@ -1705,6 +1747,7 @@ var EventPluginManager = (function () {
         config.addPlugin(new DuplicateCheckerPlugin());
         config.addPlugin(new ModuleInfoPlugin());
         config.addPlugin(new RequestInfoPlugin());
+        config.addPlugin(new EnvironmentInfoPlugin());
         config.addPlugin(new SubmissionMethodPlugin());
     };
     return EventPluginManager;
@@ -2000,8 +2043,10 @@ var Configuration = (function () {
         settings = Utils.merge(Configuration.defaults, settings);
         this.apiKey = settings.apiKey;
         this.serverUrl = settings.serverUrl;
+        this.environmentInfoCollector = inject(settings.environmentInfoCollector);
         this.lastReferenceIdManager = inject(settings.lastReferenceIdManager) || new InMemoryLastReferenceIdManager();
         this.log = inject(settings.log) || new NullLog();
+        this.requestInfoCollector = inject(settings.requestInfoCollector);
         this.submissionBatchSize = inject(settings.submissionBatchSize) || 50;
         this.submissionClient = inject(settings.submissionClient);
         this.storage = inject(settings.storage) || new InMemoryStorage();
@@ -2108,85 +2153,6 @@ var Configuration = (function () {
     return Configuration;
 })();
 exports.Configuration = Configuration;
-var SettingsResponse = (function () {
-    function SettingsResponse(success, settings, settingsVersion, exception, message) {
-        if (settingsVersion === void 0) { settingsVersion = -1; }
-        if (exception === void 0) { exception = null; }
-        if (message === void 0) { message = null; }
-        this.success = false;
-        this.settingsVersion = -1;
-        this.success = success;
-        this.settings = settings;
-        this.settingsVersion = settingsVersion;
-        this.exception = exception;
-        this.message = message;
-    }
-    return SettingsResponse;
-})();
-exports.SettingsResponse = SettingsResponse;
-var SubmissionResponse = (function () {
-    function SubmissionResponse(statusCode, message) {
-        this.success = false;
-        this.badRequest = false;
-        this.serviceUnavailable = false;
-        this.paymentRequired = false;
-        this.unableToAuthenticate = false;
-        this.notFound = false;
-        this.requestEntityTooLarge = false;
-        this.statusCode = statusCode;
-        this.message = message;
-        this.success = statusCode >= 200 && statusCode <= 299;
-        this.badRequest = statusCode === 400;
-        this.serviceUnavailable = statusCode === 503;
-        this.paymentRequired = statusCode === 402;
-        this.unableToAuthenticate = statusCode === 401 || statusCode === 403;
-        this.notFound = statusCode === 404;
-        this.requestEntityTooLarge = statusCode === 413;
-    }
-    return SubmissionResponse;
-})();
-exports.SubmissionResponse = SubmissionResponse;
-var ContextData = (function () {
-    function ContextData() {
-    }
-    ContextData.prototype.setException = function (exception) {
-        this['@@_Exception'] = exception;
-    };
-    Object.defineProperty(ContextData.prototype, "hasException", {
-        get: function () {
-            return !!this['@@_Exception'];
-        },
-        enumerable: true,
-        configurable: true
-    });
-    ContextData.prototype.getException = function () {
-        if (!this.hasException) {
-            return null;
-        }
-        return this['@@_Exception'];
-    };
-    ContextData.prototype.markAsUnhandledError = function () {
-        this['@@_IsUnhandledError'] = true;
-    };
-    Object.defineProperty(ContextData.prototype, "isUnhandledError", {
-        get: function () {
-            return !!this['@@_IsUnhandledError'];
-        },
-        enumerable: true,
-        configurable: true
-    });
-    ContextData.prototype.setSubmissionMethod = function (method) {
-        this['@@_SubmissionMethod'] = method;
-    };
-    ContextData.prototype.getSubmissionMethod = function () {
-        if (!!this['@@_SubmissionMethod']) {
-            return null;
-        }
-        return this['@@_SubmissionMethod'];
-    };
-    return ContextData;
-})();
-exports.ContextData = ContextData;
 var EventBuilder = (function () {
     function EventBuilder(event, client, pluginContextData) {
         this.target = event;
@@ -2567,42 +2533,42 @@ var RequestInfoPlugin = (function () {
         this.name = 'RequestInfoPlugin';
     }
     RequestInfoPlugin.prototype.run = function (context) {
-        if (!!context.event.data && !!context.event.data['@request']) {
+        if (!!context.event.data && !!context.event.data['@request'] || !context.client.config.requestInfoCollector) {
             return Promise.resolve();
         }
         if (!context.event.data) {
             context.event.data = {};
         }
-        var requestInfo = {
-            user_agent: navigator.userAgent,
-            is_secure: location.protocol === 'https:',
-            host: location.hostname,
-            port: location.port && location.port !== '' ? parseInt(location.port) : 80,
-            path: location.pathname,
-            cookies: this.getCookies(),
-            query_string: Utils.parseQueryString(location.search.substring(1))
-        };
-        if (document.referrer && document.referrer !== '') {
-            requestInfo.referrer = document.referrer;
+        var ri = context.client.config.requestInfoCollector.getRequestInfo(context);
+        if (ri) {
+            context.event.data['@request'] = ri;
         }
-        context.event.data['@request'] = requestInfo;
         return Promise.resolve();
-    };
-    RequestInfoPlugin.prototype.getCookies = function () {
-        if (!document.cookie) {
-            return null;
-        }
-        var result = {};
-        var cookies = document.cookie.split(', ');
-        for (var index = 0; index < cookies.length; index++) {
-            var cookie = cookies[index].split('=');
-            result[cookie[0]] = cookie[1];
-        }
-        return result;
     };
     return RequestInfoPlugin;
 })();
 exports.RequestInfoPlugin = RequestInfoPlugin;
+var EnvironmentInfoPlugin = (function () {
+    function EnvironmentInfoPlugin() {
+        this.priority = 70;
+        this.name = 'EnvironmentInfoPlugin';
+    }
+    EnvironmentInfoPlugin.prototype.run = function (context) {
+        if (!!context.event.data && !!context.event.data['@environment'] || !context.client.config.environmentInfoCollector) {
+            return Promise.resolve();
+        }
+        if (!context.event.data) {
+            context.event.data = {};
+        }
+        var ei = context.client.config.environmentInfoCollector.getEnvironmentInfo(context);
+        if (ei) {
+            context.event.data['@environment'] = ei;
+        }
+        return Promise.resolve();
+    };
+    return EnvironmentInfoPlugin;
+})();
+exports.EnvironmentInfoPlugin = EnvironmentInfoPlugin;
 var SubmissionMethodPlugin = (function () {
     function SubmissionMethodPlugin() {
         this.priority = 100;
@@ -2621,24 +2587,119 @@ var SubmissionMethodPlugin = (function () {
     return SubmissionMethodPlugin;
 })();
 exports.SubmissionMethodPlugin = SubmissionMethodPlugin;
+var SettingsResponse = (function () {
+    function SettingsResponse(success, settings, settingsVersion, exception, message) {
+        if (settingsVersion === void 0) { settingsVersion = -1; }
+        if (exception === void 0) { exception = null; }
+        if (message === void 0) { message = null; }
+        this.success = false;
+        this.settingsVersion = -1;
+        this.success = success;
+        this.settings = settings;
+        this.settingsVersion = settingsVersion;
+        this.exception = exception;
+        this.message = message;
+    }
+    return SettingsResponse;
+})();
+exports.SettingsResponse = SettingsResponse;
+var SubmissionResponse = (function () {
+    function SubmissionResponse(statusCode, message) {
+        this.success = false;
+        this.badRequest = false;
+        this.serviceUnavailable = false;
+        this.paymentRequired = false;
+        this.unableToAuthenticate = false;
+        this.notFound = false;
+        this.requestEntityTooLarge = false;
+        this.statusCode = statusCode;
+        this.message = message;
+        this.success = statusCode >= 200 && statusCode <= 299;
+        this.badRequest = statusCode === 400;
+        this.serviceUnavailable = statusCode === 503;
+        this.paymentRequired = statusCode === 402;
+        this.unableToAuthenticate = statusCode === 401 || statusCode === 403;
+        this.notFound = statusCode === 404;
+        this.requestEntityTooLarge = statusCode === 413;
+    }
+    return SubmissionResponse;
+})();
+exports.SubmissionResponse = SubmissionResponse;
+var os = require('os');
+var NodeEnvironmentInfoCollector = (function () {
+    function NodeEnvironmentInfoCollector() {
+    }
+    NodeEnvironmentInfoCollector.prototype.getEnvironmentInfo = function (context) {
+        if (!os) {
+            return null;
+        }
+        var environmentInfo = {
+            processor_count: os.cpus().length,
+            total_physical_memory: os.totalmem(),
+            available_physical_memory: os.freemem(),
+            command_line: process.argv.join(' '),
+            process_name: process.title,
+            process_id: process.pid + '',
+            process_memory_size: process.memoryUsage().heapTotal,
+            architecture: os.arch(),
+            o_s_name: os.type(),
+            o_s_version: os.release(),
+            ip_address: this.getIpAddresses(),
+            machine_name: os.hostname(),
+            runtime_version: process.version,
+            data: {
+                loadavg: os.loadavg(),
+                platform: os.platform(),
+                tmpdir: os.tmpdir(),
+                uptime: os.uptime()
+            }
+        };
+        if (os.endianness) {
+            environmentInfo.data.endianness = os.endianness();
+        }
+        return environmentInfo;
+    };
+    NodeEnvironmentInfoCollector.prototype.getIpAddresses = function () {
+        var ips = [];
+        var interfaces = os.networkInterfaces();
+        Object.keys(interfaces).forEach(function (name) {
+            interfaces[name].forEach(function (iface) {
+                if ('IPv4' === iface.family && !iface.internal) {
+                    ips.push(iface.address);
+                }
+            });
+        });
+        return ips.join(', ');
+    };
+    return NodeEnvironmentInfoCollector;
+})();
+exports.NodeEnvironmentInfoCollector = NodeEnvironmentInfoCollector;
+var NodeRequestInfoCollector = (function () {
+    function NodeRequestInfoCollector() {
+    }
+    NodeRequestInfoCollector.prototype.getRequestInfo = function (context) {
+        return undefined;
+    };
+    return NodeRequestInfoCollector;
+})();
+exports.NodeRequestInfoCollector = NodeRequestInfoCollector;
 var https = require('https');
+var url = require('url');
 var NodeSubmissionClient = (function () {
     function NodeSubmissionClient() {
     }
     NodeSubmissionClient.prototype.submit = function (events, config) {
         var _this = this;
-        var path = "/api/v2/events?access_token=" + encodeURIComponent(config.apiKey);
-        return this.sendRequest('POST', config.serverUrl, path, Utils.stringify(events)).then(function (msg) { return new SubmissionResponse(msg.statusCode, _this.getResponseMessage(msg)); }, function (msg) { return new SubmissionResponse(msg.statusCode || 500, _this.getResponseMessage(msg)); });
+        return this.sendRequest('POST', config.serverUrl, '/api/v2/events', config.apiKey, Utils.stringify(events)).then(function (msg) { return new SubmissionResponse(msg.statusCode, _this.getResponseMessage(msg)); }, function (msg) { return new SubmissionResponse(msg.statusCode || 500, _this.getResponseMessage(msg)); });
     };
     NodeSubmissionClient.prototype.submitDescription = function (referenceId, description, config) {
         var _this = this;
-        var path = "/api/v2/events/by-ref/" + encodeURIComponent(referenceId) + "/user-description?access_token=" + encodeURIComponent(config.apiKey);
-        return this.sendRequest('POST', config.serverUrl, path, Utils.stringify(description)).then(function (msg) { return new SubmissionResponse(msg.statusCode, _this.getResponseMessage(msg)); }, function (msg) { return new SubmissionResponse(msg.statusCode || 500, _this.getResponseMessage(msg)); });
+        var path = "/api/v2/events/by-ref/" + encodeURIComponent(referenceId) + "/user-description";
+        return this.sendRequest('POST', config.serverUrl, path, config.apiKey, Utils.stringify(description)).then(function (msg) { return new SubmissionResponse(msg.statusCode, _this.getResponseMessage(msg)); }, function (msg) { return new SubmissionResponse(msg.statusCode || 500, _this.getResponseMessage(msg)); });
     };
     NodeSubmissionClient.prototype.getSettings = function (config) {
         var _this = this;
-        var path = config.serverUrl + '/api/v2/projects/config?access_token=' + encodeURIComponent(config.apiKey);
-        return this.sendRequest('GET', config.serverUrl, path).then(function (msg) {
+        return this.sendRequest('GET', config.serverUrl, '/api/v2/projects/config', config.apiKey).then(function (msg) {
             if (msg.statusCode !== 200 || !msg.responseText) {
                 return new SettingsResponse(false, null, -1, null, "Unable to retrieve configuration settings: " + _this.getResponseMessage(msg));
             }
@@ -2666,20 +2727,23 @@ var NodeSubmissionClient = (function () {
         }
         return msg.statusMessage || msg.message;
     };
-    NodeSubmissionClient.prototype.sendRequest = function (method, host, path, data) {
+    NodeSubmissionClient.prototype.sendRequest = function (method, host, path, apiKey, data) {
         return new Promise(function (resolve, reject) {
+            var parsedHost = url.parse(host);
             var options = {
-                host: host,
+                auth: "client:" + apiKey,
+                hostname: parsedHost.hostname,
                 method: method,
-                port: 443,
+                port: parsedHost.port && parseInt(parsedHost.port),
                 path: path
             };
             if (method === 'POST') {
                 options.headers = {
                     'Content-Type': 'application/json',
-                    'Content-Length': data.length,
+                    'Content-Length': data.length
                 };
             }
+            console.log(options);
             var request = https.request(options, function (response) {
                 var body = '';
                 response.on('data', function (chunk) { return body += chunk; });
@@ -2706,6 +2770,8 @@ var NodeBootstrapper = (function () {
         if (!this.isNode()) {
             return;
         }
+        Configuration.defaults.environmentInfoCollector = new NodeEnvironmentInfoCollector();
+        Configuration.defaults.requestInfoCollector = new NodeRequestInfoCollector();
         Configuration.defaults.submissionClient = new NodeSubmissionClient();
         process.on('uncaughtException', function (error) {
             ExceptionlessClient.default.submitUnhandledException(error);
@@ -2761,6 +2827,41 @@ var NodeBootstrapper = (function () {
     return NodeBootstrapper;
 })();
 exports.NodeBootstrapper = NodeBootstrapper;
+var WebRequestInfoCollector = (function () {
+    function WebRequestInfoCollector() {
+    }
+    WebRequestInfoCollector.prototype.getRequestInfo = function (context) {
+        if (!navigator || !location) {
+            return null;
+        }
+        var requestInfo = {
+            user_agent: navigator.userAgent,
+            is_secure: location.protocol === 'https:',
+            host: location.hostname,
+            port: location.port && location.port !== '' ? parseInt(location.port) : 80,
+            path: location.pathname,
+            cookies: this.getCookies(),
+            query_string: Utils.parseQueryString(location.search.substring(1))
+        };
+        if (document.referrer && document.referrer !== '') {
+            requestInfo.referrer = document.referrer;
+        }
+    };
+    WebRequestInfoCollector.prototype.getCookies = function () {
+        if (!document.cookie) {
+            return null;
+        }
+        var result = {};
+        var cookies = document.cookie.split(', ');
+        for (var index = 0; index < cookies.length; index++) {
+            var cookie = cookies[index].split('=');
+            result[cookie[0]] = cookie[1];
+        }
+        return result;
+    };
+    return WebRequestInfoCollector;
+})();
+exports.WebRequestInfoCollector = WebRequestInfoCollector;
 var DefaultSubmissionClient = (function () {
     function DefaultSubmissionClient() {
     }
@@ -2876,6 +2977,7 @@ var WindowBootstrapper = (function () {
             Configuration.defaults.apiKey = settings.apiKey;
             Configuration.defaults.serverUrl = settings.serverUrl;
         }
+        Configuration.defaults.requestInfoCollector = new WebRequestInfoCollector();
         Configuration.defaults.submissionClient = new DefaultSubmissionClient();
         this.handleWindowOnError();
     };
@@ -2923,55 +3025,6 @@ var WindowBootstrapper = (function () {
     return WindowBootstrapper;
 })();
 exports.WindowBootstrapper = WindowBootstrapper;
-var os = require('os');
-var NodeEnvironmentInfoCollector = (function () {
-    function NodeEnvironmentInfoCollector() {
-    }
-    NodeEnvironmentInfoCollector.prototype.GetEnvironmentInfo = function () {
-        if (!os) {
-            return null;
-        }
-        var environmentInfo = {
-            processor_count: os.cpus().length,
-            total_physical_memory: os.totalmem(),
-            available_physical_memory: os.freemem(),
-            command_line: process.argv.join(' '),
-            process_name: process.title,
-            process_id: process.pid + '',
-            process_memory_size: process.memoryUsage().heapTotal,
-            architecture: os.arch(),
-            o_s_name: os.type(),
-            o_s_version: os.release(),
-            ip_address: this.getIpAddresses(),
-            machine_name: os.hostname(),
-            runtime_version: process.version,
-            data: {
-                loadavg: os.loadavg(),
-                platform: os.platform(),
-                tmpdir: os.tmpdir(),
-                uptime: os.uptime()
-            }
-        };
-        if (os.endianness) {
-            environmentInfo.data.endianness = os.endianness();
-        }
-        return environmentInfo;
-    };
-    NodeEnvironmentInfoCollector.prototype.getIpAddresses = function () {
-        var ips = [];
-        var interfaces = os.networkInterfaces();
-        Object.keys(interfaces).forEach(function (name) {
-            interfaces[name].forEach(function (iface) {
-                if ('IPv4' === iface.family && !iface.internal) {
-                    ips.push(iface.address);
-                }
-            });
-        });
-        return ips.join(', ');
-    };
-    return NodeEnvironmentInfoCollector;
-})();
-exports.NodeEnvironmentInfoCollector = NodeEnvironmentInfoCollector;
 new NodeBootstrapper().register();
 new WindowBootstrapper().register();
 Error.stackTraceLimit = Infinity;
