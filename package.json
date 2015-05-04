@@ -25,6 +25,7 @@
     "es5-shim": "^4.1.1",
     "es6-promise": "^2.1.1",
     "es6-shim": "^0.31.0",
+    "glob": "^5.0.5",
     "gulp": "^3.8.11",
     "gulp-concat": "^2.5.2",
     "gulp-karma": "0.0.4",
@@ -37,13 +38,13 @@
     "karma-chrome-launcher": "^0.1.8",
     "karma-cli": "0.0.4",
     "karma-jasmine": "~0.3.5",
-    "karma-typescript-preprocessor": "0.0.16",
+    "karma-typescript-preprocessor": "0.0.17",
     "rimraf": "^2.3.3",
     "stack-generator": "^1.0.3",
     "stackframe": "^0.2.2",
     "stacktrace-gps": "^2.1.2",
     "stacktrace-js": "git://github.com/stacktracejs/stacktrace.js.git",
-    "tsproject": "^0.8.3",
+    "tsproject": "^0.8.6",
     "typescript": "1.5.0-beta"
   },
   "dependencies": {}

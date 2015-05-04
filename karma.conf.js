@@ -15,7 +15,6 @@ module.exports = function (config) {
       '../node_modules/stack-generator/dist/stack-generator.js',
       '../node_modules/stacktrace-gps/dist/stacktrace-gps.js',
       '../node_modules/stacktrace-js/dist/stacktrace.js',
-      '../typings/tsd.d.ts',
       '**/*.ts'
     ],
     exclude: [],
@@ -29,6 +28,9 @@ module.exports = function (config) {
         sourceMap: true,
         target: 'ES5'
       },
+      typings: [
+        'typings/tsd.d.ts'
+      ],
       transformPath: function(path) {
         return path.replace(/\.ts$/, '.js');
       }
