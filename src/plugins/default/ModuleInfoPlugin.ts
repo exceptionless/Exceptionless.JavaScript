@@ -8,45 +8,18 @@ export class ModuleInfoPlugin implements IEventPlugin {
   public name:string = 'ModuleInfoPlugin';
 
   run(context:EventPluginContext):Promise<any> {
-    if (!context.event.data || !context.event.data['@error'] || !!context.event.data['@error'].modules) {
+    if (!context.event.data ||
+        !context.event.data['@error'] ||
+        !!context.event.data['@error'].modules ||
+        !context.client.config.moduleCollector) {
       return Promise.resolve();
     }
 
-    try {
-      if (document && document.getElementsByTagName) {
-        var modules = this.getFromDocument();
-        if (modules && modules.length > 0) {
-          context.event.data['@error'].modules = modules;
-        }
-      }
-    } catch (e) {
-      context.log.error(`Unable to get module info. Exception: ${e.message}`);
+    var modules = context.client.config.moduleCollector.getModules(context);
+    if (modules && modules.length > 0) {
+      context.event.data['@error'].modules = modules;
     }
 
     return Promise.resolve();
-  }
-
-  private getFromDocument(): IModule[] {
-    var modules:IModule[] = [];
-    var scripts = document.getElementsByTagName('script');
-    if (scripts && scripts.length > 0) {
-      for (var index = 0; index < scripts.length; index++) {
-        if (scripts[index].src) {
-          modules.push({
-            module_id: index,
-            name: scripts[index].src,
-            version: Utils.parseVersion(scripts[index].src)
-          });
-        } else if (!!scripts[index].innerHTML) {
-          modules.push({
-            module_id: index,
-            name: 'Script Tag',
-            version: Utils.getHashCode(scripts[index].innerHTML)
-          });
-        }
-      }
-    }
-
-    return modules;
   }
 }

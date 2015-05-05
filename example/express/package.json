@@ -2,13 +2,11 @@
   "name": "exapp",
   "version": "1.0.0",
   "description": "Exceptionless Sample Node App",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "author": "",
+  "main": "app.js",
+  "author": "Exceptionless",
   "license": "Apache",
   "dependencies": {
-    "express": "^4.12.3"
+    "express": "^4.12.3",
+    "stack-trace": "0.0.9"
   }
 }

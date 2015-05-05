@@ -4,6 +4,7 @@ import { InMemoryLastReferenceIdManager } from '../lastReferenceIdManager/InMemo
 import { ConsoleLog } from '../logging/ConsoleLog';
 import { ILog } from '../logging/ILog';
 import { NullLog } from '../logging/NullLog';
+import { IUserInfo } from '../models/IUserInfo';
 import { IEventPlugin } from '../plugins/IEventPlugin';
 import { EventPluginContext } from '../plugins/EventPluginContext';
 import { EventPluginManager } from '../plugins/EventPluginManager';
@@ -12,6 +13,7 @@ import { IEventQueue } from '../queue/IEventQueue';
 import { DefaultEventQueue } from '../queue/DefaultEventQueue';
 import { IEnvironmentInfoCollector } from '../services/IEnvironmentInfoCollector';
 import { IErrorParser } from '../services/IErrorParser';
+import { IModuleCollector } from '../services/IModuleCollector';
 import { IRequestInfoCollector } from '../services/IRequestInfoCollector';
 import { IStorage } from '../storage/IStorage';
 import { InMemoryStorage } from '../storage/InMemoryStorage';
@@ -28,6 +30,7 @@ export class Configuration implements IConfigurationSettings {
   public errorParser:IErrorParser;
   public lastReferenceIdManager:ILastReferenceIdManager = new InMemoryLastReferenceIdManager();
   public log:ILog;
+  public moduleCollector:IModuleCollector;
   public requestInfoCollector:IRequestInfoCollector;
   public submissionBatchSize;
   public submissionClient:ISubmissionClient;
@@ -49,6 +52,7 @@ export class Configuration implements IConfigurationSettings {
     this.errorParser = inject(settings.errorParser);
     this.lastReferenceIdManager = inject(settings.lastReferenceIdManager) || new InMemoryLastReferenceIdManager();
     this.log = inject(settings.log) || new NullLog();
+    this.moduleCollector = inject(settings.moduleCollector);
     this.requestInfoCollector = inject(settings.requestInfoCollector);
     this.submissionBatchSize = inject(settings.submissionBatchSize) || 50;
     this.submissionClient = inject(settings.submissionClient);
@@ -137,6 +141,18 @@ export class Configuration implements IConfigurationSettings {
   public setVersion(version:string): void {
     if (!!version && version.length > 0) {
       this.defaultData['@version'] = version;
+    }
+  }
+
+  public setUserIdentity(userInfo:IUserInfo): void;
+  public setUserIdentity(identity:string): void;
+  public setUserIdentity(identity:string, name:string): void;
+  public setUserIdentity(userInfoOrIdentity:IUserInfo|string, name?:string): void {
+    var userInfo = typeof userInfoOrIdentity !== 'string' ? userInfoOrIdentity : { identity: userInfoOrIdentity, name: name };
+    if (!userInfo.identity && !userInfo.name) {
+      delete this.defaultData['@user'];
+    } else {
+      this.defaultData['@user'] = userInfo;
     }
   }
 

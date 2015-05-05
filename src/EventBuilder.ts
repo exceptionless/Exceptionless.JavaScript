@@ -12,7 +12,7 @@ export class EventBuilder {
   constructor(event:IEvent, client:ExceptionlessClient, pluginContextData?:ContextData) {
     this.target = event;
     this.client = client;
-    this.pluginContextData = pluginContextData;
+    this.pluginContextData = pluginContextData || new ContextData();
   }
 
   public setType(type:string): EventBuilder {

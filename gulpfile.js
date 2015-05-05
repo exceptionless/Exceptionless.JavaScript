@@ -17,7 +17,7 @@ gulp.task('typescript.es5', function() {
 });
 
 gulp.task('exceptionless.es5.umd', ['typescript.es5'], function() {
-  return gulp.src('dist/temp/src/exceptionless.es5.js')
+  return gulp.src('dist/temp/src/exceptionless.js')
     .pipe(sourcemaps.init({ loadMaps: true }))
     .pipe(umd({
       exports: 'exports',
@@ -30,7 +30,8 @@ gulp.task('exceptionless.es5.umd', ['typescript.es5'], function() {
 });
 
 gulp.task('exceptionless.es5', ['exceptionless.es5.umd'], function() {
-  gulp.src('dist/temp/src/exceptionless.es5.d.ts').pipe(gulp.dest('dist'));
+  gulp.src('dist/temp/src/exceptionless.d.ts')
+    .pipe(gulp.dest('dist'));
 
   var files = [
     'node_modules/es6-promise/dist/es6-promise.js',
@@ -39,19 +40,19 @@ gulp.task('exceptionless.es5', ['exceptionless.es5.umd'], function() {
     'node_modules/stack-generator/dist/stack-generator.js',
     'node_modules/stacktrace-gps/dist/stacktrace-gps.js',
     'node_modules/stacktrace-js/dist/stacktrace.js',
-    'dist/temp/exceptionless.es5.js'
+    'dist/temp/exceptionless.js'
   ];
 
   gulp.src(files)
     .pipe(sourcemaps.init({ loadMaps: true }))
-    .pipe(concat('exceptionless.es5.js'))
+    .pipe(concat('exceptionless.js'))
     .pipe(replace('require(\'source-map/lib/source-map/source-map-consumer\')', 'null')) // needed for node until source maps dependency is fixed
     .pipe(sourcemaps.write('.'))
     .pipe(gulp.dest('dist'));
 
   return gulp.src(files)
     .pipe(sourcemaps.init({ loadMaps: true }))
-    .pipe(concat('exceptionless.es5.min.js'))
+    .pipe(concat('exceptionless.min.js'))
     .pipe(replace('require(\'source-map/lib/source-map/source-map-consumer\')', 'null')) // needed for node until source maps dependency is fixed
     .pipe(uglify())
     .pipe(sourcemaps.write('.'))

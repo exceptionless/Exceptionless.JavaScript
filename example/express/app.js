@@ -1,7 +1,7 @@
 var express = require('express');
 var app = express();
 
-var client = require('../../dist/exceptionless.es5').ExceptionlessClient.default;
+var client = require('../../dist/exceptionless').ExceptionlessClient.default;
 client.config.apiKey = 'LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw';
 client.config.serverUrl = 'http://localhost:50000';
 client.config.useDebugLogger();
@@ -18,7 +18,6 @@ app.get('/about', function (req, res) {
 app.get('/boom', function (req, res) {
   throw new Error('Boom!!');
 });
-
 
 app.use(function(err, req, res, next) {
   client.createUnhandledException(err, 'express').addRequestInfo(req).submit();

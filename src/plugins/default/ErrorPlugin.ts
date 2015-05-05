@@ -26,6 +26,6 @@ export class ErrorPlugin implements IEventPlugin {
       return Promise.reject(new Error('No error parser was defined. This exception will be discarded.'))
     }
 
-    return parser.parse(context, context.event.data['@error']);
+    return parser.parse(context, exception);
   }
 }

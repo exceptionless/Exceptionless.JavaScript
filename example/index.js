@@ -19,5 +19,5 @@ function throwIndexOutOfRange(indexer) {
 }
 
 function throwStringErrorImpl(message) {
-  throw message;
+  throw new Error(message);
 }
