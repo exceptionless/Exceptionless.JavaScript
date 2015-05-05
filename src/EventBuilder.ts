@@ -1,6 +1,7 @@
 import { Configuration } from './configuration/Configuration';
 import { ExceptionlessClient } from './ExceptionlessClient';
 import { IEvent } from './models/IEvent';
+import { IUserInfo } from './models/IUserInfo';
 import { ContextData } from './plugins/ContextData';
 import { Utils } from './Utils';
 
