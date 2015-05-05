@@ -5,27 +5,6 @@ Exceptionless JavaScript/Node client
 
 **We are working towards a 1.0 and would love your help! Please note that we may break the api from build to build until we reach a 1.0. Please feel free to create an issue or send us a pull request.**
 
-## Getting Started (Development)
-
-The JavaScript client can be installed via [bower](http://bower.io/search/?q=exceptionless), [npm](https://www.npmjs.com/package/exceptionless) or cdn. If you need help, please contact us via in-app support or [open an issue](https://github.com/exceptionless/Exceptionless.JavaScript/issues/new). We’re always here to help if you have any questions!
-
-1. You will need to clone this repo.
-2. Install [Node.js](https://nodejs.org). _We only use node for our build and test processes._
-3. Install [tsd](https://github.com/DefinitelyTyped/tsd) and [gulp](http://gulpjs.com) and the development dependencies using [npm](https://www.npmjs.com).
-```javascript
-npm install -g tsd
-npm install -g gulp
-npm install
-```
-4. Build the project by running the following gulp command.
-```javascript
-gulp build
-```
-5. Test the project by running the following gulp command.
-```javascript
-gulp test
-```
-
 ## Using Exceptionless
 
 ### Installing
@@ -180,4 +159,25 @@ try {
     // Submit the event.
     .submit();
 }
+```
+
+## Getting Started (Development)
+
+The JavaScript client can be installed via [bower](http://bower.io/search/?q=exceptionless), [npm](https://www.npmjs.com/package/exceptionless) or cdn. If you need help, please contact us via in-app support or [open an issue](https://github.com/exceptionless/Exceptionless.JavaScript/issues/new). We’re always here to help if you have any questions!
+
+1. You will need to clone this repo.
+2. Install [Node.js](https://nodejs.org). _We only use node for our build and test processes._
+3. Install [tsd](https://github.com/DefinitelyTyped/tsd) and [gulp](http://gulpjs.com) and the development dependencies using [npm](https://www.npmjs.com).
+```javascript
+npm install -g tsd
+npm install -g gulp
+npm install
+```
+4. Build the project by running the following gulp command.
+```javascript
+gulp build
+```
+5. Test the project by running the following gulp command.
+```javascript
+gulp test
 ```
