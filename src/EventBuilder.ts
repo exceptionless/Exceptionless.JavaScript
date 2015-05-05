@@ -67,6 +67,21 @@ export class EventBuilder {
     return this;
   }
 
+  public setUserIdentity(userInfo:IUserInfo): EventBuilder;
+  public setUserIdentity(identity:string): EventBuilder;
+  public setUserIdentity(identity:string, name:string): EventBuilder;
+  public setUserIdentity(userInfoOrIdentity:IUserInfo|string, name?:string): EventBuilder {
+    var userInfo = typeof userInfoOrIdentity !== 'string' ? userInfoOrIdentity : { identity: userInfoOrIdentity, name: name };
+    if (!userInfo.identity && !userInfo.name) {
+      return this;
+    }
+
+    this.setProperty('@user', userInfo);
+    return this;
+  }
+
+  // TODO: we to see if it makes sense to add setUserDescription.
+
   public setValue(value:number): EventBuilder {
     if (!!value) {
       this.target.value = value;
