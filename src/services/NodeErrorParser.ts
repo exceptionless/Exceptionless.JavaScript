@@ -48,5 +48,3 @@ export class NodeErrorParser implements IErrorParser {
     return frames;
   }
 }
-
-declare module "stack-trace" {}
