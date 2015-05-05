@@ -11,6 +11,7 @@ import { ReferenceIdPlugin } from '../plugins/default/ReferenceIdPlugin';
 import { IEventQueue } from '../queue/IEventQueue';
 import { DefaultEventQueue } from '../queue/DefaultEventQueue';
 import { IEnvironmentInfoCollector } from '../services/IEnvironmentInfoCollector';
+import { IErrorParser } from '../services/IErrorParser';
 import { IRequestInfoCollector } from '../services/IRequestInfoCollector';
 import { IStorage } from '../storage/IStorage';
 import { InMemoryStorage } from '../storage/InMemoryStorage';
@@ -24,6 +25,7 @@ export class Configuration implements IConfigurationSettings {
   private _plugins:IEventPlugin[] = [];
 
   public environmentInfoCollector:IEnvironmentInfoCollector;
+  public errorParser:IErrorParser;
   public lastReferenceIdManager:ILastReferenceIdManager = new InMemoryLastReferenceIdManager();
   public log:ILog;
   public requestInfoCollector:IRequestInfoCollector;
@@ -44,6 +46,7 @@ export class Configuration implements IConfigurationSettings {
     this.apiKey = settings.apiKey;
     this.serverUrl = settings.serverUrl;
     this.environmentInfoCollector = inject(settings.environmentInfoCollector);
+    this.errorParser = inject(settings.errorParser);
     this.lastReferenceIdManager = inject(settings.lastReferenceIdManager) || new InMemoryLastReferenceIdManager();
     this.log = inject(settings.log) || new NullLog();
     this.requestInfoCollector = inject(settings.requestInfoCollector);

@@ -115,7 +115,12 @@ export class EventBuilder {
   }
 
   public addRequestInfo(request:any) {
-    return this.setProperty('@request', request);
+    if (!!request) {
+      this.pluginContextData['@request'] = request;
+    }
+
+
+    return this;
   }
 
   public submit(): Promise<any> {

@@ -2,6 +2,7 @@ import { ILastReferenceIdManager } from '../lastReferenceIdManager/ILastReferenc
 import { ILog } from '../logging/ILog';
 import { IEventQueue } from '../queue/IEventQueue';
 import { IEnvironmentInfoCollector } from '../services/IEnvironmentInfoCollector';
+import { IErrorParser } from '../services/IErrorParser';
 import { IRequestInfoCollector } from '../services/IRequestInfoCollector';
 import { IStorage } from '../storage/IStorage';
 import { ISubmissionClient } from '../submission/ISubmissionClient';
@@ -10,6 +11,7 @@ export interface IConfigurationSettings {
   apiKey?:string;
   serverUrl?:string;
   environmentInfoCollector?:IEnvironmentInfoCollector;
+  errorParser?:IErrorParser;
   lastReferenceIdManager?:ILastReferenceIdManager;
   log?:ILog;
   requestInfoCollector?:IRequestInfoCollector;

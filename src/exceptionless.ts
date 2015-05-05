@@ -3,6 +3,8 @@
 // TODO: Lock configuration.
 // TODO: Move this into an static array and dynamically call all registered bootstrappers.
 // TODO: NODE: modules.
+// TODO: Filter excluded properties.
+// TODO: Get extra exception properties.
 
 import { IBootstrapper } from './bootstrap/IBootstrapper';
 import { NodeBootstrapper } from './bootstrap/NodeBootstrapper';
@@ -39,9 +41,12 @@ import { SubmissionMethodPlugin } from './plugins/default/SubmissionMethodPlugin
 import { DefaultEventQueue } from './queue/DefaultEventQueue';
 import { IEventQueue } from './queue/IEventQueue';
 import { IEnvironmentInfoCollector } from './services/IEnvironmentInfoCollector';
+import { IErrorParser } from './services/IErrorParser';
 import { IRequestInfoCollector } from './services/IRequestInfoCollector';
 import { NodeEnvironmentInfoCollector } from './services/NodeEnvironmentInfoCollector';
+import { NodeErrorParser } from './services/NodeErrorParser';
 import { NodeRequestInfoCollector } from './services/NodeRequestInfoCollector';
+import { WebErrorParser } from './services/WebErrorParser';
 import { WebRequestInfoCollector } from './services/WebRequestInfoCollector';
 import { InMemoryStorage } from './storage/InMemoryStorage';
 import { IStorage } from './storage/IStorage';

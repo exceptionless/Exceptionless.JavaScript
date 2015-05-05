@@ -41,11 +41,14 @@
     "karma-typescript-preprocessor": "0.0.17",
     "rimraf": "^2.3.3",
     "stack-generator": "^1.0.3",
+    "stack-trace": "0.0.9",
     "stackframe": "^0.2.2",
     "stacktrace-gps": "^2.1.2",
     "stacktrace-js": "git://github.com/stacktracejs/stacktrace.js.git",
     "tsproject": "^0.8.6",
     "typescript": "1.5.0-beta"
   },
-  "dependencies": {}
+  "dependencies": {
+    "stack-trace": "0.0.9"
+  }
 }
