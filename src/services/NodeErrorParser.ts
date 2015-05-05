@@ -3,16 +3,16 @@ import { IErrorParser } from 'IErrorParser';
 import { IStackFrame } from '../models/IStackFrame';
 import { EventPluginContext } from '../plugins/EventPluginContext';
 
-import stacktrace = require('stack-trace');
+import nodestacktrace = require('stack-trace');
 
 export class NodeErrorParser implements IErrorParser {
   public parse(context:EventPluginContext, exception:Error): Promise<IError> {
-    if (!stacktrace) {
+    if (!nodestacktrace) {
       context.cancel = true;
       return Promise.reject(new Error('Unable to load the stack trace library. This exception will be discarded.'))
     }
 
-    var stackFrames = stacktrace.parse(exception);
+    var stackFrames = nodestacktrace.parse(exception);
     if (!stackFrames || stackFrames.length === 0) {
       context.cancel = true;
       return Promise.reject(new Error('Unable to parse the exceptions stack trace. This exception will be discarded.'))

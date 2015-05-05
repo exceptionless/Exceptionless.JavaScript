@@ -1234,7 +1234,7 @@
     if (typeof define === 'function' && define.amd) {
         define('stacktrace-gps', ['source-map', 'es6-promise', 'stackframe'], factory);
     } else if (typeof exports === 'object') {
-        module.exports = factory({}, require('es6-promise'), require('stackframe'));
+        module.exports = factory(null, require('es6-promise'), require('stackframe'));
     } else {
         root.StackTraceGPS = factory(root.SourceMap, root.ES6Promise, root.StackFrame);
     }
@@ -1657,7 +1657,9 @@ var ContextData = (function () {
         configurable: true
     });
     ContextData.prototype.setSubmissionMethod = function (method) {
-        this['@@_SubmissionMethod'] = method;
+        if (method && method.length > 0) {
+            this['@@_SubmissionMethod'] = method;
+        }
     };
     ContextData.prototype.getSubmissionMethod = function () {
         if (!!this['@@_SubmissionMethod']) {
@@ -2044,6 +2046,7 @@ var Configuration = (function () {
         this.apiKey = settings.apiKey;
         this.serverUrl = settings.serverUrl;
         this.environmentInfoCollector = inject(settings.environmentInfoCollector);
+        this.errorParser = inject(settings.errorParser);
         this.lastReferenceIdManager = inject(settings.lastReferenceIdManager) || new InMemoryLastReferenceIdManager();
         this.log = inject(settings.log) || new NullLog();
         this.requestInfoCollector = inject(settings.requestInfoCollector);
@@ -2239,6 +2242,12 @@ var EventBuilder = (function () {
         }
         return this;
     };
+    EventBuilder.prototype.addRequestInfo = function (request) {
+        if (!!request) {
+            this.pluginContextData['@request'] = request;
+        }
+        return this;
+    };
     EventBuilder.prototype.submit = function () {
         return this.client.submitEvent(this.target, this.pluginContextData);
     };
@@ -2282,13 +2291,14 @@ var ExceptionlessClient = (function () {
     ExceptionlessClient.prototype.submitException = function (exception) {
         return this.createException(exception).submit();
     };
-    ExceptionlessClient.prototype.createUnhandledException = function (exception) {
+    ExceptionlessClient.prototype.createUnhandledException = function (exception, submissionMethod) {
         var builder = this.createException(exception);
         builder.pluginContextData.markAsUnhandledError();
+        builder.pluginContextData.setSubmissionMethod(submissionMethod);
         return builder;
     };
-    ExceptionlessClient.prototype.submitUnhandledException = function (exception) {
-        return this.createUnhandledException(exception).submit();
+    ExceptionlessClient.prototype.submitUnhandledException = function (exception, submissionMethod) {
+        return this.createUnhandledException(exception, submissionMethod).submit();
     };
     ExceptionlessClient.prototype.createFeatureUsage = function (feature) {
         return this.createEvent().setType('usage').setSource(feature);
@@ -2427,7 +2437,6 @@ var ErrorPlugin = (function () {
         this.name = 'ErrorPlugin';
     }
     ErrorPlugin.prototype.run = function (context) {
-        var _this = this;
         var exception = context.contextData.getException();
         if (exception == null) {
             return Promise.resolve();
@@ -2439,31 +2448,12 @@ var ErrorPlugin = (function () {
         if (!!context.event.data['@error']) {
             return Promise.resolve();
         }
-        return StackTrace.fromError(exception).then(function (stackFrames) { return _this.processError(context, exception, stackFrames); }, function () { return _this.onParseError(context); });
-    };
-    ErrorPlugin.prototype.processError = function (context, exception, stackFrames) {
-        var error = {
-            message: exception.message,
-            stack_trace: this.getStackFrames(context, stackFrames || [])
-        };
-        context.event.data['@error'] = error;
-        return Promise.resolve();
-    };
-    ErrorPlugin.prototype.onParseError = function (context) {
-        context.cancel = true;
-        return Promise.reject(new Error('Unable to parse the exceptions stack trace. This exception will be discarded.'));
-    };
-    ErrorPlugin.prototype.getStackFrames = function (context, stackFrames) {
-        var frames = [];
-        for (var index = 0; index < stackFrames.length; index++) {
-            frames.push({
-                name: stackFrames[index].functionName,
-                file_name: stackFrames[index].fileName,
-                line_number: stackFrames[index].lineNumber,
-                column: stackFrames[index].columnNumber
-            });
+        var parser = context.client.config.errorParser;
+        if (!parser) {
+            context.cancel = true;
+            return Promise.reject(new Error('No error parser was defined. This exception will be discarded.'));
         }
-        return frames;
+        return parser.parse(context, context.event.data['@error']);
     };
     return ErrorPlugin;
 })();
@@ -2674,11 +2664,66 @@ var NodeEnvironmentInfoCollector = (function () {
     return NodeEnvironmentInfoCollector;
 })();
 exports.NodeEnvironmentInfoCollector = NodeEnvironmentInfoCollector;
+var nodestacktrace = require('stack-trace');
+var NodeErrorParser = (function () {
+    function NodeErrorParser() {
+    }
+    NodeErrorParser.prototype.parse = function (context, exception) {
+        if (!nodestacktrace) {
+            context.cancel = true;
+            return Promise.reject(new Error('Unable to load the stack trace library. This exception will be discarded.'));
+        }
+        var stackFrames = nodestacktrace.parse(exception);
+        if (!stackFrames || stackFrames.length === 0) {
+            context.cancel = true;
+            return Promise.reject(new Error('Unable to parse the exceptions stack trace. This exception will be discarded.'));
+        }
+        var error = {
+            message: exception.message,
+            stack_trace: this.getStackFrames(context, stackFrames || [])
+        };
+        context.event.data['@error'] = error;
+        return Promise.resolve();
+    };
+    NodeErrorParser.prototype.getStackFrames = function (context, stackFrames) {
+        var frames = [];
+        for (var index = 0; index < stackFrames.length; index++) {
+            var frame = stackFrames[index];
+            frames.push({
+                name: frame.getMethodName() || frame.getFunctionName(),
+                file_name: frame.getFileName(),
+                line_number: frame.getLineNumber(),
+                column: frame.getColumnNumber(),
+                declaring_type: frame.getTypeName(),
+                data: {
+                    is_native: frame.isNative() || (frame.filename[0] !== '/' && frame.filename[0] !== '.')
+                }
+            });
+        }
+        return frames;
+    };
+    return NodeErrorParser;
+})();
+exports.NodeErrorParser = NodeErrorParser;
 var NodeRequestInfoCollector = (function () {
     function NodeRequestInfoCollector() {
     }
     NodeRequestInfoCollector.prototype.getRequestInfo = function (context) {
-        return undefined;
+        if (!context.contextData['@request']) {
+            return null;
+        }
+        var request = context.contextData['@request'];
+        var ri = {
+            client_ip_address: request.ip,
+            is_secure: request.secure,
+            http_method: request.method,
+            host: request.hostname || request.host,
+            path: request.path,
+            post_data: request.body,
+            cookies: request.cookies,
+            query_string: request.params
+        };
+        return ri;
     };
     return NodeRequestInfoCollector;
 })();
@@ -2743,7 +2788,6 @@ var NodeSubmissionClient = (function () {
                     'Content-Length': data.length
                 };
             }
-            console.log(options);
             var request = https.request(options, function (response) {
                 var body = '';
                 response.on('data', function (chunk) { return body += chunk; });
@@ -2771,10 +2815,11 @@ var NodeBootstrapper = (function () {
             return;
         }
         Configuration.defaults.environmentInfoCollector = new NodeEnvironmentInfoCollector();
+        Configuration.defaults.errorParser = new NodeErrorParser();
         Configuration.defaults.requestInfoCollector = new NodeRequestInfoCollector();
         Configuration.defaults.submissionClient = new NodeSubmissionClient();
         process.on('uncaughtException', function (error) {
-            ExceptionlessClient.default.submitUnhandledException(error);
+            ExceptionlessClient.default.submitUnhandledException(error, 'uncaughtException');
         });
         process.on('beforeExit', function (code) {
             var client = ExceptionlessClient.default;
@@ -2827,6 +2872,41 @@ var NodeBootstrapper = (function () {
     return NodeBootstrapper;
 })();
 exports.NodeBootstrapper = NodeBootstrapper;
+var WebErrorParser = (function () {
+    function WebErrorParser() {
+    }
+    WebErrorParser.prototype.parse = function (context, exception) {
+        var _this = this;
+        return StackTrace.fromError(exception).then(function (stackFrames) { return _this.processError(context, exception, stackFrames); }, function () { return _this.onParseError(context); });
+    };
+    WebErrorParser.prototype.processError = function (context, exception, stackFrames) {
+        var error = {
+            message: exception.message,
+            stack_trace: this.getStackFrames(context, stackFrames || [])
+        };
+        context.event.data['@error'] = error;
+        return Promise.resolve();
+    };
+    WebErrorParser.prototype.onParseError = function (context) {
+        context.cancel = true;
+        return Promise.reject(new Error('Unable to parse the exceptions stack trace. This exception will be discarded.'));
+    };
+    WebErrorParser.prototype.getStackFrames = function (context, stackFrames) {
+        var frames = [];
+        for (var index = 0; index < stackFrames.length; index++) {
+            frames.push({
+                name: stackFrames[index].functionName,
+                parameters: stackFrames[index].args,
+                file_name: stackFrames[index].fileName,
+                line_number: stackFrames[index].lineNumber,
+                column: stackFrames[index].columnNumber
+            });
+        }
+        return frames;
+    };
+    return WebErrorParser;
+})();
+exports.WebErrorParser = WebErrorParser;
 var WebRequestInfoCollector = (function () {
     function WebRequestInfoCollector() {
     }
@@ -2977,6 +3057,7 @@ var WindowBootstrapper = (function () {
             Configuration.defaults.apiKey = settings.apiKey;
             Configuration.defaults.serverUrl = settings.serverUrl;
         }
+        Configuration.defaults.errorParser = new WebErrorParser();
         Configuration.defaults.requestInfoCollector = new WebRequestInfoCollector();
         Configuration.defaults.submissionClient = new DefaultSubmissionClient();
         this.handleWindowOnError();
@@ -2998,7 +3079,7 @@ var WindowBootstrapper = (function () {
         window.onerror = function (message, filename, lineno, colno, error) {
             var client = ExceptionlessClient.default;
             if (error !== null && typeof error === 'object') {
-                client.submitUnhandledException(error);
+                client.submitUnhandledException(error, 'onerror');
             }
             else {
                 var e = {
@@ -3009,7 +3090,7 @@ var WindowBootstrapper = (function () {
                             column: colno
                         }]
                 };
-                client.createUnhandledException(new Error(message)).setMessage(message).setProperty('@error', e).submit();
+                client.createUnhandledException(new Error(message), 'onerror').setMessage(message).setProperty('@error', e).submit();
             }
             if (_oldOnErrorHandler) {
                 try {

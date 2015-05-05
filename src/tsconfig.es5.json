@@ -9,6 +9,8 @@
   "files": [
     "../typings/es6-promise/es6-promise.d.ts",
     "../typings/node/node.d.ts",
+    "typings/node-stack-trace/node-stack-trace.d.ts",
+    "typings/stacktrace/stacktrace.d.ts",
     "bootstrap/IBootstrapper",
     "bootstrap/NodeBootstrapper",
     "bootstrap/WindowBootstrapper",

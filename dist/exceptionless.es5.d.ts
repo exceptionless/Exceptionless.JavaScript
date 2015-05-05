@@ -58,6 +58,9 @@ export declare class ContextData {
 export interface IEnvironmentInfoCollector {
     getEnvironmentInfo(context: EventPluginContext): IEnvironmentInfo;
 }
+export interface IErrorParser {
+    parse(context: EventPluginContext, exception: Error): Promise<IError>;
+}
 export interface IRequestInfoCollector {
     getRequestInfo(context: EventPluginContext): IRequestInfo;
 }
@@ -76,6 +79,7 @@ export interface IConfigurationSettings {
     apiKey?: string;
     serverUrl?: string;
     environmentInfoCollector?: IEnvironmentInfoCollector;
+    errorParser?: IErrorParser;
     lastReferenceIdManager?: ILastReferenceIdManager;
     log?: ILog;
     requestInfoCollector?: IRequestInfoCollector;
@@ -162,6 +166,7 @@ export declare class Configuration implements IConfigurationSettings {
     private _serverUrl;
     private _plugins;
     environmentInfoCollector: IEnvironmentInfoCollector;
+    errorParser: IErrorParser;
     lastReferenceIdManager: ILastReferenceIdManager;
     log: ILog;
     requestInfoCollector: IRequestInfoCollector;
@@ -201,6 +206,7 @@ export declare class EventBuilder {
     addTags(...tags: string[]): EventBuilder;
     setProperty(name: string, value: any): EventBuilder;
     markAsCritical(critical: boolean): EventBuilder;
+    addRequestInfo(request: any): EventBuilder;
     submit(): Promise<any>;
     private isValidIdentifier(value);
 }
@@ -214,8 +220,8 @@ export declare class ExceptionlessClient {
     constructor(apiKey: string, serverUrl?: string);
     createException(exception: Error): EventBuilder;
     submitException(exception: Error): Promise<any>;
-    createUnhandledException(exception: Error): EventBuilder;
-    submitUnhandledException(exception: Error): Promise<any>;
+    createUnhandledException(exception: Error, submissionMethod?: string): EventBuilder;
+    submitUnhandledException(exception: Error, submissionMethod?: string): Promise<any>;
     createFeatureUsage(feature: string): EventBuilder;
     submitFeatureUsage(feature: string): Promise<any>;
     createLog(message: string): EventBuilder;
@@ -285,9 +291,6 @@ export declare class ErrorPlugin implements IEventPlugin {
     priority: number;
     name: string;
     run(context: EventPluginContext): Promise<any>;
-    private processError(context, exception, stackFrames);
-    private onParseError(context);
-    private getStackFrames(context, stackFrames);
 }
 export declare class DuplicateCheckerPlugin implements IEventPlugin {
     priority: number;
@@ -358,6 +361,10 @@ export declare class NodeEnvironmentInfoCollector implements IEnvironmentInfoCol
     getEnvironmentInfo(context: EventPluginContext): IEnvironmentInfo;
     private getIpAddresses();
 }
+export declare class NodeErrorParser implements IErrorParser {
+    parse(context: EventPluginContext, exception: Error): Promise<IError>;
+    private getStackFrames(context, stackFrames);
+}
 export declare class NodeRequestInfoCollector implements IRequestInfoCollector {
     getRequestInfo(context: EventPluginContext): IRequestInfo;
 }
@@ -372,6 +379,12 @@ export declare class NodeBootstrapper implements IBootstrapper {
     register(): void;
     private getExitCodeReason(code);
     private isNode();
+}
+export declare class WebErrorParser implements IErrorParser {
+    parse(context: EventPluginContext, exception: Error): Promise<IError>;
+    private processError(context, exception, stackFrames);
+    private onParseError(context);
+    private getStackFrames(context, stackFrames);
 }
 export declare class WebRequestInfoCollector implements IRequestInfoCollector {
     getRequestInfo(context: EventPluginContext): IRequestInfo;
