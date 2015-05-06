@@ -13,6 +13,12 @@
     },
     "node/node.d.ts": {
       "commit": "00e7f3fede5f2df55b56c72f40a144824f0f0bfa"
+    },
+    "angularjs/angular.d.ts": {
+      "commit": "557bb595af0ab301d098fb5bd50943fffbfcee57"
+    },
+    "jquery/jquery.d.ts": {
+      "commit": "557bb595af0ab301d098fb5bd50943fffbfcee57"
     }
   }
 }

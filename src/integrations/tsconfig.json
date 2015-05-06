@@ -1,0 +1,21 @@
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "removeComments": true,
+    "target": "es5"
+  },
+  "files": [
+    "../../typings/angularjs/angular.d.ts",
+    "../../typings/jquery/jquery.d.ts",
+    "angular.ts"
+  ],
+  "bundles": {
+    "exceptionless": {
+      "files": [
+        "../../typings/angularjs/angular.d.ts",
+        "../../typings/jquery/jquery.d.ts",
+        "angular.ts"
+      ]
+    }
+  }
+}

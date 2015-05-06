@@ -16,6 +16,10 @@ gulp.task('typescript.es5', function() {
   return tsProject.src('src/tsconfig.es5.json').pipe(gulp.dest('dist/temp'));
 });
 
+gulp.task('typescript.es5.integrations', function() {
+  return tsProject.src('src/integrations/tsconfig.json').pipe(gulp.dest('dist/temp'));
+});
+
 gulp.task('exceptionless.es5.umd', ['typescript.es5'], function() {
   return gulp.src('dist/temp/src/exceptionless.js')
     .pipe(sourcemaps.init({ loadMaps: true }))
@@ -32,6 +36,13 @@ gulp.task('exceptionless.es5.umd', ['typescript.es5'], function() {
 gulp.task('exceptionless.es5', ['exceptionless.es5.umd'], function() {
   gulp.src('dist/temp/src/exceptionless.d.ts')
     .pipe(gulp.dest('dist'));
+
+  var integrations = [
+    'src/integrations/angular.js'
+  ];
+
+  gulp.src(integrations)
+    .pipe(gulp.dest('dist/integrations'));
 
   var files = [
     'node_modules/es6-promise/dist/es6-promise.js',
