@@ -2151,6 +2151,7 @@ var Configuration = (function () {
         else {
             this.defaultData['@user'] = userInfo;
         }
+        this.log.info("user identity set to: " + (!userInfo.identity && !userInfo.name ? 'null' : userInfo.identity));
     };
     Configuration.prototype.useReferenceIds = function () {
         this.addPlugin(new ReferenceIdPlugin());

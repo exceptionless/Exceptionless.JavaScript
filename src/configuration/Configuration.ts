@@ -156,6 +156,8 @@ export class Configuration implements IConfigurationSettings {
     } else {
       this.defaultData['@user'] = userInfo;
     }
+
+    this.log.info(`user identity set to: ${!userInfo.identity && !userInfo.name ? 'null' : userInfo.identity}`);
   }
 
   public useReferenceIds(): void {

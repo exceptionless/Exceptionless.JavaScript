@@ -4,9 +4,10 @@ angular.module('exceptionless', [])
     return {
       responseError: function responseError(rejection) {
         if (rejection.status === 404) {
-          $ExceptionlessClient.submitNotFound(rejection.config);
+          $ExceptionlessClient.submitNotFound(rejection.config.url);
         } else {
           $ExceptionlessClient.createUnhandledException(new Error('HTTP response error'), 'errorHttpInterceptor')
+            .setSource(rejection.config.url)
             .setProperty('status', rejection.status)
             .setProperty('config', rejection.config)
             .submit();
@@ -28,7 +29,7 @@ angular.module('exceptionless', [])
         var previousFn = $delegate[property];
         return $delegate[property] = function () {
           previousFn.call(null, arguments);
-          $ExceptionlessClient.submitLog('Angular', arguments[0], logLevel);
+          $ExceptionlessClient.submitLog(null, arguments[0], logLevel);
         };
       }
       $delegate.log = decorateRegularCall('log', 'Trace');
@@ -86,6 +87,10 @@ angular.module('exceptionless', [])
         .setProperty('fromState', fromState)
         .setProperty('fromParams', fromParams)
         .submit();
+    });
+
+    $rootScope.$on('$destroy', function() {
+      $ExceptionlessClient.config.queue.process();
     });
   }]);
 
