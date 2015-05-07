@@ -7,7 +7,7 @@ export class WebErrorParser implements IErrorParser {
   public parse(context:EventPluginContext, exception:Error): Promise<IError> {
     return StackTrace.fromError(exception).then(
       (stackFrames: StackTrace.StackFrame[]) => this.processError(context, exception, stackFrames),
-      () => this.onParseError(context)
+      (error) => this.onParseError(error, context)
     );
   }
 
@@ -22,9 +22,11 @@ export class WebErrorParser implements IErrorParser {
     return Promise.resolve();
   }
 
-  private onParseError(context:EventPluginContext): Promise<any>  {
+  private onParseError(error:Error, context:EventPluginContext): Promise<any>  {
     context.cancel = true;
-    return Promise.reject(new Error('Unable to parse the exceptions stack trace. This exception will be discarded.'))
+    var message = 'Unable to parse the exceptions stack trace';
+    context.log.error(`${message}: ${error.message}`);
+    return Promise.reject(new Error(`${message}. This exception will be discarded.`))
   }
 
   private getStackFrames(context:EventPluginContext, stackFrames:StackTrace.StackFrame[]): IStackFrame[] {
