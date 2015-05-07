@@ -1,12 +1,12 @@
 angular.module('exceptionless', [])
   .constant('$ExceptionlessClient', Exceptionless.ExceptionlessClient.default)
-  .factory('exceptionlessHttpInterceptor', ['$q', 'ExceptionlessClient', function ($q, ExceptionlessClient) {
+  .factory('exceptionlessHttpInterceptor', ['$q', '$ExceptionlessClient', function ($q, $ExceptionlessClient) {
     return {
       responseError: function responseError(rejection) {
         if (rejection.status === 404) {
-          ExceptionlessClient.submitNotFound(rejection.config);
+          $ExceptionlessClient.submitNotFound(rejection.config);
         } else {
-          ExceptionlessClient.createUnhandledException(new Error('HTTP response error'), 'errorHttpInterceptor')
+          $ExceptionlessClient.createUnhandledException(new Error('HTTP response error'), 'errorHttpInterceptor')
             .setProperty('status', rejection.status)
             .setProperty('config', rejection.config)
             .submit();
@@ -15,12 +15,12 @@ angular.module('exceptionless', [])
       }
     };
   }])
-  .config(['$httpProvider', '$provide', 'ExceptionlessClient', function ($httpProvider, $provide, ExceptionlessClient) {
+  .config(['$httpProvider', '$provide', '$ExceptionlessClient', function ($httpProvider, $provide, $ExceptionlessClient) {
     $httpProvider.interceptors.push('exceptionlessHttpInterceptor');
     $provide.decorator('$exceptionHandler', ['$delegate', function ($delegate) {
       return function (exception, cause) {
         $delegate(exception, cause);
-        ExceptionlessClient.createUnhandledException(exception, '$exceptionHandler').setMessage(cause).submit();
+        $ExceptionlessClient.createUnhandledException(exception, '$exceptionHandler').setMessage(cause).submit();
       };
     }]);
     $provide.decorator('$log', ['$delegate', function ($delegate) {
@@ -28,7 +28,7 @@ angular.module('exceptionless', [])
         var previousFn = $delegate[property];
         return $delegate[property] = function () {
           previousFn.call(null, arguments);
-          ExceptionlessClient.submitLog('Angular', arguments[0], logLevel);
+          $ExceptionlessClient.submitLog('Angular', arguments[0], logLevel);
         };
       }
       $delegate.log = decorateRegularCall('log', 'Trace');
@@ -39,16 +39,16 @@ angular.module('exceptionless', [])
       return $delegate;
     }]);
   }])
-  .run(['$rootScope', 'ExceptionlessClient', function($rootScope, ExceptionlessClient) {
+  .run(['$rootScope', '$ExceptionlessClient', function($rootScope, $ExceptionlessClient) {
     $rootScope.$on('$routeChangeSuccess', function(event, next, current) {
-      ExceptionlessClient.createFeatureUsage(current.name)
+      $ExceptionlessClient.createFeatureUsage(current.name)
         .setProperty('next', next)
         .setProperty('current', current)
         .submit();
     });
 
     $rootScope.$on('$routeChangeError', function(event, current, previous, rejection) {
-      ExceptionlessClient.createUnhandledException(new Error(rejection), '$routeChangeError')
+      $ExceptionlessClient.createUnhandledException(new Error(rejection), '$routeChangeError')
         .setProperty('current', current)
         .setProperty('previous', previous)
         .submit();
@@ -59,7 +59,7 @@ angular.module('exceptionless', [])
         return;
       }
 
-      ExceptionlessClient.createFeatureUsage(toState.controller || toState.name)
+      $ExceptionlessClient.createFeatureUsage(toState.controller || toState.name)
         .setProperty('toState', toState)
         .setProperty('toParams', toParams)
         .setProperty('fromState', fromState)
@@ -68,7 +68,7 @@ angular.module('exceptionless', [])
     });
 
     $rootScope.$on('$stateNotFound', function(event, unfoundState, fromState, fromParams) {
-      ExceptionlessClient.createNotFound(unfoundState.to)
+      $ExceptionlessClient.createNotFound(unfoundState.to)
         .setProperty('unfoundState', unfoundState)
         .setProperty('fromState', fromState)
         .setProperty('fromParams', fromParams)
@@ -80,7 +80,7 @@ angular.module('exceptionless', [])
         return;
       }
 
-      ExceptionlessClient.createUnhandledException(error, '$stateChangeError')
+      $ExceptionlessClient.createUnhandledException(error, '$stateChangeError')
         .setProperty('toState', toState)
         .setProperty('toParams', toParams)
         .setProperty('fromState', fromState)
