@@ -1,5 +1,5 @@
 angular.module('exceptionless', [])
-    .value('ExceptionlessClient', Exceptionless.ExceptionlessClient.default)
+    .constant('ExceptionlessClient', Exceptionless.ExceptionlessClient.default)
     .factory('exceptionlessHttpInterceptor', ['$q', 'ExceptionlessClient', function ($q, ExceptionlessClient) {
         return {
             responseError: function responseError(rejection) {

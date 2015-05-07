@@ -46,12 +46,13 @@ export class Configuration implements IConfigurationSettings {
 
     settings = Utils.merge(Configuration.defaults, settings);
 
+    this.log = inject(settings.log) || new NullLog();
     this.apiKey = settings.apiKey;
     this.serverUrl = settings.serverUrl;
+
     this.environmentInfoCollector = inject(settings.environmentInfoCollector);
     this.errorParser = inject(settings.errorParser);
     this.lastReferenceIdManager = inject(settings.lastReferenceIdManager) || new InMemoryLastReferenceIdManager();
-    this.log = inject(settings.log) || new NullLog();
     this.moduleCollector = inject(settings.moduleCollector);
     this.requestInfoCollector = inject(settings.requestInfoCollector);
     this.submissionBatchSize = inject(settings.submissionBatchSize) || 50;
@@ -68,6 +69,7 @@ export class Configuration implements IConfigurationSettings {
 
   public set apiKey(value:string) {
     this._apiKey = value || null;
+    this.log.info(`apiKey set to: ${this._apiKey }`);
   }
 
   public get serverUrl(): string {
@@ -77,6 +79,7 @@ export class Configuration implements IConfigurationSettings {
   public set serverUrl(value:string) {
     if (!!value && value.length > 0) {
       this._serverUrl = value;
+      this.log.info(`serverUrl set to: ${this._serverUrl }`);
     }
   }
 
