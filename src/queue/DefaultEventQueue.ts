@@ -52,6 +52,7 @@ export class DefaultEventQueue implements IEventQueue {
       var events = this._config.storage.get(this.queuePath(), this._config.submissionBatchSize);
       if (!events || events.length == 0) {
         this._config.log.info('There are currently no queued events to process.');
+        this._processingQueue = false;
         return;
       }
 
