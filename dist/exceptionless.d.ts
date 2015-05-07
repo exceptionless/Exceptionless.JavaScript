@@ -399,7 +399,7 @@ export declare class NodeBootstrapper implements IBootstrapper {
 export declare class WebErrorParser implements IErrorParser {
     parse(context: EventPluginContext, exception: Error): Promise<IError>;
     private processError(context, exception, stackFrames);
-    private onParseError(context);
+    private onParseError(error, context);
     private getStackFrames(context, stackFrames);
 }
 export declare class WebModuleCollector implements IModuleCollector {

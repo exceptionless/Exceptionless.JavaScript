@@ -1804,6 +1804,7 @@ var DefaultEventQueue = (function () {
             var events = this._config.storage.get(this.queuePath(), this._config.submissionBatchSize);
             if (!events || events.length == 0) {
                 this._config.log.info('There are currently no queued events to process.');
+                this._processingQueue = false;
                 return;
             }
             this._config.log.info("Sending " + events.length + " events to " + this._config.serverUrl + ".");
@@ -2889,7 +2890,7 @@ var WebErrorParser = (function () {
     }
     WebErrorParser.prototype.parse = function (context, exception) {
         var _this = this;
-        return StackTrace.fromError(exception).then(function (stackFrames) { return _this.processError(context, exception, stackFrames); }, function () { return _this.onParseError(context); });
+        return StackTrace.fromError(exception).then(function (stackFrames) { return _this.processError(context, exception, stackFrames); }, function (error) { return _this.onParseError(error, context); });
     };
     WebErrorParser.prototype.processError = function (context, exception, stackFrames) {
         var error = {
@@ -2899,9 +2900,11 @@ var WebErrorParser = (function () {
         context.event.data['@error'] = error;
         return Promise.resolve();
     };
-    WebErrorParser.prototype.onParseError = function (context) {
+    WebErrorParser.prototype.onParseError = function (error, context) {
         context.cancel = true;
-        return Promise.reject(new Error('Unable to parse the exceptions stack trace. This exception will be discarded.'));
+        var message = 'Unable to parse the exceptions stack trace';
+        context.log.error(message + ": " + error.message);
+        return Promise.reject(new Error(message + ". This exception will be discarded."));
     };
     WebErrorParser.prototype.getStackFrames = function (context, stackFrames) {
         var frames = [];
