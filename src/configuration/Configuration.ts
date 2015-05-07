@@ -22,7 +22,7 @@ import { Utils } from '../Utils';
 
 export class Configuration implements IConfigurationSettings {
   private _apiKey:string;
-  private _enabled:boolean = false;
+  private _enabled:boolean = true;
   private _serverUrl:string = 'https://collector.exceptionless.io';
   private _plugins:IEventPlugin[] = [];
 
@@ -68,7 +68,6 @@ export class Configuration implements IConfigurationSettings {
 
   public set apiKey(value:string) {
     this._apiKey = value || null;
-    this._enabled = !!value && value.length > 0;
   }
 
   public get serverUrl(): string {

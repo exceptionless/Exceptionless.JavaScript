@@ -10,7 +10,7 @@
     "angular.ts"
   ],
   "bundles": {
-    "exceptionless": {
+    "angular": {
       "files": [
         "../../typings/angularjs/angular.d.ts",
         "../../typings/jquery/jquery.d.ts",

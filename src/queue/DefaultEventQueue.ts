@@ -41,6 +41,11 @@ export class DefaultEventQueue implements IEventQueue {
       return;
     }
 
+    if (!this._config.apiKey || this._config.apiKey.length < 10) {
+      this._config.log.info('ApiKey is not set. The queue will not be processed.');
+      return;
+    }
+
     this._processingQueue = true;
 
     try {
@@ -171,6 +176,6 @@ export class DefaultEventQueue implements IEventQueue {
   }
 
   private queuePath(): string {
-    return !!this._config.apiKey ? `ex-${this._config.apiKey.slice(0, 8)}-q` : null;
+    return 'ex-q';
   }
 }

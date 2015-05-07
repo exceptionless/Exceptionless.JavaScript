@@ -1795,6 +1795,10 @@ var DefaultEventQueue = (function () {
             this._config.log.info('Configuration is disabled. The queue will not be processed.');
             return;
         }
+        if (!this._config.apiKey || this._config.apiKey.length < 10) {
+            this._config.log.info('ApiKey is not set. The queue will not be processed.');
+            return;
+        }
         this._processingQueue = true;
         try {
             var events = this._config.storage.get(this.queuePath(), this._config.submissionBatchSize);
@@ -1900,7 +1904,7 @@ var DefaultEventQueue = (function () {
         return this._discardQueuedItemsUntil && this._discardQueuedItemsUntil > new Date();
     };
     DefaultEventQueue.prototype.queuePath = function () {
-        return !!this._config.apiKey ? "ex-" + this._config.apiKey.slice(0, 8) + "-q" : null;
+        return 'ex-q';
     };
     return DefaultEventQueue;
 })();
@@ -2033,7 +2037,7 @@ var Utils = (function () {
 exports.Utils = Utils;
 var Configuration = (function () {
     function Configuration(settings) {
-        this._enabled = false;
+        this._enabled = true;
         this._serverUrl = 'https://collector.exceptionless.io';
         this._plugins = [];
         this.lastReferenceIdManager = new InMemoryLastReferenceIdManager();
@@ -2063,7 +2067,6 @@ var Configuration = (function () {
         },
         set: function (value) {
             this._apiKey = value || null;
-            this._enabled = !!value && value.length > 0;
         },
         enumerable: true,
         configurable: true

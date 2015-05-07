@@ -20,7 +20,7 @@ gulp.task('typescript.es5.integrations', function() {
   return tsProject.src('src/integrations/tsconfig.json').pipe(gulp.dest('dist/temp'));
 });
 
-gulp.task('exceptionless.es5.umd', ['typescript.es5'], function() {
+gulp.task('exceptionless.es5.umd', ['typescript.es5', 'typescript.es5.integrations'], function() {
   return gulp.src('dist/temp/src/exceptionless.js')
     .pipe(sourcemaps.init({ loadMaps: true }))
     .pipe(umd({
@@ -38,7 +38,7 @@ gulp.task('exceptionless.es5', ['exceptionless.es5.umd'], function() {
     .pipe(gulp.dest('dist'));
 
   var integrations = [
-    'src/integrations/angular.js'
+    'dist/temp/src/integrations/angular.js'
   ];
 
   gulp.src(integrations)
