@@ -151,7 +151,7 @@ export class Configuration implements IConfigurationSettings {
   public setUserIdentity(identity:string, name:string): void;
   public setUserIdentity(userInfoOrIdentity:IUserInfo|string, name?:string): void {
     var userInfo = typeof userInfoOrIdentity !== 'string' ? userInfoOrIdentity : { identity: userInfoOrIdentity, name: name };
-    if (!userInfo.identity && !userInfo.name) {
+    if (!userInfo || (!userInfo.identity && !userInfo.name)) {
       delete this.defaultData['@user'];
     } else {
       this.defaultData['@user'] = userInfo;

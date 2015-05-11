@@ -73,7 +73,7 @@ export class EventBuilder {
   public setUserIdentity(identity:string, name:string): EventBuilder;
   public setUserIdentity(userInfoOrIdentity:IUserInfo|string, name?:string): EventBuilder {
     var userInfo = typeof userInfoOrIdentity !== 'string' ? userInfoOrIdentity : { identity: userInfoOrIdentity, name: name };
-    if (!userInfo.identity && !userInfo.name) {
+    if (!userInfo || (!userInfo.identity && !userInfo.name)) {
       return this;
     }
 

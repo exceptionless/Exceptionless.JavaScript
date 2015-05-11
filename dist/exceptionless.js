@@ -2145,7 +2145,7 @@ var Configuration = (function () {
     };
     Configuration.prototype.setUserIdentity = function (userInfoOrIdentity, name) {
         var userInfo = typeof userInfoOrIdentity !== 'string' ? userInfoOrIdentity : { identity: userInfoOrIdentity, name: name };
-        if (!userInfo.identity && !userInfo.name) {
+        if (!userInfo || (!userInfo.identity && !userInfo.name)) {
             delete this.defaultData['@user'];
         }
         else {
@@ -2221,7 +2221,7 @@ var EventBuilder = (function () {
     };
     EventBuilder.prototype.setUserIdentity = function (userInfoOrIdentity, name) {
         var userInfo = typeof userInfoOrIdentity !== 'string' ? userInfoOrIdentity : { identity: userInfoOrIdentity, name: name };
-        if (!userInfo.identity && !userInfo.name) {
+        if (!userInfo || (!userInfo.identity && !userInfo.name)) {
             return this;
         }
         this.setProperty('@user', userInfo);
