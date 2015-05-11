@@ -2145,13 +2145,14 @@ var Configuration = (function () {
     };
     Configuration.prototype.setUserIdentity = function (userInfoOrIdentity, name) {
         var userInfo = typeof userInfoOrIdentity !== 'string' ? userInfoOrIdentity : { identity: userInfoOrIdentity, name: name };
-        if (!userInfo || (!userInfo.identity && !userInfo.name)) {
+        var shouldRemove = !userInfo || (!userInfo.identity && !userInfo.name);
+        if (shouldRemove) {
             delete this.defaultData['@user'];
         }
         else {
             this.defaultData['@user'] = userInfo;
         }
-        this.log.info("user identity set to: " + (!userInfo.identity && !userInfo.name ? 'null' : userInfo.identity));
+        this.log.info("user identity set to: " + (shouldRemove ? 'null' : userInfo.identity));
     };
     Configuration.prototype.useReferenceIds = function () {
         this.addPlugin(new ReferenceIdPlugin());

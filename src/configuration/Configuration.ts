@@ -150,14 +150,15 @@ export class Configuration implements IConfigurationSettings {
   public setUserIdentity(identity:string): void;
   public setUserIdentity(identity:string, name:string): void;
   public setUserIdentity(userInfoOrIdentity:IUserInfo|string, name?:string): void {
-    var userInfo = typeof userInfoOrIdentity !== 'string' ? userInfoOrIdentity : { identity: userInfoOrIdentity, name: name };
-    if (!userInfo || (!userInfo.identity && !userInfo.name)) {
+    var userInfo:IUserInfo = typeof userInfoOrIdentity !== 'string' ? userInfoOrIdentity : { identity: userInfoOrIdentity, name: name };
+    var shouldRemove:boolean = !userInfo || (!userInfo.identity && !userInfo.name);
+    if (shouldRemove) {
       delete this.defaultData['@user'];
     } else {
       this.defaultData['@user'] = userInfo;
     }
 
-    this.log.info(`user identity set to: ${!userInfo.identity && !userInfo.name ? 'null' : userInfo.identity}`);
+    this.log.info(`user identity set to: ${shouldRemove ? 'null' : userInfo.identity}`);
   }
 
   public useReferenceIds(): void {
