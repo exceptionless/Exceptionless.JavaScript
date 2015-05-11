@@ -6,7 +6,7 @@ angular.module('exceptionless', [])
                 if (rejection.status === 404) {
                     $ExceptionlessClient.submitNotFound(rejection.config.url);
                 }
-                else {
+                else if (rejection.status !== 401) {
                     $ExceptionlessClient.createUnhandledException(new Error('HTTP response error'), 'errorHttpInterceptor')
                         .setSource(rejection.config.url)
                         .setProperty('status', rejection.status)
