@@ -8,7 +8,7 @@
   "files": [
     "../typings/node/node.d.ts",
     "typings/node-stack-trace/node-stack-trace.d.ts",
-    "typings/stacktrace/stacktrace.d.ts",
+    "typings/tracekit/tracekit.d.ts",
     "bootstrap/IBootstrapper",
     "bootstrap/NodeBootstrapper",
     "bootstrap/WindowBootstrapper",
@@ -71,7 +71,7 @@
       "files": [
         "../typings/node/node.d.ts",
         "typings/node-stack-trace/node-stack-trace.d.ts",
-        "typings/stacktrace/stacktrace.d.ts",
+        "typings/tracekit/tracekit.d.ts",
         "Exceptionless.ts"
       ]
     }

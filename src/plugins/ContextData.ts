@@ -1,6 +1,8 @@
 export class ContextData {
   public setException(exception:Error): void {
-    this['@@_Exception'] = exception;
+    if (exception) {
+      this['@@_Exception'] = exception;
+    }
   }
 
   public get hasException(): boolean {

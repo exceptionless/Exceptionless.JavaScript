@@ -1,47 +1,55 @@
 import { IError } from '../models/IError';
+import { IParameter } from '../models/IParameter';
 import { IErrorParser } from 'IErrorParser';
 import { IStackFrame } from '../models/IStackFrame';
 import { EventPluginContext } from '../plugins/EventPluginContext';
 
 export class WebErrorParser implements IErrorParser {
   public parse(context:EventPluginContext, exception:Error): Promise<IError> {
-    return StackTrace.fromError(exception).then(
-      (stackFrames: StackTrace.StackFrame[]) => this.processError(context, exception, stackFrames),
-      (error) => this.onParseError(error, context)
-    );
-  }
+    var stackTrace:TraceKit.StackTrace = !!context['@@_TraceKit.StackTrace']
+      ? context['@@_TraceKit.StackTrace']
+      : TraceKit.computeStackTrace(exception, 25);
 
-  private processError(context:EventPluginContext, exception:Error, stackFrames: StackTrace.StackFrame[]): Promise<any> {
-    var error:IError = {
-      message: exception.message,
-      stack_trace: this.getStackFrames(context, stackFrames || [])
-    };
+    if (stackTrace) {
+      var error:IError = {
+        message: stackTrace.message || exception.message,
+        stack_trace: this.getStackFrames(context, stackTrace.stack || [])
+      };
 
-    context.event.data['@error'] = error;
+      context.event.data['@error'] = error;
 
-    return Promise.resolve();
-  }
+      return Promise.resolve();
+    }
 
-  private onParseError(error:Error, context:EventPluginContext): Promise<any>  {
     context.cancel = true;
-    var message = 'Unable to parse the exceptions stack trace';
-    context.log.error(`${message}: ${error.message}`);
-    return Promise.reject(new Error(`${message}. This exception will be discarded.`))
+    return Promise.reject(new Error('Unable to parse the exceptions stack trace. This exception will be discarded.'));
   }
 
-  private getStackFrames(context:EventPluginContext, stackFrames:StackTrace.StackFrame[]): IStackFrame[] {
+  private getStackFrames(context:EventPluginContext, stackFrames:TraceKit.StackFrame[]): IStackFrame[] {
     var frames:IStackFrame[] = [];
 
     for (var index = 0; index < stackFrames.length; index++) {
+      var frame = stackFrames[index];
       frames.push({
-        name: stackFrames[index].functionName,
-        parameters: stackFrames[index].args, // TODO: need to verify arguments.
-        file_name: stackFrames[index].fileName,
-        line_number: stackFrames[index].lineNumber,
-        column: stackFrames[index].columnNumber
+        name: frame.func || '[anonymous]',
+        parameters: this.getParameters(frame.args),
+        file_name: frame.url,
+        line_number: frame.line,
+        column: frame.column
       });
     }
 
     return frames;
+  }
+
+  private getParameters(parameters:string|string[]): IParameter[] {
+    var params:string[] = (typeof parameters === 'string' ? [parameters] : parameters) || [];
+
+    var result:IParameter[] = [];
+    for (var index = 0; index < params.length; index++) {
+      result.push({ name: params[index] })
+    }
+
+    return result;
   }
 }

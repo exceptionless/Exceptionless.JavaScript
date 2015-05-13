@@ -45,12 +45,7 @@ gulp.task('exceptionless.es5', ['exceptionless.es5.umd'], function() {
     .pipe(gulp.dest('dist/integrations'));
 
   var files = [
-    'node_modules/es6-promise/dist/es6-promise.js',
-    'node_modules/stackframe/dist/stackframe.js',
-    'node_modules/error-stack-parser/dist/error-stack-parser.js',
-    'node_modules/stack-generator/dist/stack-generator.js',
-    'node_modules/stacktrace-gps/dist/stacktrace-gps.js',
-    'node_modules/stacktrace-js/dist/stacktrace.js',
+    'lib/tracekit.js',
     'dist/temp/exceptionless.js'
   ];
 
@@ -78,11 +73,7 @@ gulp.task('exceptionless.es6', ['typescript.es6'], function() {
   gulp.src('dist/temp/src/exceptionless.es6.d.ts').pipe(gulp.dest('dist'));
 
   var files = [
-    'node_modules/stackframe/dist/stackframe.js',
-    'node_modules/error-stack-parser/dist/error-stack-parser.js',
-    'node_modules/stack-generator/dist/stack-generator.js',
-    'node_modules/stacktrace-gps/dist/stacktrace-gps.js',
-    'node_modules/stacktrace-js/dist/stacktrace.js',
+    'lib/tracekit.js',
     'dist/temp/src/exceptionless.es6.js'
   ];
 

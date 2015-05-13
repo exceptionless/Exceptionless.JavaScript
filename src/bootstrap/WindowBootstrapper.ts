@@ -15,17 +15,23 @@ export class WindowBootstrapper implements IBootstrapper {
       return;
     }
 
+    var configDefaults = Configuration.defaults;
     var settings = this.getDefaultsSettingsFromScriptTag();
     if (settings && (settings.apiKey || settings.serverUrl)) {
-      Configuration.defaults.apiKey = settings.apiKey;
-      Configuration.defaults.serverUrl = settings.serverUrl;
+      configDefaults.apiKey = settings.apiKey;
+      configDefaults.serverUrl = settings.serverUrl;
     }
 
-    Configuration.defaults.errorParser = new WebErrorParser();
-    Configuration.defaults.moduleCollector = new WebModuleCollector();
-    Configuration.defaults.requestInfoCollector = new WebRequestInfoCollector();
-    Configuration.defaults.submissionClient = new DefaultSubmissionClient();
-    this.handleWindowOnError();
+    configDefaults.errorParser = new WebErrorParser();
+    configDefaults.moduleCollector = new WebModuleCollector();
+    configDefaults.requestInfoCollector = new WebRequestInfoCollector();
+    configDefaults.submissionClient = new DefaultSubmissionClient();
+
+    TraceKit.report.subscribe(this.processUnhandledException);
+    TraceKit.extendToAsynchronousCallbacks();
+    if ($ && $(document)) {
+      $(document).ajaxError(this.processJQueryAjaxError);
+    }
   }
 
   private getDefaultsSettingsFromScriptTag(): IConfigurationSettings {
@@ -42,36 +48,26 @@ export class WindowBootstrapper implements IBootstrapper {
     return null;
   }
 
-  private handleWindowOnError(): void {
-    var _oldOnErrorHandler:any = window.onerror;
-    (<any>window).onerror = (message:string, filename:string, lineno:number, colno:number, error:Error) => {
-      var client = ExceptionlessClient.default;
+  private processUnhandledException(stackTrace:TraceKit.StackTrace, options): void {
+    options == options || {};
+    var builder = ExceptionlessClient.default.createUnhandledException(new Error(stackTrace.message || options.status || 'Script error'), 'onerror');
+    builder.pluginContextData['@@_TraceKit.StackTrace'] = stackTrace;
+    builder.submit();
+  }
 
-      if (error !== null && typeof error === 'object') {
-        client.submitUnhandledException(error, 'onerror');
-      } else {
-        // Only message, filename and lineno work here.
-        var e:IError = {
-          message: message,
-          stack_trace: [{
-            file_name: filename,
-            line_number: lineno,
-            column: colno
-          }]
-        };
-
-        client.createUnhandledException(new Error(message), 'onerror').setMessage(message).setProperty('@error', e).submit();
-      }
-
-      if (_oldOnErrorHandler) {
-        try {
-          return _oldOnErrorHandler(message, filename, lineno, colno, error);
-        } catch (e) {
-          client.config.log.error(`An error occurred while calling previous error handler: ${e.message}`);
-        }
-      }
-
-      return false;
+  private processJQueryAjaxError(event, xhr, settings, error): void {
+    var client = ExceptionlessClient.default;
+    if (xhr.status === 404) {
+      client.submitNotFound(settings.url);
+    } else if (xhr.status !== 401) {
+      client.createUnhandledException(error, 'JQuery.ajaxError')
+        .setSource(settings.url)
+        .setProperty('status', xhr.status)
+        .setProperty('request', settings.data)
+        .setProperty('response', xhr.responseText && xhr.responseText.slice ? xhr.responseText.slice(0, 1024) : undefined)
+        .submit();
     }
   }
 }
+
+declare var $;

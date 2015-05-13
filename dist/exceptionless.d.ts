@@ -398,9 +398,8 @@ export declare class NodeBootstrapper implements IBootstrapper {
 }
 export declare class WebErrorParser implements IErrorParser {
     parse(context: EventPluginContext, exception: Error): Promise<IError>;
-    private processError(context, exception, stackFrames);
-    private onParseError(error, context);
     private getStackFrames(context, stackFrames);
+    private getParameters(parameters);
 }
 export declare class WebModuleCollector implements IModuleCollector {
     getModules(context: EventPluginContext): IModule[];
@@ -420,5 +419,6 @@ export declare class DefaultSubmissionClient implements ISubmissionClient {
 export declare class WindowBootstrapper implements IBootstrapper {
     register(): void;
     private getDefaultsSettingsFromScriptTag();
-    private handleWindowOnError();
+    private processUnhandledException(stackTrace, options);
+    private processJQueryAjaxError(event, xhr, settings, error);
 }

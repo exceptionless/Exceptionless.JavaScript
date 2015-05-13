@@ -1,1613 +1,1147 @@
-/*!
- * @overview es6-promise - a tiny implementation of Promises/A+.
- * @copyright Copyright (c) 2014 Yehuda Katz, Tom Dale, Stefan Penner and contributors (Conversion to ES6 API by Jake Archibald)
- * @license   Licensed under MIT license
- *            See https://raw.githubusercontent.com/jakearchibald/es6-promise/master/LICENSE
- * @version   2.1.1
+/*
+ TraceKit - Cross brower stack traces - github.com/occ/TraceKit
+ MIT license
+*/
+
+(function(window, undefined) {
+
+
+var TraceKit = {};
+var _oldTraceKit = window.TraceKit;
+
+// global reference to slice
+var _slice = [].slice;
+var UNKNOWN_FUNCTION = '?';
+
+
+/**
+ * _has, a better form of hasOwnProperty
+ * Example: _has(MainHostObject, property) === true/false
+ *
+ * @param {Object} host object to check property
+ * @param {string} key to check
  */
+function _has(object, key) {
+    return Object.prototype.hasOwnProperty.call(object, key);
+}
 
-(function() {
-    "use strict";
-    function lib$es6$promise$utils$$objectOrFunction(x) {
-      return typeof x === 'function' || (typeof x === 'object' && x !== null);
-    }
+function _isUndefined(what) {
+    return typeof what === 'undefined';
+}
 
-    function lib$es6$promise$utils$$isFunction(x) {
-      return typeof x === 'function';
-    }
+/**
+ * TraceKit.noConflict: Export TraceKit out to another variable
+ * Example: var TK = TraceKit.noConflict()
+ */
+TraceKit.noConflict = function noConflict() {
+    window.TraceKit = _oldTraceKit;
+    return TraceKit;
+};
 
-    function lib$es6$promise$utils$$isMaybeThenable(x) {
-      return typeof x === 'object' && x !== null;
-    }
-
-    var lib$es6$promise$utils$$_isArray;
-    if (!Array.isArray) {
-      lib$es6$promise$utils$$_isArray = function (x) {
-        return Object.prototype.toString.call(x) === '[object Array]';
-      };
-    } else {
-      lib$es6$promise$utils$$_isArray = Array.isArray;
-    }
-
-    var lib$es6$promise$utils$$isArray = lib$es6$promise$utils$$_isArray;
-    var lib$es6$promise$asap$$len = 0;
-    var lib$es6$promise$asap$$toString = {}.toString;
-    var lib$es6$promise$asap$$vertxNext;
-    function lib$es6$promise$asap$$asap(callback, arg) {
-      lib$es6$promise$asap$$queue[lib$es6$promise$asap$$len] = callback;
-      lib$es6$promise$asap$$queue[lib$es6$promise$asap$$len + 1] = arg;
-      lib$es6$promise$asap$$len += 2;
-      if (lib$es6$promise$asap$$len === 2) {
-        // If len is 2, that means that we need to schedule an async flush.
-        // If additional callbacks are queued before the queue is flushed, they
-        // will be processed by this flush that we are scheduling.
-        lib$es6$promise$asap$$scheduleFlush();
-      }
-    }
-
-    var lib$es6$promise$asap$$default = lib$es6$promise$asap$$asap;
-
-    var lib$es6$promise$asap$$browserWindow = (typeof window !== 'undefined') ? window : undefined;
-    var lib$es6$promise$asap$$browserGlobal = lib$es6$promise$asap$$browserWindow || {};
-    var lib$es6$promise$asap$$BrowserMutationObserver = lib$es6$promise$asap$$browserGlobal.MutationObserver || lib$es6$promise$asap$$browserGlobal.WebKitMutationObserver;
-    var lib$es6$promise$asap$$isNode = typeof process !== 'undefined' && {}.toString.call(process) === '[object process]';
-
-    // test for web worker but not in IE10
-    var lib$es6$promise$asap$$isWorker = typeof Uint8ClampedArray !== 'undefined' &&
-      typeof importScripts !== 'undefined' &&
-      typeof MessageChannel !== 'undefined';
-
-    // node
-    function lib$es6$promise$asap$$useNextTick() {
-      var nextTick = process.nextTick;
-      // node version 0.10.x displays a deprecation warning when nextTick is used recursively
-      // setImmediate should be used instead instead
-      var version = process.versions.node.match(/^(?:(\d+)\.)?(?:(\d+)\.)?(\*|\d+)$/);
-      if (Array.isArray(version) && version[1] === '0' && version[2] === '10') {
-        nextTick = setImmediate;
-      }
-      return function() {
-        nextTick(lib$es6$promise$asap$$flush);
-      };
-    }
-
-    // vertx
-    function lib$es6$promise$asap$$useVertxTimer() {
-      return function() {
-        lib$es6$promise$asap$$vertxNext(lib$es6$promise$asap$$flush);
-      };
-    }
-
-    function lib$es6$promise$asap$$useMutationObserver() {
-      var iterations = 0;
-      var observer = new lib$es6$promise$asap$$BrowserMutationObserver(lib$es6$promise$asap$$flush);
-      var node = document.createTextNode('');
-      observer.observe(node, { characterData: true });
-
-      return function() {
-        node.data = (iterations = ++iterations % 2);
-      };
-    }
-
-    // web worker
-    function lib$es6$promise$asap$$useMessageChannel() {
-      var channel = new MessageChannel();
-      channel.port1.onmessage = lib$es6$promise$asap$$flush;
-      return function () {
-        channel.port2.postMessage(0);
-      };
-    }
-
-    function lib$es6$promise$asap$$useSetTimeout() {
-      return function() {
-        setTimeout(lib$es6$promise$asap$$flush, 1);
-      };
-    }
-
-    var lib$es6$promise$asap$$queue = new Array(1000);
-    function lib$es6$promise$asap$$flush() {
-      for (var i = 0; i < lib$es6$promise$asap$$len; i+=2) {
-        var callback = lib$es6$promise$asap$$queue[i];
-        var arg = lib$es6$promise$asap$$queue[i+1];
-
-        callback(arg);
-
-        lib$es6$promise$asap$$queue[i] = undefined;
-        lib$es6$promise$asap$$queue[i+1] = undefined;
-      }
-
-      lib$es6$promise$asap$$len = 0;
-    }
-
-    function lib$es6$promise$asap$$attemptVertex() {
-      try {
-        var r = require;
-        var vertx = r('vertx');
-        lib$es6$promise$asap$$vertxNext = vertx.runOnLoop || vertx.runOnContext;
-        return lib$es6$promise$asap$$useVertxTimer();
-      } catch(e) {
-        return lib$es6$promise$asap$$useSetTimeout();
-      }
-    }
-
-    var lib$es6$promise$asap$$scheduleFlush;
-    // Decide what async method to use to triggering processing of queued callbacks:
-    if (lib$es6$promise$asap$$isNode) {
-      lib$es6$promise$asap$$scheduleFlush = lib$es6$promise$asap$$useNextTick();
-    } else if (lib$es6$promise$asap$$BrowserMutationObserver) {
-      lib$es6$promise$asap$$scheduleFlush = lib$es6$promise$asap$$useMutationObserver();
-    } else if (lib$es6$promise$asap$$isWorker) {
-      lib$es6$promise$asap$$scheduleFlush = lib$es6$promise$asap$$useMessageChannel();
-    } else if (lib$es6$promise$asap$$browserWindow === undefined && typeof require === 'function') {
-      lib$es6$promise$asap$$scheduleFlush = lib$es6$promise$asap$$attemptVertex();
-    } else {
-      lib$es6$promise$asap$$scheduleFlush = lib$es6$promise$asap$$useSetTimeout();
-    }
-
-    function lib$es6$promise$$internal$$noop() {}
-
-    var lib$es6$promise$$internal$$PENDING   = void 0;
-    var lib$es6$promise$$internal$$FULFILLED = 1;
-    var lib$es6$promise$$internal$$REJECTED  = 2;
-
-    var lib$es6$promise$$internal$$GET_THEN_ERROR = new lib$es6$promise$$internal$$ErrorObject();
-
-    function lib$es6$promise$$internal$$selfFullfillment() {
-      return new TypeError("You cannot resolve a promise with itself");
-    }
-
-    function lib$es6$promise$$internal$$cannotReturnOwn() {
-      return new TypeError('A promises callback cannot return that same promise.');
-    }
-
-    function lib$es6$promise$$internal$$getThen(promise) {
-      try {
-        return promise.then;
-      } catch(error) {
-        lib$es6$promise$$internal$$GET_THEN_ERROR.error = error;
-        return lib$es6$promise$$internal$$GET_THEN_ERROR;
-      }
-    }
-
-    function lib$es6$promise$$internal$$tryThen(then, value, fulfillmentHandler, rejectionHandler) {
-      try {
-        then.call(value, fulfillmentHandler, rejectionHandler);
-      } catch(e) {
-        return e;
-      }
-    }
-
-    function lib$es6$promise$$internal$$handleForeignThenable(promise, thenable, then) {
-       lib$es6$promise$asap$$default(function(promise) {
-        var sealed = false;
-        var error = lib$es6$promise$$internal$$tryThen(then, thenable, function(value) {
-          if (sealed) { return; }
-          sealed = true;
-          if (thenable !== value) {
-            lib$es6$promise$$internal$$resolve(promise, value);
-          } else {
-            lib$es6$promise$$internal$$fulfill(promise, value);
-          }
-        }, function(reason) {
-          if (sealed) { return; }
-          sealed = true;
-
-          lib$es6$promise$$internal$$reject(promise, reason);
-        }, 'Settle: ' + (promise._label || ' unknown promise'));
-
-        if (!sealed && error) {
-          sealed = true;
-          lib$es6$promise$$internal$$reject(promise, error);
+/**
+ * TraceKit.wrap: Wrap any function in a TraceKit reporter
+ * Example: func = TraceKit.wrap(func);
+ *
+ * @param {Function} func Function to be wrapped
+ * @return {Function} The wrapped func
+ */
+TraceKit.wrap = function traceKitWrapper(func) {
+    function wrapped() {
+        try {
+            return func.apply(this, arguments);
+        } catch (e) {
+            TraceKit.report(e);
+            throw e;
         }
-      }, promise);
+    }
+    return wrapped;
+};
+
+/**
+ * TraceKit.report: cross-browser processing of unhandled exceptions
+ *
+ * Syntax:
+ *   TraceKit.report.subscribe(function(stackInfo) { ... })
+ *   TraceKit.report.unsubscribe(function(stackInfo) { ... })
+ *   TraceKit.report(exception)
+ *   try { ...code... } catch(ex) { TraceKit.report(ex); }
+ *
+ * Supports:
+ *   - Firefox: full stack trace with line numbers, plus column number
+ *              on top frame; column number is not guaranteed
+ *   - Opera:   full stack trace with line and column numbers
+ *   - Chrome:  full stack trace with line and column numbers
+ *   - Safari:  line and column number for the top frame only; some frames
+ *              may be missing, and column number is not guaranteed
+ *   - IE:      line and column number for the top frame only; some frames
+ *              may be missing, and column number is not guaranteed
+ *
+ * In theory, TraceKit should work on all of the following versions:
+ *   - IE5.5+ (only 8.0 tested)
+ *   - Firefox 0.9+ (only 3.5+ tested)
+ *   - Opera 7+ (only 10.50 tested; versions 9 and earlier may require
+ *     Exceptions Have Stacktrace to be enabled in opera:config)
+ *   - Safari 3+ (only 4+ tested)
+ *   - Chrome 1+ (only 5+ tested)
+ *   - Konqueror 3.5+ (untested)
+ *
+ * Requires TraceKit.computeStackTrace.
+ *
+ * Tries to catch all unhandled exceptions and report them to the
+ * subscribed handlers. Please note that TraceKit.report will rethrow the
+ * exception. This is REQUIRED in order to get a useful stack trace in IE.
+ * If the exception does not reach the top of the browser, you will only
+ * get a stack trace from the point where TraceKit.report was called.
+ *
+ * Handlers receive a stackInfo object as described in the
+ * TraceKit.computeStackTrace docs.
+ */
+TraceKit.report = (function reportModuleWrapper() {
+    var handlers = [],
+        lastException = null,
+        lastExceptionStack = null;
+
+    /**
+     * Add a crash handler.
+     * @param {Function} handler
+     */
+    function subscribe(handler) {
+        installGlobalHandler();
+        handlers.push(handler);
     }
 
-    function lib$es6$promise$$internal$$handleOwnThenable(promise, thenable) {
-      if (thenable._state === lib$es6$promise$$internal$$FULFILLED) {
-        lib$es6$promise$$internal$$fulfill(promise, thenable._result);
-      } else if (thenable._state === lib$es6$promise$$internal$$REJECTED) {
-        lib$es6$promise$$internal$$reject(promise, thenable._result);
-      } else {
-        lib$es6$promise$$internal$$subscribe(thenable, undefined, function(value) {
-          lib$es6$promise$$internal$$resolve(promise, value);
-        }, function(reason) {
-          lib$es6$promise$$internal$$reject(promise, reason);
-        });
-      }
-    }
-
-    function lib$es6$promise$$internal$$handleMaybeThenable(promise, maybeThenable) {
-      if (maybeThenable.constructor === promise.constructor) {
-        lib$es6$promise$$internal$$handleOwnThenable(promise, maybeThenable);
-      } else {
-        var then = lib$es6$promise$$internal$$getThen(maybeThenable);
-
-        if (then === lib$es6$promise$$internal$$GET_THEN_ERROR) {
-          lib$es6$promise$$internal$$reject(promise, lib$es6$promise$$internal$$GET_THEN_ERROR.error);
-        } else if (then === undefined) {
-          lib$es6$promise$$internal$$fulfill(promise, maybeThenable);
-        } else if (lib$es6$promise$utils$$isFunction(then)) {
-          lib$es6$promise$$internal$$handleForeignThenable(promise, maybeThenable, then);
-        } else {
-          lib$es6$promise$$internal$$fulfill(promise, maybeThenable);
+    /**
+     * Remove a crash handler.
+     * @param {Function} handler
+     */
+    function unsubscribe(handler) {
+        for (var i = handlers.length - 1; i >= 0; --i) {
+            if (handlers[i] === handler) {
+                handlers.splice(i, 1);
+            }
         }
-      }
     }
 
-    function lib$es6$promise$$internal$$resolve(promise, value) {
-      if (promise === value) {
-        lib$es6$promise$$internal$$reject(promise, lib$es6$promise$$internal$$selfFullfillment());
-      } else if (lib$es6$promise$utils$$objectOrFunction(value)) {
-        lib$es6$promise$$internal$$handleMaybeThenable(promise, value);
-      } else {
-        lib$es6$promise$$internal$$fulfill(promise, value);
-      }
-    }
-
-    function lib$es6$promise$$internal$$publishRejection(promise) {
-      if (promise._onerror) {
-        promise._onerror(promise._result);
-      }
-
-      lib$es6$promise$$internal$$publish(promise);
-    }
-
-    function lib$es6$promise$$internal$$fulfill(promise, value) {
-      if (promise._state !== lib$es6$promise$$internal$$PENDING) { return; }
-
-      promise._result = value;
-      promise._state = lib$es6$promise$$internal$$FULFILLED;
-
-      if (promise._subscribers.length !== 0) {
-        lib$es6$promise$asap$$default(lib$es6$promise$$internal$$publish, promise);
-      }
-    }
-
-    function lib$es6$promise$$internal$$reject(promise, reason) {
-      if (promise._state !== lib$es6$promise$$internal$$PENDING) { return; }
-      promise._state = lib$es6$promise$$internal$$REJECTED;
-      promise._result = reason;
-
-      lib$es6$promise$asap$$default(lib$es6$promise$$internal$$publishRejection, promise);
-    }
-
-    function lib$es6$promise$$internal$$subscribe(parent, child, onFulfillment, onRejection) {
-      var subscribers = parent._subscribers;
-      var length = subscribers.length;
-
-      parent._onerror = null;
-
-      subscribers[length] = child;
-      subscribers[length + lib$es6$promise$$internal$$FULFILLED] = onFulfillment;
-      subscribers[length + lib$es6$promise$$internal$$REJECTED]  = onRejection;
-
-      if (length === 0 && parent._state) {
-        lib$es6$promise$asap$$default(lib$es6$promise$$internal$$publish, parent);
-      }
-    }
-
-    function lib$es6$promise$$internal$$publish(promise) {
-      var subscribers = promise._subscribers;
-      var settled = promise._state;
-
-      if (subscribers.length === 0) { return; }
-
-      var child, callback, detail = promise._result;
-
-      for (var i = 0; i < subscribers.length; i += 3) {
-        child = subscribers[i];
-        callback = subscribers[i + settled];
-
-        if (child) {
-          lib$es6$promise$$internal$$invokeCallback(settled, child, callback, detail);
-        } else {
-          callback(detail);
-        }
-      }
-
-      promise._subscribers.length = 0;
-    }
-
-    function lib$es6$promise$$internal$$ErrorObject() {
-      this.error = null;
-    }
-
-    var lib$es6$promise$$internal$$TRY_CATCH_ERROR = new lib$es6$promise$$internal$$ErrorObject();
-
-    function lib$es6$promise$$internal$$tryCatch(callback, detail) {
-      try {
-        return callback(detail);
-      } catch(e) {
-        lib$es6$promise$$internal$$TRY_CATCH_ERROR.error = e;
-        return lib$es6$promise$$internal$$TRY_CATCH_ERROR;
-      }
-    }
-
-    function lib$es6$promise$$internal$$invokeCallback(settled, promise, callback, detail) {
-      var hasCallback = lib$es6$promise$utils$$isFunction(callback),
-          value, error, succeeded, failed;
-
-      if (hasCallback) {
-        value = lib$es6$promise$$internal$$tryCatch(callback, detail);
-
-        if (value === lib$es6$promise$$internal$$TRY_CATCH_ERROR) {
-          failed = true;
-          error = value.error;
-          value = null;
-        } else {
-          succeeded = true;
-        }
-
-        if (promise === value) {
-          lib$es6$promise$$internal$$reject(promise, lib$es6$promise$$internal$$cannotReturnOwn());
+    /**
+     * Dispatch stack information to all handlers.
+     * @param {Object.<string, *>} stack
+     */
+    function notifyHandlers(stack, windowError) {
+        var exception = null;
+        if (windowError && !TraceKit.collectWindowErrors) {
           return;
         }
-
-      } else {
-        value = detail;
-        succeeded = true;
-      }
-
-      if (promise._state !== lib$es6$promise$$internal$$PENDING) {
-        // noop
-      } else if (hasCallback && succeeded) {
-        lib$es6$promise$$internal$$resolve(promise, value);
-      } else if (failed) {
-        lib$es6$promise$$internal$$reject(promise, error);
-      } else if (settled === lib$es6$promise$$internal$$FULFILLED) {
-        lib$es6$promise$$internal$$fulfill(promise, value);
-      } else if (settled === lib$es6$promise$$internal$$REJECTED) {
-        lib$es6$promise$$internal$$reject(promise, value);
-      }
-    }
-
-    function lib$es6$promise$$internal$$initializePromise(promise, resolver) {
-      try {
-        resolver(function resolvePromise(value){
-          lib$es6$promise$$internal$$resolve(promise, value);
-        }, function rejectPromise(reason) {
-          lib$es6$promise$$internal$$reject(promise, reason);
-        });
-      } catch(e) {
-        lib$es6$promise$$internal$$reject(promise, e);
-      }
-    }
-
-    function lib$es6$promise$enumerator$$Enumerator(Constructor, input) {
-      var enumerator = this;
-
-      enumerator._instanceConstructor = Constructor;
-      enumerator.promise = new Constructor(lib$es6$promise$$internal$$noop);
-
-      if (enumerator._validateInput(input)) {
-        enumerator._input     = input;
-        enumerator.length     = input.length;
-        enumerator._remaining = input.length;
-
-        enumerator._init();
-
-        if (enumerator.length === 0) {
-          lib$es6$promise$$internal$$fulfill(enumerator.promise, enumerator._result);
-        } else {
-          enumerator.length = enumerator.length || 0;
-          enumerator._enumerate();
-          if (enumerator._remaining === 0) {
-            lib$es6$promise$$internal$$fulfill(enumerator.promise, enumerator._result);
-          }
-        }
-      } else {
-        lib$es6$promise$$internal$$reject(enumerator.promise, enumerator._validationError());
-      }
-    }
-
-    lib$es6$promise$enumerator$$Enumerator.prototype._validateInput = function(input) {
-      return lib$es6$promise$utils$$isArray(input);
-    };
-
-    lib$es6$promise$enumerator$$Enumerator.prototype._validationError = function() {
-      return new Error('Array Methods must be provided an Array');
-    };
-
-    lib$es6$promise$enumerator$$Enumerator.prototype._init = function() {
-      this._result = new Array(this.length);
-    };
-
-    var lib$es6$promise$enumerator$$default = lib$es6$promise$enumerator$$Enumerator;
-
-    lib$es6$promise$enumerator$$Enumerator.prototype._enumerate = function() {
-      var enumerator = this;
-
-      var length  = enumerator.length;
-      var promise = enumerator.promise;
-      var input   = enumerator._input;
-
-      for (var i = 0; promise._state === lib$es6$promise$$internal$$PENDING && i < length; i++) {
-        enumerator._eachEntry(input[i], i);
-      }
-    };
-
-    lib$es6$promise$enumerator$$Enumerator.prototype._eachEntry = function(entry, i) {
-      var enumerator = this;
-      var c = enumerator._instanceConstructor;
-
-      if (lib$es6$promise$utils$$isMaybeThenable(entry)) {
-        if (entry.constructor === c && entry._state !== lib$es6$promise$$internal$$PENDING) {
-          entry._onerror = null;
-          enumerator._settledAt(entry._state, i, entry._result);
-        } else {
-          enumerator._willSettleAt(c.resolve(entry), i);
-        }
-      } else {
-        enumerator._remaining--;
-        enumerator._result[i] = entry;
-      }
-    };
-
-    lib$es6$promise$enumerator$$Enumerator.prototype._settledAt = function(state, i, value) {
-      var enumerator = this;
-      var promise = enumerator.promise;
-
-      if (promise._state === lib$es6$promise$$internal$$PENDING) {
-        enumerator._remaining--;
-
-        if (state === lib$es6$promise$$internal$$REJECTED) {
-          lib$es6$promise$$internal$$reject(promise, value);
-        } else {
-          enumerator._result[i] = value;
-        }
-      }
-
-      if (enumerator._remaining === 0) {
-        lib$es6$promise$$internal$$fulfill(promise, enumerator._result);
-      }
-    };
-
-    lib$es6$promise$enumerator$$Enumerator.prototype._willSettleAt = function(promise, i) {
-      var enumerator = this;
-
-      lib$es6$promise$$internal$$subscribe(promise, undefined, function(value) {
-        enumerator._settledAt(lib$es6$promise$$internal$$FULFILLED, i, value);
-      }, function(reason) {
-        enumerator._settledAt(lib$es6$promise$$internal$$REJECTED, i, reason);
-      });
-    };
-    function lib$es6$promise$promise$all$$all(entries) {
-      return new lib$es6$promise$enumerator$$default(this, entries).promise;
-    }
-    var lib$es6$promise$promise$all$$default = lib$es6$promise$promise$all$$all;
-    function lib$es6$promise$promise$race$$race(entries) {
-      /*jshint validthis:true */
-      var Constructor = this;
-
-      var promise = new Constructor(lib$es6$promise$$internal$$noop);
-
-      if (!lib$es6$promise$utils$$isArray(entries)) {
-        lib$es6$promise$$internal$$reject(promise, new TypeError('You must pass an array to race.'));
-        return promise;
-      }
-
-      var length = entries.length;
-
-      function onFulfillment(value) {
-        lib$es6$promise$$internal$$resolve(promise, value);
-      }
-
-      function onRejection(reason) {
-        lib$es6$promise$$internal$$reject(promise, reason);
-      }
-
-      for (var i = 0; promise._state === lib$es6$promise$$internal$$PENDING && i < length; i++) {
-        lib$es6$promise$$internal$$subscribe(Constructor.resolve(entries[i]), undefined, onFulfillment, onRejection);
-      }
-
-      return promise;
-    }
-    var lib$es6$promise$promise$race$$default = lib$es6$promise$promise$race$$race;
-    function lib$es6$promise$promise$resolve$$resolve(object) {
-      /*jshint validthis:true */
-      var Constructor = this;
-
-      if (object && typeof object === 'object' && object.constructor === Constructor) {
-        return object;
-      }
-
-      var promise = new Constructor(lib$es6$promise$$internal$$noop);
-      lib$es6$promise$$internal$$resolve(promise, object);
-      return promise;
-    }
-    var lib$es6$promise$promise$resolve$$default = lib$es6$promise$promise$resolve$$resolve;
-    function lib$es6$promise$promise$reject$$reject(reason) {
-      /*jshint validthis:true */
-      var Constructor = this;
-      var promise = new Constructor(lib$es6$promise$$internal$$noop);
-      lib$es6$promise$$internal$$reject(promise, reason);
-      return promise;
-    }
-    var lib$es6$promise$promise$reject$$default = lib$es6$promise$promise$reject$$reject;
-
-    var lib$es6$promise$promise$$counter = 0;
-
-    function lib$es6$promise$promise$$needsResolver() {
-      throw new TypeError('You must pass a resolver function as the first argument to the promise constructor');
-    }
-
-    function lib$es6$promise$promise$$needsNew() {
-      throw new TypeError("Failed to construct 'Promise': Please use the 'new' operator, this object constructor cannot be called as a function.");
-    }
-
-    var lib$es6$promise$promise$$default = lib$es6$promise$promise$$Promise;
-    /**
-      Promise objects represent the eventual result of an asynchronous operation. The
-      primary way of interacting with a promise is through its `then` method, which
-      registers callbacks to receive either a promise’s eventual value or the reason
-      why the promise cannot be fulfilled.
-
-      Terminology
-      -----------
-
-      - `promise` is an object or function with a `then` method whose behavior conforms to this specification.
-      - `thenable` is an object or function that defines a `then` method.
-      - `value` is any legal JavaScript value (including undefined, a thenable, or a promise).
-      - `exception` is a value that is thrown using the throw statement.
-      - `reason` is a value that indicates why a promise was rejected.
-      - `settled` the final resting state of a promise, fulfilled or rejected.
-
-      A promise can be in one of three states: pending, fulfilled, or rejected.
-
-      Promises that are fulfilled have a fulfillment value and are in the fulfilled
-      state.  Promises that are rejected have a rejection reason and are in the
-      rejected state.  A fulfillment value is never a thenable.
-
-      Promises can also be said to *resolve* a value.  If this value is also a
-      promise, then the original promise's settled state will match the value's
-      settled state.  So a promise that *resolves* a promise that rejects will
-      itself reject, and a promise that *resolves* a promise that fulfills will
-      itself fulfill.
-
-
-      Basic Usage:
-      ------------
-
-      ```js
-      var promise = new Promise(function(resolve, reject) {
-        // on success
-        resolve(value);
-
-        // on failure
-        reject(reason);
-      });
-
-      promise.then(function(value) {
-        // on fulfillment
-      }, function(reason) {
-        // on rejection
-      });
-      ```
-
-      Advanced Usage:
-      ---------------
-
-      Promises shine when abstracting away asynchronous interactions such as
-      `XMLHttpRequest`s.
-
-      ```js
-      function getJSON(url) {
-        return new Promise(function(resolve, reject){
-          var xhr = new XMLHttpRequest();
-
-          xhr.open('GET', url);
-          xhr.onreadystatechange = handler;
-          xhr.responseType = 'json';
-          xhr.setRequestHeader('Accept', 'application/json');
-          xhr.send();
-
-          function handler() {
-            if (this.readyState === this.DONE) {
-              if (this.status === 200) {
-                resolve(this.response);
-              } else {
-                reject(new Error('getJSON: `' + url + '` failed with status: [' + this.status + ']'));
-              }
-            }
-          };
-        });
-      }
-
-      getJSON('/posts.json').then(function(json) {
-        // on fulfillment
-      }, function(reason) {
-        // on rejection
-      });
-      ```
-
-      Unlike callbacks, promises are great composable primitives.
-
-      ```js
-      Promise.all([
-        getJSON('/posts'),
-        getJSON('/comments')
-      ]).then(function(values){
-        values[0] // => postsJSON
-        values[1] // => commentsJSON
-
-        return values;
-      });
-      ```
-
-      @class Promise
-      @param {function} resolver
-      Useful for tooling.
-      @constructor
-    */
-    function lib$es6$promise$promise$$Promise(resolver) {
-      this._id = lib$es6$promise$promise$$counter++;
-      this._state = undefined;
-      this._result = undefined;
-      this._subscribers = [];
-
-      if (lib$es6$promise$$internal$$noop !== resolver) {
-        if (!lib$es6$promise$utils$$isFunction(resolver)) {
-          lib$es6$promise$promise$$needsResolver();
-        }
-
-        if (!(this instanceof lib$es6$promise$promise$$Promise)) {
-          lib$es6$promise$promise$$needsNew();
-        }
-
-        lib$es6$promise$$internal$$initializePromise(this, resolver);
-      }
-    }
-
-    lib$es6$promise$promise$$Promise.all = lib$es6$promise$promise$all$$default;
-    lib$es6$promise$promise$$Promise.race = lib$es6$promise$promise$race$$default;
-    lib$es6$promise$promise$$Promise.resolve = lib$es6$promise$promise$resolve$$default;
-    lib$es6$promise$promise$$Promise.reject = lib$es6$promise$promise$reject$$default;
-
-    lib$es6$promise$promise$$Promise.prototype = {
-      constructor: lib$es6$promise$promise$$Promise,
-
-    /**
-      The primary way of interacting with a promise is through its `then` method,
-      which registers callbacks to receive either a promise's eventual value or the
-      reason why the promise cannot be fulfilled.
-
-      ```js
-      findUser().then(function(user){
-        // user is available
-      }, function(reason){
-        // user is unavailable, and you are given the reason why
-      });
-      ```
-
-      Chaining
-      --------
-
-      The return value of `then` is itself a promise.  This second, 'downstream'
-      promise is resolved with the return value of the first promise's fulfillment
-      or rejection handler, or rejected if the handler throws an exception.
-
-      ```js
-      findUser().then(function (user) {
-        return user.name;
-      }, function (reason) {
-        return 'default name';
-      }).then(function (userName) {
-        // If `findUser` fulfilled, `userName` will be the user's name, otherwise it
-        // will be `'default name'`
-      });
-
-      findUser().then(function (user) {
-        throw new Error('Found user, but still unhappy');
-      }, function (reason) {
-        throw new Error('`findUser` rejected and we're unhappy');
-      }).then(function (value) {
-        // never reached
-      }, function (reason) {
-        // if `findUser` fulfilled, `reason` will be 'Found user, but still unhappy'.
-        // If `findUser` rejected, `reason` will be '`findUser` rejected and we're unhappy'.
-      });
-      ```
-      If the downstream promise does not specify a rejection handler, rejection reasons will be propagated further downstream.
-
-      ```js
-      findUser().then(function (user) {
-        throw new PedagogicalException('Upstream error');
-      }).then(function (value) {
-        // never reached
-      }).then(function (value) {
-        // never reached
-      }, function (reason) {
-        // The `PedgagocialException` is propagated all the way down to here
-      });
-      ```
-
-      Assimilation
-      ------------
-
-      Sometimes the value you want to propagate to a downstream promise can only be
-      retrieved asynchronously. This can be achieved by returning a promise in the
-      fulfillment or rejection handler. The downstream promise will then be pending
-      until the returned promise is settled. This is called *assimilation*.
-
-      ```js
-      findUser().then(function (user) {
-        return findCommentsByAuthor(user);
-      }).then(function (comments) {
-        // The user's comments are now available
-      });
-      ```
-
-      If the assimliated promise rejects, then the downstream promise will also reject.
-
-      ```js
-      findUser().then(function (user) {
-        return findCommentsByAuthor(user);
-      }).then(function (comments) {
-        // If `findCommentsByAuthor` fulfills, we'll have the value here
-      }, function (reason) {
-        // If `findCommentsByAuthor` rejects, we'll have the reason here
-      });
-      ```
-
-      Simple Example
-      --------------
-
-      Synchronous Example
-
-      ```javascript
-      var result;
-
-      try {
-        result = findResult();
-        // success
-      } catch(reason) {
-        // failure
-      }
-      ```
-
-      Errback Example
-
-      ```js
-      findResult(function(result, err){
-        if (err) {
-          // failure
-        } else {
-          // success
-        }
-      });
-      ```
-
-      Promise Example;
-
-      ```javascript
-      findResult().then(function(result){
-        // success
-      }, function(reason){
-        // failure
-      });
-      ```
-
-      Advanced Example
-      --------------
-
-      Synchronous Example
-
-      ```javascript
-      var author, books;
-
-      try {
-        author = findAuthor();
-        books  = findBooksByAuthor(author);
-        // success
-      } catch(reason) {
-        // failure
-      }
-      ```
-
-      Errback Example
-
-      ```js
-
-      function foundBooks(books) {
-
-      }
-
-      function failure(reason) {
-
-      }
-
-      findAuthor(function(author, err){
-        if (err) {
-          failure(err);
-          // failure
-        } else {
-          try {
-            findBoooksByAuthor(author, function(books, err) {
-              if (err) {
-                failure(err);
-              } else {
+        for (var i in handlers) {
+            if (_has(handlers, i)) {
                 try {
-                  foundBooks(books);
-                } catch(reason) {
-                  failure(reason);
+                    handlers[i].apply(null, [stack].concat(_slice.call(arguments, 2)));
+                } catch (inner) {
+                    exception = inner;
                 }
-              }
-            });
-          } catch(error) {
-            failure(err);
-          }
-          // success
-        }
-      });
-      ```
-
-      Promise Example;
-
-      ```javascript
-      findAuthor().
-        then(findBooksByAuthor).
-        then(function(books){
-          // found books
-      }).catch(function(reason){
-        // something went wrong
-      });
-      ```
-
-      @method then
-      @param {Function} onFulfilled
-      @param {Function} onRejected
-      Useful for tooling.
-      @return {Promise}
-    */
-      then: function(onFulfillment, onRejection) {
-        var parent = this;
-        var state = parent._state;
-
-        if (state === lib$es6$promise$$internal$$FULFILLED && !onFulfillment || state === lib$es6$promise$$internal$$REJECTED && !onRejection) {
-          return this;
+            }
         }
 
-        var child = new this.constructor(lib$es6$promise$$internal$$noop);
-        var result = parent._result;
-
-        if (state) {
-          var callback = arguments[state - 1];
-          lib$es6$promise$asap$$default(function(){
-            lib$es6$promise$$internal$$invokeCallback(state, child, callback, result);
-          });
-        } else {
-          lib$es6$promise$$internal$$subscribe(parent, child, onFulfillment, onRejection);
+        if (exception) {
+            throw exception;
         }
+    }
 
-        return child;
-      },
+    var _oldOnerrorHandler, _onErrorHandlerInstalled;
 
     /**
-      `catch` is simply sugar for `then(undefined, onRejection)` which makes it the same
-      as the catch block of a try/catch statement.
+     * Ensures all global unhandled exceptions are recorded.
+     * Supported by Gecko and IE.
+     * @param {string} message Error message.
+     * @param {string} url URL of script that generated the exception.
+     * @param {(number|string)} lineNo The line number at which the error
+     * occurred.
+     */
+    function traceKitWindowOnError(message, url, lineNo, columnNo, errorObj) {
+        var stack = null;
 
-      ```js
-      function findAuthor(){
-        throw new Error('couldn't find that author');
-      }
-
-      // synchronous
-      try {
-        findAuthor();
-      } catch(reason) {
-        // something went wrong
-      }
-
-      // async with promises
-      findAuthor().catch(function(reason){
-        // something went wrong
-      });
-      ```
-
-      @method catch
-      @param {Function} onRejection
-      Useful for tooling.
-      @return {Promise}
-    */
-      'catch': function(onRejection) {
-        return this.then(null, onRejection);
-      }
-    };
-    function lib$es6$promise$polyfill$$polyfill() {
-      var local;
-
-      if (typeof global !== 'undefined') {
-          local = global;
-      } else if (typeof self !== 'undefined') {
-          local = self;
-      } else {
-          try {
-              local = Function('return this')();
-          } catch (e) {
-              throw new Error('polyfill failed because global object is unavailable in this environment');
-          }
-      }
-
-      var P = local.Promise;
-
-      if (P && Object.prototype.toString.call(P.resolve()) === '[object Promise]' && !P.cast) {
-        return;
-      }
-
-      local.Promise = lib$es6$promise$promise$$default;
-    }
-    var lib$es6$promise$polyfill$$default = lib$es6$promise$polyfill$$polyfill;
-
-    var lib$es6$promise$umd$$ES6Promise = {
-      'Promise': lib$es6$promise$promise$$default,
-      'polyfill': lib$es6$promise$polyfill$$default
-    };
-
-    /* global define:true module:true window: true */
-    if (typeof define === 'function' && define['amd']) {
-      define(function() { return lib$es6$promise$umd$$ES6Promise; });
-    } else if (typeof module !== 'undefined' && module['exports']) {
-      module['exports'] = lib$es6$promise$umd$$ES6Promise;
-    } else if (typeof this !== 'undefined') {
-      this['ES6Promise'] = lib$es6$promise$umd$$ES6Promise;
-    }
-
-    lib$es6$promise$polyfill$$default();
-}).call(this);
-
-
-(function (root, factory) {
-    'use strict';
-    // Universal Module Definition (UMD) to support AMD, CommonJS/Node.js, Rhino, and browsers.
-    if (typeof define === 'function' && define.amd) {
-        define('stackframe', [], factory);
-    } else if (typeof exports === 'object') {
-        module.exports = factory();
-    } else {
-        root.StackFrame = factory();
-    }
-}(this, function () {
-    'use strict';
-    function _isNumber(n) {
-        return !isNaN(parseFloat(n)) && isFinite(n);
-    }
-
-    function StackFrame(functionName, args, fileName, lineNumber, columnNumber) {
-        if (functionName !== undefined) {
-            this.setFunctionName(functionName);
+        if (errorObj) {
+          stack = TraceKit.computeStackTrace(errorObj);
         }
-        if (args !== undefined) {
-            this.setArgs(args);
-        }
-        if (fileName !== undefined) {
-            this.setFileName(fileName);
-        }
-        if (lineNumber !== undefined) {
-            this.setLineNumber(lineNumber);
-        }
-        if (columnNumber !== undefined) {
-            this.setColumnNumber(columnNumber);
-        }
-    }
-
-    StackFrame.prototype = {
-        getFunctionName: function () {
-            return this.functionName;
-        },
-        setFunctionName: function (v) {
-            this.functionName = String(v);
-        },
-
-        getArgs: function () {
-            return this.args;
-        },
-        setArgs: function (v) {
-            if (Object.prototype.toString.call(v) !== '[object Array]') {
-                throw new TypeError('Args must be an Array');
-            }
-            this.args = v;
-        },
-
-        // NOTE: Property name may be misleading as it includes the path,
-        // but it somewhat mirrors V8's JavaScriptStackTraceApi
-        // https://code.google.com/p/v8/wiki/JavaScriptStackTraceApi and Gecko's
-        // http://mxr.mozilla.org/mozilla-central/source/xpcom/base/nsIException.idl#14
-        getFileName: function () {
-            return this.fileName;
-        },
-        setFileName: function (v) {
-            this.fileName = String(v);
-        },
-
-        getLineNumber: function () {
-            return this.lineNumber;
-        },
-        setLineNumber: function (v) {
-            if (!_isNumber(v)) {
-                throw new TypeError('Line Number must be a Number');
-            }
-            this.lineNumber = Number(v);
-        },
-
-        getColumnNumber: function () {
-            return this.columnNumber;
-        },
-        setColumnNumber: function (v) {
-            if (!_isNumber(v)) {
-                throw new TypeError('Column Number must be a Number');
-            }
-            this.columnNumber = Number(v);
-        },
-
-        toString: function() {
-            var functionName = this.getFunctionName() || '{anonymous}';
-            var args = '(' + (this.getArgs() || []).join(',') + ')';
-            var fileName = this.getFileName() ? ('@' + this.getFileName()) : '';
-            var lineNumber = _isNumber(this.getLineNumber()) ? (':' + this.getLineNumber()) : '';
-            var columnNumber = _isNumber(this.getColumnNumber()) ? (':' + this.getColumnNumber()) : '';
-            return functionName + args + fileName + lineNumber + columnNumber;
-        }
-    };
-
-    return StackFrame;
-}));
-
-(function (root, factory) {
-    'use strict';
-    // Universal Module Definition (UMD) to support AMD, CommonJS/Node.js, Rhino, and browsers.
-    if (typeof define === 'function' && define.amd) {
-        define('error-stack-parser', ['stackframe'], factory);
-    } else if (typeof exports === 'object') {
-        module.exports = factory(require('stackframe'));
-    } else {
-        root.ErrorStackParser = factory(root.StackFrame);
-    }
-}(this, function ErrorStackParser(StackFrame) {
-    'use strict';
-
-    var FIREFOX_SAFARI_STACK_REGEXP = /\S+\:\d+/;
-    var CHROME_IE_STACK_REGEXP = /\s+at /;
-
-    return {
-        /**
-         * Given an Error object, extract the most information from it.
-         * @param error {Error}
-         * @return Array[StackFrame]
-         */
-        parse: function ErrorStackParser$$parse(error) {
-            if (typeof error.stacktrace !== 'undefined' || typeof error['opera#sourceloc'] !== 'undefined') {
-                return this.parseOpera(error);
-            } else if (error.stack && error.stack.match(CHROME_IE_STACK_REGEXP)) {
-                return this.parseV8OrIE(error);
-            } else if (error.stack && error.stack.match(FIREFOX_SAFARI_STACK_REGEXP)) {
-                return this.parseFFOrSafari(error);
+        else
+        {
+            if (lastExceptionStack) {
+                TraceKit.computeStackTrace.augmentStackTraceWithInitialElement(lastExceptionStack, url, lineNo, message);
+                stack = lastExceptionStack;
+                lastExceptionStack = null;
+                lastException = null;
             } else {
-                throw new Error('Cannot parse given Error object');
+                var location = {
+                    'url': url,
+                    'line': lineNo,
+                    'column': columnNo
+                };
+                location.func = TraceKit.computeStackTrace.guessFunctionName(location.url, location.line);
+                location.context = TraceKit.computeStackTrace.gatherContext(location.url, location.line);
+                stack = {
+                    'mode': 'onerror',
+                    'message': message,
+                    'url': document.location.href,
+                    'stack': [location],
+                    'useragent': navigator.userAgent
+                };
             }
-        },
-
-        /**
-         * Separate line and column numbers from a URL-like string.
-         * @param urlLike String
-         * @return Array[String]
-         */
-        extractLocation: function ErrorStackParser$$extractLocation(urlLike) {
-            var locationParts = urlLike.split(':');
-            var lastNumber = locationParts.pop();
-            var possibleNumber = locationParts[locationParts.length - 1];
-            if (!isNaN(parseFloat(possibleNumber)) && isFinite(possibleNumber)) {
-                var lineNumber = locationParts.pop();
-                return [locationParts.join(':'), lineNumber, lastNumber];
-            } else {
-                return [locationParts.join(':'), lastNumber, undefined];
-            }
-        },
-
-        parseV8OrIE: function ErrorStackParser$$parseV8OrIE(error) {
-            return error.stack.split('\n').slice(1).map(function (line) {
-                var tokens = line.replace(/^\s+/, '').split(/\s+/).slice(1);
-                var locationParts = this.extractLocation(tokens.pop().replace(/[\(\)\s]/g, ''));
-                var functionName = (!tokens[0] || tokens[0] === 'Anonymous') ? undefined : tokens[0];
-                return new StackFrame(functionName, undefined, locationParts[0], locationParts[1], locationParts[2]);
-            }, this);
-        },
-
-        parseFFOrSafari: function ErrorStackParser$$parseFFOrSafari(error) {
-            return error.stack.split('\n').filter(function (line) {
-                return !!line.match(FIREFOX_SAFARI_STACK_REGEXP);
-            }, this).map(function (line) {
-                var tokens = line.split('@');
-                var locationParts = this.extractLocation(tokens.pop());
-                var functionName = tokens.shift() || undefined;
-                return new StackFrame(functionName, undefined, locationParts[0], locationParts[1], locationParts[2]);
-            }, this);
-        },
-
-        parseOpera: function ErrorStackParser$$parseOpera(e) {
-            if (!e.stacktrace || (e.message.indexOf('\n') > -1 &&
-                e.message.split('\n').length > e.stacktrace.split('\n').length)) {
-                return this.parseOpera9(e);
-            } else if (!e.stack) {
-                return this.parseOpera10(e);
-            } else {
-                return this.parseOpera11(e);
-            }
-        },
-
-        parseOpera9: function ErrorStackParser$$parseOpera9(e) {
-            var lineRE = /Line (\d+).*script (?:in )?(\S+)/i;
-            var lines = e.message.split('\n');
-            var result = [];
-
-            for (var i = 2, len = lines.length; i < len; i += 2) {
-                var match = lineRE.exec(lines[i]);
-                if (match) {
-                    result.push(new StackFrame(undefined, undefined, match[2], match[1]));
-                }
-            }
-
-            return result;
-        },
-
-        parseOpera10: function ErrorStackParser$$parseOpera10(e) {
-            var lineRE = /Line (\d+).*script (?:in )?(\S+)(?:: In function (\S+))?$/i;
-            var lines = e.stacktrace.split('\n');
-            var result = [];
-
-            for (var i = 0, len = lines.length; i < len; i += 2) {
-                var match = lineRE.exec(lines[i]);
-                if (match) {
-                    result.push(new StackFrame(match[3] || undefined, undefined, match[2], match[1]));
-                }
-            }
-
-            return result;
-        },
-
-        // Opera 10.65+ Error.stack very similar to FF/Safari
-        parseOpera11: function ErrorStackParser$$parseOpera11(error) {
-            return error.stack.split('\n').filter(function (line) {
-                return !!line.match(FIREFOX_SAFARI_STACK_REGEXP) &&
-                    !line.match(/^Error created at/);
-            }, this).map(function (line) {
-                var tokens = line.split('@');
-                var locationParts = this.extractLocation(tokens.pop());
-                var functionCall = (tokens.shift() || '');
-                var functionName = functionCall
-                        .replace(/<anonymous function(: (\w+))?>/, '$2')
-                        .replace(/\([^\)]*\)/g, '') || undefined;
-                var argsRaw;
-                if (functionCall.match(/\(([^\)]*)\)/)) {
-                    argsRaw = functionCall.replace(/^[^\(]+\(([^\)]*)\)$/, '$1');
-                }
-                var args = (argsRaw === undefined || argsRaw === '[arguments not available]') ? undefined : argsRaw.split(',');
-                return new StackFrame(functionName, args, locationParts[0], locationParts[1], locationParts[2]);
-            }, this);
         }
-    };
-}));
 
+        notifyHandlers(stack, 'from window.onerror');
 
-(function (root, factory) {
-    'use strict';
-    // Universal Module Definition (UMD) to support AMD, CommonJS/Node.js, Rhino, and browsers.
-    if (typeof define === 'function' && define.amd) {
-        define('stack-generator', ['stackframe'], factory);
-    } else if (typeof exports === 'object') {
-        module.exports = factory(require('stackframe'));
-    } else {
-        root.StackGenerator = factory(root.StackFrame);
+        if (_oldOnerrorHandler) {
+            return _oldOnerrorHandler.apply(this, arguments);
+        }
+
+        return false;
     }
-}(this, function (StackFrame) {
-    return {
-        backtrace: function StackGenerator$$backtrace(opts) {
-            var stack = [];
-            var maxStackSize = 10;
 
-            if (typeof opts === 'object' && typeof opts.maxStackSize === 'number') {
-                maxStackSize = opts.maxStackSize;
+    function installGlobalHandler ()
+    {
+        if (_onErrorHandlerInstalled === true) {
+           return;
+        }
+        _oldOnerrorHandler = window.onerror;
+        window.onerror = traceKitWindowOnError;
+        _onErrorHandlerInstalled = true;
+    }
+
+    /**
+     * Reports an unhandled Error to TraceKit.
+     * @param {Error} ex
+     */
+    function report(ex) {
+        var args = _slice.call(arguments, 1);
+        if (lastExceptionStack) {
+            if (lastException === ex) {
+                return; // already caught by an inner catch block, ignore
+            } else {
+                var s = lastExceptionStack;
+                lastExceptionStack = null;
+                lastException = null;
+                notifyHandlers.apply(null, [s, null].concat(args));
             }
+        }
 
-            var curr = arguments.callee;
-            while (curr && stack.length < maxStackSize) {
-                var args = [].slice.call(curr['arguments']);
-                if (/function(?:\s+([\w$]+))?\s*\(/.test(curr.toString())) {
-                    stack.push(new StackFrame(RegExp.$1 || undefined, args));
-                } else {
-                    stack.push(new StackFrame(undefined, args));
-                }
+        var stack = TraceKit.computeStackTrace(ex);
+        lastExceptionStack = stack;
+        lastException = ex;
 
+        // If the stack trace is incomplete, wait for 2 seconds for
+        // slow slow IE to see if onerror occurs or not before reporting
+        // this exception; otherwise, we will end up with an incomplete
+        // stack trace
+        window.setTimeout(function () {
+            if (lastException === ex) {
+                lastExceptionStack = null;
+                lastException = null;
+                notifyHandlers.apply(null, [stack, null].concat(args));
+            }
+        }, (stack.incomplete ? 2000 : 0));
+
+        throw ex; // re-throw to propagate to the top level (and cause window.onerror)
+    }
+
+    report.subscribe = subscribe;
+    report.unsubscribe = unsubscribe;
+    return report;
+}());
+
+/**
+ * TraceKit.computeStackTrace: cross-browser stack traces in JavaScript
+ *
+ * Syntax:
+ *   s = TraceKit.computeStackTrace.ofCaller([depth])
+ *   s = TraceKit.computeStackTrace(exception) // consider using TraceKit.report instead (see below)
+ * Returns:
+ *   s.name              - exception name
+ *   s.message           - exception message
+ *   s.stack[i].url      - JavaScript or HTML file URL
+ *   s.stack[i].func     - function name, or empty for anonymous functions (if guessing did not work)
+ *   s.stack[i].args     - arguments passed to the function, if known
+ *   s.stack[i].line     - line number, if known
+ *   s.stack[i].column   - column number, if known
+ *   s.stack[i].context  - an array of source code lines; the middle element corresponds to the correct line#
+ *   s.mode              - 'stack', 'stacktrace', 'multiline', 'callers', 'onerror', or 'failed' -- method used to collect the stack trace
+ *
+ * Supports:
+ *   - Firefox:  full stack trace with line numbers and unreliable column
+ *               number on top frame
+ *   - Opera 10: full stack trace with line and column numbers
+ *   - Opera 9-: full stack trace with line numbers
+ *   - Chrome:   full stack trace with line and column numbers
+ *   - Safari:   line and column number for the topmost stacktrace element
+ *               only
+ *   - IE:       no line numbers whatsoever
+ *
+ * Tries to guess names of anonymous functions by looking for assignments
+ * in the source code. In IE and Safari, we have to guess source file names
+ * by searching for function bodies inside all page scripts. This will not
+ * work for scripts that are loaded cross-domain.
+ * Here be dragons: some function names may be guessed incorrectly, and
+ * duplicate functions may be mismatched.
+ *
+ * TraceKit.computeStackTrace should only be used for tracing purposes.
+ * Logging of unhandled exceptions should be done with TraceKit.report,
+ * which builds on top of TraceKit.computeStackTrace and provides better
+ * IE support by utilizing the window.onerror event to retrieve information
+ * about the top of the stack.
+ *
+ * Note: In IE and Safari, no stack trace is recorded on the Error object,
+ * so computeStackTrace instead walks its *own* chain of callers.
+ * This means that:
+ *  * in Safari, some methods may be missing from the stack trace;
+ *  * in IE, the topmost function in the stack trace will always be the
+ *    caller of computeStackTrace.
+ *
+ * This is okay for tracing (because you are likely to be calling
+ * computeStackTrace from the function you want to be the topmost element
+ * of the stack trace anyway), but not okay for logging unhandled
+ * exceptions (because your catch block will likely be far away from the
+ * inner function that actually caused the exception).
+ *
+ * Tracing example:
+ *     function trace(message) {
+ *         var stackInfo = TraceKit.computeStackTrace.ofCaller();
+ *         var data = message + "\n";
+ *         for(var i in stackInfo.stack) {
+ *             var item = stackInfo.stack[i];
+ *             data += (item.func || '[anonymous]') + "() in " + item.url + ":" + (item.line || '0') + "\n";
+ *         }
+ *         if (window.console)
+ *             console.info(data);
+ *         else
+ *             alert(data);
+ *     }
+ */
+TraceKit.computeStackTrace = (function computeStackTraceWrapper() {
+    var debug = false,
+        sourceCache = {};
+
+    /**
+     * Attempts to retrieve source code via XMLHttpRequest, which is used
+     * to look up anonymous function names.
+     * @param {string} url URL of source code.
+     * @return {string} Source contents.
+     */
+    function loadSource(url) {
+        if (typeof url !== 'string') {
+          return [];
+        }
+        
+        if (!TraceKit.remoteFetching) { //Only attempt request if remoteFetching is on.
+            return '';
+        }
+        try {
+            var getXHR = function() {
                 try {
-                    curr = curr.caller;
+                    return new window.XMLHttpRequest();
                 } catch (e) {
-                    break;
+                    // explicitly bubble up the exception if not found
+                    return new window.ActiveXObject('Microsoft.XMLHTTP');
                 }
-            }
-            return stack;
-        }
-    };
-}));
+            };
 
-(function (root, factory) {
-    'use strict';
-    // Universal Module Definition (UMD) to support AMD, CommonJS/Node.js, Rhino, and browsers.
-    if (typeof define === 'function' && define.amd) {
-        define('stacktrace-gps', ['source-map', 'es6-promise', 'stackframe'], factory);
-    } else if (typeof exports === 'object') {
-        module.exports = factory(null, require('es6-promise'), require('stackframe'));
-    } else {
-        root.StackTraceGPS = factory(root.SourceMap, root.ES6Promise, root.StackFrame);
-    }
-}(this, function (SourceMap, ES6Promise) {
-    'use strict';
-    ES6Promise.polyfill();
-    var Promise = ES6Promise.Promise;
-
-    /**
-     * Create XHR or equivalent object for this environment.
-     * @returns XMLHttpRequest, XDomainRequest or ActiveXObject
-     * @private
-     */
-    function _createXMLHTTPObject() {
-        var xmlhttp;
-        var XMLHttpFactories = [
-            function () {
-                return new XMLHttpRequest();
-            }, function () {
-                return new ActiveXObject('Microsoft.XMLHTTP');
-            }
-        ];
-        for (var i = 0; i < XMLHttpFactories.length; i++) {
-            try {
-                xmlhttp = XMLHttpFactories[i]();
-                // Use memoization to cache the factory
-                _createXMLHTTPObject = XMLHttpFactories[i]; // jshint ignore:line
-                return xmlhttp;
-            } catch (e) {
-            }
+            var request = getXHR();
+            request.open('GET', url, false);
+            request.send('');
+            return request.responseText;
+        } catch (e) {
+            return '';
         }
     }
 
     /**
-     * Make a X-Domain request to url and callback.
-     *
-     * @param url [String]
-     * @param callback [Function] to callback on completion
-     * @param errback [Function] to callback on error
+     * Retrieves source code from the source code cache.
+     * @param {string} url URL of source code.
+     * @return {Array.<string>} Source contents.
      */
-    function _xdr(url, callback, errback) {
-        var req = _createXMLHTTPObject();
-        req.open('get', url);
-        req.onerror = errback;
-        req.onreadystatechange = function onreadystatechange() {
-            if (req.readyState === 4) {
-                if (req.status >= 200 && req.status < 400) {
-                    return callback(req.responseText);
-                } else {
-                    errback(new Error('Unable to retrieve ' + url));
-                }
+    function getSource(url) {
+        if (!_has(sourceCache, url)) {
+            // URL needs to be able to fetched within the acceptable domain.  Otherwise,
+            // cross-domain errors will be triggered.
+            var source = '';
+
+            url = url || "";
+
+            if (url.indexOf && url.indexOf(document.domain) !== -1) {
+                source = loadSource(url);
             }
-        };
-        req.send();
+            sourceCache[url] = source ? source.split('\n') : [];
+        }
+
+        return sourceCache[url];
     }
 
-    function _findFunctionName(source, lineNumber, columnNumber) {
-        // function {name}({args}) m[1]=name m[2]=args
-        var reFunctionDeclaration = /function\s+([^(]*?)\s*\(([^)]*)\)/;
-        // {name} = function ({args}) TODO args capture
-        var reFunctionExpression = /['"]?([$_A-Za-z][$_A-Za-z0-9]*)['"]?\s*[:=]\s*function\b/;
-        // {name} = eval()
-        var reFunctionEvaluation = /['"]?([$_A-Za-z][$_A-Za-z0-9]*)['"]?\s*[:=]\s*(?:eval|new Function)\b/;
-        var lines = source.split("\n");
+    /**
+     * Tries to use an externally loaded copy of source code to determine
+     * the name of a function by looking at the name of the variable it was
+     * assigned to, if any.
+     * @param {string} url URL of source code.
+     * @param {(string|number)} lineNo Line number in source code.
+     * @return {string} The function name, if discoverable.
+     */
+    function guessFunctionName(url, lineNo) {
+        var reFunctionArgNames = /function ([^(]*)\(([^)]*)\)/,
+            reGuessFunction = /['"]?([0-9A-Za-z$_]+)['"]?\s*[:=]\s*(function|eval|new Function)/,
+            line = '',
+            maxLines = 10,
+            source = getSource(url),
+            m;
 
-        // Walk backwards in the source lines until we find the line which matches one of the patterns above
-        var code = '', line, maxLines = Math.min(lineNumber, 20), m, commentPos;
+        if (!source.length) {
+            return UNKNOWN_FUNCTION;
+        }
+
+        // Walk backwards from the first line in the function until we find the line which
+        // matches the pattern above, which is the function definition
         for (var i = 0; i < maxLines; ++i) {
-            // lineNo is 1-based, source[] is 0-based
-            line = lines[lineNumber - i - 1];
-            commentPos = line.indexOf('//');
-            if (commentPos >= 0) {
-                line = line.substr(0, commentPos);
-            }
+            line = source[lineNo - i] + line;
 
-            if (line) {
-                code = line + code;
-                m = reFunctionExpression.exec(code);
-                if (m && m[1]) {
+            if (!_isUndefined(line)) {
+                if ((m = reGuessFunction.exec(line))) {
                     return m[1];
-                }
-                m = reFunctionDeclaration.exec(code);
-                if (m && m[1]) {
-                    //return m[1] + "(" + (m[2] || "") + ")";
-                    return m[1];
-                }
-                m = reFunctionEvaluation.exec(code);
-                if (m && m[1]) {
+                } else if ((m = reFunctionArgNames.exec(line))) {
                     return m[1];
                 }
             }
         }
-        return undefined;
-    }
 
-    function _ensureSupportedEnvironment() {
-        if (typeof Object.defineProperty !== 'function' || typeof Object.create !== 'function') {
-            throw new Error('Unable to consume source maps in older browsers');
-        }
-    }
-
-    function _ensureStackFrameIsLegit(stackframe) {
-        if (typeof stackframe !== 'object') {
-            throw new TypeError('Given StackFrame is not an object');
-        } else if (typeof stackframe.fileName !== 'string') {
-            throw new TypeError('Given file name is not a String');
-        } else if (typeof stackframe.lineNumber !== 'number' || stackframe.lineNumber % 1 !== 0 || stackframe.lineNumber < 1) {
-            throw new TypeError('Given line number must be a positive integer');
-        } else if (typeof stackframe.columnNumber !== 'number' || stackframe.columnNumber % 1 !== 0 || stackframe.columnNumber < 0) {
-            throw new TypeError('Given column number must be a non-negative integer');
-        }
-        return true;
-    }
-
-    function _findSourceMappingURL(source) {
-        var m = /\/\/[#@] ?sourceMappingURL=([^\s'"]+)$/.exec(source);
-        if (m && m[1]) {
-            return m[1];
-        } else {
-            throw new Error('sourceMappingURL not found');
-        }
-    }
-
-    function _newLocationInfoFromSourceMap(rawSourceMap, args, lineNumber, columnNumber) {
-        var loc = new SourceMap.SourceMapConsumer(rawSourceMap)
-            .originalPositionFor({line: lineNumber, column: columnNumber});
-        return new StackFrame(loc.name, args, loc.source, loc.line, loc.column);
+        return UNKNOWN_FUNCTION;
     }
 
     /**
-     * @param opts: [Object] options.
-     *      opts.sourceCache = {url: "Source String"} => preload source cache
-     *      opts.offline = True to prevent network requests.
-     *              Best effort without sources or source maps.
+     * Retrieves the surrounding lines from where an exception occurred.
+     * @param {string} url URL of source code.
+     * @param {(string|number)} line Line number in source code to centre
+     * around for context.
+     * @return {?Array.<string>} Lines of source code.
      */
-    return function StackTraceGPS(opts) {
-        if (!(this instanceof StackTraceGPS)) {
-            return new StackTraceGPS(opts);
+    function gatherContext(url, line) {
+        var source = getSource(url);
+
+        if (!source.length) {
+            return null;
         }
-        opts = opts || {};
 
-        this.sourceCache = opts.sourceCache || {};
+        var context = [],
+            // linesBefore & linesAfter are inclusive with the offending line.
+            // if linesOfContext is even, there will be one extra line
+            //   *before* the offending line.
+            linesBefore = Math.floor(TraceKit.linesOfContext / 2),
+            // Add one extra line if linesOfContext is odd
+            linesAfter = linesBefore + (TraceKit.linesOfContext % 2),
+            start = Math.max(0, line - linesBefore - 1),
+            end = Math.min(source.length, line + linesAfter - 1);
 
-        this._get = function _get(location) {
-            return new Promise(function (resolve, reject) {
-                if (this.sourceCache[location]) {
-                    resolve(this.sourceCache[location]);
-                } else if (opts.offline) {
-                    reject(new Error('Cannot make network requests in offline mode'));
-                } else {
-                    _xdr(location, function (source) {
-                        this.sourceCache[location] = source;
-                        resolve(source);
-                    }.bind(this), reject);
-                }
-            }.bind(this));
-        };
+        line -= 1; // convert to 0-based index
 
-        /**
-         * Given a StackFrame, enhance function name and use source maps for a
-         * better StackFrame.
-         *
-         * @param stackframe - {StackFrame}-like object
-         *      {fileName: 'path/to/file.js', lineNumber: 100, columnNumber: 5}
-         * @return StackFrame with source-mapped location
-         */
-        this.pinpoint = function StackTraceGPS$$pinpoint(stackframe) {
-            return this.getMappedLocation(stackframe)
-                .then(this.findFunctionName.bind(this));
-        };
+        for (var i = start; i < end; ++i) {
+            if (!_isUndefined(source[i])) {
+                context.push(source[i]);
+            }
+        }
 
-        /**
-         * Given a StackFrame, guess function name from location information.
-         *
-         * @param stackframe - {StackFrame}-like object
-         *      {fileName: 'path/to/file.js', lineNumber: 100, columnNumber: 5}
-         * @return StackFrame with guessed function name
-         */
-        this.findFunctionName = function StackTraceGPS$$findFunctionName(stackframe) {
-            return new Promise(function (resolve, reject) {
-                _ensureStackFrameIsLegit(stackframe);
-                this._get(stackframe.fileName).then(function getSourceCallback(source) {
-                    var guessedFunctionName = _findFunctionName(source, stackframe.lineNumber, stackframe.columnNumber);
-                    resolve(new StackFrame(guessedFunctionName, stackframe.args, stackframe.fileName, stackframe.lineNumber, stackframe.columnNumber));
-                }, reject);
-            }.bind(this));
-        };
-
-        /**
-         * Given a StackFrame, seek source-mapped location and return new enhanced StackFrame.
-         *
-         * @param stackframe - {StackFrame}-like object
-         *      {fileName: 'path/to/file.js', lineNumber: 100, columnNumber: 5}
-         * @return StackFrame with source-mapped location
-         */
-        this.getMappedLocation = function StackTraceGPS$$getMappedLocation(stackframe) {
-            return new Promise(function (resolve, reject) {
-                _ensureSupportedEnvironment();
-                _ensureStackFrameIsLegit(stackframe);
-
-                this._get(stackframe.fileName).then(function (source) {
-                    this._get(_findSourceMappingURL(source)).then(function (map) {
-                        var lineNumber = stackframe.lineNumber;
-                        var columnNumber = stackframe.columnNumber;
-                        resolve(_newLocationInfoFromSourceMap(map, stackframe.args, lineNumber, columnNumber));
-                    }, reject)['catch'](reject);
-                }.bind(this), reject)['catch'](reject);
-            }.bind(this));
-        };
-    };
-}));
-
-(function (root, factory) {
-    'use strict';
-    // Universal Module Definition (UMD) to support AMD, CommonJS/Node.js, Rhino, and browsers.
-    if (typeof define === 'function' && define.amd) {
-        define('stacktrace', ['error-stack-parser', 'stack-generator', 'stacktrace-gps', 'es6-promise'], factory);
-    } else if (typeof exports === 'object') {
-        module.exports = factory(require('error-stack-parser'), require('stack-generator'), require('stacktrace-gps'), require('es6-promise'));
-    } else {
-        root.StackTrace = factory(root.ErrorStackParser, root.StackGenerator, root.StackTraceGPS, root.ES6Promise);
+        return context.length > 0 ? context : null;
     }
-}(this, function StackTrace(ErrorStackParser, StackGenerator, StackTraceGPS, ES6Promise) {
-    ES6Promise.polyfill();
-    var Promise = ES6Promise.Promise;
-
-    var _options = {
-        filter: function (stackframe) {
-            // Filter out stackframes for this library by default
-            return (stackframe.functionName || '').indexOf('StackTrace$$') === -1 &&
-                (stackframe.functionName || '').indexOf('ErrorStackParser$$') === -1 &&
-                (stackframe.functionName || '').indexOf('StackTraceGPS$$') === -1 &&
-                (stackframe.functionName || '').indexOf('StackGenerator$$') === -1;
-        }
-    };
 
     /**
-     * Merge 2 given Objects. If a conflict occurs the second object wins.
-     * Does not do deep merges.
-     * @param first Object
-     * @param second Object
-     * @returns new Object merged first and second
-     * @private
+     * Escapes special characters, except for whitespace, in a string to be
+     * used inside a regular expression as a string literal.
+     * @param {string} text The string.
+     * @return {string} The escaped string literal.
      */
-    function _merge(first, second) {
-        var target = {};
-
-        [first, second].forEach(function (obj) {
-            for (var prop in obj) {
-                if (obj.hasOwnProperty(prop)) {
-                    target[prop] = obj[prop];
-                }
-            }
-            return target;
-        });
-
-        return target;
+    function escapeRegExp(text) {
+        return text.replace(/[\-\[\]{}()*+?.,\\\^$|#]/g, '\\$&');
     }
 
-    function _isShapedLikeParsableError(err) {
-        return err.stack || err['opera#sourceloc'];
+    /**
+     * Escapes special characters in a string to be used inside a regular
+     * expression as a string literal. Also ensures that HTML entities will
+     * be matched the same as their literal friends.
+     * @param {string} body The string.
+     * @return {string} The escaped string.
+     */
+    function escapeCodeAsRegExpForMatchingInsideHTML(body) {
+        return escapeRegExp(body).replace('<', '(?:<|&lt;)').replace('>', '(?:>|&gt;)').replace('&', '(?:&|&amp;)').replace('"', '(?:"|&quot;)').replace(/\s+/g, '\\s+');
     }
 
-    return {
-        /**
-         * Get a backtrace from invocation point.
-         * @param opts Options Object
-         * @return Array[StackFrame]
-         */
-        get: function StackTrace$$get(opts) {
-            try {
-                // Error must be thrown to get stack in IE
-                throw new Error();
-            } catch (err) {
-                if (_isShapedLikeParsableError(err)) {
-                    return this.fromError(err, opts);
-                } else {
-                    return this.generateArtificially(opts);
+    /**
+     * Determines where a code fragment occurs in the source code.
+     * @param {RegExp} re The function definition.
+     * @param {Array.<string>} urls A list of URLs to search.
+     * @return {?Object.<string, (string|number)>} An object containing
+     * the url, line, and column number of the defined function.
+     */
+    function findSourceInUrls(re, urls) {
+        var source, m;
+        for (var i = 0, j = urls.length; i < j; ++i) {
+            // console.log('searching', urls[i]);
+            if ((source = getSource(urls[i])).length) {
+                source = source.join('\n');
+                if ((m = re.exec(source))) {
+                    // console.log('Found function in ' + urls[i]);
+
+                    return {
+                        'url': urls[i],
+                        'line': source.substring(0, m.index).split('\n').length,
+                        'column': m.index - source.lastIndexOf('\n', m.index) - 1
+                    };
                 }
             }
-        },
+        }
 
-        /**
-         * Given an error object, parse it.
-         * @param error Error object
-         * @param opts Object for options
-         * @return Array[StackFrame]
-         */
-        fromError: function StackTrace$$fromError(error, opts) {
-            opts = _merge(_options, opts);
-            return new Promise(function (resolve) {
-                var stackframes = ErrorStackParser.parse(error);
-                if (typeof opts.filter === 'function') {
-                    stackframes = stackframes.filter(opts.filter);
-                }
-                resolve(Promise.all(stackframes.map(function (sf) {
-                    return new Promise(function (resolve) {
-                        function resolveOriginal(_) {
-                            resolve(sf);
-                        }
+        // console.log('no match');
 
-                        new StackTraceGPS(opts).pinpoint(sf)
-                            .then(resolve, resolveOriginal)['catch'](resolveOriginal);
-                    });
-                })));
-            }.bind(this));
-        },
+        return null;
+    }
 
-        /**
-         * Use StackGenerator to generate a backtrace.
-         * @param opts Object options
-         * @returns Array[StackFrame]
-         */
-        generateArtificially: function StackTrace$$generateArtificially(opts) {
-            opts = _merge(_options, opts);
-            var stackFrames = StackGenerator.backtrace(opts);
-            if (typeof opts.filter === 'function') {
-                stackFrames = stackFrames.filter(opts.filter);
+    /**
+     * Determines at which column a code fragment occurs on a line of the
+     * source code.
+     * @param {string} fragment The code fragment.
+     * @param {string} url The URL to search.
+     * @param {(string|number)} line The line number to examine.
+     * @return {?number} The column number.
+     */
+    function findSourceInLine(fragment, url, line) {
+        var source = getSource(url),
+            re = new RegExp('\\b' + escapeRegExp(fragment) + '\\b'),
+            m;
+
+        line -= 1;
+
+        if (source && source.length > line && (m = re.exec(source[line]))) {
+            return m.index;
+        }
+
+        return null;
+    }
+
+    /**
+     * Determines where a function was defined within the source code.
+     * @param {(Function|string)} func A function reference or serialized
+     * function definition.
+     * @return {?Object.<string, (string|number)>} An object containing
+     * the url, line, and column number of the defined function.
+     */
+    function findSourceByFunctionBody(func) {
+        var urls = [window.location.href],
+            scripts = document.getElementsByTagName('script'),
+            body,
+            code = '' + func,
+            codeRE = /^function(?:\s+([\w$]+))?\s*\(([\w\s,]*)\)\s*\{\s*(\S[\s\S]*\S)\s*\}\s*$/,
+            eventRE = /^function on([\w$]+)\s*\(event\)\s*\{\s*(\S[\s\S]*\S)\s*\}\s*$/,
+            re,
+            parts,
+            result;
+
+        for (var i = 0; i < scripts.length; ++i) {
+            var script = scripts[i];
+            if (script.src) {
+                urls.push(script.src);
             }
-            return Promise.resolve(stackFrames);
-        },
+        }
 
-        /**
-         * Given a function, wrap it such that invocations trigger a callback that
-         * is called with a stack trace.
-         *
-         * @param {Function} fn to be instrumented
-         * @param {Function} callback function to call with a stack trace on invocation
-         * @param {Function} errback optional function to call with error if unable to get stack trace.
-         * @param {Object} thisArg optional context object (e.g. window)
-         */
-        instrument: function StackTrace$$instrument(fn, callback, errback, thisArg) {
-            if (typeof fn !== 'function') {
-                throw new Error('Cannot instrument non-function object');
-            } else if (typeof fn.__stacktraceOriginalFn === 'function') {
-                // Already instrumented, return given Function
-                return fn;
+        if (!(parts = codeRE.exec(code))) {
+            re = new RegExp(escapeRegExp(code).replace(/\s+/g, '\\s+'));
+        }
+
+        // not sure if this is really necessary, but I don’t have a test
+        // corpus large enough to confirm that and it was in the original.
+        else {
+            var name = parts[1] ? '\\s+' + parts[1] : '',
+                args = parts[2].split(',').join('\\s*,\\s*');
+
+            body = escapeRegExp(parts[3]).replace(/;$/, ';?'); // semicolon is inserted if the function ends with a comment.replace(/\s+/g, '\\s+');
+            re = new RegExp('function' + name + '\\s*\\(\\s*' + args + '\\s*\\)\\s*{\\s*' + body + '\\s*}');
+        }
+
+        // look for a normal function definition
+        if ((result = findSourceInUrls(re, urls))) {
+            return result;
+        }
+
+        // look for an old-school event handler function
+        if ((parts = eventRE.exec(code))) {
+            var event = parts[1];
+            body = escapeCodeAsRegExpForMatchingInsideHTML(parts[2]);
+
+            // look for a function defined in HTML as an onXXX handler
+            re = new RegExp('on' + event + '=[\\\'"]\\s*' + body + '\\s*[\\\'"]', 'i');
+
+            if ((result = findSourceInUrls(re, urls[0]))) {
+                return result;
             }
 
-            var instrumented = function StackTrace$$instrumented() {
-                try {
-                    this.get().then(callback, errback)['catch'](errback);
-                    fn.apply(thisArg || this, arguments);
-                } catch (e) {
-                    if (_isShapedLikeParsableError(e)) {
-                        this.fromError(e).then(callback, errback)['catch'](errback);
-                    }
-                    throw e;
-                }
-            }.bind(this);
-            instrumented.__stacktraceOriginalFn = fn;
+            // look for ???
+            re = new RegExp(body);
 
-            return instrumented;
-        },
+            if ((result = findSourceInUrls(re, urls))) {
+                return result;
+            }
+        }
 
-        /**
-         * Given a function that has been instrumented,
-         * revert the function to it's original (non-instrumented) state.
-         *
-         * @param fn {Function}
-         */
-        deinstrument: function StackTrace$$deinstrument(fn) {
-            if (typeof fn !== 'function') {
-                throw new Error('Cannot de-instrument non-function object');
-            } else if (typeof fn.__stacktraceOriginalFn === 'function') {
-                return fn.__stacktraceOriginalFn;
+        return null;
+    }
+
+    // Contents of Exception in various browsers.
+    //
+    // SAFARI:
+    // ex.message = Can't find variable: qq
+    // ex.line = 59
+    // ex.sourceId = 580238192
+    // ex.sourceURL = http://...
+    // ex.expressionBeginOffset = 96
+    // ex.expressionCaretOffset = 98
+    // ex.expressionEndOffset = 98
+    // ex.name = ReferenceError
+    //
+    // FIREFOX:
+    // ex.message = qq is not defined
+    // ex.fileName = http://...
+    // ex.lineNumber = 59
+    // ex.stack = ...stack trace... (see the example below)
+    // ex.name = ReferenceError
+    //
+    // CHROME:
+    // ex.message = qq is not defined
+    // ex.name = ReferenceError
+    // ex.type = not_defined
+    // ex.arguments = ['aa']
+    // ex.stack = ...stack trace...
+    //
+    // INTERNET EXPLORER:
+    // ex.message = ...
+    // ex.name = ReferenceError
+    //
+    // OPERA:
+    // ex.message = ...message... (see the example below)
+    // ex.name = ReferenceError
+    // ex.opera#sourceloc = 11  (pretty much useless, duplicates the info in ex.message)
+    // ex.stacktrace = n/a; see 'opera:config#UserPrefs|Exceptions Have Stacktrace'
+
+    /**
+     * Computes stack trace information from the stack property.
+     * Chrome and Gecko use this property.
+     * Added WinJS regex for Raygun4JS's offline caching support
+     * @param {Error} ex
+     * @return {?Object.<string, *>} Stack trace information.
+     */
+    function computeStackTraceFromStackProp(ex) {
+        if (!ex.stack) {
+            return null;
+        }
+
+        var chrome = /^\s*at (.*?) ?\(?((?:file|http|https|chrome-extension):.*?):(\d+)(?::(\d+))?\)?\s*$/i,
+            gecko = /^\s*(.*?)(?:\((.*?)\))?@?((?:file|http|https|chrome):.*?):(\d+)(?::(\d+))?\s*$/i,
+            winjs = /^\s*at (?:((?:\[object object\])?.+) )?\(?((?:ms-appx|http|https):.*?):(\d+)(?::(\d+))?\)?\s*$/i,
+            lines = ex.stack.split('\n'),
+            stack = [],
+            parts,
+            element,
+            reference = /^(.*) is undefined$/.exec(ex.message);
+
+        for (var i = 0, j = lines.length; i < j; ++i) {
+            if ((parts = gecko.exec(lines[i]))) {
+                element = {
+                    'url': parts[3],
+                    'func': parts[1] || UNKNOWN_FUNCTION,
+                    'args': parts[2] ? parts[2].split(',') : '',
+                    'line': +parts[4],
+                    'column': parts[5] ? +parts[5] : null
+                };
+            } else if ((parts = chrome.exec(lines[i]))) {
+                element = {
+                    'url': parts[2],
+                    'func': parts[1] || UNKNOWN_FUNCTION,
+                    'line': +parts[3],
+                    'column': parts[4] ? +parts[4] : null
+                };
+            } else if ((parts = winjs.exec(lines[i]))) {
+              element = {
+                'url': parts[2],
+                'func': parts[1] || UNKNOWN_FUNCTION,
+                'line': +parts[3],
+                'column': parts[4] ? +parts[4] : null
+              };
             } else {
-                // Function not instrumented, return original
-                return fn;
+                continue;
+            }
+
+            if (!element.func && element.line) {
+                element.func = guessFunctionName(element.url, element.line);
+            }
+
+            if (element.line) {
+                element.context = gatherContext(element.url, element.line);
+            }
+
+            stack.push(element);
+        }
+
+        if (stack[0] && stack[0].line && !stack[0].column && reference) {
+            stack[0].column = findSourceInLine(reference[1], stack[0].url, stack[0].line);
+        } else if (!stack[0].column && typeof ex.columnNumber !== 'undefined') {
+            // Firefox column number
+            stack[0].column = ex.columnNumber + 1;
+        }
+
+        if (!stack.length) {
+            return null;
+        }
+
+        return {
+            'mode': 'stack',
+            'name': ex.name,
+            'message': ex.message,
+            'url': document.location.href,
+            'stack': stack,
+            'useragent': navigator.userAgent
+        };
+    }
+
+    /**
+     * Computes stack trace information from the stacktrace property.
+     * Opera 10 uses this property.
+     * @param {Error} ex
+     * @return {?Object.<string, *>} Stack trace information.
+     */
+    function computeStackTraceFromStacktraceProp(ex) {
+        // Access and store the stacktrace property before doing ANYTHING
+        // else to it because Opera is not very good at providing it
+        // reliably in other circumstances.
+        var stacktrace = ex.stacktrace;
+
+        var testRE = / line (\d+), column (\d+) in (?:<anonymous function: ([^>]+)>|([^\)]+))\((.*)\) in (.*):\s*$/i,
+            lines = stacktrace.split('\n'),
+            stack = [],
+            parts;
+
+        for (var i = 0, j = lines.length; i < j; i += 2) {
+            if ((parts = testRE.exec(lines[i]))) {
+                var element = {
+                    'line': +parts[1],
+                    'column': +parts[2],
+                    'func': parts[3] || parts[4],
+                    'args': parts[5] ? parts[5].split(',') : [],
+                    'url': parts[6]
+                };
+
+                if (!element.func && element.line) {
+                    element.func = guessFunctionName(element.url, element.line);
+                }
+                if (element.line) {
+                    try {
+                        element.context = gatherContext(element.url, element.line);
+                    } catch (exc) {}
+                }
+
+                if (!element.context) {
+                    element.context = [lines[i + 1]];
+                }
+
+                stack.push(element);
             }
         }
+
+        if (!stack.length) {
+            return null;
+        }
+
+        return {
+            'mode': 'stacktrace',
+            'name': ex.name,
+            'message': ex.message,
+            'url': document.location.href,
+            'stack': stack,
+            'useragent': navigator.userAgent
+        };
+    }
+
+    /**
+     * NOT TESTED.
+     * Computes stack trace information from an error message that includes
+     * the stack trace.
+     * Opera 9 and earlier use this method if the option to show stack
+     * traces is turned on in opera:config.
+     * @param {Error} ex
+     * @return {?Object.<string, *>} Stack information.
+     */
+    function computeStackTraceFromOperaMultiLineMessage(ex) {
+        // Opera includes a stack trace into the exception message. An example is:
+        //
+        // Statement on line 3: Undefined variable: undefinedFunc
+        // Backtrace:
+        //   Line 3 of linked script file://localhost/Users/andreyvit/Projects/TraceKit/javascript-client/sample.js: In function zzz
+        //         undefinedFunc(a);
+        //   Line 7 of inline#1 script in file://localhost/Users/andreyvit/Projects/TraceKit/javascript-client/sample.html: In function yyy
+        //           zzz(x, y, z);
+        //   Line 3 of inline#1 script in file://localhost/Users/andreyvit/Projects/TraceKit/javascript-client/sample.html: In function xxx
+        //           yyy(a, a, a);
+        //   Line 1 of function script
+        //     try { xxx('hi'); return false; } catch(ex) { TraceKit.report(ex); }
+        //   ...
+
+        var lines = ex.message.split('\n');
+        if (lines.length < 4) {
+            return null;
+        }
+
+        var lineRE1 = /^\s*Line (\d+) of linked script ((?:file|http|https)\S+)(?:: in function (\S+))?\s*$/i,
+            lineRE2 = /^\s*Line (\d+) of inline#(\d+) script in ((?:file|http|https)\S+)(?:: in function (\S+))?\s*$/i,
+            lineRE3 = /^\s*Line (\d+) of function script\s*$/i,
+            stack = [],
+            scripts = document.getElementsByTagName('script'),
+            inlineScriptBlocks = [],
+            parts,
+            i,
+            len,
+            source;
+
+        for (i in scripts) {
+            if (_has(scripts, i) && !scripts[i].src) {
+                inlineScriptBlocks.push(scripts[i]);
+            }
+        }
+
+        for (i = 2, len = lines.length; i < len; i += 2) {
+            var item = null;
+            if ((parts = lineRE1.exec(lines[i]))) {
+                item = {
+                    'url': parts[2],
+                    'func': parts[3],
+                    'line': +parts[1]
+                };
+            } else if ((parts = lineRE2.exec(lines[i]))) {
+                item = {
+                    'url': parts[3],
+                    'func': parts[4]
+                };
+                var relativeLine = (+parts[1]); // relative to the start of the <SCRIPT> block
+                var script = inlineScriptBlocks[parts[2] - 1];
+                if (script) {
+                    source = getSource(item.url);
+                    if (source) {
+                        source = source.join('\n');
+                        var pos = source.indexOf(script.innerText);
+                        if (pos >= 0) {
+                            item.line = relativeLine + source.substring(0, pos).split('\n').length;
+                        }
+                    }
+                }
+            } else if ((parts = lineRE3.exec(lines[i]))) {
+                var url = window.location.href.replace(/#.*$/, ''),
+                    line = parts[1];
+                var re = new RegExp(escapeCodeAsRegExpForMatchingInsideHTML(lines[i + 1]));
+                source = findSourceInUrls(re, [url]);
+                item = {
+                    'url': url,
+                    'line': source ? source.line : line,
+                    'func': ''
+                };
+            }
+
+            if (item) {
+                if (!item.func) {
+                    item.func = guessFunctionName(item.url, item.line);
+                }
+                var context = gatherContext(item.url, item.line);
+                var midline = (context ? context[Math.floor(context.length / 2)] : null);
+                if (context && midline.replace(/^\s*/, '') === lines[i + 1].replace(/^\s*/, '')) {
+                    item.context = context;
+                } else {
+                    // if (context) alert("Context mismatch. Correct midline:\n" + lines[i+1] + "\n\nMidline:\n" + midline + "\n\nContext:\n" + context.join("\n") + "\n\nURL:\n" + item.url);
+                    item.context = [lines[i + 1]];
+                }
+                stack.push(item);
+            }
+        }
+        if (!stack.length) {
+            return null; // could not parse multiline exception message as Opera stack trace
+        }
+
+        return {
+            'mode': 'multiline',
+            'name': ex.name,
+            'message': lines[0],
+            'url': document.location.href,
+            'stack': stack,
+            'useragent': navigator.userAgent
+        };
+    }
+
+    /**
+     * Adds information about the first frame to incomplete stack traces.
+     * Safari and IE require this to get complete data on the first frame.
+     * @param {Object.<string, *>} stackInfo Stack trace information from
+     * one of the compute* methods.
+     * @param {string} url The URL of the script that caused an error.
+     * @param {(number|string)} lineNo The line number of the script that
+     * caused an error.
+     * @param {string=} message The error generated by the browser, which
+     * hopefully contains the name of the object that caused the error.
+     * @return {boolean} Whether or not the stack information was
+     * augmented.
+     */
+    function augmentStackTraceWithInitialElement(stackInfo, url, lineNo, message) {
+        var initial = {
+            'url': url,
+            'line': lineNo
+        };
+
+        if (initial.url && initial.line) {
+            stackInfo.incomplete = false;
+
+            if (!initial.func) {
+                initial.func = guessFunctionName(initial.url, initial.line);
+            }
+
+            if (!initial.context) {
+                initial.context = gatherContext(initial.url, initial.line);
+            }
+
+            var reference = / '([^']+)' /.exec(message);
+            if (reference) {
+                initial.column = findSourceInLine(reference[1], initial.url, initial.line);
+            }
+
+            if (stackInfo.stack.length > 0) {
+                if (stackInfo.stack[0].url === initial.url) {
+                    if (stackInfo.stack[0].line === initial.line) {
+                        return false; // already in stack trace
+                    } else if (!stackInfo.stack[0].line && stackInfo.stack[0].func === initial.func) {
+                        stackInfo.stack[0].line = initial.line;
+                        stackInfo.stack[0].context = initial.context;
+                        return false;
+                    }
+                }
+            }
+
+            stackInfo.stack.unshift(initial);
+            stackInfo.partial = true;
+            return true;
+        } else {
+            stackInfo.incomplete = true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Computes stack trace information by walking the arguments.caller
+     * chain at the time the exception occurred. This will cause earlier
+     * frames to be missed but is the only way to get any stack trace in
+     * Safari and IE. The top frame is restored by
+     * {@link augmentStackTraceWithInitialElement}.
+     * @param {Error} ex
+     * @return {?Object.<string, *>} Stack trace information.
+     */
+    function computeStackTraceByWalkingCallerChain(ex, depth) {
+        var functionName = /function\s+([_$a-zA-Z\xA0-\uFFFF][_$a-zA-Z0-9\xA0-\uFFFF]*)?\s*\(/i,
+            stack = [],
+            funcs = {},
+            recursion = false,
+            parts,
+            item,
+            source;
+
+        for (var curr = computeStackTraceByWalkingCallerChain.caller; curr && !recursion; curr = curr.caller) {
+            if (curr === computeStackTrace || curr === TraceKit.report) {
+                // console.log('skipping internal function');
+                continue;
+            }
+
+            item = {
+                'url': null,
+                'func': UNKNOWN_FUNCTION,
+                'line': null,
+                'column': null
+            };
+
+            if (curr.name) {
+                item.func = curr.name;
+            } else if ((parts = functionName.exec(curr.toString()))) {
+                item.func = parts[1];
+            }
+
+            if (typeof item.func === 'undefined') {
+              try {
+                item.func = parts.input.substring(0, parts.input.indexOf('{'))
+              } catch (e) { }
+            }
+
+            if ((source = findSourceByFunctionBody(curr))) {
+                item.url = source.url;
+                item.line = source.line;
+
+                if (item.func === UNKNOWN_FUNCTION) {
+                    item.func = guessFunctionName(item.url, item.line);
+                }
+
+                var reference = / '([^']+)' /.exec(ex.message || ex.description);
+                if (reference) {
+                    item.column = findSourceInLine(reference[1], source.url, source.line);
+                }
+            }
+
+            if (funcs['' + curr]) {
+                recursion = true;
+            }else{
+                funcs['' + curr] = true;
+            }
+
+            stack.push(item);
+        }
+
+        if (depth) {
+            // console.log('depth is ' + depth);
+            // console.log('stack is ' + stack.length);
+            stack.splice(0, depth);
+        }
+
+        var result = {
+            'mode': 'callers',
+            'name': ex.name,
+            'message': ex.message,
+            'url': document.location.href,
+            'stack': stack,
+            'useragent': navigator.userAgent
+        };
+        augmentStackTraceWithInitialElement(result, ex.sourceURL || ex.fileName, ex.line || ex.lineNumber, ex.message || ex.description);
+        return result;
+    }
+
+    /**
+     * Computes a stack trace for an exception.
+     * @param {Error} ex
+     * @param {(string|number)=} depth
+     */
+    function computeStackTrace(ex, depth) {
+        var stack = null;
+        depth = (depth == null ? 0 : +depth);
+
+        try {
+            // This must be tried first because Opera 10 *destroys*
+            // its stacktrace property if you try to access the stack
+            // property first!!
+            stack = computeStackTraceFromStacktraceProp(ex);
+            if (stack) {
+                return stack;
+            }
+        } catch (e) {
+            if (debug) {
+                throw e;
+            }
+        }
+
+        try {
+            stack = computeStackTraceFromStackProp(ex);
+            if (stack) {
+                return stack;
+            }
+        } catch (e) {
+            if (debug) {
+                throw e;
+            }
+        }
+
+        try {
+            stack = computeStackTraceFromOperaMultiLineMessage(ex);
+            if (stack) {
+                return stack;
+            }
+        } catch (e) {
+            if (debug) {
+                throw e;
+            }
+        }
+
+        try {
+            stack = computeStackTraceByWalkingCallerChain(ex, depth + 1);
+            if (stack) {
+                return stack;
+            }
+        } catch (e) {
+            if (debug) {
+                throw e;
+            }
+        }
+
+        return {
+            'mode': 'failed'
+        };
+    }
+
+    /**
+     * Logs a stacktrace starting from the previous call and working down.
+     * @param {(number|string)=} depth How many frames deep to trace.
+     * @return {Object.<string, *>} Stack trace information.
+     */
+    function computeStackTraceOfCaller(depth) {
+        depth = (depth == null ? 0 : +depth) + 1; // "+ 1" because "ofCaller" should drop one frame
+        try {
+            throw new Error();
+        } catch (ex) {
+            return computeStackTrace(ex, depth + 1);
+        }
+    }
+
+    computeStackTrace.augmentStackTraceWithInitialElement = augmentStackTraceWithInitialElement;
+    computeStackTrace.guessFunctionName = guessFunctionName;
+    computeStackTrace.gatherContext = gatherContext;
+    computeStackTrace.ofCaller = computeStackTraceOfCaller;
+
+    return computeStackTrace;
+}());
+
+/**
+ * Extends support for global error handling for asynchronous browser
+ * functions. Adopted from Closure Library's errorhandler.js
+ */
+TraceKit.extendToAsynchronousCallbacks = function () {
+    var _helper = function _helper(fnName) {
+        var originalFn = window[fnName];
+        window[fnName] = function traceKitAsyncExtension() {
+            // Make a copy of the arguments
+            var args = _slice.call(arguments);
+            var originalCallback = args[0];
+            if (typeof (originalCallback) === 'function') {
+                args[0] = TraceKit.wrap(originalCallback);
+            }
+            // IE < 9 doesn't support .call/.apply on setInterval/setTimeout, but it
+            // also only supports 2 argument and doesn't care what "this" is, so we
+            // can just call the original function directly.
+            if (originalFn.apply) {
+                return originalFn.apply(this, args);
+            } else {
+                return originalFn(args[0], args[1]);
+            }
+        };
     };
-}));
+
+    _helper('setTimeout');
+    _helper('setInterval');
+};
+
+//Default options:
+if (!TraceKit.remoteFetching) {
+  TraceKit.remoteFetching = true;
+}
+if (!TraceKit.collectWindowErrors) {
+  TraceKit.collectWindowErrors = true;
+}
+if (!TraceKit.linesOfContext || TraceKit.linesOfContext < 1) {
+  // 5 lines before, the offending line, 5 lines after
+  TraceKit.linesOfContext = 11;
+}
+
+
+
+// Export to global object
+window.TraceKit = TraceKit;
+
+}(window));
 
 
 (function(root, factory) {
@@ -1631,7 +1165,9 @@ var ContextData = (function () {
     function ContextData() {
     }
     ContextData.prototype.setException = function (exception) {
-        this['@@_Exception'] = exception;
+        if (exception) {
+            this['@@_Exception'] = exception;
+        }
     };
     Object.defineProperty(ContextData.prototype, "hasException", {
         get: function () {
@@ -2891,35 +2427,41 @@ var WebErrorParser = (function () {
     function WebErrorParser() {
     }
     WebErrorParser.prototype.parse = function (context, exception) {
-        var _this = this;
-        return StackTrace.fromError(exception).then(function (stackFrames) { return _this.processError(context, exception, stackFrames); }, function (error) { return _this.onParseError(error, context); });
-    };
-    WebErrorParser.prototype.processError = function (context, exception, stackFrames) {
-        var error = {
-            message: exception.message,
-            stack_trace: this.getStackFrames(context, stackFrames || [])
-        };
-        context.event.data['@error'] = error;
-        return Promise.resolve();
-    };
-    WebErrorParser.prototype.onParseError = function (error, context) {
+        var stackTrace = !!context['@@_TraceKit.StackTrace']
+            ? context['@@_TraceKit.StackTrace']
+            : TraceKit.computeStackTrace(exception, 25);
+        if (stackTrace) {
+            var error = {
+                message: stackTrace.message || exception.message,
+                stack_trace: this.getStackFrames(context, stackTrace.stack || [])
+            };
+            context.event.data['@error'] = error;
+            return Promise.resolve();
+        }
         context.cancel = true;
-        var message = 'Unable to parse the exceptions stack trace';
-        context.log.error(message + ": " + error.message);
-        return Promise.reject(new Error(message + ". This exception will be discarded."));
+        return Promise.reject(new Error('Unable to parse the exceptions stack trace. This exception will be discarded.'));
     };
     WebErrorParser.prototype.getStackFrames = function (context, stackFrames) {
         var frames = [];
         for (var index = 0; index < stackFrames.length; index++) {
+            var frame = stackFrames[index];
             frames.push({
-                name: stackFrames[index].functionName,
-                parameters: stackFrames[index].args,
-                file_name: stackFrames[index].fileName,
-                line_number: stackFrames[index].lineNumber,
-                column: stackFrames[index].columnNumber
+                name: frame.func || '[anonymous]',
+                parameters: this.getParameters(frame.args),
+                file_name: frame.url,
+                line_number: frame.line,
+                column: frame.column
             });
         }
         return frames;
+    };
+    WebErrorParser.prototype.getParameters = function (parameters) {
+        var params = (typeof parameters === 'string' ? [parameters] : parameters) || [];
+        var result = [];
+        for (var index = 0; index < params.length; index++) {
+            result.push({ name: params[index] });
+        }
+        return result;
     };
     return WebErrorParser;
 })();
@@ -3101,16 +2643,21 @@ var WindowBootstrapper = (function () {
         if (typeof window === 'undefined' || typeof document === 'undefined') {
             return;
         }
+        var configDefaults = Configuration.defaults;
         var settings = this.getDefaultsSettingsFromScriptTag();
         if (settings && (settings.apiKey || settings.serverUrl)) {
-            Configuration.defaults.apiKey = settings.apiKey;
-            Configuration.defaults.serverUrl = settings.serverUrl;
+            configDefaults.apiKey = settings.apiKey;
+            configDefaults.serverUrl = settings.serverUrl;
         }
-        Configuration.defaults.errorParser = new WebErrorParser();
-        Configuration.defaults.moduleCollector = new WebModuleCollector();
-        Configuration.defaults.requestInfoCollector = new WebRequestInfoCollector();
-        Configuration.defaults.submissionClient = new DefaultSubmissionClient();
-        this.handleWindowOnError();
+        configDefaults.errorParser = new WebErrorParser();
+        configDefaults.moduleCollector = new WebModuleCollector();
+        configDefaults.requestInfoCollector = new WebRequestInfoCollector();
+        configDefaults.submissionClient = new DefaultSubmissionClient();
+        TraceKit.report.subscribe(this.processUnhandledException);
+        TraceKit.extendToAsynchronousCallbacks();
+        if ($ && $(document)) {
+            $(document).ajaxError(this.processJQueryAjaxError);
+        }
     };
     WindowBootstrapper.prototype.getDefaultsSettingsFromScriptTag = function () {
         if (!document || !document.getElementsByTagName) {
@@ -3124,34 +2671,25 @@ var WindowBootstrapper = (function () {
         }
         return null;
     };
-    WindowBootstrapper.prototype.handleWindowOnError = function () {
-        var _oldOnErrorHandler = window.onerror;
-        window.onerror = function (message, filename, lineno, colno, error) {
-            var client = ExceptionlessClient.default;
-            if (error !== null && typeof error === 'object') {
-                client.submitUnhandledException(error, 'onerror');
-            }
-            else {
-                var e = {
-                    message: message,
-                    stack_trace: [{
-                            file_name: filename,
-                            line_number: lineno,
-                            column: colno
-                        }]
-                };
-                client.createUnhandledException(new Error(message), 'onerror').setMessage(message).setProperty('@error', e).submit();
-            }
-            if (_oldOnErrorHandler) {
-                try {
-                    return _oldOnErrorHandler(message, filename, lineno, colno, error);
-                }
-                catch (e) {
-                    client.config.log.error("An error occurred while calling previous error handler: " + e.message);
-                }
-            }
-            return false;
-        };
+    WindowBootstrapper.prototype.processUnhandledException = function (stackTrace, options) {
+        options == options || {};
+        var builder = ExceptionlessClient.default.createUnhandledException(new Error(stackTrace.message || options.status || 'Script error'), 'onerror');
+        builder.pluginContextData['@@_TraceKit.StackTrace'] = stackTrace;
+        builder.submit();
+    };
+    WindowBootstrapper.prototype.processJQueryAjaxError = function (event, xhr, settings, error) {
+        var client = ExceptionlessClient.default;
+        if (xhr.status === 404) {
+            client.submitNotFound(settings.url);
+        }
+        else if (xhr.status !== 401) {
+            client.createUnhandledException(error, 'JQuery.ajaxError')
+                .setSource(settings.url)
+                .setProperty('status', xhr.status)
+                .setProperty('request', settings.data)
+                .setProperty('response', xhr.responseText && xhr.responseText.slice ? xhr.responseText.slice(0, 1024) : undefined)
+                .submit();
+        }
     };
     return WindowBootstrapper;
 })();
