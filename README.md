@@ -165,6 +165,8 @@ try {
 
 The JavaScript client can be installed via [bower](http://bower.io/search/?q=exceptionless), [npm](https://www.npmjs.com/package/exceptionless) or cdn. If you need help, please contact us via in-app support or [open an issue](https://github.com/exceptionless/Exceptionless.JavaScript/issues/new). We’re always here to help if you have any questions!
 
+**This section is for development purposes only! If you are trying to use the Exceptionless JavaScript libraries then please get them from bower, npm or the cdn.**
+
 1. You will need to clone this repo.
 2. Install [Node.js](https://nodejs.org). _We only use node for our build and test processes._
 3. Install [tsd](https://github.com/DefinitelyTyped/tsd) and [gulp](http://gulpjs.com) and the development dependencies using [npm](https://www.npmjs.com).
