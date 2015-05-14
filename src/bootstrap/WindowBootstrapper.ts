@@ -29,7 +29,8 @@ export class WindowBootstrapper implements IBootstrapper {
 
     TraceKit.report.subscribe(this.processUnhandledException);
     TraceKit.extendToAsynchronousCallbacks();
-    if ($ && $(document)) {
+
+    if (typeof $ !== 'undefined' && $(document)) {
       $(document).ajaxError(this.processJQueryAjaxError);
     }
   }
