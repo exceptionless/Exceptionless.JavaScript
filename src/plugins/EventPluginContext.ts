@@ -5,6 +5,7 @@ import { IEventPlugin } from './IEventPlugin';
 import { ILog } from '../logging/ILog';
 
 export class EventPluginContext {
+  public cancelled:boolean;
   public client:ExceptionlessClient;
   public event:IEvent;
   public contextData:ContextData;

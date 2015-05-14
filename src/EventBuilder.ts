@@ -3,6 +3,7 @@ import { ExceptionlessClient } from './ExceptionlessClient';
 import { IEvent } from './models/IEvent';
 import { IUserInfo } from './models/IUserInfo';
 import { ContextData } from './plugins/ContextData';
+import { EventPluginContext } from './plugins/EventPluginContext';
 import { Utils } from 'Utils';
 
 export class EventBuilder {
@@ -138,8 +139,8 @@ export class EventBuilder {
     return this;
   }
 
-  public submit(): void {
-    this.client.submitEvent(this.target, this.pluginContextData);
+  public submit(callback?:(context:EventPluginContext) => void): void {
+    this.client.submitEvent(this.target, this.pluginContextData, callback);
   }
 
   private isValidIdentifier(value:string): boolean {

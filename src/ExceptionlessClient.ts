@@ -30,8 +30,8 @@ export class ExceptionlessClient {
     return this.createEvent(pluginContextData).setType('error');
   }
 
-  public submitException(exception:Error): void {
-    this.createException(exception).submit();
+  public submitException(exception:Error, callback?:(context:EventPluginContext) => void): void {
+    this.createException(exception).submit(callback);
   }
 
   public createUnhandledException(exception:Error, submissionMethod?:string): EventBuilder {
@@ -42,16 +42,16 @@ export class ExceptionlessClient {
     return builder;
   }
 
-  public submitUnhandledException(exception:Error, submissionMethod?:string) {
-    this.createUnhandledException(exception, submissionMethod).submit();
+  public submitUnhandledException(exception:Error, submissionMethod?:string, callback?:(context:EventPluginContext) => void) {
+    this.createUnhandledException(exception, submissionMethod).submit(callback);
   }
 
   public createFeatureUsage(feature:string): EventBuilder {
     return this.createEvent().setType('usage').setSource(feature);
   }
 
-  public submitFeatureUsage(feature:string): void {
-    this.createFeatureUsage(feature).submit();
+  public submitFeatureUsage(feature:string, callback?:(context:EventPluginContext) => void): void {
+    this.createFeatureUsage(feature).submit(callback);
   }
 
   public createLog(message:string): EventBuilder;
@@ -75,40 +75,40 @@ export class ExceptionlessClient {
 
   public submitLog(message:string): void;
   public submitLog(source:string, message:string): void;
-  public submitLog(source:string, message:string, level:string): void;
-  public submitLog(sourceOrMessage:string, message?:string, level?:string): void {
-    this.createLog(sourceOrMessage, message, level).submit();
+  public submitLog(source:string, message:string, level:string, callback?:(context:EventPluginContext) => void): void;
+  public submitLog(sourceOrMessage:string, message?:string, level?:string, callback?:(context:EventPluginContext) => void): void {
+    this.createLog(sourceOrMessage, message, level).submit(callback);
   }
 
   public createNotFound(resource:string): EventBuilder {
     return this.createEvent().setType('404').setSource(resource);
   }
 
-  public submitNotFound(resource:string): void {
-    this.createNotFound(resource).submit();
+  public submitNotFound(resource:string, callback?:(context:EventPluginContext) => void): void {
+    this.createNotFound(resource).submit(callback);
   }
 
   public createSessionStart(sessionId:string): EventBuilder {
     return this.createEvent().setType('start').setSessionId(sessionId);
   }
 
-  public submitSessionStart(sessionId:string): void {
-    this.createSessionStart(sessionId).submit();
+  public submitSessionStart(sessionId:string, callback?:(context:EventPluginContext) => void): void {
+    this.createSessionStart(sessionId).submit(callback);
   }
 
   public createSessionEnd(sessionId:string): EventBuilder {
     return this.createEvent().setType('end').setSessionId(sessionId);
   }
 
-  public submitSessionEnd(sessionId:string): void {
-    this.createSessionEnd(sessionId).submit();
+  public submitSessionEnd(sessionId:string, callback?:(context:EventPluginContext) => void): void {
+    this.createSessionEnd(sessionId).submit(callback);
   }
 
   public createEvent(pluginContextData?:ContextData): EventBuilder {
     return new EventBuilder({ date: new Date() }, this, pluginContextData);
   }
 
-  public submitEvent(event:IEvent, pluginContextData?:ContextData): void {
+  public submitEvent(event:IEvent, pluginContextData?:ContextData, callback?:(context:EventPluginContext) => void): void {
     if (!event) {
       return;
     }
@@ -126,21 +126,27 @@ export class ExceptionlessClient {
     }
 
     var context = new EventPluginContext(this, event, pluginContextData);
-    return EventPluginManager.run(context, () => {
-      // ensure all required data
-      if (!event.type || event.type.length === 0) {
-        event.type = 'log';
+    return EventPluginManager.run(context, (context:EventPluginContext) => {
+      if (!context.cancelled) {
+        // ensure all required data
+        if (!event.type || event.type.length === 0) {
+          event.type = 'log';
+        }
+
+        if (!event.date) {
+          event.date = new Date();
+        }
+
+        this.config.queue.enqueue(event);
+
+        if (event.reference_id && event.reference_id.length > 0) {
+          this.config.log.info(`Setting last reference id '${event.reference_id}'`);
+          this.config.lastReferenceIdManager.setLast(event.reference_id);
+        }
       }
 
-      if (!event.date) {
-        event.date = new Date();
-      }
-
-      this.config.queue.enqueue(event);
-
-      if (event.reference_id && event.reference_id.length > 0) {
-        this.config.log.info(`Setting last reference id '${event.reference_id}'`);
-        this.config.lastReferenceIdManager.setLast(event.reference_id);
+      if (!!callback) {
+        callback(context);
       }
     });
   }

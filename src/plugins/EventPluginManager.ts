@@ -10,19 +10,29 @@ import { EnvironmentInfoPlugin } from './default/EnvironmentInfoPlugin';
 import { SubmissionMethodPlugin } from './default/SubmissionMethodPlugin';
 
 export class EventPluginManager {
-  public static run(context:EventPluginContext, callback:() => void): void {
+  public static run(context:EventPluginContext, callback:(context?:EventPluginContext, error?:Error) => void): void {
     var wrap = function (plugin:IEventPlugin, next?:() => void): () => void {
       return function () {
         try {
-          plugin.run(context, next);
+          if (!context.cancelled) {
+            plugin.run(context, next);
+          }
         } catch (ex) {
+          context.cancelled = true;
           context.log.error(`Error while running plugin '${plugin.name}': ${ex.message}. This event will be discarded.`);
+        }
 
+        if (context.cancelled && !!callback) {
+          callback(context);
         }
       };
     };
 
-    var plugins:any[] = context.client.config.plugins.concat({ name: 'callback', priority: 9007199254740992, run: callback });
+    var plugins:any[] = context.client.config.plugins;
+    if (!!callback) {
+      plugins.push({ name: 'callback', priority: 9007199254740992, run: callback });
+    }
+
     for (var index = plugins.length - 1; index > -1; index--) {
       plugins[index] = wrap(plugins[index], index < plugins.length - 1 ? plugins[index + 1] : null);
     }
