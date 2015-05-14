@@ -14,11 +14,7 @@
         "typings/stack-trace/stack-trace.d.ts",
         "typings/tracekit/tracekit.d.ts",
 
-        "configuration/Configuration-spec.ts",
-        "queue/DefaultEventQueue-spec.ts",
-        "storage/InMemoryStorage-spec.ts",
-        "submission/DefaultSubmissionClient-spec.ts",
-        "ExceptionlessClient-spec.ts"
+        "**/*-spec.ts"
       ]
     }
   }

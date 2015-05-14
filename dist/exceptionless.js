@@ -1274,14 +1274,23 @@ var EventPluginManager = (function () {
         var wrap = function (plugin, next) {
             return function () {
                 try {
-                    plugin.run(context, next);
+                    if (!context.cancelled) {
+                        plugin.run(context, next);
+                    }
                 }
                 catch (ex) {
+                    context.cancelled = true;
                     context.log.error("Error while running plugin '" + plugin.name + "': " + ex.message + ". This event will be discarded.");
+                }
+                if (context.cancelled && !!callback) {
+                    callback(context);
                 }
             };
         };
-        var plugins = context.client.config.plugins.concat({ name: 'callback', priority: 9007199254740992, run: callback });
+        var plugins = context.client.config.plugins;
+        if (!!callback) {
+            plugins.push({ name: 'callback', priority: 9007199254740992, run: callback });
+        }
         for (var index = plugins.length - 1; index > -1; index--) {
             plugins[index] = wrap(plugins[index], index < plugins.length - 1 ? plugins[index + 1] : null);
         }
@@ -1828,8 +1837,8 @@ var EventBuilder = (function () {
         }
         return this;
     };
-    EventBuilder.prototype.submit = function () {
-        this.client.submitEvent(this.target, this.pluginContextData);
+    EventBuilder.prototype.submit = function (callback) {
+        this.client.submitEvent(this.target, this.pluginContextData, callback);
     };
     EventBuilder.prototype.isValidIdentifier = function (value) {
         if (!value || !value.length) {
@@ -1868,8 +1877,8 @@ var ExceptionlessClient = (function () {
         pluginContextData.setException(exception);
         return this.createEvent(pluginContextData).setType('error');
     };
-    ExceptionlessClient.prototype.submitException = function (exception) {
-        this.createException(exception).submit();
+    ExceptionlessClient.prototype.submitException = function (exception, callback) {
+        this.createException(exception).submit(callback);
     };
     ExceptionlessClient.prototype.createUnhandledException = function (exception, submissionMethod) {
         var builder = this.createException(exception);
@@ -1877,14 +1886,14 @@ var ExceptionlessClient = (function () {
         builder.pluginContextData.setSubmissionMethod(submissionMethod);
         return builder;
     };
-    ExceptionlessClient.prototype.submitUnhandledException = function (exception, submissionMethod) {
-        this.createUnhandledException(exception, submissionMethod).submit();
+    ExceptionlessClient.prototype.submitUnhandledException = function (exception, submissionMethod, callback) {
+        this.createUnhandledException(exception, submissionMethod).submit(callback);
     };
     ExceptionlessClient.prototype.createFeatureUsage = function (feature) {
         return this.createEvent().setType('usage').setSource(feature);
     };
-    ExceptionlessClient.prototype.submitFeatureUsage = function (feature) {
-        this.createFeatureUsage(feature).submit();
+    ExceptionlessClient.prototype.submitFeatureUsage = function (feature, callback) {
+        this.createFeatureUsage(feature).submit(callback);
     };
     ExceptionlessClient.prototype.createLog = function (sourceOrMessage, message, level) {
         var builder = this.createEvent().setType('log');
@@ -1900,31 +1909,31 @@ var ExceptionlessClient = (function () {
         }
         return builder;
     };
-    ExceptionlessClient.prototype.submitLog = function (sourceOrMessage, message, level) {
-        this.createLog(sourceOrMessage, message, level).submit();
+    ExceptionlessClient.prototype.submitLog = function (sourceOrMessage, message, level, callback) {
+        this.createLog(sourceOrMessage, message, level).submit(callback);
     };
     ExceptionlessClient.prototype.createNotFound = function (resource) {
         return this.createEvent().setType('404').setSource(resource);
     };
-    ExceptionlessClient.prototype.submitNotFound = function (resource) {
-        this.createNotFound(resource).submit();
+    ExceptionlessClient.prototype.submitNotFound = function (resource, callback) {
+        this.createNotFound(resource).submit(callback);
     };
     ExceptionlessClient.prototype.createSessionStart = function (sessionId) {
         return this.createEvent().setType('start').setSessionId(sessionId);
     };
-    ExceptionlessClient.prototype.submitSessionStart = function (sessionId) {
-        this.createSessionStart(sessionId).submit();
+    ExceptionlessClient.prototype.submitSessionStart = function (sessionId, callback) {
+        this.createSessionStart(sessionId).submit(callback);
     };
     ExceptionlessClient.prototype.createSessionEnd = function (sessionId) {
         return this.createEvent().setType('end').setSessionId(sessionId);
     };
-    ExceptionlessClient.prototype.submitSessionEnd = function (sessionId) {
-        this.createSessionEnd(sessionId).submit();
+    ExceptionlessClient.prototype.submitSessionEnd = function (sessionId, callback) {
+        this.createSessionEnd(sessionId).submit(callback);
     };
     ExceptionlessClient.prototype.createEvent = function (pluginContextData) {
         return new EventBuilder({ date: new Date() }, this, pluginContextData);
     };
-    ExceptionlessClient.prototype.submitEvent = function (event, pluginContextData) {
+    ExceptionlessClient.prototype.submitEvent = function (event, pluginContextData, callback) {
         var _this = this;
         if (!event) {
             return;
@@ -1939,17 +1948,22 @@ var ExceptionlessClient = (function () {
             event.tags = [];
         }
         var context = new EventPluginContext(this, event, pluginContextData);
-        return EventPluginManager.run(context, function () {
-            if (!event.type || event.type.length === 0) {
-                event.type = 'log';
+        EventPluginManager.run(context, function (context) {
+            if (!context.cancelled) {
+                if (!event.type || event.type.length === 0) {
+                    event.type = 'log';
+                }
+                if (!event.date) {
+                    event.date = new Date();
+                }
+                _this.config.queue.enqueue(event);
+                if (event.reference_id && event.reference_id.length > 0) {
+                    _this.config.log.info("Setting last reference id '" + event.reference_id + "'");
+                    _this.config.lastReferenceIdManager.setLast(event.reference_id);
+                }
             }
-            if (!event.date) {
-                event.date = new Date();
-            }
-            _this.config.queue.enqueue(event);
-            if (event.reference_id && event.reference_id.length > 0) {
-                _this.config.log.info("Setting last reference id '" + event.reference_id + "'");
-                _this.config.lastReferenceIdManager.setLast(event.reference_id);
+            if (!!callback) {
+                callback(context);
             }
         });
     };

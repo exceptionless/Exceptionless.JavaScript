@@ -94,8 +94,8 @@ export class Configuration implements IConfigurationSettings {
   }
 
   public addPlugin(plugin:IEventPlugin): void;
-  public addPlugin(name:string, priority:number, pluginAction:(context:EventPluginContext) => void): void;
-  public addPlugin(pluginOrName:IEventPlugin|string, priority?:number, pluginAction?:(context:EventPluginContext) => void): void {
+  public addPlugin(name:string, priority:number, pluginAction:(context:EventPluginContext, next?:() => void) => void): void;
+  public addPlugin(pluginOrName:IEventPlugin|string, priority?:number, pluginAction?:(context:EventPluginContext, next?:() => void) => void): void {
     var plugin:IEventPlugin = !!pluginAction ? { name: <string>pluginOrName, priority: priority, run: pluginAction } : <IEventPlugin>pluginOrName;
     if (!plugin || !plugin.run) {
       this.log.error('Add plugin failed: No run method was defined.');

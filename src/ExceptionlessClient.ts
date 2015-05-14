@@ -126,7 +126,7 @@ export class ExceptionlessClient {
     }
 
     var context = new EventPluginContext(this, event, pluginContextData);
-    return EventPluginManager.run(context, (context:EventPluginContext) => {
+    EventPluginManager.run(context, (context:EventPluginContext) => {
       if (!context.cancelled) {
         // ensure all required data
         if (!event.type || event.type.length === 0) {

@@ -120,6 +120,7 @@ export interface IEventPlugin {
     run(context: EventPluginContext, next?: () => void): void;
 }
 export declare class EventPluginContext {
+    cancelled: boolean;
     client: ExceptionlessClient;
     event: IEvent;
     contextData: ContextData;
@@ -127,7 +128,7 @@ export declare class EventPluginContext {
     log: ILog;
 }
 export declare class EventPluginManager {
-    static run(context: EventPluginContext, callback: () => void): void;
+    static run(context: EventPluginContext, callback: (context?: EventPluginContext) => void): void;
     static addDefaultPlugins(config: Configuration): void;
 }
 export declare class ReferenceIdPlugin implements IEventPlugin {
@@ -193,7 +194,7 @@ export declare class Configuration implements IConfigurationSettings {
     enabled: boolean;
     plugins: IEventPlugin[];
     addPlugin(plugin: IEventPlugin): void;
-    addPlugin(name: string, priority: number, pluginAction: (context: EventPluginContext) => void): void;
+    addPlugin(name: string, priority: number, pluginAction: (context: EventPluginContext, next?: () => void) => void): void;
     removePlugin(plugin: IEventPlugin): void;
     removePlugin(name: string): void;
     setVersion(version: string): void;
@@ -224,7 +225,7 @@ export declare class EventBuilder {
     setProperty(name: string, value: any): EventBuilder;
     markAsCritical(critical: boolean): EventBuilder;
     addRequestInfo(request: any): EventBuilder;
-    submit(): void;
+    submit(callback?: (context: EventPluginContext) => void): void;
     private isValidIdentifier(value);
 }
 export interface IError extends IInnerError {
@@ -236,25 +237,25 @@ export declare class ExceptionlessClient {
     constructor(settings: IConfigurationSettings);
     constructor(apiKey: string, serverUrl?: string);
     createException(exception: Error): EventBuilder;
-    submitException(exception: Error): void;
+    submitException(exception: Error, callback?: (context: EventPluginContext) => void): void;
     createUnhandledException(exception: Error, submissionMethod?: string): EventBuilder;
-    submitUnhandledException(exception: Error, submissionMethod?: string): void;
+    submitUnhandledException(exception: Error, submissionMethod?: string, callback?: (context: EventPluginContext) => void): void;
     createFeatureUsage(feature: string): EventBuilder;
-    submitFeatureUsage(feature: string): void;
+    submitFeatureUsage(feature: string, callback?: (context: EventPluginContext) => void): void;
     createLog(message: string): EventBuilder;
     createLog(source: string, message: string): EventBuilder;
     createLog(source: string, message: string, level: string): EventBuilder;
     submitLog(message: string): void;
     submitLog(source: string, message: string): void;
-    submitLog(source: string, message: string, level: string): void;
+    submitLog(source: string, message: string, level: string, callback?: (context: EventPluginContext) => void): void;
     createNotFound(resource: string): EventBuilder;
-    submitNotFound(resource: string): void;
+    submitNotFound(resource: string, callback?: (context: EventPluginContext) => void): void;
     createSessionStart(sessionId: string): EventBuilder;
-    submitSessionStart(sessionId: string): void;
+    submitSessionStart(sessionId: string, callback?: (context: EventPluginContext) => void): void;
     createSessionEnd(sessionId: string): EventBuilder;
-    submitSessionEnd(sessionId: string): void;
+    submitSessionEnd(sessionId: string, callback?: (context: EventPluginContext) => void): void;
     createEvent(pluginContextData?: ContextData): EventBuilder;
-    submitEvent(event: IEvent, pluginContextData?: ContextData): void;
+    submitEvent(event: IEvent, pluginContextData?: ContextData, callback?: (context: EventPluginContext) => void): void;
     getLastReferenceId(): string;
     private static _instance;
     static default: ExceptionlessClient;
