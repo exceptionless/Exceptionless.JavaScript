@@ -90,8 +90,25 @@ gulp.task('watch', ['build'], function() {
 
 gulp.task('build', ['clean', 'exceptionless.es5']);
 
-gulp.task('test', [], function() {
-  return gulp.src(['src/**/*-spec.ts'])
+gulp.task('typescript.test', function() {
+  return tsProject.src('src/tsconfig.test.json').pipe(gulp.dest('dist/temp'));
+});
+
+gulp.task('exceptionless.test.umd', ['typescript.test'], function() {
+  return gulp.src('dist/temp/src/exceptionless-spec.js')
+    .pipe(sourcemaps.init({ loadMaps: true }))
+    .pipe(umd({
+      exports: 'exports',
+      globalName: 'Exceptionless',
+      namespace: 'Exceptionless'
+    }))
+    .pipe(replace('}(this, function(require, exports, module) {', '}(this, function(require, exports, module) {\nif (!exports) {\n\tvar exports = {};\n}\nif (!require) {\n\tvar require = function(){};\n}\n'))
+    .pipe(sourcemaps.write('.'))
+    .pipe(gulp.dest('dist/temp'));
+});
+
+gulp.task('test', ['exceptionless.test.umd'], function() {
+  return gulp.src(['dist/temp/exceptionless-spec.js'])
     .pipe(karma({
       configFile: 'karma.conf.js',
       action: 'run'

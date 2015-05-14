@@ -8,33 +8,9 @@ module.exports = function (config) {
     frameworks: ['jasmine'],
     files: [
       '../node_modules/es5-shim/es5-shim.js',
-      '../node_modules/es6-shim/es6-shim.js',
-      '../node_modules/es6-promise/dist/es6-promise.js',
-      '../node_modules/stackframe/dist/stackframe.js',
-      '../node_modules/error-stack-parser/dist/error-stack-parser.js',
-      '../node_modules/stack-generator/dist/stack-generator.js',
-      '../node_modules/stacktrace-gps/dist/stacktrace-gps.js',
-      '../node_modules/stacktrace-js/dist/stacktrace.js',
-      '**/*.ts'
+      '../node_modules/es6-shim/es6-shim.js'
     ],
     exclude: [],
-    preprocessors: {
-      '**/*.ts': ['typescript']
-    },
-    typescriptPreprocessor: {
-      options: {
-        module: 'amd',
-        noResolve: true,
-        sourceMap: true,
-        target: 'ES5'
-      },
-      typings: [
-        'typings/tsd.d.ts'
-      ],
-      transformPath: function(path) {
-        return path.replace(/\.ts$/, '.js');
-      }
-    },
     reporters: ['progress'],
     port: 9876,
     colors: true,

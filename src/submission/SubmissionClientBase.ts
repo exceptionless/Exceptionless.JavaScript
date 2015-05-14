@@ -23,14 +23,14 @@ export class SubmissionClientBase implements ISubmissionClient {
   public getSettings(config:Configuration, callback:(SettingsResponse) => void):void {
     return this.sendRequest('GET', config.serverUrl, '/api/v2/projects/config', config.apiKey, null, (status:number, message:string, data:string) => {
         if (status !== 200) {
-          return callback(new SettingsResponse(false, null, -1, null, `Unable to retrieve configuration settings: ${message}`));
+          return callback(new SettingsResponse(false, null, -1, null, message));
         }
 
         var settings;
         try {
           settings = JSON.parse(data);
         } catch (e) {
-          config.log.error(`An error occurred while parsing the settings response text: '${data}'`);
+          config.log.error(`Unable to parse settings: '${data}'`);
         }
 
         if (!settings || !settings.settings || !settings.version) {

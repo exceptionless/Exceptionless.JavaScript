@@ -1,4 +1,4 @@
-import { IConfigurationSettings } from 'IConfigurationSettings';
+import { IConfigurationSettings } from './IConfigurationSettings';
 import { ILastReferenceIdManager } from '../lastReferenceIdManager/ILastReferenceIdManager';
 import { InMemoryLastReferenceIdManager } from '../lastReferenceIdManager/InMemoryLastReferenceIdManager';
 import { ConsoleLog } from '../logging/ConsoleLog';
@@ -69,7 +69,7 @@ export class Configuration implements IConfigurationSettings {
 
   public set apiKey(value:string) {
     this._apiKey = value || null;
-    this.log.info(`apiKey set to: ${this._apiKey}`);
+    this.log.info(`apiKey: ${this._apiKey}`);
   }
 
   public get serverUrl(): string {
@@ -79,7 +79,7 @@ export class Configuration implements IConfigurationSettings {
   public set serverUrl(value:string) {
     if (!!value && value.length > 0) {
       this._serverUrl = value;
-      this.log.info(`serverUrl set to: ${this._serverUrl}`);
+      this.log.info(`serverUrl: ${this._serverUrl}`);
     }
   }
 
@@ -98,7 +98,7 @@ export class Configuration implements IConfigurationSettings {
   public addPlugin(pluginOrName:IEventPlugin|string, priority?:number, pluginAction?:(context:EventPluginContext) => void): void {
     var plugin:IEventPlugin = !!pluginAction ? { name: <string>pluginOrName, priority: priority, run: pluginAction } : <IEventPlugin>pluginOrName;
     if (!plugin || !plugin.run) {
-      this.log.error('Unable to add plugin: No run method was found.');
+      this.log.error('Add plugin failed: No run method was defined.');
       return;
     }
 
@@ -128,7 +128,7 @@ export class Configuration implements IConfigurationSettings {
   public removePlugin(pluginOrName:IEventPlugin|string): void {
     var name:string = typeof pluginOrName === 'string' ? pluginOrName : pluginOrName.name;
     if (!name) {
-      this.log.error('Unable to remove plugin: No plugin name was specified.');
+      this.log.error('Remove plugin failed: No plugin name was defined.');
       return;
     }
 
@@ -158,7 +158,7 @@ export class Configuration implements IConfigurationSettings {
       this.defaultData['@user'] = userInfo;
     }
 
-    this.log.info(`user identity set to: ${shouldRemove ? 'null' : userInfo.identity}`);
+    this.log.info(`user identity: ${shouldRemove ? 'null' : userInfo.identity}`);
   }
 
   public useReferenceIds(): void {

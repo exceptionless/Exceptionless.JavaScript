@@ -1622,7 +1622,7 @@ var Configuration = (function () {
         },
         set: function (value) {
             this._apiKey = value || null;
-            this.log.info("apiKey set to: " + this._apiKey);
+            this.log.info("apiKey: " + this._apiKey);
         },
         enumerable: true,
         configurable: true
@@ -1634,7 +1634,7 @@ var Configuration = (function () {
         set: function (value) {
             if (!!value && value.length > 0) {
                 this._serverUrl = value;
-                this.log.info("serverUrl set to: " + this._serverUrl);
+                this.log.info("serverUrl: " + this._serverUrl);
             }
         },
         enumerable: true,
@@ -1659,7 +1659,7 @@ var Configuration = (function () {
     Configuration.prototype.addPlugin = function (pluginOrName, priority, pluginAction) {
         var plugin = !!pluginAction ? { name: pluginOrName, priority: priority, run: pluginAction } : pluginOrName;
         if (!plugin || !plugin.run) {
-            this.log.error('Unable to add plugin: No run method was found.');
+            this.log.error('Add plugin failed: No run method was defined.');
             return;
         }
         if (!plugin.name) {
@@ -1682,7 +1682,7 @@ var Configuration = (function () {
     Configuration.prototype.removePlugin = function (pluginOrName) {
         var name = typeof pluginOrName === 'string' ? pluginOrName : pluginOrName.name;
         if (!name) {
-            this.log.error('Unable to remove plugin: No plugin name was specified.');
+            this.log.error('Remove plugin failed: No plugin name was defined.');
             return;
         }
         for (var index = 0; index < this._plugins.length; index++) {
@@ -1706,7 +1706,7 @@ var Configuration = (function () {
         else {
             this.defaultData['@user'] = userInfo;
         }
-        this.log.info("user identity set to: " + (shouldRemove ? 'null' : userInfo.identity));
+        this.log.info("user identity: " + (shouldRemove ? 'null' : userInfo.identity));
     };
     Configuration.prototype.useReferenceIds = function () {
         this.addPlugin(new ReferenceIdPlugin());
@@ -2272,14 +2272,14 @@ var SubmissionClientBase = (function () {
     SubmissionClientBase.prototype.getSettings = function (config, callback) {
         return this.sendRequest('GET', config.serverUrl, '/api/v2/projects/config', config.apiKey, null, function (status, message, data) {
             if (status !== 200) {
-                return callback(new SettingsResponse(false, null, -1, null, "Unable to retrieve configuration settings: " + message));
+                return callback(new SettingsResponse(false, null, -1, null, message));
             }
             var settings;
             try {
                 settings = JSON.parse(data);
             }
             catch (e) {
-                config.log.error("An error occurred while parsing the settings response text: '" + data + "'");
+                config.log.error("Unable to parse settings: '" + data + "'");
             }
             if (!settings || !settings.settings || !settings.version) {
                 return callback(new SettingsResponse(false, null, -1, null, 'Invalid configuration settings.'));
@@ -2345,6 +2345,7 @@ var NodeBootstrapper = (function () {
     function NodeBootstrapper() {
     }
     NodeBootstrapper.prototype.register = function () {
+        var _this = this;
         if (typeof window === 'undefined' && typeof global !== 'undefined' && {}.toString.call(global) === '[object global]') {
             return;
         }
@@ -2358,7 +2359,7 @@ var NodeBootstrapper = (function () {
         });
         process.on('beforeExit', function (code) {
             var client = ExceptionlessClient.default;
-            var message = this.getExitCodeReason(code);
+            var message = _this.getExitCodeReason(code);
             if (message !== null) {
                 client.submitLog('beforeExit', message, 'Error');
             }

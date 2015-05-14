@@ -25,7 +25,7 @@ export class NodeBootstrapper implements IBootstrapper {
       ExceptionlessClient.default.submitUnhandledException(error, 'uncaughtException');
     });
 
-    process.on('beforeExit', function(code:number) {
+    process.on('beforeExit', (code:number) => {
       var client = ExceptionlessClient.default;
 
       var message = this.getExitCodeReason(code);

@@ -17,6 +17,7 @@ export class EventPluginManager {
           plugin.run(context, next);
         } catch (ex) {
           context.log.error(`Error while running plugin '${plugin.name}': ${ex.message}. This event will be discarded.`);
+
         }
       };
     };
