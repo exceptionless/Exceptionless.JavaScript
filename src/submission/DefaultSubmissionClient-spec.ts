@@ -14,15 +14,14 @@ describe('DefaultSubmissionClient', () => {
       } else {
         expect(response.message).toBe('Unable to connect to server.');
       }
+
+      done();
     }
 
     var config = new Configuration({ apiKey:'LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw', serverUrl:'http://localhost:50000'});
     var submissionClient = new DefaultSubmissionClient();
-    submissionClient.submit([{ type: 'log', message: 'From js client', reference_id: '123454321' }], config)
-      .then(processResponse, processResponse)
-      .then(done);
+    submissionClient.submit([{ type: 'log', message: 'From js client', reference_id: '123454321' }], config, processResponse);
   }, 5000);
-
 
   it('should submit invalid object data', (done) => {
     function processResponse(response:SubmissionResponse) {
@@ -31,6 +30,8 @@ describe('DefaultSubmissionClient', () => {
       } else {
         expect(response.message).toBe('Unable to connect to server.');
       }
+
+      done();
     }
 
     var config = new Configuration({ apiKey:'LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw', serverUrl:'http://localhost:50000'});
@@ -40,9 +41,7 @@ describe('DefaultSubmissionClient', () => {
     }};
 
     var submissionClient = new DefaultSubmissionClient();
-    submissionClient.submit([event], config)
-      .then(processResponse, processResponse)
-      .then(done);
+    submissionClient.submit([event], config, processResponse);
   }, 5000);
 
   it('should submit user description', (done) => {
@@ -52,13 +51,13 @@ describe('DefaultSubmissionClient', () => {
       } else {
         expect(response.message).toBe('Unable to connect to server.');
       }
+
+      done();
     }
 
     var config = new Configuration({ apiKey:'LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw', serverUrl:'http://localhost:50000'});
     var submissionClient = new DefaultSubmissionClient();
-    submissionClient.submitDescription('123454321', { email_address: 'norply@exceptionless.io', description: 'unit test' } , config)
-      .then(processResponse, processResponse)
-      .then(done);
+    submissionClient.submitDescription('123454321', { email_address: 'norply@exceptionless.io', description: 'unit test' }, config, processResponse)
   }, 5000);
 
   it('should get project settings', (done) => {
@@ -70,12 +69,12 @@ describe('DefaultSubmissionClient', () => {
       } else {
         expect(response.message).toBe('Unable to connect to server.');
       }
+
+      done();
     }
 
     var config = new Configuration({ apiKey:'LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw', serverUrl:'http://localhost:50000'});
     var submissionClient = new DefaultSubmissionClient();
-    submissionClient.getSettings(config)
-      .then(processResponse, processResponse)
-      .then(done);
+    submissionClient.getSettings(config, processResponse);
   }, 5000);
 });

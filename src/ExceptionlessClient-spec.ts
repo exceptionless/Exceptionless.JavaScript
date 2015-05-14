@@ -1,5 +1,5 @@
 import { ExceptionlessClient } from 'ExceptionlessClient';
-
+/*
 describe('ExceptionlessClient', () => {
   it('should use event reference ids', (done) => {
     var error = new Error('From Unit Test');
@@ -22,3 +22,4 @@ describe('ExceptionlessClient', () => {
       .then(done);
   }, 5000);
 });
+ */

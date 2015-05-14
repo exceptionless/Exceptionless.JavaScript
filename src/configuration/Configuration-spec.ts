@@ -1,52 +1,23 @@
-import Configuration from './Configuration';
+import { Configuration } from './Configuration';
 import { EventPluginContext } from '../plugins/EventPluginContext';
 
 describe('Configuration', () => {
-  it('should set the api key to null and enabled to false', () => {
-    var config = new Configuration(null);
-    expect(config.apiKey).toBe(null);
-    expect(config.enabled).toBe(false);
-  });
-
-  it('should set the api key and enabled to true', () => {
-    var config = new Configuration({ apiKey:'LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw', serverUrl:'http://localhost:50000'});
-    expect(config).not.toBe(null);
-    expect(config.apiKey).toBe('LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw');
-    expect(config.enabled).toBe(true);
-  });
-
   it('should override configuration defaults', () => {
     var config = new Configuration();
     expect(config.apiKey).toBe(null);
-    expect(config.enabled).toBe(false);
+
+    config.apiKey = 'LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw';
+    expect(config.apiKey).toBe('LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw');
 
     Configuration.defaults.apiKey = 'test';
     config = new Configuration();
     expect(config.apiKey).toBe('test');
-    expect(config.enabled).toBe(true);
 
     config = new Configuration({ apiKey:'LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw', serverUrl:'http://localhost:50000'});
     expect(config.apiKey).toBe('LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw');
-    expect(config.enabled).toBe(true);
 
     config = new Configuration({ apiKey:null });
     expect(config.apiKey).toBe('test');
-    expect(config.enabled).toBe(true);
-
-    delete Configuration.defaults.apiKey;
-    var config = new Configuration();
-    expect(config.apiKey).toBe(null);
-    expect(config.enabled).toBe(false);
-  });
-
-  it('apply client configuration', () => {
-    var config = new Configuration(null);
-    expect(config.apiKey).toBe(null);
-    expect(config.enabled).toBe(false);
-
-    config.apiKey = 'LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw';
-    expect(config.apiKey).toBe('LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw');
-    expect(config.enabled).toBe(true);
   });
 
   it('should not add duplicate plugin', () => {
