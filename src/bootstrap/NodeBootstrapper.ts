@@ -11,7 +11,7 @@ import { Utils } from '../Utils';
 
 export class NodeBootstrapper implements IBootstrapper {
   public register(): void {
-    if (typeof window === 'undefined' && typeof global !== 'undefined' && {}.toString.call(global) === '[object global]') {
+    if (!(typeof window === 'undefined' && typeof global !== 'undefined' && {}.toString.call(global) === '[object global]')) {
       return;
     }
 
