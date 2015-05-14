@@ -153,4 +153,30 @@ describe('EventPluginManager', () => {
       expect(false).toBe(true);
     });
   }, 500);
+
+  it('should ensure config plugins are not wrapped.', () => {
+    var client = new ExceptionlessClient({ apiKey:'LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw', serverUrl:'http://localhost:50000'});
+    var context = new EventPluginContext(client, {}, new ContextData());
+
+    expect(client.config.plugins).not.toBe(null);
+    while(client.config.plugins.length > 0) {
+      client.config.removePlugin(client.config.plugins[0]);
+    }
+
+    client.config.addPlugin('1', 1, (context:EventPluginContext, next?:() => void) => {
+      if (next) {
+        next();
+      }
+    });
+
+    expect(client.config.plugins[0].name).toBe('1');
+
+    EventPluginManager.run(context, (context?:EventPluginContext) => {
+      expect(client.config.plugins[0].name).toBe('1');
+    });
+
+    EventPluginManager.run(context, (context?:EventPluginContext) => {
+      expect(client.config.plugins[0].name).toBe('1');
+    });
+  });
 });

@@ -28,16 +28,17 @@ export class EventPluginManager {
       };
     };
 
-    var plugins:any[] = context.client.config.plugins;
+    var plugins:IEventPlugin[] = context.client.config.plugins;
     if (!!callback) {
       plugins.push({ name: 'callback', priority: 9007199254740992, run: callback });
     }
 
+    var wrappedPlugins:{ (): void }[] = [];
     for (var index = plugins.length - 1; index > -1; index--) {
-      plugins[index] = wrap(plugins[index], index < plugins.length - 1 ? plugins[index + 1] : null);
+      wrappedPlugins[index] = wrap(plugins[index], index < plugins.length - 1 ? wrappedPlugins[index + 1] : null);
     }
 
-    plugins[0]();
+    wrappedPlugins[0]();
   }
 
   public static addDefaultPlugins(config:Configuration): void {

@@ -2360,7 +2360,7 @@ var NodeBootstrapper = (function () {
     }
     NodeBootstrapper.prototype.register = function () {
         var _this = this;
-        if (typeof window === 'undefined' && typeof global !== 'undefined' && {}.toString.call(global) === '[object global]') {
+        if (!(typeof window === 'undefined' && typeof global !== 'undefined' && {}.toString.call(global) === '[object global]')) {
             return;
         }
         var configDefaults = Configuration.defaults;
@@ -2611,7 +2611,7 @@ var WindowBootstrapper = (function () {
         configDefaults.submissionClient = new DefaultSubmissionClient();
         TraceKit.report.subscribe(this.processUnhandledException);
         TraceKit.extendToAsynchronousCallbacks();
-        if ($ && $(document)) {
+        if (typeof $ !== 'undefined' && $(document)) {
             $(document).ajaxError(this.processJQueryAjaxError);
         }
     };
