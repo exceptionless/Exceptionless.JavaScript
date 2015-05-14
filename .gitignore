@@ -2,5 +2,5 @@
 .idea
 node_modules
 public
-/typings
 /dist/temp
+/src/typings
