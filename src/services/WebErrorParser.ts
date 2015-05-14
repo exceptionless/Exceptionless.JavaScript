@@ -6,8 +6,8 @@ import { EventPluginContext } from '../plugins/EventPluginContext';
 
 export class WebErrorParser implements IErrorParser {
   public parse(context:EventPluginContext, exception:Error): void {
-    var stackTrace:TraceKit.StackTrace = !!context['@@_TraceKit.StackTrace']
-      ? context['@@_TraceKit.StackTrace']
+    var stackTrace:TraceKit.StackTrace = !!context.contextData['@@_TraceKit.StackTrace']
+      ? context.contextData['@@_TraceKit.StackTrace']
       : TraceKit.computeStackTrace(exception, 25);
 
     if (!stackTrace) {
@@ -15,6 +15,7 @@ export class WebErrorParser implements IErrorParser {
     }
 
     var error:IError = {
+      type: stackTrace.name,
       message: stackTrace.message || exception.message,
       stack_trace: this.getStackFrames(context, stackTrace.stack || [])
     };

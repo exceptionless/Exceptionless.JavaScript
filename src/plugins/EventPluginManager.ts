@@ -12,7 +12,7 @@ import { SubmissionMethodPlugin } from './default/SubmissionMethodPlugin';
 export class EventPluginManager {
   public static run(context:EventPluginContext, callback:(context?:EventPluginContext) => void): void {
     var wrap = function (plugin:IEventPlugin, next?:() => void): () => void {
-      return function () {
+      return () => {
         try {
           if (!context.cancelled) {
             plugin.run(context, next);

@@ -4,3 +4,4 @@ node_modules
 public
 /dist/temp
 /src/typings
+example/exceptionless.js

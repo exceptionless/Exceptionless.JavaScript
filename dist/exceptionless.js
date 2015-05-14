@@ -2424,13 +2424,14 @@ var WebErrorParser = (function () {
     function WebErrorParser() {
     }
     WebErrorParser.prototype.parse = function (context, exception) {
-        var stackTrace = !!context['@@_TraceKit.StackTrace']
-            ? context['@@_TraceKit.StackTrace']
+        var stackTrace = !!context.contextData['@@_TraceKit.StackTrace']
+            ? context.contextData['@@_TraceKit.StackTrace']
             : TraceKit.computeStackTrace(exception, 25);
         if (!stackTrace) {
             throw new Error('Unable to parse the exceptions stack trace.');
         }
         var error = {
+            type: stackTrace.name,
             message: stackTrace.message || exception.message,
             stack_trace: this.getStackFrames(context, stackTrace.stack || [])
         };
