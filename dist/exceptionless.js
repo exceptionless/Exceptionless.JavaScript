@@ -2527,7 +2527,14 @@ var DefaultSubmissionClient = (function (_super) {
         return xhr;
     };
     DefaultSubmissionClient.prototype.sendRequest = function (method, host, path, apiKey, data, callback) {
+        var isCompleted = false;
         function complete(xhr) {
+            if (isCompleted) {
+                return;
+            }
+            else {
+                isCompleted = true;
+            }
             var message;
             if (xhr.status === 0) {
                 message = 'Unable to connect to server.';

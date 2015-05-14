@@ -33,7 +33,14 @@ export class DefaultSubmissionClient extends SubmissionClientBase {
   }
 
   public sendRequest(method:string, host:string, path:string, apiKey:string, data:string, callback: (status:number, message:string, data?:string) => void): void {
+    var isCompleted = false;
     function complete(xhr:XMLHttpRequest) {
+      if (isCompleted) {
+        return;
+      } else {
+        isCompleted = true;
+      }
+
       var message:string;
       if (xhr.status === 0) {
         message = 'Unable to connect to server.';
