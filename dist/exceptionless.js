@@ -1291,10 +1291,11 @@ var EventPluginManager = (function () {
         if (!!callback) {
             plugins.push({ name: 'callback', priority: 9007199254740992, run: callback });
         }
+        var wrappedPlugins = [];
         for (var index = plugins.length - 1; index > -1; index--) {
-            plugins[index] = wrap(plugins[index], index < plugins.length - 1 ? plugins[index + 1] : null);
+            wrappedPlugins[index] = wrap(plugins[index], index < plugins.length - 1 ? wrappedPlugins[index + 1] : null);
         }
-        plugins[0]();
+        wrappedPlugins[0]();
     };
     EventPluginManager.addDefaultPlugins = function (config) {
         config.addPlugin(new ConfigurationDefaultsPlugin());
