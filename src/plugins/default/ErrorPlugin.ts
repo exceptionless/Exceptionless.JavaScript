@@ -5,27 +5,23 @@ export class ErrorPlugin implements IEventPlugin {
   public priority:number = 30;
   public name:string = 'ErrorPlugin';
 
-  run(context:EventPluginContext): Promise<any> {
+  public run(context:EventPluginContext, next?:() => void): void {
     var exception = context.contextData.getException();
-    if (exception == null) {
-      return Promise.resolve();
+    if (!!exception) {
+      context.event.type = 'error';
+
+      if (!context.event.data['@error']) {
+        var parser = context.client.config.errorParser;
+        if (!parser) {
+          throw new Error('No error parser was defined.');
+        }
+
+        parser.parse(context, exception);
+      }
     }
 
-    if (!context.event.data) {
-      context.event.data = {};
+    if (next) {
+      next();
     }
-
-    context.event.type = 'error';
-    if (!!context.event.data['@error']) {
-      return Promise.resolve();
-    }
-
-    var parser = context.client.config.errorParser;
-    if (!parser) {
-      context.cancel = true;
-      return Promise.reject(new Error('No error parser was defined. This exception will be discarded.'))
-    }
-
-    return parser.parse(context, exception);
   }
 }

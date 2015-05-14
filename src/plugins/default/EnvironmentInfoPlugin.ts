@@ -6,20 +6,16 @@ export class EnvironmentInfoPlugin implements IEventPlugin {
   public priority:number = 70;
   public name:string = 'EnvironmentInfoPlugin';
 
-  run(context:EventPluginContext):Promise<any> {
-    if (!!context.event.data && !!context.event.data['@environment'] || !context.client.config.environmentInfoCollector) {
-      return Promise.resolve();
+  public run(context:EventPluginContext, next?:() => void): void {
+    if (!context.event.data['@environment'] && context.client.config.environmentInfoCollector) {
+      var ei = context.client.config.environmentInfoCollector.getEnvironmentInfo(context);
+      if (!!ei) {
+        context.event.data['@environment'] = ei;
+      }
     }
 
-    if (!context.event.data) {
-      context.event.data = {};
+    if (next) {
+      next();
     }
-
-    var ei = context.client.config.environmentInfoCollector.getEnvironmentInfo(context);
-    if (ei) {
-      context.event.data['@environment'] = ei;
-    }
-
-    return Promise.resolve();
   }
 }

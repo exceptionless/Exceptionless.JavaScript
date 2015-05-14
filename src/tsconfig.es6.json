@@ -60,6 +60,7 @@
     "submission/ISubmissionClient.ts",
     "submission/NodeSubmissionClient",
     "submission/SettingsResponse.ts",
+    "submission/SubmissionClientBase.ts",
     "submission/SubmissionResponse.ts",
     "EventBuilder.ts",
     "Exceptionless.ts",

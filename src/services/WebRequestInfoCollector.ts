@@ -5,7 +5,7 @@ import { Utils } from '../Utils';
 
 export class WebRequestInfoCollector implements IRequestInfoCollector {
   public getRequestInfo(context:EventPluginContext): IRequestInfo {
-    if (!navigator || !location) {
+    if (!document || !navigator || !location) {
       return null;
     }
 
@@ -16,28 +16,12 @@ export class WebRequestInfoCollector implements IRequestInfoCollector {
       port: location.port && location.port !== '' ? parseInt(location.port) : 80,
       path: location.pathname,
       //client_ip_address: 'TODO',
-      cookies: this.getCookies(),
+      cookies: Utils.getCookies(document.cookie, ', '),
       query_string: Utils.parseQueryString(location.search.substring(1))
     };
 
     if (document.referrer && document.referrer !== '') {
       requestInfo.referrer = document.referrer;
     }
-  }
-
-  private getCookies(): any {
-    if (!document.cookie) {
-      return null;
-    }
-
-    var result = {};
-
-    var cookies = document.cookie.split(', ');
-    for (var index = 0; index < cookies.length; index++) {
-      var cookie = cookies[index].split('=');
-      result[cookie[0]] = cookie[1];
-    }
-
-    return result;
   }
 }

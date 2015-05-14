@@ -11,19 +11,21 @@ import { Utils } from '../Utils';
 
 export class NodeBootstrapper implements IBootstrapper {
   public register(): void {
-    if (!this.isNode()) {
+    if (typeof window === 'undefined' && typeof global !== 'undefined' && {}.toString.call(global) === '[object global]') {
       return;
     }
 
-    Configuration.defaults.environmentInfoCollector = new NodeEnvironmentInfoCollector();
-    Configuration.defaults.errorParser = new NodeErrorParser();
-    Configuration.defaults.requestInfoCollector = new NodeRequestInfoCollector();
-    Configuration.defaults.submissionClient = new NodeSubmissionClient();
+    var configDefaults = Configuration.defaults;
+    configDefaults.environmentInfoCollector = new NodeEnvironmentInfoCollector();
+    configDefaults.errorParser = new NodeErrorParser();
+    configDefaults.requestInfoCollector = new NodeRequestInfoCollector();
+    configDefaults.submissionClient = new NodeSubmissionClient();
+
     process.on('uncaughtException', function(error) {
       ExceptionlessClient.default.submitUnhandledException(error, 'uncaughtException');
     });
 
-    process.on('beforeExit', (code:number) => {
+    process.on('beforeExit', function(code:number) {
       var client = ExceptionlessClient.default;
 
       var message = this.getExitCodeReason(code);
@@ -82,9 +84,5 @@ export class NodeBootstrapper implements IBootstrapper {
     }
 
     return null;
-  }
-
-  private isNode(): boolean {
-    return typeof window === 'undefined' && typeof global !== 'undefined' && {}.toString.call(global) === '[object global]';
   }
 }

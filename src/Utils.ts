@@ -14,6 +14,18 @@ export class Utils {
     return hash.toString();
   }
 
+  public static getCookies(cookies:string, separator:string): Object {
+    var result = {};
+
+    var parts = (cookies || '').split(separator || ', ');
+    for (var index = 0; index < parts.length; index++) {
+      var cookie = parts[index].split('=');
+      result[cookie[0]] = cookie[1];
+    }
+
+    return result;
+  }
+
   public static guid(): string {
     function s4() {
       return Math.floor((1 + Math.random()) * 0x10000).toString(16).substring(1);

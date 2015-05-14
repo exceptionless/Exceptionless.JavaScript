@@ -4,5 +4,5 @@ import { EventPluginContext } from './EventPluginContext';
 export interface IEventPlugin {
   priority?:number;
   name?:string;
-  run(context:EventPluginContext): Promise<any>;
+  run(context:EventPluginContext, next?:() => void): void;
 }

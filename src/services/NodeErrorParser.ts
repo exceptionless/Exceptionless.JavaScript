@@ -6,25 +6,18 @@ import { EventPluginContext } from '../plugins/EventPluginContext';
 import nodestacktrace = require('stack-trace');
 
 export class NodeErrorParser implements IErrorParser {
-  public parse(context:EventPluginContext, exception:Error): Promise<IError> {
+  public parse(context:EventPluginContext, exception:Error): void {
     if (!nodestacktrace) {
-      context.cancel = true;
-      return Promise.reject(new Error('Unable to load the stack trace library. This exception will be discarded.'))
+      throw new Error('Unable to load the stack trace library.');
     }
 
-    var stackFrames = nodestacktrace.parse(exception);
-    if (!stackFrames || stackFrames.length === 0) {
-      context.cancel = true;
-      return Promise.reject(new Error('Unable to parse the exceptions stack trace. This exception will be discarded.'))
-    }
-
+    var stackFrames = nodestacktrace.parse(exception) || [];
     var error:IError = {
       message: exception.message,
-      stack_trace: this.getStackFrames(context, stackFrames || [])
+      stack_trace: this.getStackFrames(context, stackFrames)
     };
 
     context.event.data['@error'] = error;
-    return Promise.resolve();
   }
 
   private getStackFrames(context:EventPluginContext, stackFrames:any[]): IStackFrame[] {
@@ -34,7 +27,7 @@ export class NodeErrorParser implements IErrorParser {
       var frame = stackFrames[index];
       frames.push({
         name: frame.getMethodName() || frame.getFunctionName(),
-        //parameters: stackFrames[index].args,
+        //parameters: frame.args,
         file_name: frame.getFileName(),
         line_number: frame.getLineNumber(),
         column: frame.getColumnNumber(),

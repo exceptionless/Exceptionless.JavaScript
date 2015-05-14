@@ -5,8 +5,10 @@ export class DuplicateCheckerPlugin implements IEventPlugin {
   public priority:number = 50;
   public name:string = 'DuplicateCheckerPlugin';
 
-  run(context:EventPluginContext):Promise<any> {
+  public run(context:EventPluginContext, next?:() => void): void {
     // TODO: Implement
-    return Promise.resolve();
+    if (next) {
+      next();
+    }
   }
 }

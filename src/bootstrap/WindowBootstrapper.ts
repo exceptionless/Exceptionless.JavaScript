@@ -49,8 +49,7 @@ export class WindowBootstrapper implements IBootstrapper {
   }
 
   private processUnhandledException(stackTrace:TraceKit.StackTrace, options): void {
-    options == options || {};
-    var builder = ExceptionlessClient.default.createUnhandledException(new Error(stackTrace.message || options.status || 'Script error'), 'onerror');
+    var builder = ExceptionlessClient.default.createUnhandledException(new Error(stackTrace.message || (options || {}).status || 'Script error'), 'onerror');
     builder.pluginContextData['@@_TraceKit.StackTrace'] = stackTrace;
     builder.submit();
   }

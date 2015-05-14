@@ -7,7 +7,6 @@
     "target": "es5"
   },
   "files": [
-    "../typings/es6-promise/es6-promise.d.ts",
     "../typings/node/node.d.ts",
     "typings/node-stack-trace/node-stack-trace.d.ts",
     "typings/tracekit/tracekit.d.ts",
@@ -62,6 +61,7 @@
     "submission/ISubmissionClient.ts",
     "submission/NodeSubmissionClient",
     "submission/SettingsResponse.ts",
+    "submission/SubmissionClientBase.ts",
     "submission/SubmissionResponse.ts",
     "EventBuilder.ts",
     "Exceptionless.ts",
@@ -71,7 +71,6 @@
   "bundles": {
     "exceptionless": {
       "files": [
-        "../typings/es6-promise/es6-promise.d.ts",
         "../typings/node/node.d.ts",
         "typings/node-stack-trace/node-stack-trace.d.ts",
         "typings/tracekit/tracekit.d.ts",

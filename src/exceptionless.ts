@@ -57,6 +57,7 @@ import { DefaultSubmissionClient } from './submission/DefaultSubmissionClient';
 import { ISubmissionClient } from './submission/ISubmissionClient';
 import { NodeSubmissionClient } from './submission/NodeSubmissionClient';
 import { SettingsResponse } from './submission/SettingsResponse';
+import { SubmissionClientBase } from './submission/SubmissionClientBase';
 import { SubmissionResponse } from './submission/SubmissionResponse';
 import { EventBuilder } from 'EventBuilder';
 import { ExceptionlessClient } from 'ExceptionlessClient';

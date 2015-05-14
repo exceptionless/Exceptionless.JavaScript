@@ -3,79 +3,13 @@ import { IEvent } from '../models/IEvent';
 import { IUserDescription } from '../models/IUserDescription';
 import { ISubmissionClient } from './ISubmissionClient';
 import { SettingsResponse } from './SettingsResponse';
+import { SubmissionClientBase } from './SubmissionClientBase';
 import { SubmissionResponse } from './SubmissionResponse';
 import { Utils } from '../Utils';
 
-declare var XDomainRequest: { new (); create(); };
+declare var XDomainRequest:{ new (); create(); };
 
-export class DefaultSubmissionClient implements ISubmissionClient {
-  public submit(events:IEvent[], config:Configuration): Promise<SubmissionResponse> {
-    var url = `${config.serverUrl}/api/v2/events?access_token=${encodeURIComponent(config.apiKey)}`;
-    return this.sendRequest('POST', url, Utils.stringify(events)).then(
-        xhr => { return new SubmissionResponse(xhr.status, this.getResponseMessage(xhr)); },
-        xhr => { return new SubmissionResponse(xhr.status || 500, this.getResponseMessage(xhr)); }
-    );
-  }
-
-  public submitDescription(referenceId:string, description:IUserDescription, config:Configuration): Promise<SubmissionResponse> {
-    var url = `${config.serverUrl}/api/v2/events/by-ref/${encodeURIComponent(referenceId)}/user-description?access_token=${encodeURIComponent(config.apiKey)}`;
-    return this.sendRequest('POST', url, Utils.stringify(description)).then(
-        xhr => { return new SubmissionResponse(xhr.status, this.getResponseMessage(xhr)); },
-        xhr => { return new SubmissionResponse(xhr.status || 500, this.getResponseMessage(xhr)); }
-    );
-  }
-
-  public getSettings(config:Configuration): Promise<SettingsResponse> {
-    var url = `${config.serverUrl}/api/v2/projects/config?access_token=${encodeURIComponent(config.apiKey)}`;
-    return this.sendRequest('GET', url).then(
-        xhr => {
-        if (xhr.status !== 200) {
-          return new SettingsResponse(false, null, -1, null, `Unable to retrieve configuration settings: ${this.getResponseMessage(xhr)}`);
-        }
-
-        var settings;
-        try {
-          settings = JSON.parse(xhr.responseText);
-        } catch (e) {
-          config.log.error(`An error occurred while parsing the settings response text: "${xhr.responseText}"`);
-        }
-
-        if (!settings || !settings.settings || !settings.version) {
-          return new SettingsResponse(true, null, -1, null, 'Invalid configuration settings.');
-        }
-
-        return new SettingsResponse(true, settings.settings, settings.version);
-      },
-        xhr => {
-        return new SettingsResponse(false, null, -1, null, this.getResponseMessage(xhr));
-      }
-    );
-  }
-
-  private getResponseMessage(xhr:XMLHttpRequest): string {
-    if (!xhr || (xhr.status >= 200 && xhr.status <= 299)) {
-      return null;
-    }
-
-    if (xhr.status === 0) {
-      return 'Unable to connect to server.';
-    }
-
-    if (xhr.responseBody) {
-      return xhr.responseBody.message;
-    }
-
-    if (xhr.responseText) {
-      try {
-        return JSON.parse(xhr.responseText).message;
-      } catch (e) {
-        return xhr.responseText;
-      }
-    }
-
-    return  xhr.statusText;
-  }
-
+export class DefaultSubmissionClient extends SubmissionClientBase {
   private createRequest(method:string, url:string): XMLHttpRequest {
     var xhr:any = new XMLHttpRequest();
     if ('withCredentials' in xhr) {
@@ -98,34 +32,49 @@ export class DefaultSubmissionClient implements ISubmissionClient {
     return xhr;
   }
 
-  private sendRequest(method:string, url:string, data?:string): Promise<any> {
+  public sendRequest(method:string, host:string, path:string, apiKey:string, data:string, callback: (status:number, message:string, data?:string) => void): void {
+    function complete(xhr:XMLHttpRequest) {
+      var message:string;
+      if (xhr.status === 0) {
+        message = 'Unable to connect to server.';
+      } else if (xhr.status < 200 || xhr.status > 299) {
+        if (!!xhr.responseBody && !!xhr.responseBody.message) {
+          message = xhr.responseBody.message;
+        } else if (!!xhr.responseText && xhr.responseText.indexOf('message') !== -1) {
+          try {
+            message =  JSON.parse(xhr.responseText).message;
+          } catch (e) {
+            message = xhr.responseText;
+          }
+        } else {
+          message = xhr.statusText;
+        }
+      }
+
+      callback(xhr.status || 500, message, xhr.responseText);
+    }
+
+    var url = `${host}${path}?access_token=${encodeURIComponent(apiKey)}`;
     var xhr = this.createRequest(method || 'POST', url);
+    if (!xhr) {
+      return callback(503,'CORS not supported.');
+    }
 
-    return new Promise((resolve, reject) => {
-      if (!xhr) {
-        return reject({ status: 503, message: 'CORS not supported.' });
-      }
+    if ('withCredentials' in xhr) {
+      xhr.onreadystatechange = () => {
+        // xhr not ready.
+        if (xhr.readyState !== 4) {
+          return;
+        }
 
-      if ('withCredentials' in xhr) {
-        xhr.onreadystatechange = () => {
-          // xhr not ready.
-          if (xhr.readyState !== 4) {
-            return;
-          }
+        complete(xhr);
+      };
+    }
 
-          if (xhr.status >= 200 && xhr.status <= 299) {
-            resolve(xhr);
-          } else {
-            reject(xhr);
-          }
-        };
-      }
+    xhr.ontimeout = () => complete(xhr);
+    xhr.onerror = () => complete(xhr);
+    xhr.onload = () => complete(xhr);
 
-      xhr.ontimeout = () => reject(xhr);
-      xhr.onerror = () => reject(xhr);
-      xhr.onload = () => resolve(xhr);
-
-      xhr.send(data);
-    });
+    xhr.send(data);
   }
 }

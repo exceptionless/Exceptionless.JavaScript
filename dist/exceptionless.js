@@ -1161,6 +1161,12 @@ if (!require) {
 }
 
 
+var __extends = this.__extends || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    __.prototype = b.prototype;
+    d.prototype = new __();
+};
 var ContextData = (function () {
     function ContextData() {
     }
@@ -1177,10 +1183,7 @@ var ContextData = (function () {
         configurable: true
     });
     ContextData.prototype.getException = function () {
-        if (!this.hasException) {
-            return null;
-        }
-        return this['@@_Exception'];
+        return this.hasException ? this['@@_Exception'] : null;
     };
     ContextData.prototype.markAsUnhandledError = function () {
         this['@@_IsUnhandledError'] = true;
@@ -1198,10 +1201,7 @@ var ContextData = (function () {
         }
     };
     ContextData.prototype.getSubmissionMethod = function () {
-        if (!!this['@@_SubmissionMethod']) {
-            return null;
-        }
-        return this['@@_SubmissionMethod'];
+        return !!this['@@_SubmissionMethod'] ? this['@@_SubmissionMethod'] : null;
     };
     return ContextData;
 })();
@@ -1226,18 +1226,17 @@ var ConsoleLog = (function () {
     function ConsoleLog() {
     }
     ConsoleLog.prototype.info = function (message) {
-        if (console && console.info) {
-            console.info("[INFO] Exceptionless:" + message);
-        }
+        this.log('info', message);
     };
     ConsoleLog.prototype.warn = function (message) {
-        if (console && console.warn) {
-            console.warn("[Warn] Exceptionless:" + message);
-        }
+        this.log('warn', message);
     };
     ConsoleLog.prototype.error = function (message) {
-        if (console && console.error) {
-            console.error("[Error] Exceptionless:" + message);
+        this.log('error', message);
+    };
+    ConsoleLog.prototype.log = function (level, message) {
+        if (console && console[level]) {
+            console[level]("[" + level + "] Exceptionless: " + message);
         }
     };
     return ConsoleLog;
@@ -1254,7 +1253,6 @@ var NullLog = (function () {
 exports.NullLog = NullLog;
 var EventPluginContext = (function () {
     function EventPluginContext(client, event, contextData) {
-        this.cancel = false;
         this.client = client;
         this.event = event;
         this.contextData = contextData ? contextData : new ContextData();
@@ -1272,12 +1270,22 @@ exports.EventPluginContext = EventPluginContext;
 var EventPluginManager = (function () {
     function EventPluginManager() {
     }
-    EventPluginManager.run = function (context) {
-        return context.client.config.plugins.reduce(function (promise, plugin) {
-            return promise.then(function () {
-                return plugin.run(context);
-            });
-        }, Promise.resolve());
+    EventPluginManager.run = function (context, callback) {
+        var wrap = function (plugin, next) {
+            return function () {
+                try {
+                    plugin.run(context, next);
+                }
+                catch (ex) {
+                    context.log.error("Error while running plugin '" + plugin.name + "': " + ex.message + ". This event will be discarded.");
+                }
+            };
+        };
+        var plugins = context.client.config.plugins.concat({ name: 'callback', priority: 9007199254740992, run: callback });
+        for (var index = plugins.length - 1; index > -1; index--) {
+            plugins[index] = wrap(plugins[index], index < plugins.length - 1 ? plugins[index + 1] : null);
+        }
+        plugins[0]();
     };
     EventPluginManager.addDefaultPlugins = function (config) {
         config.addPlugin(new ConfigurationDefaultsPlugin());
@@ -1296,11 +1304,13 @@ var ReferenceIdPlugin = (function () {
         this.priority = 20;
         this.name = 'ReferenceIdPlugin';
     }
-    ReferenceIdPlugin.prototype.run = function (context) {
+    ReferenceIdPlugin.prototype.run = function (context, next) {
         if ((!context.event.reference_id || context.event.reference_id.length === 0) && context.event.type === 'error') {
             context.event.reference_id = Utils.guid().replace('-', '').substring(0, 10);
         }
-        return Promise.resolve();
+        if (next) {
+            next();
+        }
     };
     return ReferenceIdPlugin;
 })();
@@ -1317,8 +1327,8 @@ var DefaultEventQueue = (function () {
             return;
         }
         var key = this.queuePath() + "-" + new Date().toJSON() + "-" + Utils.randomNumber();
-        this._config.log.info("Enqueuing event: " + key);
-        return this._config.storage.save(key, event);
+        this._config.log.info("Enqueuing event: " + key + " type=" + event.type + " " + (!!event.reference_id ? 'refid=' + event.reference_id : ''));
+        this._config.storage.save(key, event);
     };
     DefaultEventQueue.prototype.process = function () {
         var _this = this;
@@ -1344,9 +1354,8 @@ var DefaultEventQueue = (function () {
                 return;
             }
             this._config.log.info("Sending " + events.length + " events to " + this._config.serverUrl + ".");
-            this._config.submissionClient.submit(events, this._config)
-                .then(function (response) { return _this.processSubmissionResponse(response, events); }, function (response) { return _this.processSubmissionResponse(response, events); })
-                .then(function () {
+            this._config.submissionClient.submit(events, this._config, function (response) {
+                _this.processSubmissionResponse(response, events);
                 _this._config.log.info('Finished processing queue.');
                 _this._processingQueue = false;
             });
@@ -1507,6 +1516,15 @@ var Utils = (function () {
             hash |= 0;
         }
         return hash.toString();
+    };
+    Utils.getCookies = function (cookies, separator) {
+        var result = {};
+        var parts = (cookies || '').split(separator || ', ');
+        for (var index = 0; index < parts.length; index++) {
+            var cookie = parts[index].split('=');
+            result[cookie[0]] = cookie[1];
+        }
+        return result;
     };
     Utils.guid = function () {
         function s4() {
@@ -1811,7 +1829,7 @@ var EventBuilder = (function () {
         return this;
     };
     EventBuilder.prototype.submit = function () {
-        return this.client.submitEvent(this.target, this.pluginContextData);
+        this.client.submitEvent(this.target, this.pluginContextData);
     };
     EventBuilder.prototype.isValidIdentifier = function (value) {
         if (!value || !value.length) {
@@ -1851,7 +1869,7 @@ var ExceptionlessClient = (function () {
         return this.createEvent(pluginContextData).setType('error');
     };
     ExceptionlessClient.prototype.submitException = function (exception) {
-        return this.createException(exception).submit();
+        this.createException(exception).submit();
     };
     ExceptionlessClient.prototype.createUnhandledException = function (exception, submissionMethod) {
         var builder = this.createException(exception);
@@ -1860,13 +1878,13 @@ var ExceptionlessClient = (function () {
         return builder;
     };
     ExceptionlessClient.prototype.submitUnhandledException = function (exception, submissionMethod) {
-        return this.createUnhandledException(exception, submissionMethod).submit();
+        this.createUnhandledException(exception, submissionMethod).submit();
     };
     ExceptionlessClient.prototype.createFeatureUsage = function (feature) {
         return this.createEvent().setType('usage').setSource(feature);
     };
     ExceptionlessClient.prototype.submitFeatureUsage = function (feature) {
-        return this.createFeatureUsage(feature).submit();
+        this.createFeatureUsage(feature).submit();
     };
     ExceptionlessClient.prototype.createLog = function (sourceOrMessage, message, level) {
         var builder = this.createEvent().setType('log');
@@ -1883,25 +1901,25 @@ var ExceptionlessClient = (function () {
         return builder;
     };
     ExceptionlessClient.prototype.submitLog = function (sourceOrMessage, message, level) {
-        return this.createLog(sourceOrMessage, message, level).submit();
+        this.createLog(sourceOrMessage, message, level).submit();
     };
     ExceptionlessClient.prototype.createNotFound = function (resource) {
         return this.createEvent().setType('404').setSource(resource);
     };
     ExceptionlessClient.prototype.submitNotFound = function (resource) {
-        return this.createNotFound(resource).submit();
+        this.createNotFound(resource).submit();
     };
     ExceptionlessClient.prototype.createSessionStart = function (sessionId) {
         return this.createEvent().setType('start').setSessionId(sessionId);
     };
     ExceptionlessClient.prototype.submitSessionStart = function (sessionId) {
-        return this.createSessionStart(sessionId).submit();
+        this.createSessionStart(sessionId).submit();
     };
     ExceptionlessClient.prototype.createSessionEnd = function (sessionId) {
         return this.createEvent().setType('end').setSessionId(sessionId);
     };
     ExceptionlessClient.prototype.submitSessionEnd = function (sessionId) {
-        return this.createSessionEnd(sessionId).submit();
+        this.createSessionEnd(sessionId).submit();
     };
     ExceptionlessClient.prototype.createEvent = function (pluginContextData) {
         return new EventBuilder({ date: new Date() }, this, pluginContextData);
@@ -1909,39 +1927,30 @@ var ExceptionlessClient = (function () {
     ExceptionlessClient.prototype.submitEvent = function (event, pluginContextData) {
         var _this = this;
         if (!event) {
-            return Promise.reject(new Error('Unable to submit undefined event.'));
+            return;
         }
         if (!this.config.enabled) {
-            var message = 'Event submission is currently disabled.';
-            this.config.log.info(message);
-            return Promise.reject(new Error(message));
+            return this.config.log.info('Event submission is currently disabled.');
+        }
+        if (!event.data) {
+            event.data = {};
+        }
+        if (!event.tags || !event.tags.length) {
+            event.tags = [];
         }
         var context = new EventPluginContext(this, event, pluginContextData);
-        return EventPluginManager.run(context)
-            .then(function () {
-            if (context.cancel) {
-                var message = "Event submission cancelled by plugin\": id=" + event.reference_id + " type=" + event.type;
-                _this.config.log.info(message);
-                return Promise.reject(new Error(message));
-            }
+        return EventPluginManager.run(context, function () {
             if (!event.type || event.type.length === 0) {
                 event.type = 'log';
             }
             if (!event.date) {
                 event.date = new Date();
             }
-            _this.config.log.info("Submitting event: type=" + event.type + " " + (!!event.reference_id ? 'refid=' + event.reference_id : ''));
             _this.config.queue.enqueue(event);
             if (event.reference_id && event.reference_id.length > 0) {
-                _this.config.log.info("Setting last reference id \"" + event.reference_id + "\"");
+                _this.config.log.info("Setting last reference id '" + event.reference_id + "'");
                 _this.config.lastReferenceIdManager.setLast(event.reference_id);
             }
-            return Promise.resolve();
-        })
-            .catch(function (error) {
-            var message = "Event submission cancelled. An error occurred while running the plugins: " + (error && error.message ? error.message : error);
-            _this.config.log.error(message);
-            return Promise.reject(new Error(message));
         });
     };
     ExceptionlessClient.prototype.getLastReferenceId = function () {
@@ -1966,29 +1975,23 @@ var ConfigurationDefaultsPlugin = (function () {
         this.priority = 10;
         this.name = 'ConfigurationDefaultsPlugin';
     }
-    ConfigurationDefaultsPlugin.prototype.run = function (context) {
-        if (!!context.client.config.defaultTags) {
-            if (!context.event.tags) {
-                context.event.tags = [];
-            }
-            for (var index = 0; index < context.client.config.defaultTags.length; index++) {
-                var tag = context.client.config.defaultTags[index];
-                if (tag && context.client.config.defaultTags.indexOf(tag) < 0) {
-                    context.event.tags.push(tag);
-                }
+    ConfigurationDefaultsPlugin.prototype.run = function (context, next) {
+        var defaultTags = context.client.config.defaultTags || [];
+        for (var index = 0; index < defaultTags.length; index++) {
+            var tag = defaultTags[index];
+            if (!!tag && context.event.tags.indexOf(tag) < 0) {
+                context.event.tags.push(tag);
             }
         }
-        if (!!context.client.config.defaultData) {
-            if (!context.event.data) {
-                context.event.data = {};
-            }
-            for (var key in context.client.config.defaultData) {
-                if (!!context.client.config.defaultData[key]) {
-                    context.event.data[key] = context.client.config.defaultData[key];
-                }
+        var defaultData = context.client.config.defaultData || {};
+        for (var key in defaultData) {
+            if (!!defaultData[key]) {
+                context.event.data[key] = defaultData[key];
             }
         }
-        return Promise.resolve();
+        if (next) {
+            next();
+        }
     };
     return ConfigurationDefaultsPlugin;
 })();
@@ -1998,24 +2001,21 @@ var ErrorPlugin = (function () {
         this.priority = 30;
         this.name = 'ErrorPlugin';
     }
-    ErrorPlugin.prototype.run = function (context) {
+    ErrorPlugin.prototype.run = function (context, next) {
         var exception = context.contextData.getException();
-        if (exception == null) {
-            return Promise.resolve();
+        if (!!exception) {
+            context.event.type = 'error';
+            if (!context.event.data['@error']) {
+                var parser = context.client.config.errorParser;
+                if (!parser) {
+                    throw new Error('No error parser was defined.');
+                }
+                parser.parse(context, exception);
+            }
         }
-        if (!context.event.data) {
-            context.event.data = {};
+        if (next) {
+            next();
         }
-        context.event.type = 'error';
-        if (!!context.event.data['@error']) {
-            return Promise.resolve();
-        }
-        var parser = context.client.config.errorParser;
-        if (!parser) {
-            context.cancel = true;
-            return Promise.reject(new Error('No error parser was defined. This exception will be discarded.'));
-        }
-        return parser.parse(context, exception);
     };
     return ErrorPlugin;
 })();
@@ -2025,8 +2025,10 @@ var DuplicateCheckerPlugin = (function () {
         this.priority = 50;
         this.name = 'DuplicateCheckerPlugin';
     }
-    DuplicateCheckerPlugin.prototype.run = function (context) {
-        return Promise.resolve();
+    DuplicateCheckerPlugin.prototype.run = function (context, next) {
+        if (next) {
+            next();
+        }
     };
     return DuplicateCheckerPlugin;
 })();
@@ -2036,18 +2038,17 @@ var ModuleInfoPlugin = (function () {
         this.priority = 40;
         this.name = 'ModuleInfoPlugin';
     }
-    ModuleInfoPlugin.prototype.run = function (context) {
-        if (!context.event.data ||
-            !context.event.data['@error'] ||
-            !!context.event.data['@error'].modules ||
-            !context.client.config.moduleCollector) {
-            return Promise.resolve();
+    ModuleInfoPlugin.prototype.run = function (context, next) {
+        var moduleCollector = context.client.config.moduleCollector;
+        if (context.event.data['@error'] && !context.event.data['@error'].modules && !!moduleCollector) {
+            var modules = moduleCollector.getModules(context);
+            if (modules && modules.length > 0) {
+                context.event.data['@error'].modules = modules;
+            }
         }
-        var modules = context.client.config.moduleCollector.getModules(context);
-        if (modules && modules.length > 0) {
-            context.event.data['@error'].modules = modules;
+        if (next) {
+            next();
         }
-        return Promise.resolve();
     };
     return ModuleInfoPlugin;
 })();
@@ -2057,18 +2058,17 @@ var RequestInfoPlugin = (function () {
         this.priority = 60;
         this.name = 'RequestInfoPlugin';
     }
-    RequestInfoPlugin.prototype.run = function (context) {
-        if (!!context.event.data && !!context.event.data['@request'] || !context.client.config.requestInfoCollector) {
-            return Promise.resolve();
+    RequestInfoPlugin.prototype.run = function (context, next) {
+        var requestInfoCollector = context.client.config.requestInfoCollector;
+        if (!context.event.data['@request'] && !!requestInfoCollector) {
+            var ri = requestInfoCollector.getRequestInfo(context);
+            if (!!ri) {
+                context.event.data['@request'] = ri;
+            }
         }
-        if (!context.event.data) {
-            context.event.data = {};
+        if (next) {
+            next();
         }
-        var ri = context.client.config.requestInfoCollector.getRequestInfo(context);
-        if (ri) {
-            context.event.data['@request'] = ri;
-        }
-        return Promise.resolve();
     };
     return RequestInfoPlugin;
 })();
@@ -2078,18 +2078,16 @@ var EnvironmentInfoPlugin = (function () {
         this.priority = 70;
         this.name = 'EnvironmentInfoPlugin';
     }
-    EnvironmentInfoPlugin.prototype.run = function (context) {
-        if (!!context.event.data && !!context.event.data['@environment'] || !context.client.config.environmentInfoCollector) {
-            return Promise.resolve();
+    EnvironmentInfoPlugin.prototype.run = function (context, next) {
+        if (!context.event.data['@environment'] && context.client.config.environmentInfoCollector) {
+            var ei = context.client.config.environmentInfoCollector.getEnvironmentInfo(context);
+            if (!!ei) {
+                context.event.data['@environment'] = ei;
+            }
         }
-        if (!context.event.data) {
-            context.event.data = {};
+        if (next) {
+            next();
         }
-        var ei = context.client.config.environmentInfoCollector.getEnvironmentInfo(context);
-        if (ei) {
-            context.event.data['@environment'] = ei;
-        }
-        return Promise.resolve();
     };
     return EnvironmentInfoPlugin;
 })();
@@ -2099,15 +2097,14 @@ var SubmissionMethodPlugin = (function () {
         this.priority = 100;
         this.name = 'SubmissionMethodPlugin';
     }
-    SubmissionMethodPlugin.prototype.run = function (context) {
+    SubmissionMethodPlugin.prototype.run = function (context, next) {
         var submissionMethod = context.contextData.getSubmissionMethod();
         if (!!submissionMethod) {
-            if (!context.event.data) {
-                context.event.data = {};
-            }
             context.event.data['@submission_method'] = submissionMethod;
         }
-        return Promise.resolve();
+        if (next) {
+            next();
+        }
     };
     return SubmissionMethodPlugin;
 })();
@@ -2205,20 +2202,14 @@ var NodeErrorParser = (function () {
     }
     NodeErrorParser.prototype.parse = function (context, exception) {
         if (!nodestacktrace) {
-            context.cancel = true;
-            return Promise.reject(new Error('Unable to load the stack trace library. This exception will be discarded.'));
+            throw new Error('Unable to load the stack trace library.');
         }
-        var stackFrames = nodestacktrace.parse(exception);
-        if (!stackFrames || stackFrames.length === 0) {
-            context.cancel = true;
-            return Promise.reject(new Error('Unable to parse the exceptions stack trace. This exception will be discarded.'));
-        }
+        var stackFrames = nodestacktrace.parse(exception) || [];
         var error = {
             message: exception.message,
-            stack_trace: this.getStackFrames(context, stackFrames || [])
+            stack_trace: this.getStackFrames(context, stackFrames)
         };
         context.event.data['@error'] = error;
-        return Promise.resolve();
     };
     NodeErrorParser.prototype.getStackFrames = function (context, stackFrames) {
         var frames = [];
@@ -2256,125 +2247,118 @@ var NodeRequestInfoCollector = (function () {
             host: request.hostname || request.host,
             path: request.path,
             post_data: request.body,
-            cookies: this.getCookies(request),
+            cookies: Utils.getCookies((request || {}).headers['cookie'], '; '),
             query_string: request.params
         };
         return ri;
     };
-    NodeRequestInfoCollector.prototype.getCookies = function (request) {
-        if (!request) {
-            return null;
-        }
-        if (request.cookies) {
-            return request.cookies;
-        }
-        var result = {};
-        var cookies = (request.headers['cookie'] || '').split('; ');
-        for (var index = 0; index < cookies.length; index++) {
-            var cookie = cookies[index].split('=');
-            result[cookie[0]] = cookie[1];
-        }
-        return result;
-    };
     return NodeRequestInfoCollector;
 })();
 exports.NodeRequestInfoCollector = NodeRequestInfoCollector;
-var https = require('https');
-var url = require('url');
-var NodeSubmissionClient = (function () {
-    function NodeSubmissionClient() {
+var SubmissionClientBase = (function () {
+    function SubmissionClientBase() {
     }
-    NodeSubmissionClient.prototype.submit = function (events, config) {
-        var _this = this;
-        return this.sendRequest('POST', config.serverUrl, '/api/v2/events', config.apiKey, Utils.stringify(events)).then(function (msg) { return new SubmissionResponse(msg.statusCode, _this.getResponseMessage(msg)); }, function (msg) { return new SubmissionResponse(msg.statusCode || 500, _this.getResponseMessage(msg)); });
+    SubmissionClientBase.prototype.submit = function (events, config, callback) {
+        return this.sendRequest('POST', config.serverUrl, '/api/v2/events', config.apiKey, Utils.stringify(events), function (status, message, data) {
+            callback(new SubmissionResponse(status, message));
+        });
     };
-    NodeSubmissionClient.prototype.submitDescription = function (referenceId, description, config) {
-        var _this = this;
+    SubmissionClientBase.prototype.submitDescription = function (referenceId, description, config, callback) {
         var path = "/api/v2/events/by-ref/" + encodeURIComponent(referenceId) + "/user-description";
-        return this.sendRequest('POST', config.serverUrl, path, config.apiKey, Utils.stringify(description)).then(function (msg) { return new SubmissionResponse(msg.statusCode, _this.getResponseMessage(msg)); }, function (msg) { return new SubmissionResponse(msg.statusCode || 500, _this.getResponseMessage(msg)); });
+        return this.sendRequest('POST', config.serverUrl, path, config.apiKey, Utils.stringify(description), function (status, message, data) {
+            callback(new SubmissionResponse(status, message));
+        });
     };
-    NodeSubmissionClient.prototype.getSettings = function (config) {
-        var _this = this;
-        return this.sendRequest('GET', config.serverUrl, '/api/v2/projects/config', config.apiKey).then(function (msg) {
-            if (msg.statusCode !== 200 || !msg.responseText) {
-                return new SettingsResponse(false, null, -1, null, "Unable to retrieve configuration settings: " + _this.getResponseMessage(msg));
+    SubmissionClientBase.prototype.getSettings = function (config, callback) {
+        return this.sendRequest('GET', config.serverUrl, '/api/v2/projects/config', config.apiKey, null, function (status, message, data) {
+            if (status !== 200) {
+                return callback(new SettingsResponse(false, null, -1, null, "Unable to retrieve configuration settings: " + message));
             }
             var settings;
             try {
-                settings = JSON.parse(msg.responseText);
+                settings = JSON.parse(data);
             }
             catch (e) {
-                config.log.error("An error occurred while parsing the settings response text: \"" + msg.responseText + "\"");
+                config.log.error("An error occurred while parsing the settings response text: '" + data + "'");
             }
             if (!settings || !settings.settings || !settings.version) {
-                return new SettingsResponse(true, null, -1, null, 'Invalid configuration settings.');
+                return callback(new SettingsResponse(false, null, -1, null, 'Invalid configuration settings.'));
             }
-            return new SettingsResponse(true, settings.settings, settings.version);
-        }, function (msg) {
-            return new SettingsResponse(false, null, -1, null, _this.getResponseMessage(msg));
+            callback(new SettingsResponse(true, settings.settings, settings.version));
         });
     };
-    NodeSubmissionClient.prototype.getResponseMessage = function (msg) {
-        if (!msg || (msg.statusCode >= 200 && msg.statusCode <= 299)) {
-            return null;
-        }
-        if (msg.statusCode === 0) {
-            return 'Unable to connect to server.';
-        }
-        return msg.statusMessage || msg.message;
+    SubmissionClientBase.prototype.sendRequest = function (method, host, path, data, apiKey, callback) {
+        callback(500, 'Not Implemented');
     };
-    NodeSubmissionClient.prototype.sendRequest = function (method, host, path, apiKey, data) {
-        return new Promise(function (resolve, reject) {
-            var parsedHost = url.parse(host);
-            var options = {
-                auth: "client:" + apiKey,
-                hostname: parsedHost.hostname,
-                method: method,
-                port: parsedHost.port && parseInt(parsedHost.port),
-                path: path
+    return SubmissionClientBase;
+})();
+exports.SubmissionClientBase = SubmissionClientBase;
+var https = require('https');
+var url = require('url');
+var NodeSubmissionClient = (function (_super) {
+    __extends(NodeSubmissionClient, _super);
+    function NodeSubmissionClient() {
+        _super.apply(this, arguments);
+    }
+    NodeSubmissionClient.prototype.sendRequest = function (method, host, path, apiKey, data, callback) {
+        function complete(response, data) {
+            var message;
+            if (response.statusCode === 0) {
+                message = 'Unable to connect to server.';
+            }
+            else if (response.statusCode < 200 || response.statusCode > 299) {
+                message = response.statusMessage || response.message;
+            }
+            callback(response.statusCode || 500, message, data);
+        }
+        var parsedHost = url.parse(host);
+        var options = {
+            auth: "client:" + apiKey,
+            hostname: parsedHost.hostname,
+            method: method,
+            port: parsedHost.port && parseInt(parsedHost.port),
+            path: path
+        };
+        if (method === 'POST') {
+            options.headers = {
+                'Content-Type': 'application/json',
+                'Content-Length': data.length
             };
-            if (method === 'POST') {
-                options.headers = {
-                    'Content-Type': 'application/json',
-                    'Content-Length': data.length
-                };
-            }
-            var request = https.request(options, function (response) {
-                var body = '';
-                response.on('data', function (chunk) { return body += chunk; });
-                response.on('end', function () {
-                    response.responseText = body;
-                    resolve(response);
-                });
+        }
+        var request = https.request(options, function (response) {
+            var body = '';
+            response.on('data', function (chunk) { return body += chunk; });
+            response.on('end', function () {
+                complete(response, body);
             });
-            request.on('error', function (e) {
-                reject(e);
-            });
-            request.write(data);
-            request.end();
         });
+        request.on('error', function (e) {
+            callback(500, e.message);
+        });
+        request.write(data);
+        request.end();
     };
     return NodeSubmissionClient;
-})();
+})(SubmissionClientBase);
 exports.NodeSubmissionClient = NodeSubmissionClient;
 var NodeBootstrapper = (function () {
     function NodeBootstrapper() {
     }
     NodeBootstrapper.prototype.register = function () {
-        var _this = this;
-        if (!this.isNode()) {
+        if (typeof window === 'undefined' && typeof global !== 'undefined' && {}.toString.call(global) === '[object global]') {
             return;
         }
-        Configuration.defaults.environmentInfoCollector = new NodeEnvironmentInfoCollector();
-        Configuration.defaults.errorParser = new NodeErrorParser();
-        Configuration.defaults.requestInfoCollector = new NodeRequestInfoCollector();
-        Configuration.defaults.submissionClient = new NodeSubmissionClient();
+        var configDefaults = Configuration.defaults;
+        configDefaults.environmentInfoCollector = new NodeEnvironmentInfoCollector();
+        configDefaults.errorParser = new NodeErrorParser();
+        configDefaults.requestInfoCollector = new NodeRequestInfoCollector();
+        configDefaults.submissionClient = new NodeSubmissionClient();
         process.on('uncaughtException', function (error) {
             ExceptionlessClient.default.submitUnhandledException(error, 'uncaughtException');
         });
         process.on('beforeExit', function (code) {
             var client = ExceptionlessClient.default;
-            var message = _this.getExitCodeReason(code);
+            var message = this.getExitCodeReason(code);
             if (message !== null) {
                 client.submitLog('beforeExit', message, 'Error');
             }
@@ -2417,9 +2401,6 @@ var NodeBootstrapper = (function () {
         }
         return null;
     };
-    NodeBootstrapper.prototype.isNode = function () {
-        return typeof window === 'undefined' && typeof global !== 'undefined' && {}.toString.call(global) === '[object global]';
-    };
     return NodeBootstrapper;
 })();
 exports.NodeBootstrapper = NodeBootstrapper;
@@ -2430,16 +2411,14 @@ var WebErrorParser = (function () {
         var stackTrace = !!context['@@_TraceKit.StackTrace']
             ? context['@@_TraceKit.StackTrace']
             : TraceKit.computeStackTrace(exception, 25);
-        if (stackTrace) {
-            var error = {
-                message: stackTrace.message || exception.message,
-                stack_trace: this.getStackFrames(context, stackTrace.stack || [])
-            };
-            context.event.data['@error'] = error;
-            return Promise.resolve();
+        if (!stackTrace) {
+            throw new Error('Unable to parse the exceptions stack trace.');
         }
-        context.cancel = true;
-        return Promise.reject(new Error('Unable to parse the exceptions stack trace. This exception will be discarded.'));
+        var error = {
+            message: stackTrace.message || exception.message,
+            stack_trace: this.getStackFrames(context, stackTrace.stack || [])
+        };
+        context.event.data['@error'] = error;
     };
     WebErrorParser.prototype.getStackFrames = function (context, stackFrames) {
         var frames = [];
@@ -2502,7 +2481,7 @@ var WebRequestInfoCollector = (function () {
     function WebRequestInfoCollector() {
     }
     WebRequestInfoCollector.prototype.getRequestInfo = function (context) {
-        if (!navigator || !location) {
+        if (!document || !navigator || !location) {
             return null;
         }
         var requestInfo = {
@@ -2511,83 +2490,21 @@ var WebRequestInfoCollector = (function () {
             host: location.hostname,
             port: location.port && location.port !== '' ? parseInt(location.port) : 80,
             path: location.pathname,
-            cookies: this.getCookies(),
+            cookies: Utils.getCookies(document.cookie, ', '),
             query_string: Utils.parseQueryString(location.search.substring(1))
         };
         if (document.referrer && document.referrer !== '') {
             requestInfo.referrer = document.referrer;
         }
     };
-    WebRequestInfoCollector.prototype.getCookies = function () {
-        if (!document.cookie) {
-            return null;
-        }
-        var result = {};
-        var cookies = document.cookie.split(', ');
-        for (var index = 0; index < cookies.length; index++) {
-            var cookie = cookies[index].split('=');
-            result[cookie[0]] = cookie[1];
-        }
-        return result;
-    };
     return WebRequestInfoCollector;
 })();
 exports.WebRequestInfoCollector = WebRequestInfoCollector;
-var DefaultSubmissionClient = (function () {
+var DefaultSubmissionClient = (function (_super) {
+    __extends(DefaultSubmissionClient, _super);
     function DefaultSubmissionClient() {
+        _super.apply(this, arguments);
     }
-    DefaultSubmissionClient.prototype.submit = function (events, config) {
-        var _this = this;
-        var url = config.serverUrl + "/api/v2/events?access_token=" + encodeURIComponent(config.apiKey);
-        return this.sendRequest('POST', url, Utils.stringify(events)).then(function (xhr) { return new SubmissionResponse(xhr.status, _this.getResponseMessage(xhr)); }, function (xhr) { return new SubmissionResponse(xhr.status || 500, _this.getResponseMessage(xhr)); });
-    };
-    DefaultSubmissionClient.prototype.submitDescription = function (referenceId, description, config) {
-        var _this = this;
-        var url = config.serverUrl + "/api/v2/events/by-ref/" + encodeURIComponent(referenceId) + "/user-description?access_token=" + encodeURIComponent(config.apiKey);
-        return this.sendRequest('POST', url, Utils.stringify(description)).then(function (xhr) { return new SubmissionResponse(xhr.status, _this.getResponseMessage(xhr)); }, function (xhr) { return new SubmissionResponse(xhr.status || 500, _this.getResponseMessage(xhr)); });
-    };
-    DefaultSubmissionClient.prototype.getSettings = function (config) {
-        var _this = this;
-        var url = config.serverUrl + "/api/v2/projects/config?access_token=" + encodeURIComponent(config.apiKey);
-        return this.sendRequest('GET', url).then(function (xhr) {
-            if (xhr.status !== 200) {
-                return new SettingsResponse(false, null, -1, null, "Unable to retrieve configuration settings: " + _this.getResponseMessage(xhr));
-            }
-            var settings;
-            try {
-                settings = JSON.parse(xhr.responseText);
-            }
-            catch (e) {
-                config.log.error("An error occurred while parsing the settings response text: \"" + xhr.responseText + "\"");
-            }
-            if (!settings || !settings.settings || !settings.version) {
-                return new SettingsResponse(true, null, -1, null, 'Invalid configuration settings.');
-            }
-            return new SettingsResponse(true, settings.settings, settings.version);
-        }, function (xhr) {
-            return new SettingsResponse(false, null, -1, null, _this.getResponseMessage(xhr));
-        });
-    };
-    DefaultSubmissionClient.prototype.getResponseMessage = function (xhr) {
-        if (!xhr || (xhr.status >= 200 && xhr.status <= 299)) {
-            return null;
-        }
-        if (xhr.status === 0) {
-            return 'Unable to connect to server.';
-        }
-        if (xhr.responseBody) {
-            return xhr.responseBody.message;
-        }
-        if (xhr.responseText) {
-            try {
-                return JSON.parse(xhr.responseText).message;
-            }
-            catch (e) {
-                return xhr.responseText;
-            }
-        }
-        return xhr.statusText;
-    };
     DefaultSubmissionClient.prototype.createRequest = function (method, url) {
         var xhr = new XMLHttpRequest();
         if ('withCredentials' in xhr) {
@@ -2608,33 +2525,50 @@ var DefaultSubmissionClient = (function () {
         }
         return xhr;
     };
-    DefaultSubmissionClient.prototype.sendRequest = function (method, url, data) {
+    DefaultSubmissionClient.prototype.sendRequest = function (method, host, path, apiKey, data, callback) {
+        function complete(xhr) {
+            var message;
+            if (xhr.status === 0) {
+                message = 'Unable to connect to server.';
+            }
+            else if (xhr.status < 200 || xhr.status > 299) {
+                if (!!xhr.responseBody && !!xhr.responseBody.message) {
+                    message = xhr.responseBody.message;
+                }
+                else if (!!xhr.responseText && xhr.responseText.indexOf('message') !== -1) {
+                    try {
+                        message = JSON.parse(xhr.responseText).message;
+                    }
+                    catch (e) {
+                        message = xhr.responseText;
+                    }
+                }
+                else {
+                    message = xhr.statusText;
+                }
+            }
+            callback(xhr.status || 500, message, xhr.responseText);
+        }
+        var url = "" + host + path + "?access_token=" + encodeURIComponent(apiKey);
         var xhr = this.createRequest(method || 'POST', url);
-        return new Promise(function (resolve, reject) {
-            if (!xhr) {
-                return reject({ status: 503, message: 'CORS not supported.' });
-            }
-            if ('withCredentials' in xhr) {
-                xhr.onreadystatechange = function () {
-                    if (xhr.readyState !== 4) {
-                        return;
-                    }
-                    if (xhr.status >= 200 && xhr.status <= 299) {
-                        resolve(xhr);
-                    }
-                    else {
-                        reject(xhr);
-                    }
-                };
-            }
-            xhr.ontimeout = function () { return reject(xhr); };
-            xhr.onerror = function () { return reject(xhr); };
-            xhr.onload = function () { return resolve(xhr); };
-            xhr.send(data);
-        });
+        if (!xhr) {
+            return callback(503, 'CORS not supported.');
+        }
+        if ('withCredentials' in xhr) {
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState !== 4) {
+                    return;
+                }
+                complete(xhr);
+            };
+        }
+        xhr.ontimeout = function () { return complete(xhr); };
+        xhr.onerror = function () { return complete(xhr); };
+        xhr.onload = function () { return complete(xhr); };
+        xhr.send(data);
     };
     return DefaultSubmissionClient;
-})();
+})(SubmissionClientBase);
 exports.DefaultSubmissionClient = DefaultSubmissionClient;
 var WindowBootstrapper = (function () {
     function WindowBootstrapper() {
@@ -2672,8 +2606,7 @@ var WindowBootstrapper = (function () {
         return null;
     };
     WindowBootstrapper.prototype.processUnhandledException = function (stackTrace, options) {
-        options == options || {};
-        var builder = ExceptionlessClient.default.createUnhandledException(new Error(stackTrace.message || options.status || 'Script error'), 'onerror');
+        var builder = ExceptionlessClient.default.createUnhandledException(new Error(stackTrace.message || (options || {}).status || 'Script error'), 'onerror');
         builder.pluginContextData['@@_TraceKit.StackTrace'] = stackTrace;
         builder.submit();
     };

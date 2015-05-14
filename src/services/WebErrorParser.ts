@@ -5,24 +5,21 @@ import { IStackFrame } from '../models/IStackFrame';
 import { EventPluginContext } from '../plugins/EventPluginContext';
 
 export class WebErrorParser implements IErrorParser {
-  public parse(context:EventPluginContext, exception:Error): Promise<IError> {
+  public parse(context:EventPluginContext, exception:Error): void {
     var stackTrace:TraceKit.StackTrace = !!context['@@_TraceKit.StackTrace']
       ? context['@@_TraceKit.StackTrace']
       : TraceKit.computeStackTrace(exception, 25);
 
-    if (stackTrace) {
-      var error:IError = {
-        message: stackTrace.message || exception.message,
-        stack_trace: this.getStackFrames(context, stackTrace.stack || [])
-      };
-
-      context.event.data['@error'] = error;
-
-      return Promise.resolve();
+    if (!stackTrace) {
+      throw new Error('Unable to parse the exceptions stack trace.');
     }
 
-    context.cancel = true;
-    return Promise.reject(new Error('Unable to parse the exceptions stack trace. This exception will be discarded.'));
+    var error:IError = {
+      message: stackTrace.message || exception.message,
+      stack_trace: this.getStackFrames(context, stackTrace.stack || [])
+    };
+
+    context.event.data['@error'] = error;
   }
 
   private getStackFrames(context:EventPluginContext, stackFrames:TraceKit.StackFrame[]): IStackFrame[] {

@@ -5,32 +5,24 @@ export class ConfigurationDefaultsPlugin implements IEventPlugin {
   public priority:number = 10;
   public name:string = 'ConfigurationDefaultsPlugin';
 
-  run(context:EventPluginContext): Promise<any> {
-    if (!!context.client.config.defaultTags) {
-      if (!context.event.tags) {
-        context.event.tags = [];
-      }
-
-      for (var index = 0; index < context.client.config.defaultTags.length; index++) {
-        var tag = context.client.config.defaultTags[index];
-        if (tag && context.client.config.defaultTags.indexOf(tag) < 0) {
-          context.event.tags.push(tag)
-        }
+  public run(context:EventPluginContext, next?:() => void): void {
+    var defaultTags = context.client.config.defaultTags || [];
+    for (var index = 0; index < defaultTags.length; index++) {
+      var tag = defaultTags[index];
+      if (!!tag && context.event.tags.indexOf(tag) < 0) {
+        context.event.tags.push(tag)
       }
     }
 
-    if (!!context.client.config.defaultData) {
-      if (!context.event.data) {
-        context.event.data = {};
-      }
-
-      for (var key in context.client.config.defaultData) {
-        if (!!context.client.config.defaultData[key]) {
-          context.event.data[key] = context.client.config.defaultData[key];
-        }
+    var defaultData = context.client.config.defaultData || {};
+    for (var key in defaultData) {
+      if (!!defaultData[key]) {
+        context.event.data[key] = defaultData[key];
       }
     }
 
-    return Promise.resolve();
+    if (next) {
+      next();
+    }
   }
 }

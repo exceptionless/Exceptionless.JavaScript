@@ -1,6 +1,7 @@
 import { IRequestInfo } from '../models/IRequestInfo';
 import { IRequestInfoCollector } from 'IRequestInfoCollector';
 import { EventPluginContext } from '../plugins/EventPluginContext';
+import { Utils } from '../Utils';
 
 export class NodeRequestInfoCollector implements IRequestInfoCollector {
   getRequestInfo(context:EventPluginContext):IRequestInfo {
@@ -19,29 +20,10 @@ export class NodeRequestInfoCollector implements IRequestInfoCollector {
       path: request.path,
       post_data: request.body,
       //referrer: TODO,
-      cookies: this.getCookies(request),
+      cookies: Utils.getCookies((request || {}).headers['cookie'], '; '),
       query_string: request.params
     };
 
     return ri;
-  }
-
-  private getCookies(request): any {
-    if (!request) {
-      return null;
-    }
-
-    if (request.cookies) {
-      return request.cookies;
-    }
-
-    var result = {};
-    var cookies = (request.headers['cookie'] || '').split('; ');
-    for (var index = 0; index < cookies.length; index++) {
-      var cookie = cookies[index].split('=');
-      result[cookie[0]] = cookie[1];
-    }
-
-    return result;
   }
 }

@@ -6,20 +6,17 @@ export class RequestInfoPlugin implements IEventPlugin {
   public priority:number = 60;
   public name:string = 'RequestInfoPlugin';
 
-  run(context:EventPluginContext):Promise<any> {
-    if (!!context.event.data && !!context.event.data['@request'] || !context.client.config.requestInfoCollector) {
-      return Promise.resolve();
+  public run(context:EventPluginContext, next?:() => void): void {
+    var requestInfoCollector = context.client.config.requestInfoCollector;
+    if (!context.event.data['@request'] && !!requestInfoCollector) {
+      var ri = requestInfoCollector.getRequestInfo(context);
+      if (!!ri) {
+        context.event.data['@request'] = ri;
+      }
     }
 
-    if (!context.event.data) {
-      context.event.data = {};
+    if (next) {
+      next();
     }
-
-    var ri = context.client.config.requestInfoCollector.getRequestInfo(context);
-    if (ri) {
-      context.event.data['@request'] = ri;
-    }
-
-    return Promise.resolve();
   }
 }

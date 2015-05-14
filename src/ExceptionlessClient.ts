@@ -30,8 +30,8 @@ export class ExceptionlessClient {
     return this.createEvent(pluginContextData).setType('error');
   }
 
-  public submitException(exception:Error): Promise<any> {
-    return this.createException(exception).submit();
+  public submitException(exception:Error): void {
+    this.createException(exception).submit();
   }
 
   public createUnhandledException(exception:Error, submissionMethod?:string): EventBuilder {
@@ -42,16 +42,16 @@ export class ExceptionlessClient {
     return builder;
   }
 
-  public submitUnhandledException(exception:Error, submissionMethod?:string): Promise<any> {
-    return this.createUnhandledException(exception, submissionMethod).submit();
+  public submitUnhandledException(exception:Error, submissionMethod?:string) {
+    this.createUnhandledException(exception, submissionMethod).submit();
   }
 
   public createFeatureUsage(feature:string): EventBuilder {
     return this.createEvent().setType('usage').setSource(feature);
   }
 
-  public submitFeatureUsage(feature:string): Promise<any> {
-    return this.createFeatureUsage(feature).submit();
+  public submitFeatureUsage(feature:string): void {
+    this.createFeatureUsage(feature).submit();
   }
 
   public createLog(message:string): EventBuilder;
@@ -73,85 +73,76 @@ export class ExceptionlessClient {
     return builder;
   }
 
-  public submitLog(message:string): Promise<any>;
-  public submitLog(source:string, message:string): Promise<any>;
-  public submitLog(source:string, message:string, level:string): Promise<any>;
-  public submitLog(sourceOrMessage:string, message?:string, level?:string): Promise<any> {
-    return this.createLog(sourceOrMessage, message, level).submit();
+  public submitLog(message:string): void;
+  public submitLog(source:string, message:string): void;
+  public submitLog(source:string, message:string, level:string): void;
+  public submitLog(sourceOrMessage:string, message?:string, level?:string): void {
+    this.createLog(sourceOrMessage, message, level).submit();
   }
 
   public createNotFound(resource:string): EventBuilder {
     return this.createEvent().setType('404').setSource(resource);
   }
 
-  public submitNotFound(resource:string): Promise<any> {
-    return this.createNotFound(resource).submit();
+  public submitNotFound(resource:string): void {
+    this.createNotFound(resource).submit();
   }
 
   public createSessionStart(sessionId:string): EventBuilder {
     return this.createEvent().setType('start').setSessionId(sessionId);
   }
 
-  public submitSessionStart(sessionId:string): Promise<any> {
-    return this.createSessionStart(sessionId).submit();
+  public submitSessionStart(sessionId:string): void {
+    this.createSessionStart(sessionId).submit();
   }
 
   public createSessionEnd(sessionId:string): EventBuilder {
     return this.createEvent().setType('end').setSessionId(sessionId);
   }
 
-  public submitSessionEnd(sessionId:string): Promise<any> {
-    return this.createSessionEnd(sessionId).submit();
+  public submitSessionEnd(sessionId:string): void {
+    this.createSessionEnd(sessionId).submit();
   }
 
   public createEvent(pluginContextData?:ContextData): EventBuilder {
     return new EventBuilder({ date: new Date() }, this, pluginContextData);
   }
 
-  public submitEvent(event:IEvent, pluginContextData?:ContextData): Promise<any> {
+  public submitEvent(event:IEvent, pluginContextData?:ContextData): void {
     if (!event) {
-      return Promise.reject(new Error('Unable to submit undefined event.'));
+      return;
     }
 
     if (!this.config.enabled) {
-      var message:string = 'Event submission is currently disabled.';
-      this.config.log.info(message);
-      return Promise.reject(new Error(message));
+      return this.config.log.info('Event submission is currently disabled.');
+    }
+
+    if (!event.data) {
+      event.data = {};
+    }
+
+    if (!event.tags || !event.tags.length) {
+      event.tags = [];
     }
 
     var context = new EventPluginContext(this, event, pluginContextData);
-    return EventPluginManager.run(context)
-      .then(() => {
-        if (context.cancel) {
-          var message:string = `Event submission cancelled by plugin": id=${event.reference_id} type=${event.type}`;
-          this.config.log.info(message);
-          return Promise.reject(new Error(message));
-        }
+    return EventPluginManager.run(context, () => {
+      // ensure all required data
+      if (!event.type || event.type.length === 0) {
+        event.type = 'log';
+      }
 
-        // ensure all required data
-        if (!event.type || event.type.length === 0) {
-          event.type = 'log';
-        }
+      if (!event.date) {
+        event.date = new Date();
+      }
 
-        if (!event.date) {
-          event.date = new Date();
-        }
+      this.config.queue.enqueue(event);
 
-        this.config.log.info(`Submitting event: type=${event.type} ${!!event.reference_id ? 'refid=' + event.reference_id : ''}`);
-        this.config.queue.enqueue(event);
-
-        if (event.reference_id && event.reference_id.length > 0) {
-          this.config.log.info(`Setting last reference id "${event.reference_id}"`);
-          this.config.lastReferenceIdManager.setLast(event.reference_id);
-        }
-
-        return Promise.resolve();
-      })
-      .catch((error:Error) => {
-        var message:string = `Event submission cancelled. An error occurred while running the plugins: ${error && error.message ? error.message : <any>error}`;
-        this.config.log.error(message);
-        return Promise.reject(new Error(message));
-      });
+      if (event.reference_id && event.reference_id.length > 0) {
+        this.config.log.info(`Setting last reference id '${event.reference_id}'`);
+        this.config.lastReferenceIdManager.setLast(event.reference_id);
+      }
+    });
   }
 
   public getLastReferenceId(): string {

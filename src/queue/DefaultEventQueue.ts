@@ -15,7 +15,7 @@ export class DefaultEventQueue implements IEventQueue {
     this._config = config;
   }
 
-  public enqueue(event:IEvent) {
+  public enqueue(event:IEvent): void {
     this.ensureQueueTimer();
 
     if (this.areQueuedItemsDiscarded()) {
@@ -24,11 +24,11 @@ export class DefaultEventQueue implements IEventQueue {
     }
 
     var key = `${this.queuePath()}-${new Date().toJSON()}-${Utils.randomNumber()}`;
-    this._config.log.info(`Enqueuing event: ${key}`);
-    return this._config.storage.save(key, event);
+    this._config.log.info(`Enqueuing event: ${key} type=${event.type} ${!!event.reference_id ? 'refid=' + event.reference_id : ''}`);
+    this._config.storage.save(key, event);
   }
 
-  public process() {
+  public process(): void {
     this.ensureQueueTimer();
 
     if (this._processingQueue) {
@@ -57,14 +57,11 @@ export class DefaultEventQueue implements IEventQueue {
       }
 
       this._config.log.info(`Sending ${events.length} events to ${this._config.serverUrl}.`);
-      this._config.submissionClient.submit(events, this._config)
-        .then(
-        (response:SubmissionResponse) => this.processSubmissionResponse(response, events),
-        (response:SubmissionResponse) => this.processSubmissionResponse(response, events))
-        .then(() => {
-          this._config.log.info('Finished processing queue.');
-          this._processingQueue = false;
-        });
+      this._config.submissionClient.submit(events, this._config, (response:SubmissionResponse) => {
+        this.processSubmissionResponse(response, events);
+        this._config.log.info('Finished processing queue.');
+        this._processingQueue = false;
+      });
     } catch (ex) {
       this._config.log.error(`An error occurred while processing the queue: ${ex}`);
       this.suspendProcessing();
@@ -72,7 +69,7 @@ export class DefaultEventQueue implements IEventQueue {
     }
   }
 
-  private processSubmissionResponse(response:SubmissionResponse, events:IEvent[]){
+  private processSubmissionResponse(response:SubmissionResponse, events:IEvent[]): void {
     if (response.success) {
       this._config.log.info(`Sent ${events.length} events to ${this._config.serverUrl}.`);
       return;
@@ -126,7 +123,7 @@ export class DefaultEventQueue implements IEventQueue {
     }
   }
 
-  private ensureQueueTimer() : void {
+  private ensureQueueTimer(): void {
     if (!this._queueTimer) {
       this._queueTimer = setInterval(() => this.onProcessQueue(), 10000);
     }

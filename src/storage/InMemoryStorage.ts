@@ -26,7 +26,7 @@ export class InMemoryStorage<T> implements IStorage<T> {
     return results;
   }
 
-  public clear(searchPattern?:string) {
+  public clear(searchPattern?:string):void {
     if (!searchPattern) {
       this._items = {};
       return;

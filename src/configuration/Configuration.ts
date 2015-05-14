@@ -69,7 +69,7 @@ export class Configuration implements IConfigurationSettings {
 
   public set apiKey(value:string) {
     this._apiKey = value || null;
-    this.log.info(`apiKey set to: ${this._apiKey }`);
+    this.log.info(`apiKey set to: ${this._apiKey}`);
   }
 
   public get serverUrl(): string {
@@ -79,7 +79,7 @@ export class Configuration implements IConfigurationSettings {
   public set serverUrl(value:string) {
     if (!!value && value.length > 0) {
       this._serverUrl = value;
-      this.log.info(`serverUrl set to: ${this._serverUrl }`);
+      this.log.info(`serverUrl set to: ${this._serverUrl}`);
     }
   }
 
@@ -95,7 +95,7 @@ export class Configuration implements IConfigurationSettings {
 
   public addPlugin(plugin:IEventPlugin): void;
   public addPlugin(name:string, priority:number, pluginAction:(context:EventPluginContext) => void): void;
-  public addPlugin(pluginOrName:IEventPlugin|string, priority?:number, pluginAction?:(context:EventPluginContext) => Promise<any>): void {
+  public addPlugin(pluginOrName:IEventPlugin|string, priority?:number, pluginAction?:(context:EventPluginContext) => void): void {
     var plugin:IEventPlugin = !!pluginAction ? { name: <string>pluginOrName, priority: priority, run: pluginAction } : <IEventPlugin>pluginOrName;
     if (!plugin || !plugin.run) {
       this.log.error('Unable to add plugin: No run method was found.');
@@ -111,7 +111,7 @@ export class Configuration implements IConfigurationSettings {
     }
 
     var pluginExists:boolean = false;
-    for(var index = 0; index < this._plugins.length; index++) {
+    for (var index = 0; index < this._plugins.length; index++) {
       if (this._plugins[index].name === plugin.name) {
         pluginExists = true;
         break;
@@ -132,7 +132,7 @@ export class Configuration implements IConfigurationSettings {
       return;
     }
 
-    for(var index = 0; index < this._plugins.length; index++) {
+    for (var index = 0; index < this._plugins.length; index++) {
       if (this._plugins[index].name === name) {
         this._plugins.splice(index, 1);
         break;
@@ -172,7 +172,7 @@ export class Configuration implements IConfigurationSettings {
 
   private static _defaultSettings:IConfigurationSettings = null;
   public static get defaults() {
-    if(Configuration._defaultSettings === null) {
+    if (Configuration._defaultSettings === null) {
       Configuration._defaultSettings = {};
     }
 
