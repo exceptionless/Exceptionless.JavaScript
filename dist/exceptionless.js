@@ -4,7 +4,9 @@
 */
 
 (function(window, undefined) {
-
+if (!window) {
+  return;
+}
 
 var TraceKit = {};
 var _oldTraceKit = window.TraceKit;
@@ -328,7 +330,7 @@ TraceKit.computeStackTrace = (function computeStackTraceWrapper() {
         if (typeof url !== 'string') {
           return [];
         }
-        
+
         if (!TraceKit.remoteFetching) { //Only attempt request if remoteFetching is on.
             return '';
         }
@@ -1141,7 +1143,7 @@ if (!TraceKit.linesOfContext || TraceKit.linesOfContext < 1) {
 // Export to global object
 window.TraceKit = TraceKit;
 
-}(window));
+}(typeof window !== 'undefined' ? window : global));
 
 
 (function(root, factory) {
@@ -1346,20 +1348,20 @@ var DefaultEventQueue = (function () {
         if (this._processingQueue) {
             return;
         }
+        var queueNotProcessed = 'The queue will not be processed.';
         this._config.log.info('Processing queue...');
         if (!this._config.enabled) {
-            this._config.log.info('Configuration is disabled. The queue will not be processed.');
+            this._config.log.info("Configuration is disabled. " + queueNotProcessed);
             return;
         }
         if (!this._config.apiKey || this._config.apiKey.length < 10) {
-            this._config.log.info('ApiKey is not set. The queue will not be processed.');
+            this._config.log.info("Invalid Api Key. " + queueNotProcessed);
             return;
         }
         this._processingQueue = true;
         try {
             var events = this._config.storage.get(this.queuePath(), this._config.submissionBatchSize);
             if (!events || events.length == 0) {
-                this._config.log.info('There are currently no queued events to process.');
                 this._processingQueue = false;
                 return;
             }
@@ -1371,14 +1373,15 @@ var DefaultEventQueue = (function () {
             });
         }
         catch (ex) {
-            this._config.log.error("An error occurred while processing the queue: " + ex);
+            this._config.log.error("Error processing queue: " + ex);
             this.suspendProcessing();
             this._processingQueue = false;
         }
     };
     DefaultEventQueue.prototype.processSubmissionResponse = function (response, events) {
+        var noSubmission = 'The event will not be submitted.';
         if (response.success) {
-            this._config.log.info("Sent " + events.length + " events to " + this._config.serverUrl + ".");
+            this._config.log.info("Sent " + events.length + " events.");
             return;
         }
         if (response.serviceUnavailable) {
@@ -1393,7 +1396,7 @@ var DefaultEventQueue = (function () {
             return;
         }
         if (response.unableToAuthenticate) {
-            this._config.log.info('Unable to authenticate, please check your configuration. The event will not be submitted.');
+            this._config.log.info("Unable to authenticate, please check your configuration. " + noSubmission);
             this.suspendProcessing(15);
             return;
         }
@@ -1403,18 +1406,19 @@ var DefaultEventQueue = (function () {
             return;
         }
         if (response.requestEntityTooLarge) {
+            var message = 'Event submission discarded for being too large.';
             if (this._config.submissionBatchSize > 1) {
-                this._config.log.error('Event submission discarded for being too large. The event will be retried with a smaller events size.');
+                this._config.log.error(message + " Retrying with smaller batch size.");
                 this._config.submissionBatchSize = Math.max(1, Math.round(this._config.submissionBatchSize / 1.5));
                 this.requeueEvents(events);
             }
             else {
-                this._config.log.error('Event submission discarded for being too large. The event will not be submitted.');
+                this._config.log.error(message + " " + noSubmission);
             }
             return;
         }
         if (!response.success) {
-            this._config.log.error("An error occurred while submitting events: " + response.message);
+            this._config.log.error("Error submitting events: " + response.message);
             this.suspendProcessing();
             this.requeueEvents(events);
         }
@@ -2277,6 +2281,11 @@ var NodeRequestInfoCollector = (function () {
             cookies: Utils.getCookies((request || {}).headers['cookie'], '; '),
             query_string: request.params
         };
+        var host = request.headers['host'];
+        var port = host && parseInt(host.slice(host.indexOf(':') + 1));
+        if (port > 0) {
+            ri.port = port;
+        }
         return ri;
     };
     return NodeRequestInfoCollector;
