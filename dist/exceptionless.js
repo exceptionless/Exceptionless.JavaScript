@@ -1586,16 +1586,26 @@ var Utils = (function () {
         return Math.floor(Math.random() * 9007199254740992);
     };
     Utils.stringify = function (data) {
-        var cache = [];
-        return JSON.stringify(data, function (key, value) {
-            if (typeof value === 'object' && value !== null) {
-                if (cache.indexOf(value) !== -1) {
-                    return;
+        function stringifyImpl(data) {
+            var cache = [];
+            return JSON.stringify(data, function (key, value) {
+                if (typeof value === 'object' && !!value) {
+                    if (cache.indexOf(value) !== -1) {
+                        return;
+                    }
+                    cache.push(value);
                 }
-                cache.push(value);
+                return value;
+            });
+        }
+        if (toString.call(data) === '[object Array]') {
+            var result = [];
+            for (var index = 0; index < data.length; index++) {
+                result[index] = JSON.parse(stringifyImpl(data[index]));
             }
-            return value;
-        });
+            return JSON.stringify(result);
+        }
+        return stringifyImpl(data);
     };
     return Utils;
 })();
