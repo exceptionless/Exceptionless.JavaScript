@@ -126,22 +126,24 @@ export class ExceptionlessClient {
     }
 
     var context = new EventPluginContext(this, event, pluginContextData);
-    EventPluginManager.run(context, (context:EventPluginContext) => {
+    EventPluginManager.run(context, function (context:EventPluginContext) {
+      let ev = context.event;
       if (!context.cancelled) {
         // ensure all required data
-        if (!event.type || event.type.length === 0) {
-          event.type = 'log';
+        if (!ev.type || ev.type.length === 0) {
+          ev.type = 'log';
         }
 
-        if (!event.date) {
-          event.date = new Date();
+        if (!ev.date) {
+          ev.date = new Date();
         }
 
-        this.config.queue.enqueue(event);
+        var config = context.client.config;
+        config.queue.enqueue(ev);
 
-        if (event.reference_id && event.reference_id.length > 0) {
-          this.config.log.info(`Setting last reference id '${event.reference_id}'`);
-          this.config.lastReferenceIdManager.setLast(event.reference_id);
+        if (ev.reference_id && ev.reference_id.length > 0) {
+          context.log.info(`Setting last reference id '${ev.reference_id}'`);
+          config.lastReferenceIdManager.setLast(ev.reference_id);
         }
       }
 

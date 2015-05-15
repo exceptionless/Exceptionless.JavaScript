@@ -1280,7 +1280,7 @@ var EventPluginManager = (function () {
                 }
                 catch (ex) {
                     context.cancelled = true;
-                    context.log.error("Error while running plugin '" + plugin.name + "': " + ex.message + ". This event will be discarded.");
+                    context.log.error("Error running plugin '" + plugin.name + "': " + ex.message + ". Discarding Event.");
                 }
                 if (context.cancelled && !!callback) {
                     callback(context);
@@ -1288,12 +1288,12 @@ var EventPluginManager = (function () {
             };
         };
         var plugins = context.client.config.plugins;
-        if (!!callback) {
-            plugins.push({ name: 'callback', priority: 9007199254740992, run: callback });
-        }
         var wrappedPlugins = [];
+        if (!!callback) {
+            wrappedPlugins[plugins.length] = wrap({ name: 'cb', priority: 9007199254740992, run: callback }, null);
+        }
         for (var index = plugins.length - 1; index > -1; index--) {
-            wrappedPlugins[index] = wrap(plugins[index], index < plugins.length - 1 ? wrappedPlugins[index + 1] : null);
+            wrappedPlugins[index] = wrap(plugins[index], !!callback || (index < plugins.length - 1) ? wrappedPlugins[index + 1] : null);
         }
         wrappedPlugins[0]();
     };
@@ -1945,7 +1945,6 @@ var ExceptionlessClient = (function () {
         return new EventBuilder({ date: new Date() }, this, pluginContextData);
     };
     ExceptionlessClient.prototype.submitEvent = function (event, pluginContextData, callback) {
-        var _this = this;
         if (!event) {
             return;
         }
@@ -1960,17 +1959,19 @@ var ExceptionlessClient = (function () {
         }
         var context = new EventPluginContext(this, event, pluginContextData);
         EventPluginManager.run(context, function (context) {
+            var ev = context.event;
             if (!context.cancelled) {
-                if (!event.type || event.type.length === 0) {
-                    event.type = 'log';
+                if (!ev.type || ev.type.length === 0) {
+                    ev.type = 'log';
                 }
-                if (!event.date) {
-                    event.date = new Date();
+                if (!ev.date) {
+                    ev.date = new Date();
                 }
-                _this.config.queue.enqueue(event);
-                if (event.reference_id && event.reference_id.length > 0) {
-                    _this.config.log.info("Setting last reference id '" + event.reference_id + "'");
-                    _this.config.lastReferenceIdManager.setLast(event.reference_id);
+                var config = context.client.config;
+                config.queue.enqueue(ev);
+                if (ev.reference_id && ev.reference_id.length > 0) {
+                    context.log.info("Setting last reference id '" + ev.reference_id + "'");
+                    config.lastReferenceIdManager.setLast(ev.reference_id);
                 }
             }
             if (!!callback) {
