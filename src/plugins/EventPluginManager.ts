@@ -19,7 +19,7 @@ export class EventPluginManager {
           }
         } catch (ex) {
           context.cancelled = true;
-          context.log.error(`Error while running plugin '${plugin.name}': ${ex.message}. This event will be discarded.`);
+          context.log.error(`Error running plugin '${plugin.name}': ${ex.message}. Discarding Event.`);
         }
 
         if (context.cancelled && !!callback) {
@@ -29,13 +29,13 @@ export class EventPluginManager {
     };
 
     var plugins:IEventPlugin[] = context.client.config.plugins;
+    var wrappedPlugins:{ (): void }[] = [];
     if (!!callback) {
-      plugins.push({ name: 'callback', priority: 9007199254740992, run: callback });
+      wrappedPlugins[plugins.length] = wrap({ name: 'cb', priority: 9007199254740992, run: callback }, null);
     }
 
-    var wrappedPlugins:{ (): void }[] = [];
     for (var index = plugins.length - 1; index > -1; index--) {
-      wrappedPlugins[index] = wrap(plugins[index], index < plugins.length - 1 ? wrappedPlugins[index + 1] : null);
+      wrappedPlugins[index] = wrap(plugins[index], !!callback || (index < plugins.length - 1) ? wrappedPlugins[index + 1] : null);
     }
 
     wrappedPlugins[0]();

@@ -19,7 +19,7 @@ describe('InMemoryStorage', () => {
 
   it('should get saved events', () => {
     var storage = new InMemoryStorage<IEvent>();
-    var key = 'ex-LhhP1C9gi-q-';
+    var key = 'ex-q-';
     var event1:IEvent = { type: 'log', reference_id: key + '11' };
     var event2:IEvent = { type: 'log', reference_id: key + '12' };
     var event3:IEvent = { type: 'log', reference_id: key + '13' };
@@ -37,15 +37,21 @@ describe('InMemoryStorage', () => {
     expect(storage.count()).toBe(6);
 
     var ev = storage.get(event1.reference_id, 1)[0];
-    expect(ev).toBe(event1);
+    expect(ev).toEqual(event1);
     expect(storage.count()).toBe(5);
+
+    ev = storage.get(event2.reference_id, 1)[0];
+    expect(ev).toEqual(event2);
+    expect(storage.count()).toBe(4);
 
     var events = storage.get(key, 2);
     expect(events.length).toBe(2);
-    expect(storage.count()).toBe(3);
+    expect(events[0]).not.toEqual(events[1]);
+    expect(storage.count()).toBe(2);
 
     events = storage.get(key);
-    expect(events.length).toBe(3);
+    expect(events.length).toBe(2);
+    expect(events[0]).not.toEqual(events[1]);
     expect(storage.count()).toBe(0);
   });
 

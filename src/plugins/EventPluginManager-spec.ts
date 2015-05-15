@@ -23,7 +23,7 @@ describe('EventPluginManager', () => {
         if (next) {
           next();
         }
-      }, 500);
+      }, 100);
     });
 
     client.config.addPlugin('2', 2, (context:EventPluginContext, next?:() => void) => {
@@ -170,13 +170,15 @@ describe('EventPluginManager', () => {
     });
 
     expect(client.config.plugins[0].name).toBe('1');
+    expect(client.config.plugins.length).toBe(1);
+    EventPluginManager.run(context, (context?:EventPluginContext) => {
+      expect(client.config.plugins[0].name).toBe('1');
+    });
+    expect(client.config.plugins.length).toBe(1);
 
     EventPluginManager.run(context, (context?:EventPluginContext) => {
       expect(client.config.plugins[0].name).toBe('1');
     });
-
-    EventPluginManager.run(context, (context?:EventPluginContext) => {
-      expect(client.config.plugins[0].name).toBe('1');
-    });
+    expect(client.config.plugins.length).toBe(1);
   });
 });
