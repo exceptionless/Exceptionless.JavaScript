@@ -1,58 +1,6 @@
 import { Utils } from 'Utils';
 
 describe('Utils', () => {
-  it('should parse namespace, type and name', () => {
-    expect(Utils.parseFunctionName('?')).toEqual({
-      name: '<anonymous>',
-    });
-
-    expect(Utils.parseFunctionName(null)).toEqual({
-      name: '<anonymous>',
-    });
-
-    expect(Utils.parseFunctionName('Array.EventPluginManager.run.wrap')).toEqual({
-      declaring_type: 'EventPluginManager',
-      name: 'run.wrap',
-    });
-
-    expect(Utils.parseFunctionName('EventPluginManager.run.wrap')).toEqual({
-      declaring_type: 'EventPluginManager',
-      name: 'run.wrap',
-    });
-
-    expect(Utils.parseFunctionName('EventBuilder.submit')).toEqual({
-      declaring_type: 'EventBuilder',
-      name: 'submit',
-    });
-
-    expect(Utils.parseFunctionName('processUnhandledException')).toEqual({
-      name: 'processUnhandledException',
-    });
-
-    expect(Utils.parseFunctionName('test.process')).toEqual({
-      declaring_type: 'test',
-      name: 'process',
-    });
-
-    expect(Utils.parseFunctionName('exceptionless.Plugins.EventPluginManager.run')).toEqual({
-      declaring_namespace: 'exceptionless.Plugins',
-      declaring_type: 'EventPluginManager',
-      name: 'run',
-    });
-
-    expect(Utils.parseFunctionName('exceptionless.plugins.EventPluginManager.run')).toEqual({
-      declaring_namespace: 'exceptionless.plugins',
-      declaring_type: 'EventPluginManager',
-      name: 'run',
-    });
-
-    expect(Utils.parseFunctionName('exceptionless.plugins.utils.parse')).toEqual({
-      declaring_namespace: 'exceptionless.plugins',
-      declaring_type: 'utils',
-      name: 'parse',
-    });
-  });
-
   it('should stringify circular reference', () => {
     var afoo:any = { a: 'foo' };
     afoo.b = afoo;

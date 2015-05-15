@@ -54,66 +54,6 @@ export class Utils {
     return result;
   }
 
-  public static parseFunctionName(frame:string): IStackFrame {
-    function isLowerCase(part:string) {
-      for (var index = 0; index < (part || '').length; index++) {
-        var code = part.charCodeAt(index);
-        if (code >= 65 && code <= 90) {
-          return false;
-        }
-      }
-
-      return true;
-    }
-
-    var anonymous = '<anonymous>';
-    var parts = (frame || '').replace('?', anonymous).split('.');
-    if (parts[0] === 'Array' || parts[0] === 'Function') {
-      parts.shift();
-    }
-
-    var namespace:string[] = [];
-    var type:string;
-    var name:string[] = [parts.pop() || anonymous];
-
-    for (var index = 0; index < parts.length; index++) {
-      var part = parts[index];
-      if (!type && index === (parts.length -1)) {
-        type = part;
-        break;
-      }
-
-      var isLower = isLowerCase(part);
-      if (isLower) {
-        if (!type) {
-          namespace.push(part);
-        } else {
-          name.unshift(part);
-        }
-
-        continue;
-      }
-
-      // mixed case.
-      if (type) {
-        namespace.push(type);
-      }
-
-      type = part;
-    }
-
-    var stackFrame:IStackFrame = { name: name.join('.') };
-    if (namespace.join('.').length > 0) {
-      stackFrame.declaring_namespace = namespace.join('.');
-    }
-
-    if (!!type && type.length > 0) {
-      stackFrame.declaring_type = type;
-    }
-
-    return stackFrame;
-  }
-
   public static parseVersion(source:string): string {
     if (!source) {
       return null;

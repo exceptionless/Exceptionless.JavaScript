@@ -1556,54 +1556,6 @@ var Utils = (function () {
         }
         return result;
     };
-    Utils.parseFunctionName = function (frame) {
-        function isLowerCase(part) {
-            for (var index = 0; index < (part || '').length; index++) {
-                var code = part.charCodeAt(index);
-                if (code >= 65 && code <= 90) {
-                    return false;
-                }
-            }
-            return true;
-        }
-        var anonymous = '<anonymous>';
-        var parts = (frame || '').replace('?', anonymous).split('.');
-        if (parts[0] === 'Array' || parts[0] === 'Function') {
-            parts.shift();
-        }
-        var namespace = [];
-        var type;
-        var name = [parts.pop() || anonymous];
-        for (var index = 0; index < parts.length; index++) {
-            var part = parts[index];
-            if (!type && index === (parts.length - 1)) {
-                type = part;
-                break;
-            }
-            var isLower = isLowerCase(part);
-            if (isLower) {
-                if (!type) {
-                    namespace.push(part);
-                }
-                else {
-                    name.unshift(part);
-                }
-                continue;
-            }
-            if (type) {
-                namespace.push(type);
-            }
-            type = part;
-        }
-        var stackFrame = { name: name.join('.') };
-        if (namespace.join('.').length > 0) {
-            stackFrame.declaring_namespace = namespace.join('.');
-        }
-        if (!!type && type.length > 0) {
-            stackFrame.declaring_type = type;
-        }
-        return stackFrame;
-    };
     Utils.parseVersion = function (source) {
         if (!source) {
             return null;
@@ -2490,18 +2442,12 @@ var WebErrorParser = (function () {
         var frames = [];
         for (var index = 0; index < stackFrames.length; index++) {
             var frame = stackFrames[index];
-            var parseResult = Utils.parseFunctionName(frame.func);
             frames.push({
-                declaring_namespace: parseResult.declaring_namespace,
-                declaring_type: parseResult.declaring_type,
-                name: parseResult.name,
+                name: frame.func,
                 parameters: this.getParameters(frame.args),
                 file_name: frame.url,
                 line_number: frame.line,
-                column: frame.column,
-                data: {
-                    '@@original_name': frame.func
-                }
+                column: frame.column
             });
         }
         return frames;

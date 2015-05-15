@@ -166,7 +166,6 @@ export declare class Utils {
     static getCookies(cookies: string, separator: string): Object;
     static guid(): string;
     static merge(defaultValues: any, values: any): {};
-    static parseFunctionName(frame: string): IStackFrame;
     static parseVersion(source: string): string;
     static parseQueryString(query: string): {};
     static randomNumber(): number;
