@@ -16,13 +16,18 @@ export class NodeRequestInfoCollector implements IRequestInfoCollector {
       is_secure: request.secure,
       http_method: request.method,
       host: request.hostname || request.host,
-      //port: TODO,
       path: request.path,
       post_data: request.body,
       //referrer: TODO,
       cookies: Utils.getCookies((request || {}).headers['cookie'], '; '),
       query_string: request.params
     };
+
+    var host = request.headers['host'];
+    var port:number = host && parseInt(host.slice(host.indexOf(':') + 1));
+    if (port > 0) {
+      ri.port = port;
+    }
 
     return ri;
   }
