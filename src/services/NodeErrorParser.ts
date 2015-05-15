@@ -13,6 +13,7 @@ export class NodeErrorParser implements IErrorParser {
 
     var stackFrames = nodestacktrace.parse(exception) || [];
     var error:IError = {
+      type: exception.name,
       message: exception.message,
       stack_trace: this.getStackFrames(context, stackFrames)
     };

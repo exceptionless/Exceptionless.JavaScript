@@ -2269,6 +2269,7 @@ var NodeErrorParser = (function () {
         }
         var stackFrames = nodestacktrace.parse(exception) || [];
         var error = {
+            type: exception.name,
             message: exception.message,
             stack_trace: this.getStackFrames(context, stackFrames)
         };
