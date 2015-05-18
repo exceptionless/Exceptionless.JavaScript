@@ -163,7 +163,7 @@ export declare class InMemoryStorage<T> implements IStorage<T> {
 }
 export declare class Utils {
     static getHashCode(source: string): string;
-    static getCookies(cookies: string, separator: string): Object;
+    static getCookies(cookies: string): Object;
     static guid(): string;
     static merge(defaultValues: any, values: any): {};
     static parseVersion(source: string): string;

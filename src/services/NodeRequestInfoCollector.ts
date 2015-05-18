@@ -19,7 +19,7 @@ export class NodeRequestInfoCollector implements IRequestInfoCollector {
       path: request.path,
       post_data: request.body,
       //referrer: TODO,
-      cookies: Utils.getCookies((request || {}).headers['cookie'], '; '),
+      cookies: Utils.getCookies((request || {}).headers['cookie']),
       query_string: request.params
     };
 

@@ -45,7 +45,7 @@ gulp.task('exceptionless.es5', ['exceptionless.es5.umd'], function() {
     .pipe(gulp.dest('dist/integrations'));
 
   var files = [
-    'lib/tracekit.js',
+    'node_modules/tracekit/tracekit.js',
     'dist/temp/exceptionless.js'
   ];
 
@@ -73,7 +73,7 @@ gulp.task('exceptionless.es6', ['typescript.es6'], function() {
   gulp.src('dist/temp/src/exceptionless.es6.d.ts').pipe(gulp.dest('dist'));
 
   var files = [
-    'lib/tracekit.js',
+    'node_modules/tracekit/tracekit.js',
     'dist/temp/src/exceptionless.es6.js'
   ];
 

@@ -16,10 +16,10 @@ export class Utils {
     return hash.toString();
   }
 
-  public static getCookies(cookies:string, separator:string): Object {
+  public static getCookies(cookies:string): Object {
     var result = {};
 
-    var parts = (cookies || '').split(separator || ', ');
+    var parts = (cookies || '').split('; ');
     for (var index = 0; index < parts.length; index++) {
       var cookie = parts[index].split('=');
       result[cookie[0]] = cookie[1];

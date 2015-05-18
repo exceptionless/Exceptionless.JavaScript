@@ -9,19 +9,21 @@ export class WebRequestInfoCollector implements IRequestInfoCollector {
       return null;
     }
 
-    var requestInfo:IRequestInfo = {
+    var ri:IRequestInfo = {
       user_agent: navigator.userAgent,
       is_secure: location.protocol === 'https:',
       host: location.hostname,
       port: location.port && location.port !== '' ? parseInt(location.port) : 80,
       path: location.pathname,
       //client_ip_address: 'TODO',
-      cookies: Utils.getCookies(document.cookie, ', '),
+      cookies: Utils.getCookies(document.cookie),
       query_string: Utils.parseQueryString(location.search.substring(1))
     };
 
     if (document.referrer && document.referrer !== '') {
-      requestInfo.referrer = document.referrer;
+      ri.referrer = document.referrer;
     }
+
+    return ri;
   }
 }
