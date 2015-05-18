@@ -73,7 +73,7 @@ export class Utils {
       return null;
     }
 
-    var pairs = query.split('&');
+    var pairs:string[] = query.split('&');
     if (pairs.length === 0) {
       return null;
     }
