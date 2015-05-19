@@ -9,10 +9,11 @@ import { SubmissionResponse } from './SubmissionResponse';
 import { Utils } from '../Utils';
 
 export class SubmissionClientBase implements ISubmissionClient {
+  public configurationVersionHeader:string = 'X-Exceptionless-ConfigVersion';
+
   public postEvents(events:IEvent[], config:Configuration, callback:(response:SubmissionResponse) => void):void {
     return this.sendRequest(config, 'POST', '/api/v2/events', Utils.stringify(events, config.dataExclusions), (status:number, message:string, data?:string, headers?:Object) => {
-
-      var settingsVersion = (headers && parseInt(headers['X-Exceptionless-ConfigVersion'])) || -1;
+      var settingsVersion = (headers && parseInt(headers[this.configurationVersionHeader])) || -1;
       SettingsManager.checkVersion(settingsVersion, config);
 
       callback(new SubmissionResponse(status, message));
@@ -21,7 +22,10 @@ export class SubmissionClientBase implements ISubmissionClient {
 
   public postUserDescription(referenceId:string, description:IUserDescription, config:Configuration, callback:(response:SubmissionResponse) => void):void {
     var path = `/api/v2/events/by-ref/${encodeURIComponent(referenceId)}/user-description`;
-    return this.sendRequest(config, 'POST', path, Utils.stringify(description, config.dataExclusions), (status:number, message:string) => {
+    return this.sendRequest(config, 'POST', path, Utils.stringify(description, config.dataExclusions), (status:number, message:string, data?:string, headers?:Object) => {
+      var settingsVersion = (headers && parseInt(headers[this.configurationVersionHeader])) || -1;
+      SettingsManager.checkVersion(settingsVersion, config);
+
       callback(new SubmissionResponse(status, message));
     });
   }

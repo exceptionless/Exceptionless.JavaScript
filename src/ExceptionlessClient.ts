@@ -3,9 +3,11 @@ import { Configuration } from './configuration/Configuration';
 import { EventBuilder } from './EventBuilder';
 import { IEvent } from './models/IEvent';
 import { IError } from './models/IError';
+import { IUserDescription } from './models/IUserDescription';
 import { EventPluginContext } from './plugins/EventPluginContext';
 import { EventPluginManager } from './plugins/EventPluginManager';
 import { ContextData } from './plugins/ContextData';
+import { SubmissionResponse } from './submission/SubmissionResponse';
 
 export class ExceptionlessClient {
   public config:Configuration;
@@ -108,6 +110,12 @@ export class ExceptionlessClient {
     return new EventBuilder({ date: new Date() }, this, pluginContextData);
   }
 
+  /**
+   * Submits the event to be sent to the server.
+   * @param event The event data.
+   * @param pluginContextData Any contextual data objects to be used by Exceptionless plugins to gather default information for inclusion in the report information.
+   * @param callback
+   */
   public submitEvent(event:IEvent, pluginContextData?:ContextData, callback?:(context:EventPluginContext) => void): void {
     if (!event) {
       return;
@@ -153,6 +161,37 @@ export class ExceptionlessClient {
     });
   }
 
+  /**
+   * Updates the user's email address and description of an event for the specified reference id.
+   * @param referenceId The reference id of the event to update.
+   * @param email The user's email address to set on the event.
+   * @param description The user's description of the event.
+   */
+  public updateUserEmailAndDescription(referenceId:string, email:string, description:string, callback?:(response:SubmissionResponse) => void) {
+    if (!referenceId || !email || !description) {
+      return;
+    }
+
+    if (!this.config.enabled) {
+      return this.config.log.info('Configuration is disabled. The event will not be updated with the user email and description.');
+    }
+
+    var description:IUserDescription = { email: email, description: description };
+    var response = this.config.submissionClient.postUserDescription(referenceId, description, this.config, (response:SubmissionResponse) => {
+      if (!response.success) {
+        this.config.log.error(`Failed to submit user email and description for event '${referenceId}': ${response.statusCode} ${response.message}`)
+      }
+
+      if (!!callback) {
+        callback(response);
+      }
+    });
+  }
+
+  /**
+   * Gets the last event client id that was submitted to the server.
+   * @returns {string} The event client id.
+   */
   public getLastReferenceId(): string {
     return this.config.lastReferenceIdManager.getLast();
   }
