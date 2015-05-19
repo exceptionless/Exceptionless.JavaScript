@@ -1,6 +1,20 @@
+import { IEvent } from './models/IEvent';
 import { Utils } from 'Utils';
 
 describe('Utils', () => {
+  it('should add range', () => {
+    var target:string[];
+    expect(Utils.addRange(target)).toEqual([]);
+    expect(target).toBeUndefined();
+
+    expect(Utils.addRange(target, '1', '2')).toEqual(['1', '2']);
+    expect(Utils.addRange(target, '1', '2')).toEqual(['1', '2']);
+
+    target = ['3'];
+    expect(Utils.addRange(target, '1', '2')).toEqual(['3', '1', '2']);
+    expect(target).toEqual(['3', '1', '2']);
+  });
+
   it('should stringify circular reference', () => {
     var afoo:any = {a: 'foo'};
     afoo.b = afoo;
@@ -10,7 +24,7 @@ describe('Utils', () => {
   });
 
   it('should stringify array', () => {
-    var error = {
+    var error:IEvent = {
       "type": "error",
       "data": {
         "@error": {

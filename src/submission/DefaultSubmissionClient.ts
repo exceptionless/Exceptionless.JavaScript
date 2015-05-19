@@ -10,7 +10,7 @@ import { Utils } from '../Utils';
 declare var XDomainRequest:{ new (); create(); };
 
 export class DefaultSubmissionClient extends SubmissionClientBase {
-  private createRequest(method:string, url:string): XMLHttpRequest {
+  private createRequest(config:Configuration, method:string, url:string): XMLHttpRequest {
     var xhr:any = new XMLHttpRequest();
     if ('withCredentials' in xhr) {
       xhr.open(method, url, true);
@@ -22,6 +22,7 @@ export class DefaultSubmissionClient extends SubmissionClientBase {
     }
 
     if (xhr) {
+      xhr.setRequestHeader('X-Exceptionless-Client', config.userAgent);
       if (method === 'POST' && xhr.setRequestHeader) {
         xhr.setRequestHeader('Content-Type', 'application/json');
       }
@@ -32,9 +33,27 @@ export class DefaultSubmissionClient extends SubmissionClientBase {
     return xhr;
   }
 
-  public sendRequest(method:string, host:string, path:string, apiKey:string, data:string, callback: (status:number, message:string, data?:string) => void): void {
+  public sendRequest(config:Configuration, method:string, path:string, data:string, callback: (status:number, message:string, data?:string, headers?:Object) => void): void {
     var isCompleted = false;
     function complete(xhr:XMLHttpRequest) {
+      function parseResponseHeaders(headerStr) {
+        var headers = {};
+        var headerPairs = (headerStr || '').split('\u000d\u000a');
+        for (var index = 0; index < headerPairs.length; index++) {
+          var headerPair = headerPairs[index];
+          // Can't use split() here because it does the wrong thing
+          // if the header value has the string ": " in it.
+          var index = headerPair.indexOf('\u003a\u0020');
+          if (index > 0) {
+            var key = headerPair.substring(0, index);
+            var val = headerPair.substring(index + 2);
+            headers[key] = val;
+          }
+        }
+
+        return headers;
+      }
+
       if (isCompleted) {
         return;
       } else {
@@ -58,11 +77,11 @@ export class DefaultSubmissionClient extends SubmissionClientBase {
         }
       }
 
-      callback(xhr.status || 500, message, xhr.responseText);
+      callback(xhr.status || 500, message, xhr.responseText, parseResponseHeaders(xhr.getAllResponseHeaders()));
     }
 
-    var url = `${host}${path}?access_token=${encodeURIComponent(apiKey)}`;
-    var xhr = this.createRequest(method || 'POST', url);
+    var url = `${config.serverUrl}${path}?access_token=${encodeURIComponent(config.apiKey)}`;
+    var xhr = this.createRequest(config, method || 'POST', url);
     if (!xhr) {
       return callback(503,'CORS not supported.');
     }

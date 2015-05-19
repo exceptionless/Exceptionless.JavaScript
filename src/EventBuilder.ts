@@ -7,6 +7,8 @@ import { EventPluginContext } from './plugins/EventPluginContext';
 import { Utils } from 'Utils';
 
 export class EventBuilder {
+  private _validIdentifierErrorMessage:string = "must contain between 8 and 100 alphanumeric or '-' characters.";
+
   public target:IEvent;
   public client:ExceptionlessClient;
   public pluginContextData:ContextData;
@@ -35,7 +37,7 @@ export class EventBuilder {
 
   public setSessionId(sessionId:string): EventBuilder {
     if (!this.isValidIdentifier(sessionId)) {
-      throw new Error("SessionId must contain between 8 and 100 alphanumeric or '-' characters.");
+      throw new Error(`SessionId ${this._validIdentifierErrorMessage}`);
     }
 
     this.target.session_id = sessionId;
@@ -44,7 +46,7 @@ export class EventBuilder {
 
   public setReferenceId(referenceId:string): EventBuilder {
     if (!this.isValidIdentifier(referenceId)) {
-      throw new Error("SessionId must contain between 8 and 100 alphanumeric or '-' characters.");
+      throw new Error(`ReferenceId ${this._validIdentifierErrorMessage}`);
     }
 
     this.target.reference_id = referenceId;
@@ -82,8 +84,6 @@ export class EventBuilder {
     return this;
   }
 
-  // TODO: we to see if it makes sense to add setUserDescription.
-
   public setValue(value:number): EventBuilder {
     if (!!value) {
       this.target.value = value;
@@ -93,20 +93,7 @@ export class EventBuilder {
   }
 
   public addTags(...tags:string[]): EventBuilder {
-    if (!tags || tags.length === 0) {
-      return this;
-    }
-
-    if (!this.target.tags) {
-      this.target.tags = [];
-    }
-
-    for (var index = 0; index < tags.length; index++) {
-      if (tags[index] && this.target.tags.indexOf(tags[index]) < 0) {
-        this.target.tags.push(tags[index]);
-      }
-    }
-
+    this.target.tags = Utils.addRange<string>(this.target.tags, ...tags);
     return this;
   }
 
@@ -131,7 +118,8 @@ export class EventBuilder {
     return this;
   }
 
-  public addRequestInfo(request:any): EventBuilder {
+  //todo: rename this
+  public addRequestInfo(request:Object): EventBuilder {
     if (!!request) {
       this.pluginContextData['@request'] = request;
     }

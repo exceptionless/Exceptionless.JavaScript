@@ -42,7 +42,7 @@ export class DefaultEventQueue implements IEventQueue {
       return;
     }
 
-    if (!this._config.apiKey || this._config.apiKey.length < 10) {
+    if (!this._config.isValid) {
       this._config.log.info(`Invalid Api Key. ${queueNotProcessed}`);
       return;
     }
@@ -57,7 +57,7 @@ export class DefaultEventQueue implements IEventQueue {
       }
 
       this._config.log.info(`Sending ${events.length} events to ${this._config.serverUrl}.`);
-      this._config.submissionClient.submit(events, this._config, (response:SubmissionResponse) => {
+      this._config.submissionClient.postEvents(events, this._config, (response:SubmissionResponse) => {
         this.processSubmissionResponse(response, events);
         this._config.log.info('Finished processing queue.');
         this._processingQueue = false;

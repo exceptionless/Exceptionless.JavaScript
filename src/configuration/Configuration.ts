@@ -1,4 +1,5 @@
 import { IConfigurationSettings } from './IConfigurationSettings';
+import { SettingsManager } from './SettingsManager';
 import { ILastReferenceIdManager } from '../lastReferenceIdManager/ILastReferenceIdManager';
 import { InMemoryLastReferenceIdManager } from '../lastReferenceIdManager/InMemoryLastReferenceIdManager';
 import { ConsoleLog } from '../logging/ConsoleLog';
@@ -24,7 +25,24 @@ export class Configuration implements IConfigurationSettings {
   private _apiKey:string;
   private _enabled:boolean = true;
   private _serverUrl:string = 'https://collector.exceptionless.io';
+  private _dataExclusions:string[] = [];
   private _plugins:IEventPlugin[] = [];
+
+  /**
+   * A default list of tags that will automatically be added to every
+   * report submitted to the server.
+   *
+   * @type {Array}
+   */
+  public defaultTags:string[] = [];
+
+  /**
+   * A default list of of extended data objects that will automatically
+   * be added to every report submitted to the server.
+   *
+   * @type {{}}
+   */
+  public defaultData:Object = {};
 
   public environmentInfoCollector:IEnvironmentInfoCollector;
   public errorParser:IErrorParser;
@@ -32,50 +50,85 @@ export class Configuration implements IConfigurationSettings {
   public log:ILog;
   public moduleCollector:IModuleCollector;
   public requestInfoCollector:IRequestInfoCollector;
-  public submissionBatchSize;
-  public submissionClient:ISubmissionClient;
-  public storage:IStorage<any>;
-  public queue:IEventQueue;
-  public defaultTags:string[] = [];
-  public defaultData:Object = {};
 
-  constructor(settings?:IConfigurationSettings) {
+  /**
+   * Maximum number of events that should be sent to the server together in a batch. (Defaults to 50)
+   */
+  public submissionBatchSize:number;
+  public submissionClient:ISubmissionClient;
+
+  /**
+   * Contains a dictionary of custom settings that can be used to control
+   * the client and will be automatically updated from the server.
+   */
+  public settings:Object;
+
+  public storage:IStorage<Object>;
+
+  public queue:IEventQueue;
+
+  constructor(configSettings?:IConfigurationSettings) {
     function inject(fn:any) {
       return typeof fn === 'function' ? fn(this) : fn;
     }
 
-    settings = Utils.merge(Configuration.defaults, settings);
+    configSettings = Utils.merge(Configuration.defaults, configSettings);
 
-    this.log = inject(settings.log) || new NullLog();
-    this.apiKey = settings.apiKey;
-    this.serverUrl = settings.serverUrl;
+    this.log = inject(configSettings.log) || new NullLog();
+    this.apiKey = configSettings.apiKey;
+    this.serverUrl = configSettings.serverUrl;
 
-    this.environmentInfoCollector = inject(settings.environmentInfoCollector);
-    this.errorParser = inject(settings.errorParser);
-    this.lastReferenceIdManager = inject(settings.lastReferenceIdManager) || new InMemoryLastReferenceIdManager();
-    this.moduleCollector = inject(settings.moduleCollector);
-    this.requestInfoCollector = inject(settings.requestInfoCollector);
-    this.submissionBatchSize = inject(settings.submissionBatchSize) || 50;
-    this.submissionClient = inject(settings.submissionClient);
-    this.storage = inject(settings.storage) || new InMemoryStorage<any>();
-    this.queue = inject(settings.queue) || new DefaultEventQueue(this);
+    this.environmentInfoCollector = inject(configSettings.environmentInfoCollector);
+    this.errorParser = inject(configSettings.errorParser);
+    this.lastReferenceIdManager = inject(configSettings.lastReferenceIdManager) || new InMemoryLastReferenceIdManager();
+    this.moduleCollector = inject(configSettings.moduleCollector);
+    this.requestInfoCollector = inject(configSettings.requestInfoCollector);
+    this.submissionBatchSize = inject(configSettings.submissionBatchSize) || 50;
+    this.submissionClient = inject(configSettings.submissionClient);
+    this.storage = inject(configSettings.storage) || new InMemoryStorage<any>();
+    this.queue = inject(configSettings.queue) || new DefaultEventQueue(this);
 
+    SettingsManager.applySavedServerSettings(this);
     EventPluginManager.addDefaultPlugins(this);
   }
 
-  public get apiKey(): string {
+  /**
+   * The API key that will be used when sending events to the server.
+   * @returns {string}
+   */
+  public get apiKey():string {
     return this._apiKey;
   }
 
+  /**
+   * The API key that will be used when sending events to the server.
+   * @param value
+   */
   public set apiKey(value:string) {
     this._apiKey = value || null;
     this.log.info(`apiKey: ${this._apiKey}`);
   }
 
-  public get serverUrl(): string {
+  /**
+   * Returns true if the apiKey is valid.
+   * @returns {boolean}
+   */
+  public get isValid():boolean {
+    return !!this.apiKey && this.apiKey.length >= 10;
+  }
+
+  /**
+   * The server url that all events will be sent to.
+   * @returns {string}
+   */
+  public get serverUrl():string {
     return this._serverUrl;
   }
 
+  /**
+   * The server url that all events will be sent to.
+   * @param value
+   */
   public set serverUrl(value:string) {
     if (!!value && value.length > 0) {
       this._serverUrl = value;
@@ -83,17 +136,64 @@ export class Configuration implements IConfigurationSettings {
     }
   }
 
-  public get enabled(): boolean {
+  /**
+   * Whether the client is currently enabled or not. If it is disabled,
+   * submitted errors will be discarded and no data will be sent to the server.
+   *
+   * @returns {boolean}
+   */
+  public get enabled():boolean {
     return this._enabled;
   }
 
-  public get plugins(): IEventPlugin[] {
+  /**
+   *  A list of exclusion patterns that will automatically remove any data that
+   *  matches them from any data submitted to the server.
+   *
+   *  For example, entering CreditCard will remove any extended data properties,
+   *  form fields, cookies and query parameters from the report.
+   *
+   * @returns {string[]}
+   */
+  public get dataExclusions():string[] {
+    return this._dataExclusions.concat(this.settings['@@DataExclusions'] || []);
+  }
+
+  /**
+   * Add items to the list of exclusion patterns that will automatically remove any
+   * data that matches them from any data submitted to the server.
+   *
+   * For example, entering CreditCard will remove any extended data properties, form
+   * fields, cookies and query parameters from the report.
+   *
+   * @param exclusions
+   */
+  public addDataExclusions(...exclusions:string[]) {
+    this._dataExclusions = Utils.addRange<string>(this._dataExclusions, ...exclusions);
+  }
+
+  /**
+   * The list of plugins that will be used in this configuration.
+   * @returns {IEventPlugin[]}
+   */
+  public get plugins():IEventPlugin[] {
     return this._plugins.sort((p1:IEventPlugin, p2:IEventPlugin) => {
       return (p1.priority < p2.priority) ? -1 : (p1.priority > p2.priority) ? 1 : 0;
     });
   }
 
+  /**
+   * Register an plugin to be used in this configuration.
+   * @param plugin
+   */
   public addPlugin(plugin:IEventPlugin): void;
+
+  /**
+   * Register an plugin to be used in this configuration.
+   * @param name The name used to identify the plugin.
+   * @param priority Used to determine plugins priority.
+   * @param pluginAction A function that is run.
+   */
   public addPlugin(name:string, priority:number, pluginAction:(context:EventPluginContext, next?:() => void) => void): void;
   public addPlugin(pluginOrName:IEventPlugin|string, priority?:number, pluginAction?:(context:EventPluginContext, next?:() => void) => void): void {
     var plugin:IEventPlugin = !!pluginAction ? { name: <string>pluginOrName, priority: priority, run: pluginAction } : <IEventPlugin>pluginOrName;
@@ -123,7 +223,16 @@ export class Configuration implements IConfigurationSettings {
     }
   }
 
+  /**
+   * Remove the plugin from this configuration.
+   * @param plugin
+   */
   public removePlugin(plugin:IEventPlugin): void;
+
+  /**
+   * Remove an plugin by key from this configuration.
+   * @param name
+   */
   public removePlugin(name:string): void;
   public removePlugin(pluginOrName:IEventPlugin|string): void {
     var name:string = typeof pluginOrName === 'string' ? pluginOrName : pluginOrName.name;
@@ -140,6 +249,10 @@ export class Configuration implements IConfigurationSettings {
     }
   }
 
+  /**
+   * Automatically set the application version for events.
+   * @param version
+   */
   public setVersion(version:string): void {
     if (!!version && version.length > 0) {
       this.defaultData['@version'] = version;
@@ -161,6 +274,17 @@ export class Configuration implements IConfigurationSettings {
     this.log.info(`user identity: ${shouldRemove ? 'null' : userInfo.identity}`);
   }
 
+  /**
+   * Used to identify the client that sent the events to the server.
+   * @returns {string}
+   */
+  public get userAgent():string {
+    return `exceptionless-js/1.0.0.0`;
+  }
+
+  /**
+   * Automatically set a reference id for error events.
+   */
   public useReferenceIds(): void {
     this.addPlugin(new ReferenceIdPlugin());
   }

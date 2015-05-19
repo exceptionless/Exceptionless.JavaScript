@@ -12,8 +12,8 @@ import https = require('https');
 import url = require('url');
 
 export class NodeSubmissionClient extends SubmissionClientBase {
-  public sendRequest(method:string, host:string, path:string, apiKey:string, data:string, callback: (status:number, message:string, data?:string) => void): void {
-    function complete(response:http.IncomingMessage, data:string) {
+  public sendRequest(config:Configuration, method:string, path:string, data:string, callback: (status:number, message:string, data?:string, headers?:Object) => void): void {
+    function complete(response:http.IncomingMessage, data:string, headers:Object) {
       var message:string;
       if (response.statusCode === 0) {
         message = 'Unable to connect to server.';
@@ -21,16 +21,17 @@ export class NodeSubmissionClient extends SubmissionClientBase {
         message = response.statusMessage || (<any>response).message;
       }
 
-      callback(response.statusCode || 500, message, data);
+      callback(response.statusCode || 500, message, data, headers);
     }
 
-    var parsedHost = url.parse(host);
+    var parsedHost = url.parse(config.serverUrl);
     var options:https.RequestOptions = {
-      auth: `client:${apiKey}`,
+      auth: `client:${config.apiKey}`,
+      headers: {},
       hostname: parsedHost.hostname,
       method: method,
       port: parsedHost.port && parseInt(parsedHost.port),
-      path: path
+      path: path,
     };
 
     if (method === 'POST') {
@@ -40,11 +41,12 @@ export class NodeSubmissionClient extends SubmissionClientBase {
       }
     }
 
+    options.headers['User-Agent'] = config.userAgent;
     var request:http.ClientRequest = https.request(options, (response:http.IncomingMessage) => {
       var body = '';
       response.on('data', chunk => body += chunk);
       response.on('end', () => {
-        complete(response, body);
+        complete(response, body, response.headers);
       });
     });
 

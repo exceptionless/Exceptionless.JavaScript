@@ -21,7 +21,7 @@ export class NodeBootstrapper implements IBootstrapper {
     configDefaults.requestInfoCollector = new NodeRequestInfoCollector();
     configDefaults.submissionClient = new NodeSubmissionClient();
 
-    process.on('uncaughtException', function(error) {
+    process.on('uncaughtException', function(error:Error) {
       ExceptionlessClient.default.submitUnhandledException(error, 'uncaughtException');
     });
 

@@ -1,15 +1,15 @@
 import { ILog } from './ILog';
 
 export class ConsoleLog implements ILog {
-  public info(message):void {
+  public info(message:string):void {
     this.log('info', message);
   }
 
-  public warn(message):void {
+  public warn(message:string):void {
     this.log('warn', message);
   }
 
-  public error(message):void {
+  public error(message:string):void {
     this.log('error', message);
   }
 

@@ -9,7 +9,7 @@ export class InMemoryStorage<T> implements IStorage<T> {
   }
 
   public get(searchPattern?:string, limit?:number):T[] {
-    var results = [];
+    var results:T[] = [];
     var regex = new RegExp(searchPattern || '.*');
 
     for (var key in this._items) {
@@ -42,7 +42,7 @@ export class InMemoryStorage<T> implements IStorage<T> {
 
   public count(searchPattern?:string):number {
     var regex = new RegExp(searchPattern || '.*');
-    var results = [];
+    var results:T[] = [];
     for (var key in this._items) {
       if (regex.test(key)) {
         results.push(key);

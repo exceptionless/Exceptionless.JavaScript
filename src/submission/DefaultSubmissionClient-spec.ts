@@ -20,7 +20,7 @@ describe('DefaultSubmissionClient', () => {
 
     var config = new Configuration({ apiKey:'LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw', serverUrl:'http://localhost:50000'});
     var submissionClient = new DefaultSubmissionClient();
-    submissionClient.submit([{ type: 'log', message: 'From js client', reference_id: '123454321' }], config, processResponse);
+    submissionClient.postEvents([{ type: 'log', message: 'From js client', reference_id: '123454321' }], config, processResponse);
   }, 5000);
 
   it('should submit invalid object data', (done) => {
@@ -41,7 +41,7 @@ describe('DefaultSubmissionClient', () => {
     }};
 
     var submissionClient = new DefaultSubmissionClient();
-    submissionClient.submit([event], config, processResponse);
+    submissionClient.postEvents([event], config, processResponse);
   }, 5000);
 
   it('should submit user description', (done) => {
@@ -57,7 +57,7 @@ describe('DefaultSubmissionClient', () => {
 
     var config = new Configuration({ apiKey:'LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw', serverUrl:'http://localhost:50000'});
     var submissionClient = new DefaultSubmissionClient();
-    submissionClient.submitDescription('123454321', { email_address: 'norply@exceptionless.io', description: 'unit test' }, config, processResponse)
+    submissionClient.postUserDescription('123454321', { email_address: 'norply@exceptionless.io', description: 'unit test' }, config, processResponse)
   }, 5000);
 
   it('should get project settings', (done) => {

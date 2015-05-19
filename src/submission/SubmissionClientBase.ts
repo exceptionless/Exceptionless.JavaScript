@@ -1,5 +1,7 @@
 import { Configuration } from '../configuration/Configuration';
+import { SettingsManager } from '../configuration/SettingsManager';
 import { IEvent } from '../models/IEvent';
+import { IClientConfiguration } from '../models/IClientConfiguration';
 import { IUserDescription } from '../models/IUserDescription';
 import { ISubmissionClient } from './ISubmissionClient';
 import { SettingsResponse } from './SettingsResponse';
@@ -7,26 +9,30 @@ import { SubmissionResponse } from './SubmissionResponse';
 import { Utils } from '../Utils';
 
 export class SubmissionClientBase implements ISubmissionClient {
-  public submit(events:IEvent[], config:Configuration, callback:(SubmissionResponse) => void):void {
-    return this.sendRequest('POST', config.serverUrl, '/api/v2/events', config.apiKey, Utils.stringify(events), (status:number, message:string, data:string) => {
+  public postEvents(events:IEvent[], config:Configuration, callback:(response:SubmissionResponse) => void):void {
+    return this.sendRequest(config, 'POST', '/api/v2/events', Utils.stringify(events), (status:number, message:string, data?:string, headers?:Object) => {
+
+      var settingsVersion = (headers && parseInt(headers['X-Exceptionless-ConfigVersion'])) || -1;
+      SettingsManager.checkVersion(settingsVersion, config);
+
       callback(new SubmissionResponse(status, message));
     });
   }
 
-  public submitDescription(referenceId:string, description:IUserDescription, config:Configuration, callback:(SubmissionResponse) => void):void {
+  public postUserDescription(referenceId:string, description:IUserDescription, config:Configuration, callback:(response:SubmissionResponse) => void):void {
     var path = `/api/v2/events/by-ref/${encodeURIComponent(referenceId)}/user-description`;
-    return this.sendRequest('POST', config.serverUrl, path, config.apiKey, Utils.stringify(description), (status:number, message:string, data:string) => {
+    return this.sendRequest(config, 'POST', path, Utils.stringify(description), (status:number, message:string) => {
       callback(new SubmissionResponse(status, message));
     });
   }
 
-  public getSettings(config:Configuration, callback:(SettingsResponse) => void):void {
-    return this.sendRequest('GET', config.serverUrl, '/api/v2/projects/config', config.apiKey, null, (status:number, message:string, data:string) => {
+  public getSettings(config:Configuration, callback:(response:SettingsResponse) => void):void {
+    return this.sendRequest(config, 'GET', '/api/v2/projects/config', null, (status:number, message:string, data?:string) => {
         if (status !== 200) {
           return callback(new SettingsResponse(false, null, -1, null, message));
         }
 
-        var settings;
+        var settings:IClientConfiguration;
         try {
           settings = JSON.parse(data);
         } catch (e) {
@@ -41,7 +47,7 @@ export class SubmissionClientBase implements ISubmissionClient {
     });
   }
 
-  public sendRequest(method:string, host:string, path:string, data:string, apiKey:string, callback: (status:number, message:string, data?:string) => void): void {
+  public sendRequest(config:Configuration, method:string, path:string, data:string,  callback: (status:number, message:string, data?:string, headers?:Object) => void): void {
     callback(500, 'Not Implemented');
   }
 }

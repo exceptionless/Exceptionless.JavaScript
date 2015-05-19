@@ -1,6 +1,24 @@
 import { IStackFrame } from 'models/IStackFrame';
 
 export class Utils {
+  public static addRange<T>(target:T[], ...values:T[]) {
+    if (!target) {
+      target = [];
+    }
+
+    if (!values || values.length === 0) {
+      return target;
+    }
+
+    for (var index = 0; index < values.length; index++) {
+      if (values[index] && target.indexOf(values[index]) < 0) {
+        target.push(values[index]);
+      }
+    }
+
+    return target;
+  }
+
   public static getHashCode(source:string): string {
     if (!source || source.length === 0) {
       return null;
@@ -17,11 +35,11 @@ export class Utils {
   }
 
   public static getCookies(cookies:string): Object {
-    var result = {};
+    var result:Object = {};
 
-    var parts = (cookies || '').split('; ');
+    var parts:string[] = (cookies || '').split('; ');
     for (var index = 0; index < parts.length; index++) {
-      var cookie = parts[index].split('=');
+      var cookie:string[] = parts[index].split('=');
       result[cookie[0]] = cookie[1];
     }
 
@@ -36,8 +54,8 @@ export class Utils {
     return s4() + s4() + '-' + s4() + '-' + s4() + '-' + s4() + '-' + s4() + s4() + s4();
   }
 
-  public static merge(defaultValues:any, values:any) {
-    var result = {};
+  public static merge(defaultValues:Object, values:Object) {
+    var result:Object = {};
 
     for (var key in defaultValues || {}) {
       if (!!defaultValues[key]) {
@@ -78,7 +96,7 @@ export class Utils {
       return null;
     }
 
-    var result = {};
+    var result:Object = {};
     for (var index = 0; index < pairs.length; index++) {
       var pair = pairs[index].split('=');
       result[decodeURIComponent(pair[0])] = decodeURIComponent(pair[1]);
@@ -93,7 +111,7 @@ export class Utils {
 
   public static stringify(data:any): string {
     function stringifyImpl(data:any): string {
-      var cache = [];
+      var cache:string[] = [];
       return JSON.stringify(data, function(key:string, value:any) {
         if (typeof value === 'object' && !!value) {
           if (cache.indexOf(value) !== -1) {

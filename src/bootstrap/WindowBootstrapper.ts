@@ -49,13 +49,13 @@ export class WindowBootstrapper implements IBootstrapper {
     return null;
   }
 
-  private processUnhandledException(stackTrace:TraceKit.StackTrace, options): void {
+  private processUnhandledException(stackTrace:TraceKit.StackTrace, options?:any): void {
     var builder = ExceptionlessClient.default.createUnhandledException(new Error(stackTrace.message || (options || {}).status || 'Script error'), 'onerror');
     builder.pluginContextData['@@_TraceKit.StackTrace'] = stackTrace;
     builder.submit();
   }
 
-  private processJQueryAjaxError(event, xhr, settings, error): void {
+  private processJQueryAjaxError(event, xhr, settings, error:Error): void {
     var client = ExceptionlessClient.default;
     if (xhr.status === 404) {
       client.submitNotFound(settings.url);

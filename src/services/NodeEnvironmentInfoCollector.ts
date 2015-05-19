@@ -42,7 +42,7 @@ export class NodeEnvironmentInfoCollector implements IEnvironmentInfoCollector {
   }
 
   private getIpAddresses():string {
-    var ips = [];
+    var ips:string[] = [];
     var interfaces = os.networkInterfaces();
     Object.keys(interfaces).forEach((name) => {
       interfaces[name].forEach((iface:any) => {

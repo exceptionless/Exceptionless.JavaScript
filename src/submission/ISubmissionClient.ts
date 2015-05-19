@@ -5,7 +5,7 @@ import { SettingsResponse } from './SettingsResponse';
 import { SubmissionResponse } from './SubmissionResponse';
 
 export interface ISubmissionClient {
-  submit(events:IEvent[], config:Configuration, callback:(SubmissionResponse) => void):void;
-  submitDescription(referenceId:string, description:IUserDescription, config:Configuration, callback:(SubmissionResponse) => void):void;
-  getSettings(config:Configuration, callback:(SettingsResponse) => void):void;
+  postEvents(events:IEvent[], config:Configuration, callback:(response:SubmissionResponse) => void):void;
+  postUserDescription(referenceId:string, description:IUserDescription, config:Configuration, callback:(response:SubmissionResponse) => void):void;
+  getSettings(config:Configuration, callback:(response:SettingsResponse) => void):void;
 }
