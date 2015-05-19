@@ -23,8 +23,29 @@ describe('Utils', () => {
     expect(Utils.stringify([{one: afoo, two: afoo}])).toBe('[{"one":{"a":"foo"}}]');
   });
 
+  it('should exclude properties', () => {
+    var user:any = {
+      id:1,
+      name: 'Blake',
+      password: '123456',
+      passwordResetToken: 'a reset token',
+      myPasswordValue: '123456',
+      myPassword: '123456',
+      customValue: 'Password',
+      value: {
+        Password: '123456'
+      }
+    };
+
+    expect(Utils.stringify(user)).toBe(JSON.stringify(user));
+    expect(Utils.stringify(user, ['pAssword'])).toBe('{"id":1,"name":"Blake","passwordResetToken":"a reset token","myPasswordValue":"123456","myPassword":"123456","customValue":"Password","value":{}}');
+    expect(Utils.stringify(user, ['*password'])).toBe('{"id":1,"name":"Blake","myPasswordValue":"123456","myPassword":"123456","customValue":"Password","value":{}}');
+    expect(Utils.stringify(user, ['password*'])).toBe('{"id":1,"name":"Blake","passwordResetToken":"a reset token","myPasswordValue":"123456","customValue":"Password","value":{}}');
+    expect(Utils.stringify(user, ['*password*'])).toBe('{"id":1,"name":"Blake","customValue":"Password","value":{}}');
+  });
+
   it('should stringify array', () => {
-    var error:IEvent = {
+    var error = {
       "type": "error",
       "data": {
         "@error": {
@@ -52,7 +73,8 @@ describe('Utils', () => {
               "column": 10
             }]
         }, "@submission_method": "onerror"
-      }, "tags": []
+      },
+      "tags": []
     };
 
     expect(Utils.stringify(error)).toBe(JSON.stringify(error));

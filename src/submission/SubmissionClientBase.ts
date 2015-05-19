@@ -10,7 +10,7 @@ import { Utils } from '../Utils';
 
 export class SubmissionClientBase implements ISubmissionClient {
   public postEvents(events:IEvent[], config:Configuration, callback:(response:SubmissionResponse) => void):void {
-    return this.sendRequest(config, 'POST', '/api/v2/events', Utils.stringify(events), (status:number, message:string, data?:string, headers?:Object) => {
+    return this.sendRequest(config, 'POST', '/api/v2/events', Utils.stringify(events, config.dataExclusions), (status:number, message:string, data?:string, headers?:Object) => {
 
       var settingsVersion = (headers && parseInt(headers['X-Exceptionless-ConfigVersion'])) || -1;
       SettingsManager.checkVersion(settingsVersion, config);
@@ -21,7 +21,7 @@ export class SubmissionClientBase implements ISubmissionClient {
 
   public postUserDescription(referenceId:string, description:IUserDescription, config:Configuration, callback:(response:SubmissionResponse) => void):void {
     var path = `/api/v2/events/by-ref/${encodeURIComponent(referenceId)}/user-description`;
-    return this.sendRequest(config, 'POST', path, Utils.stringify(description), (status:number, message:string) => {
+    return this.sendRequest(config, 'POST', path, Utils.stringify(description, config.dataExclusions), (status:number, message:string) => {
       callback(new SubmissionResponse(status, message));
     });
   }

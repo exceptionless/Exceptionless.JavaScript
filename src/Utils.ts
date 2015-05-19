@@ -109,10 +109,46 @@ export class Utils {
     return Math.floor(Math.random() * 9007199254740992);
   }
 
-  public static stringify(data:any): string {
-    function stringifyImpl(data:any): string {
+  public static stringify(data:any, exclusions?:string[]): string {
+    function checkForMatch(pattern:string, value:string): boolean {
+      if (!pattern || !value || typeof value !== 'string') {
+        return false;
+      }
+
+      var startsWithWildcard:boolean = pattern[0] === '*';
+      if (startsWithWildcard) {
+        pattern = pattern.slice(1);
+      }
+
+      var endsWithWildcard:boolean = pattern[pattern.length - 1] === '*';
+      if (endsWithWildcard) {
+        pattern = pattern.substring(0, pattern.length - 1);
+      }
+
+      pattern = pattern.toLowerCase();
+      value = value.toLowerCase();
+
+      if (startsWithWildcard && endsWithWildcard)
+        return value.indexOf(pattern) !== -1;
+
+      if (startsWithWildcard)
+        return value.lastIndexOf(pattern, 0) !== -1;
+
+      if (endsWithWildcard)
+        return value.lastIndexOf(pattern) === (value.length - pattern.length);
+
+      return value === pattern;
+    }
+
+    function stringifyImpl(data:any, exclusions:string[]): string {
       var cache:string[] = [];
       return JSON.stringify(data, function(key:string, value:any) {
+        for (var index = 0; index < (exclusions || []).length; index++) {
+          if (checkForMatch(exclusions[index], key)){
+            return;
+          }
+        }
+
         if (typeof value === 'object' && !!value) {
           if (cache.indexOf(value) !== -1) {
             // Circular reference found, discard key
@@ -129,12 +165,12 @@ export class Utils {
     if (toString.call(data) === '[object Array]') {
       var result = [];
       for (var index = 0; index < data.length; index++) {
-        result[index] = JSON.parse(stringifyImpl(data[index]));
+        result[index] = JSON.parse(stringifyImpl(data[index], exclusions || []));
       }
 
       return JSON.stringify(result);
     }
 
-    return stringifyImpl(data);
+    return stringifyImpl(data, exclusions || []);
   }
 }

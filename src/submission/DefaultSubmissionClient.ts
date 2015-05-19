@@ -39,15 +39,13 @@ export class DefaultSubmissionClient extends SubmissionClientBase {
       function parseResponseHeaders(headerStr) {
         var headers = {};
         var headerPairs = (headerStr || '').split('\u000d\u000a');
-        for (var index = 0; index < headerPairs.length; index++) {
+        for (var index:number = 0; index < headerPairs.length; index++) {
           var headerPair = headerPairs[index];
           // Can't use split() here because it does the wrong thing
           // if the header value has the string ": " in it.
-          var index = headerPair.indexOf('\u003a\u0020');
-          if (index > 0) {
-            var key = headerPair.substring(0, index);
-            var val = headerPair.substring(index + 2);
-            headers[key] = val;
+          var separator = headerPair.indexOf('\u003a\u0020');
+          if (separator > 0) {
+            headers[headerPair.substring(0, separator)] = headerPair.substring(separator + 2);
           }
         }
 

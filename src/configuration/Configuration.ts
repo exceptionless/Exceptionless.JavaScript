@@ -61,7 +61,7 @@ export class Configuration implements IConfigurationSettings {
    * Contains a dictionary of custom settings that can be used to control
    * the client and will be automatically updated from the server.
    */
-  public settings:Object;
+  public settings:Object = {};
 
   public storage:IStorage<Object>;
 

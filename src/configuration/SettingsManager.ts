@@ -6,7 +6,7 @@ export class SettingsManager {
   private static _configPath:string = 'ex-server-settings.json';
 
   public static applySavedServerSettings(config:Configuration):void {
-    Utils.merge(config.settings, this.getSavedServerSettings(config));
+    config.settings = Utils.merge(config.settings, this.getSavedServerSettings(config));
     // TODO: Fire on changed event.
   }
 
@@ -37,7 +37,7 @@ export class SettingsManager {
       }
 
       var savedServerSettings = SettingsManager.getSavedServerSettings(config);
-      Utils.merge(config.settings, savedServerSettings);
+      config.settings = Utils.merge(config.settings, savedServerSettings);
 
       // TODO: Store snapshot of settings after reading from config and attributes and use that to revert to defaults.
       // Remove any existing server settings that are not in the new server settings.
