@@ -117,12 +117,21 @@ export class ExceptionlessClient {
    * @param callback
    */
   public submitEvent(event:IEvent, pluginContextData?:ContextData, callback?:(context:EventPluginContext) => void): void {
+    function cancelled() {
+      if (!!context) {
+        context.cancelled = true;
+      }
+
+      return !!callback && callback(context);
+    }
+
     if (!event) {
-      return;
+      return cancelled();
     }
 
     if (!this.config.enabled) {
-      return this.config.log.info('Event submission is currently disabled.');
+      this.config.log.info('Event submission is currently disabled.');
+      return cancelled();
     }
 
     if (!event.data) {
@@ -155,9 +164,7 @@ export class ExceptionlessClient {
         }
       }
 
-      if (!!callback) {
-        callback(context);
-      }
+      !!callback && callback(context);
     });
   }
 
@@ -168,23 +175,17 @@ export class ExceptionlessClient {
    * @param description The user's description of the event.
    */
   public updateUserEmailAndDescription(referenceId:string, email:string, description:string, callback?:(response:SubmissionResponse) => void) {
-    if (!referenceId || !email || !description) {
-      return;
+    if (!referenceId || !email || !description || !this.config.enabled) {
+      return !!callback && callback(new SubmissionResponse(500, 'cancelled'));
     }
 
-    if (!this.config.enabled) {
-      return this.config.log.info('Configuration is disabled. The event will not be updated with the user email and description.');
-    }
-
-    var description:IUserDescription = { email: email, description: description };
-    var response = this.config.submissionClient.postUserDescription(referenceId, description, this.config, (response:SubmissionResponse) => {
+    var userDescription:IUserDescription = { email_address: email, description: description };
+    var response = this.config.submissionClient.postUserDescription(referenceId, userDescription, this.config, (response:SubmissionResponse) => {
       if (!response.success) {
         this.config.log.error(`Failed to submit user email and description for event '${referenceId}': ${response.statusCode} ${response.message}`)
       }
 
-      if (!!callback) {
-        callback(response);
-      }
+      !!callback && callback(response);
     });
   }
 
@@ -201,6 +202,7 @@ export class ExceptionlessClient {
     if(ExceptionlessClient._instance === null) {
       ExceptionlessClient._instance = new ExceptionlessClient(null);
     }
+
     return ExceptionlessClient._instance;
   }
 }

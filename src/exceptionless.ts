@@ -1,11 +1,3 @@
-// TODO: Verify that stack traces are parsed properly.
-// TODO: Handle Server Settings
-// TODO: Lock configuration.
-// TODO: Move this into an static array and dynamically call all registered bootstrappers.
-// TODO: NODE: modules.
-// TODO: Filter excluded properties.
-// TODO: Get extra exception properties.
-
 import { IBootstrapper } from './bootstrap/IBootstrapper';
 import { NodeBootstrapper } from './bootstrap/NodeBootstrapper';
 import { WindowBootstrapper } from './bootstrap/WindowBootstrapper';
