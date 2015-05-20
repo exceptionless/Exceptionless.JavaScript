@@ -115,6 +115,14 @@ export class Utils {
         return false;
       }
 
+      var trim = /^[\s\uFEFF\xA0]+|[\s\uFEFF\xA0]+$/g;
+      pattern = pattern.toLowerCase().replace(trim, '');
+      value = value.toLowerCase().replace(trim, '');
+
+      if (pattern.length <= 0) {
+        return false;
+      }
+
       var startsWithWildcard:boolean = pattern[0] === '*';
       if (startsWithWildcard) {
         pattern = pattern.slice(1);
@@ -125,8 +133,6 @@ export class Utils {
         pattern = pattern.substring(0, pattern.length - 1);
       }
 
-      pattern = pattern.toLowerCase();
-      value = value.toLowerCase();
 
       if (startsWithWildcard && endsWithWildcard)
         return value.indexOf(pattern) !== -1;

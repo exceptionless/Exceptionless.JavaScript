@@ -7,6 +7,7 @@ export class SettingsManager {
 
   public static applySavedServerSettings(config:Configuration):void {
     config.settings = Utils.merge(config.settings, this.getSavedServerSettings(config));
+    config.log.info('Applying saved settings.');
     // TODO: Fire on changed event.
   }
 
@@ -15,12 +16,13 @@ export class SettingsManager {
   }
 
   public static checkVersion(version:number, config:Configuration):void {
-    if (isNaN(version) || version < 0) {
+    if (isNaN(version) || version <= 0) {
       return;
     }
 
     var savedConfigVersion = parseInt(<string>config.storage.get(`${this._configPath}-version`, 1)[0]);
-    if (!isNaN(savedConfigVersion) && version > savedConfigVersion) {
+    if (isNaN(savedConfigVersion) || version > savedConfigVersion) {
+      config.log.info(`Updating settings from v${(!isNaN(savedConfigVersion) ? savedConfigVersion : 0)} to v${version}`);
       this.updateSettings(config);
     }
   }
@@ -36,11 +38,11 @@ export class SettingsManager {
         return;
       }
 
-      var savedServerSettings = SettingsManager.getSavedServerSettings(config);
-      config.settings = Utils.merge(config.settings, savedServerSettings);
+      config.settings = Utils.merge(config.settings, response.settings);
 
       // TODO: Store snapshot of settings after reading from config and attributes and use that to revert to defaults.
       // Remove any existing server settings that are not in the new server settings.
+      var savedServerSettings = SettingsManager.getSavedServerSettings(config);
       for (var key in savedServerSettings) {
         if (response.settings[key]) {
           continue;
@@ -52,6 +54,7 @@ export class SettingsManager {
       config.storage.save(`${this._configPath}-version`, response.settingsVersion);
       config.storage.save(this._configPath, response.settings);
 
+      config.log.info('Updated settings');
       // TODO: Fire on changed event.
     });
   }

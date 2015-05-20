@@ -156,7 +156,8 @@ export class Configuration implements IConfigurationSettings {
    * @returns {string[]}
    */
   public get dataExclusions():string[] {
-    return this._dataExclusions.concat(this.settings['@@DataExclusions'] || []);
+    var exclusions:string = this.settings['@@DataExclusions'];
+    return this._dataExclusions.concat(exclusions && exclusions.split(',') || []);
   }
 
   /**

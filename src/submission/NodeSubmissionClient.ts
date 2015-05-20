@@ -12,6 +12,11 @@ import https = require('https');
 import url = require('url');
 
 export class NodeSubmissionClient extends SubmissionClientBase {
+  constructor() {
+    super();
+    this.configurationVersionHeader = 'x-exceptionless-configversion';
+  }
+
   public sendRequest(config:Configuration, method:string, path:string, data:string, callback: (status:number, message:string, data?:string, headers?:Object) => void): void {
     function complete(response:http.IncomingMessage, data:string, headers:Object) {
       var message:string;
@@ -42,7 +47,7 @@ export class NodeSubmissionClient extends SubmissionClientBase {
     }
 
     options.headers['User-Agent'] = config.userAgent;
-    var request:http.ClientRequest = https.request(options, (response:http.IncomingMessage) => {
+    var request:http.ClientRequest = (parsedHost.protocol === 'https' ? https : http).request(options, (response:http.IncomingMessage) => {
       var body = '';
       response.on('data', chunk => body += chunk);
       response.on('end', () => {

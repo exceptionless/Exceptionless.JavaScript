@@ -6,6 +6,22 @@ client.config.apiKey = 'LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw';
 client.config.serverUrl = 'http://localhost:50000';
 client.config.useDebugLogger();
 
+// set some default data
+client.config.defaultData['SampleUser'] = {
+  id:1,
+  name: 'Blake',
+  password: '123456',
+  passwordResetToken: 'a reset token',
+  myPasswordValue: '123456',
+  myPassword: '123456',
+  customValue: 'Password',
+  value: {
+    Password: '123456'
+  }
+};
+
+client.config.defaultTags.push('Example', 'Node');
+
 app.get('/', function (req, res) {
   res.send('Hello World!');
 });
