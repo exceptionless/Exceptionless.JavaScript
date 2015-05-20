@@ -280,7 +280,7 @@ export class Configuration implements IConfigurationSettings {
    * @returns {string}
    */
   public get userAgent():string {
-    return `exceptionless-js/1.0.0.0`;
+    return 'exceptionless-js/1.0.0.0';
   }
 
   /**

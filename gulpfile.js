@@ -2,6 +2,7 @@ var concat = require('gulp-concat');
 var del = require('del');
 var gulp = require('gulp');
 var karma = require('gulp-karma');
+var package = require('./package.json');
 var replace = require('gulp-replace');
 var sourcemaps = require('gulp-sourcemaps');
 var tsProject = require('tsproject');
@@ -52,6 +53,7 @@ gulp.task('exceptionless.es5', ['exceptionless.es5.umd'], function() {
   gulp.src(files)
     .pipe(sourcemaps.init({ loadMaps: true }))
     .pipe(concat('exceptionless.js'))
+    .pipe(replace('exceptionless-js/1.0.0.0', 'exceptionless-js/' + package.version))
     .pipe(replace('require(\'source-map/lib/source-map/source-map-consumer\')', 'null')) // needed for node until source maps dependency is fixed
     .pipe(sourcemaps.write('.'))
     .pipe(gulp.dest('dist'));
@@ -59,6 +61,7 @@ gulp.task('exceptionless.es5', ['exceptionless.es5.umd'], function() {
   return gulp.src(files)
     .pipe(sourcemaps.init({ loadMaps: true }))
     .pipe(concat('exceptionless.min.js'))
+    .pipe(replace('exceptionless-js/1.0.0.0', 'exceptionless-js/' + package.version))
     .pipe(replace('require(\'source-map/lib/source-map/source-map-consumer\')', 'null')) // needed for node until source maps dependency is fixed
     .pipe(uglify())
     .pipe(sourcemaps.write('.'))
@@ -80,6 +83,7 @@ gulp.task('exceptionless.es6', ['typescript.es6'], function() {
   gulp.src(files)
     .pipe(sourcemaps.init({ loadMaps: true }))
     .pipe(concat('exceptionless.es6.js'))
+    .pipe(replace('exceptionless-js/1.0.0.0', 'exceptionless-js/' + package.version))
     .pipe(sourcemaps.write('.'))
     .pipe(gulp.dest('dist'));
 });
