@@ -94,6 +94,9 @@ export interface IConfigurationSettings {
 }
 export declare class SettingsManager {
     private static _configPath;
+    private static _handlers;
+    private static changed(config);
+    static onChanged(handler: (config: Configuration) => void): void;
     static applySavedServerSettings(config: Configuration): void;
     private static getSavedServerSettings(config);
     static checkVersion(version: number, config: Configuration): void;

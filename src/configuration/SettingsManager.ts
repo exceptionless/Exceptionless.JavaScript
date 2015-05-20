@@ -4,11 +4,22 @@ import { Utils } from '../Utils';
 
 export class SettingsManager {
   private static _configPath:string = 'ex-server-settings.json';
+  private static _handlers:{ (config:Configuration):void }[] = [];
+
+  private static changed(config:Configuration) {
+    for (var index = 0; index < this._handlers.length; index++) {
+      this._handlers[index](config);
+    }
+  }
+
+  public static onChanged(handler:(config:Configuration) => void) {
+    !!handler && this._handlers.push(handler);
+  }
 
   public static applySavedServerSettings(config:Configuration):void {
-    config.settings = Utils.merge(config.settings, this.getSavedServerSettings(config));
     config.log.info('Applying saved settings.');
-    // TODO: Fire on changed event.
+    config.settings = Utils.merge(config.settings, this.getSavedServerSettings(config));
+    this.changed(config);
   }
 
   private static getSavedServerSettings(config:Configuration):Object {
@@ -55,7 +66,7 @@ export class SettingsManager {
       config.storage.save(this._configPath, response.settings);
 
       config.log.info('Updated settings');
-      // TODO: Fire on changed event.
+      this.changed(config);
     });
   }
 }

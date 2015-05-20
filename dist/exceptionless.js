@@ -1215,9 +1215,18 @@ exports.ContextData = ContextData;
 var SettingsManager = (function () {
     function SettingsManager() {
     }
+    SettingsManager.changed = function (config) {
+        for (var index = 0; index < this._handlers.length; index++) {
+            this._handlers[index](config);
+        }
+    };
+    SettingsManager.onChanged = function (handler) {
+        !!handler && this._handlers.push(handler);
+    };
     SettingsManager.applySavedServerSettings = function (config) {
-        config.settings = Utils.merge(config.settings, this.getSavedServerSettings(config));
         config.log.info('Applying saved settings.');
+        config.settings = Utils.merge(config.settings, this.getSavedServerSettings(config));
+        this.changed(config);
     };
     SettingsManager.getSavedServerSettings = function (config) {
         return config.storage.get(this._configPath, 1)[0] || {};
@@ -1253,9 +1262,11 @@ var SettingsManager = (function () {
             config.storage.save(_this._configPath + "-version", response.settingsVersion);
             config.storage.save(_this._configPath, response.settings);
             config.log.info('Updated settings');
+            _this.changed(config);
         });
     };
     SettingsManager._configPath = 'ex-server-settings.json';
+    SettingsManager._handlers = [];
     return SettingsManager;
 })();
 exports.SettingsManager = SettingsManager;
@@ -1859,7 +1870,7 @@ var Configuration = (function () {
     };
     Object.defineProperty(Configuration.prototype, "userAgent", {
         get: function () {
-            return 'exceptionless-js/0.2.1';
+            return 'exceptionless-js/0.3.0';
         },
         enumerable: true,
         configurable: true
