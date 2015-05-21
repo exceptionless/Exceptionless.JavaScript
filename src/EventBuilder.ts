@@ -7,7 +7,7 @@ import { EventPluginContext } from './plugins/EventPluginContext';
 import { Utils } from 'Utils';
 
 export class EventBuilder {
-  private _validIdentifierErrorMessage:string = "must contain between 8 and 100 alphanumeric or '-' characters.";
+  private _validIdentifierErrorMessage:string = "must contain between 8 and 100 alphanumeric or '-' characters."; // optimization for minifier.
 
   public target:IEvent;
   public client:ExceptionlessClient;
@@ -20,7 +20,7 @@ export class EventBuilder {
   }
 
   public setType(type:string): EventBuilder {
-    if (!!type && type.length > 0) {
+    if (!!type) {
       this.target.type = type;
     }
 
@@ -28,7 +28,7 @@ export class EventBuilder {
   }
 
   public setSource(source:string): EventBuilder {
-    if (!!source && source.length > 0) {
+    if (!!source) {
       this.target.source = source;
     }
 
@@ -54,7 +54,7 @@ export class EventBuilder {
   }
 
   public setMessage(message:string): EventBuilder {
-    if (!!message && message.length > 0) {
+    if (!!message) {
       this.target.message = message;
     }
 
@@ -118,7 +118,6 @@ export class EventBuilder {
     return this;
   }
 
-  //todo: rename this
   public addRequestInfo(request:Object): EventBuilder {
     if (!!request) {
       this.pluginContextData['@request'] = request;
@@ -132,7 +131,7 @@ export class EventBuilder {
   }
 
   private isValidIdentifier(value:string): boolean {
-    if (!value || !value.length) {
+    if (!value) {
       return true;
     }
 

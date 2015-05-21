@@ -11,8 +11,6 @@ export class ReferenceIdPlugin implements IEventPlugin {
       context.event.reference_id = Utils.guid().replace('-', '').substring(0, 10);
     }
 
-    if (next) {
-      next();
-    }
+    next && next();
   }
 }

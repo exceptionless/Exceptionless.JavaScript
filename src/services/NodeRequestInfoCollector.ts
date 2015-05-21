@@ -5,12 +5,13 @@ import { Utils } from '../Utils';
 
 export class NodeRequestInfoCollector implements IRequestInfoCollector {
   getRequestInfo(context:EventPluginContext):IRequestInfo {
-    if (!context.contextData['@request']) {
+    const requestKey:string = '@request'; // optimization for minifier.
+    if (!context.contextData[requestKey]) {
       return null;
     }
 
-    var request = context.contextData['@request'];
-    var ri:IRequestInfo = {
+    var request = context.contextData[requestKey];
+    var requestInfo:IRequestInfo = {
       client_ip_address: request.ip,
       user_agent: request.headers['user-agent'],
       is_secure: request.secure,
@@ -26,9 +27,9 @@ export class NodeRequestInfoCollector implements IRequestInfoCollector {
     var host = request.headers['host'];
     var port:number = host && parseInt(host.slice(host.indexOf(':') + 1));
     if (port > 0) {
-      ri.port = port;
+      requestInfo.port = port;
     }
 
-    return ri;
+    return requestInfo;
   }
 }

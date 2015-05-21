@@ -1,36 +1,56 @@
 import { Configuration } from '../configuration/Configuration';
+import { SettingsManager } from '../configuration/SettingsManager';
 import { IEvent } from '../models/IEvent';
+import { IClientConfiguration } from '../models/IClientConfiguration';
 import { IUserDescription } from '../models/IUserDescription';
 import { ISubmissionClient } from './ISubmissionClient';
 import { SettingsResponse } from './SettingsResponse';
-import { SubmissionClientBase } from './SubmissionClientBase';
 import { SubmissionResponse } from './SubmissionResponse';
 import { Utils } from '../Utils';
 
 declare var XDomainRequest:{ new (); create(); };
 
-export class DefaultSubmissionClient extends SubmissionClientBase {
-  private createRequest(config:Configuration, method:string, url:string): XMLHttpRequest {
-    var xhr:any = new XMLHttpRequest();
-    if ('withCredentials' in xhr) {
-      xhr.open(method, url, true);
-    } else if (typeof XDomainRequest != 'undefined') {
-      xhr = new XDomainRequest();
-      xhr.open(method, url);
-    } else {
-      xhr = null;
-    }
+export class DefaultSubmissionClient implements ISubmissionClient {
+  public configurationVersionHeader:string = 'X-Exceptionless-ConfigVersion';
 
-    if (xhr) {
-      xhr.setRequestHeader('X-Exceptionless-Client', config.userAgent);
-      if (method === 'POST' && xhr.setRequestHeader) {
-        xhr.setRequestHeader('Content-Type', 'application/json');
+  public postEvents(events:IEvent[], config:Configuration, callback:(response:SubmissionResponse) => void):void {
+    return this.sendRequest(config, 'POST', '/api/v2/events', Utils.stringify(events, config.dataExclusions), (status:number, message:string, data?:string, headers?:Object) => {
+      var settingsVersion:number = headers && parseInt(headers[this.configurationVersionHeader]);
+      SettingsManager.checkVersion(settingsVersion, config);
+
+      callback(new SubmissionResponse(status, message));
+    });
+  }
+
+  public postUserDescription(referenceId:string, description:IUserDescription, config:Configuration, callback:(response:SubmissionResponse) => void):void {
+    var path = `/api/v2/events/by-ref/${encodeURIComponent(referenceId)}/user-description`;
+    return this.sendRequest(config, 'POST', path, Utils.stringify(description, config.dataExclusions), (status:number, message:string, data?:string, headers?:Object) => {
+      var settingsVersion:number = headers && parseInt(headers[this.configurationVersionHeader]);
+      SettingsManager.checkVersion(settingsVersion, config);
+
+      callback(new SubmissionResponse(status, message));
+    });
+  }
+
+  public getSettings(config:Configuration, callback:(response:SettingsResponse) => void):void {
+    return this.sendRequest(config, 'GET', '/api/v2/projects/config', null, (status:number, message:string, data?:string) => {
+      if (status !== 200) {
+        return callback(new SettingsResponse(false, null, -1, null, message));
       }
 
-      xhr.timeout = 10000;
-    }
+      var settings:IClientConfiguration;
+      try {
+        settings = JSON.parse(data);
+      } catch (e) {
+        config.log.error(`Unable to parse settings: '${data}'`);
+      }
 
-    return xhr;
+      if (!settings || !settings.settings || !settings.version) {
+        return callback(new SettingsResponse(false, null, -1, null, 'Invalid configuration settings.'));
+      }
+
+      callback(new SettingsResponse(true, settings.settings, settings.version));
+    });
   }
 
   public sendRequest(config:Configuration, method:string, path:string, data:string, callback: (status:number, message:string, data?:string, headers?:Object) => void): void {
@@ -78,8 +98,31 @@ export class DefaultSubmissionClient extends SubmissionClientBase {
       callback(xhr.status || 500, message, xhr.responseText, parseResponseHeaders(xhr.getAllResponseHeaders()));
     }
 
+    function createRequest(config:Configuration, method:string, url:string): XMLHttpRequest {
+      var xhr:any = new XMLHttpRequest();
+      if ('withCredentials' in xhr) {
+        xhr.open(method, url, true);
+      } else if (typeof XDomainRequest != 'undefined') {
+        xhr = new XDomainRequest();
+        xhr.open(method, url);
+      } else {
+        xhr = null;
+      }
+
+      if (xhr) {
+        xhr.setRequestHeader('X-Exceptionless-Client', config.userAgent);
+        if (method === 'POST' && xhr.setRequestHeader) {
+          xhr.setRequestHeader('Content-Type', 'application/json');
+        }
+
+        xhr.timeout = 10000;
+      }
+
+      return xhr;
+    }
+
     var url = `${config.serverUrl}${path}?access_token=${encodeURIComponent(config.apiKey)}`;
-    var xhr = this.createRequest(config, method || 'POST', url);
+    var xhr = createRequest(config, method || 'POST', url);
     if (!xhr) {
       return callback(503,'CORS not supported.');
     }

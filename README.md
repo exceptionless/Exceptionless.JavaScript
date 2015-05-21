@@ -25,7 +25,7 @@ We will be adding cdn support in the near future.
 
 #### Node.js
 Use this method to install exceptionless into your node app.
-1. Install the package by running `npm install exceptionless`.
+1. Install the package by running `npm install exceptionless --save-dev`.
 2. Add the exceptionless client to your app:
 ```javascript
 var client = require('exceptionless').ExceptionlessClient.default;

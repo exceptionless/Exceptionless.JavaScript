@@ -1,14 +1,44 @@
 import { Configuration } from '../configuration/Configuration';
+import { ILog } from '../logging/ILog';
 import { SubmissionResponse } from '../submission/SubmissionResponse';
 import { IEvent } from '../models/IEvent';
 import { IEventQueue } from '../queue/IEventQueue';
 import { Utils } from '../Utils';
 
 export class DefaultEventQueue implements IEventQueue {
+  /**
+   * The configuration object.
+   * @type {Configuration}
+   * @private
+   */
   private _config:Configuration;
+
+  /**
+   * Suspends processing until the specified time.
+   * @type {Date}
+   * @private
+   */
   private _suspendProcessingUntil:Date;
+
+  /**
+   * Discards queued items until the specified time.
+   * @type {Date}
+   * @private
+   */
   private _discardQueuedItemsUntil:Date;
+
+  /**
+   * Returns true if the queue is processing.
+   * @type {boolean}
+   * @private
+   */
   private _processingQueue:boolean = false;
+
+  /**
+   * Processes the queue every xx seconds.
+   * @type {Timer}
+   * @private
+   */
   private _queueTimer:any;
 
   constructor(config:Configuration) {
@@ -16,69 +46,76 @@ export class DefaultEventQueue implements IEventQueue {
   }
 
   public enqueue(event:IEvent): void {
+    var config:Configuration = this._config; // Optmization for minifier.
     this.ensureQueueTimer();
 
     if (this.areQueuedItemsDiscarded()) {
-      this._config.log.info('Queue items are currently being discarded. The event will not be queued.');
+      config.log.info('Queue items are currently being discarded. The event will not be queued.');
       return;
     }
 
     var key = `${this.queuePath()}-${new Date().toJSON()}-${Utils.randomNumber()}`;
-    this._config.log.info(`Enqueuing event: ${key} type=${event.type} ${!!event.reference_id ? 'refid=' + event.reference_id : ''}`);
-    this._config.storage.save(key, event);
+    config.log.info(`Enqueuing event: ${key} type=${event.type} ${!!event.reference_id ? 'refid=' + event.reference_id : ''}`);
+    config.storage.save(key, event);
   }
 
   public process(): void {
+    const queueNotProcessed:string = 'The queue will not be processed.'; // optimization for minifier.
+    var config:Configuration = this._config; // Optmization for minifier.
+    var log:ILog = config.log; // Optmization for minifier.
+
     this.ensureQueueTimer();
 
     if (this._processingQueue) {
       return;
     }
 
-    var queueNotProcessed = 'The queue will not be processed.';
-    this._config.log.info('Processing queue...');
-    if (!this._config.enabled) {
-      this._config.log.info(`Configuration is disabled. ${queueNotProcessed}`);
+    log.info('Processing queue...');
+    if (!config.enabled) {
+      log.info(`Configuration is disabled. ${queueNotProcessed}`);
       return;
     }
 
-    if (!this._config.isValid) {
-      this._config.log.info(`Invalid Api Key. ${queueNotProcessed}`);
+    if (!config.isValid) {
+      log.info(`Invalid Api Key. ${queueNotProcessed}`);
       return;
     }
 
     this._processingQueue = true;
 
     try {
-      var events = this._config.storage.get(this.queuePath(), this._config.submissionBatchSize);
+      var events = config.storage.get(this.queuePath(), config.submissionBatchSize);
       if (!events || events.length == 0) {
         this._processingQueue = false;
         return;
       }
 
-      this._config.log.info(`Sending ${events.length} events to ${this._config.serverUrl}.`);
-      this._config.submissionClient.postEvents(events, this._config, (response:SubmissionResponse) => {
+      log.info(`Sending ${events.length} events to ${config.serverUrl}.`);
+      config.submissionClient.postEvents(events, config, (response:SubmissionResponse) => {
         this.processSubmissionResponse(response, events);
-        this._config.log.info('Finished processing queue.');
+        log.info('Finished processing queue.');
         this._processingQueue = false;
       });
     } catch (ex) {
-      this._config.log.error(`Error processing queue: ${ex}`);
+      log.error(`Error processing queue: ${ex}`);
       this.suspendProcessing();
       this._processingQueue = false;
     }
   }
 
   private processSubmissionResponse(response:SubmissionResponse, events:IEvent[]): void {
-    var noSubmission = 'The event will not be submitted.';
+    const noSubmission:string = 'The event will not be submitted.'; // Optmization for minifier.
+    var config:Configuration = this._config; // Optmization for minifier.
+    var log:ILog = config.log; // Optmization for minifier.
+
     if (response.success) {
-      this._config.log.info(`Sent ${events.length} events.`);
+      log.info(`Sent ${events.length} events.`);
       return;
     }
 
     if (response.serviceUnavailable) {
       // You are currently over your rate limit or the servers are under stress.
-      this._config.log.error('Server returned service unavailable.');
+      log.error('Server returned service unavailable.');
       this.suspendProcessing();
       this.requeueEvents(events);
       return;
@@ -86,40 +123,40 @@ export class DefaultEventQueue implements IEventQueue {
 
     if (response.paymentRequired) {
       // If the organization over the rate limit then discard the event.
-      this._config.log.info('Too many events have been submitted, please upgrade your plan.');
+      log.info('Too many events have been submitted, please upgrade your plan.');
       this.suspendProcessing(null, true, true);
       return;
     }
 
     if (response.unableToAuthenticate) {
       // The api key was suspended or could not be authorized.
-      this._config.log.info(`Unable to authenticate, please check your configuration. ${noSubmission}`);
+      log.info(`Unable to authenticate, please check your configuration. ${noSubmission}`);
       this.suspendProcessing(15);
       return;
     }
 
     if (response.notFound || response.badRequest) {
       // The service end point could not be found.
-      this._config.log.error(`Error while trying to submit data: ${response.message}`);
+      log.error(`Error while trying to submit data: ${response.message}`);
       this.suspendProcessing(60 * 4);
       return;
     }
 
     if (response.requestEntityTooLarge) {
       var message = 'Event submission discarded for being too large.';
-      if (this._config.submissionBatchSize > 1) {
-        this._config.log.error(`${message} Retrying with smaller batch size.`);
-        this._config.submissionBatchSize = Math.max(1, Math.round(this._config.submissionBatchSize / 1.5));
+      if (config.submissionBatchSize > 1) {
+        log.error(`${message} Retrying with smaller batch size.`);
+        config.submissionBatchSize = Math.max(1, Math.round(config.submissionBatchSize / 1.5));
         this.requeueEvents(events);
       } else {
-        this._config.log.error(`${message} ${noSubmission}`);
+        log.error(`${message} ${noSubmission}`);
       }
 
       return;
     }
 
     if (!response.success) {
-      this._config.log.error(`Error submitting events: ${ response.message}`);
+      log.error(`Error submitting events: ${ response.message}`);
       this.suspendProcessing();
       this.requeueEvents(events);
     }
@@ -138,11 +175,13 @@ export class DefaultEventQueue implements IEventQueue {
   }
 
   public suspendProcessing(durationInMinutes?:number, discardFutureQueuedItems?:boolean, clearQueue?:boolean): void {
+    var config:Configuration = this._config; // Optmization for minifier.
+
     if (!durationInMinutes || durationInMinutes <= 0) {
       durationInMinutes = 5;
     }
 
-    this._config.log.info(`Suspending processing for ${durationInMinutes} minutes.`);
+    config.log.info(`Suspending processing for ${durationInMinutes} minutes.`);
     this._suspendProcessingUntil = new Date(new Date().getTime() + (durationInMinutes * 60000));
 
     if (discardFutureQueuedItems) {
@@ -155,7 +194,7 @@ export class DefaultEventQueue implements IEventQueue {
 
     // Account is over the limit and we want to ensure that the sample size being sent in will contain newer errors.
     try {
-      this._config.storage.clear(this.queuePath());
+      config.storage.clear(this.queuePath());
     } catch (Exception) { }
   }
 

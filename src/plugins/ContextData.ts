@@ -10,7 +10,7 @@ export class ContextData {
   }
 
   public getException(): Error {
-    return this.hasException ? this['@@_Exception'] : null;
+    return this['@@_Exception'] || null;
   }
 
   public markAsUnhandledError(): void {
@@ -22,12 +22,12 @@ export class ContextData {
   }
 
   public setSubmissionMethod(method:string): void {
-    if (method && method.length > 0) {
+    if (method) {
       this['@@_SubmissionMethod'] = method;
     }
   }
 
   public getSubmissionMethod(): string {
-    return !!this['@@_SubmissionMethod'] ? this['@@_SubmissionMethod'] : null;
+    return this['@@_SubmissionMethod'] || null;
   }
 }

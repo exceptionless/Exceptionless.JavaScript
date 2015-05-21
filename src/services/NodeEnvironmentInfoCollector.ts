@@ -6,6 +6,20 @@ import os = require('os');
 
 export class NodeEnvironmentInfoCollector implements IEnvironmentInfoCollector {
   public getEnvironmentInfo(context:EventPluginContext): IEnvironmentInfo {
+    function getIpAddresses():string {
+      var ips:string[] = [];
+      var interfaces = os.networkInterfaces();
+      Object.keys(interfaces).forEach((name) => {
+        interfaces[name].forEach((iface:any) => {
+          if ('IPv4' === iface.family && !iface.internal) {
+            ips.push(iface.address);
+          }
+        });
+      });
+
+      return ips.join(', ');
+    }
+
     if (!os) {
       return null;
     }
@@ -22,7 +36,7 @@ export class NodeEnvironmentInfoCollector implements IEnvironmentInfoCollector {
       architecture: os.arch(),
       o_s_name: os.type(),
       o_s_version: os.release(),
-      ip_address: this.getIpAddresses(),
+      ip_address: getIpAddresses(),
       machine_name: os.hostname(),
       //install_id: '',
       runtime_version: process.version,
@@ -39,19 +53,5 @@ export class NodeEnvironmentInfoCollector implements IEnvironmentInfoCollector {
     }
 
     return environmentInfo;
-  }
-
-  private getIpAddresses():string {
-    var ips:string[] = [];
-    var interfaces = os.networkInterfaces();
-    Object.keys(interfaces).forEach((name) => {
-      interfaces[name].forEach((iface:any) => {
-        if ('IPv4' === iface.family && !iface.internal) {
-          ips.push(iface.address);
-        }
-      });
-    });
-
-    return ips.join(', ');
   }
 }

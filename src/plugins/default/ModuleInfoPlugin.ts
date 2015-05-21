@@ -8,16 +8,16 @@ export class ModuleInfoPlugin implements IEventPlugin {
   public name:string = 'ModuleInfoPlugin';
 
   public run(context:EventPluginContext, next?:() => void): void {
-    var moduleCollector = context.client.config.moduleCollector;
-    if (context.event.data['@error'] && !context.event.data['@error'].modules && !!moduleCollector) {
-      var modules = moduleCollector.getModules(context);
+    const error:string = '@error'; // optimization for minifier.
+
+    var collector = context.client.config.moduleCollector;
+    if (context.event.data[error] && !context.event.data['@error'].modules && !!collector) {
+      var modules = collector.getModules(context);
       if (modules && modules.length > 0) {
-        context.event.data['@error'].modules = modules;
+        context.event.data[error].modules = modules;
       }
     }
 
-    if (next) {
-      next();
-    }
+    next && next();
   }
 }

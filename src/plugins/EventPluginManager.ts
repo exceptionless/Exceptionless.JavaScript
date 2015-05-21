@@ -3,7 +3,6 @@ import { IEventPlugin } from './IEventPlugin';
 import { EventPluginContext } from './EventPluginContext';
 import { ConfigurationDefaultsPlugin } from './default/ConfigurationDefaultsPlugin';
 import { ErrorPlugin } from './default/ErrorPlugin';
-import { DuplicateCheckerPlugin } from './default/DuplicateCheckerPlugin';
 import { ModuleInfoPlugin } from './default/ModuleInfoPlugin';
 import { RequestInfoPlugin } from './default/RequestInfoPlugin';
 import { EnvironmentInfoPlugin } from './default/EnvironmentInfoPlugin';
@@ -28,7 +27,7 @@ export class EventPluginManager {
       };
     };
 
-    var plugins:IEventPlugin[] = context.client.config.plugins;
+    var plugins:IEventPlugin[] = context.client.config.plugins; // optimization for minifier.
     var wrappedPlugins:{ (): void }[] = [];
     if (!!callback) {
       wrappedPlugins[plugins.length] = wrap({ name: 'cb', priority: 9007199254740992, run: callback }, null);
@@ -44,7 +43,6 @@ export class EventPluginManager {
   public static addDefaultPlugins(config:Configuration): void {
     config.addPlugin(new ConfigurationDefaultsPlugin());
     config.addPlugin(new ErrorPlugin());
-    config.addPlugin(new DuplicateCheckerPlugin());
     config.addPlugin(new ModuleInfoPlugin());
     config.addPlugin(new RequestInfoPlugin());
     config.addPlugin(new EnvironmentInfoPlugin());

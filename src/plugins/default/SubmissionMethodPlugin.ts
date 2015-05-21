@@ -11,8 +11,6 @@ export class SubmissionMethodPlugin implements IEventPlugin {
       context.event.data['@submission_method'] = submissionMethod;
     }
 
-    if (next) {
-      next();
-    }
+    next && next();
   }
 }

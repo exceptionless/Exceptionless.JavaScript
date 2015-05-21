@@ -1,9 +1,8 @@
 import { Configuration } from '../configuration/Configuration';
 import { IEvent } from '../models/IEvent';
 import { IUserDescription } from '../models/IUserDescription';
-import { ISubmissionClient } from './ISubmissionClient';
+import { DefaultSubmissionClient } from './DefaultSubmissionClient';
 import { SettingsResponse } from './SettingsResponse';
-import { SubmissionClientBase } from './SubmissionClientBase';
 import { SubmissionResponse } from './SubmissionResponse';
 import { Utils } from '../Utils';
 
@@ -11,10 +10,10 @@ import http = require('http');
 import https = require('https');
 import url = require('url');
 
-export class NodeSubmissionClient extends SubmissionClientBase {
+export class NodeSubmissionClient extends DefaultSubmissionClient {
   constructor() {
     super();
-    this.configurationVersionHeader = 'x-exceptionless-configversion';
+    this.configurationVersionHeader = this.configurationVersionHeader.toLowerCase();
   }
 
   public sendRequest(config:Configuration, method:string, path:string, data:string, callback: (status:number, message:string, data?:string, headers?:Object) => void): void {

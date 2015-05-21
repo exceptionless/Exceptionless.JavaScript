@@ -63,7 +63,7 @@ gulp.task('exceptionless.es5', ['exceptionless.es5.umd'], function() {
     .pipe(concat('exceptionless.min.js'))
     .pipe(replace('exceptionless-js/1.0.0.0', 'exceptionless-js/' + package.version))
     .pipe(replace('require(\'source-map/lib/source-map/source-map-consumer\')', 'null')) // needed for node until source maps dependency is fixed
-    .pipe(uglify())
+    .pipe(uglify({ output: { beautify: false }}))
     .pipe(sourcemaps.write('.'))
     .pipe(gulp.dest('dist'))
 });

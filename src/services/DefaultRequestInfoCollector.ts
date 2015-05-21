@@ -3,13 +3,13 @@ import { IRequestInfoCollector } from 'IRequestInfoCollector';
 import { EventPluginContext } from '../plugins/EventPluginContext';
 import { Utils } from '../Utils';
 
-export class WebRequestInfoCollector implements IRequestInfoCollector {
+export class DefaultRequestInfoCollector implements IRequestInfoCollector {
   public getRequestInfo(context:EventPluginContext): IRequestInfo {
     if (!document || !navigator || !location) {
       return null;
     }
 
-    var ri:IRequestInfo = {
+    var requestInfo:IRequestInfo = {
       user_agent: navigator.userAgent,
       is_secure: location.protocol === 'https:',
       host: location.hostname,
@@ -21,9 +21,9 @@ export class WebRequestInfoCollector implements IRequestInfoCollector {
     };
 
     if (document.referrer && document.referrer !== '') {
-      ri.referrer = document.referrer;
+      requestInfo.referrer = document.referrer;
     }
 
-    return ri;
+    return requestInfo;
   }
 }

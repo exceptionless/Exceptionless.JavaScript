@@ -3,7 +3,7 @@ import { IModuleCollector } from 'IModuleCollector';
 import { EventPluginContext } from '../plugins/EventPluginContext';
 import { Utils } from '../Utils';
 
-export class WebModuleCollector implements IModuleCollector {
+export class DefaultModuleCollector implements IModuleCollector {
   public getModules(context:EventPluginContext): IModule[] {
     if (document && document.getElementsByTagName) {
       return null;

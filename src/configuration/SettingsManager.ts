@@ -3,12 +3,24 @@ import { SettingsResponse } from '../submission/SettingsResponse';
 import { Utils } from '../Utils';
 
 export class SettingsManager {
+  /**
+   * The configuration settings path.
+   * @type {string}
+   * @private
+   */
   private static _configPath:string = 'ex-server-settings.json';
+
+  /**
+   * A list of handlers that will be fired when the settings change.
+   * @type {Array}
+   * @private
+   */
   private static _handlers:{ (config:Configuration):void }[] = [];
 
   private static changed(config:Configuration) {
-    for (var index = 0; index < this._handlers.length; index++) {
-      this._handlers[index](config);
+    var handlers = this._handlers; // optimization for minifier.
+    for (var index = 0; index < handlers.length; index++) {
+      handlers[index](config);
     }
   }
 
@@ -27,14 +39,12 @@ export class SettingsManager {
   }
 
   public static checkVersion(version:number, config:Configuration):void {
-    if (isNaN(version) || version <= 0) {
-      return;
-    }
-
-    var savedConfigVersion = parseInt(<string>config.storage.get(`${this._configPath}-version`, 1)[0]);
-    if (isNaN(savedConfigVersion) || version > savedConfigVersion) {
-      config.log.info(`Updating settings from v${(!isNaN(savedConfigVersion) ? savedConfigVersion : 0)} to v${version}`);
-      this.updateSettings(config);
+    if (version) {
+      var savedConfigVersion = parseInt(<string>config.storage.get(`${this._configPath}-version`, 1)[0]);
+      if (isNaN(savedConfigVersion) || version > savedConfigVersion) {
+        config.log.info(`Updating settings from v${(!isNaN(savedConfigVersion) ? savedConfigVersion : 0)} to v${version}`);
+        this.updateSettings(config);
+      }
     }
   }
 
@@ -62,8 +72,9 @@ export class SettingsManager {
         delete config.settings[key];
       }
 
-      config.storage.save(`${this._configPath}-version`, response.settingsVersion);
-      config.storage.save(this._configPath, response.settings);
+      var path = SettingsManager._configPath; // optimization for minifier.
+      config.storage.save(`${path}-version`, response.settingsVersion);
+      config.storage.save(path, response.settings);
 
       config.log.info('Updated settings');
       this.changed(config);

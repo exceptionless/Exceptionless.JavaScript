@@ -7,16 +7,16 @@ export class RequestInfoPlugin implements IEventPlugin {
   public name:string = 'RequestInfoPlugin';
 
   public run(context:EventPluginContext, next?:() => void): void {
-    var requestInfoCollector = context.client.config.requestInfoCollector;
-    if (!context.event.data['@request'] && !!requestInfoCollector) {
-      var ri = requestInfoCollector.getRequestInfo(context);
-      if (!!ri) {
-        context.event.data['@request'] = ri;
+    const request:string = '@request'; // optimization for minifier.
+
+    var collector = context.client.config.requestInfoCollector;
+    if (!context.event.data[request] && !!collector) {
+      var requestInfo = collector.getRequestInfo(context);
+      if (!!requestInfo) {
+        context.event.data[request] = requestInfo;
       }
     }
 
-    if (next) {
-      next();
-    }
+    next && next();
   }
 }

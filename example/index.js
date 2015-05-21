@@ -2,6 +2,27 @@ function getNonexistentData() {
   /* random comment */ nonexistentArray[arguments[0]]; // second random comment;
 }
 
+function sendEvents(numberToSends, eventType) {
+  eventType = eventType || getRandomInt(0, 1);
+
+  for (var index = 0; index < numberToSends; index++) {
+    switch (eventType) {
+      case 0: {
+        Exceptionless.ExceptionlessClient.default.submitLog('sendEvents', 'This is a test message', 'info');
+        break;
+      }
+      case 1: {
+        throwIndexOutOfRange();
+        break;
+      }
+    }
+  }
+}
+
+function getRandomInt(min, max) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
 function throwDivisionByZero() {
   return divide(10, 0);
 }

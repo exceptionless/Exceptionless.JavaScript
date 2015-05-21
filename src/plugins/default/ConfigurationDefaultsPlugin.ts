@@ -21,8 +21,6 @@ export class ConfigurationDefaultsPlugin implements IEventPlugin {
       }
     }
 
-    if (next) {
-      next();
-    }
+    next && next();
   }
 }

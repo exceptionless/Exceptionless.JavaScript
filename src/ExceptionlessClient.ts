@@ -16,9 +16,6 @@ export class ExceptionlessClient {
   constructor(settings:IConfigurationSettings);
   constructor(apiKey:string, serverUrl?:string);
   constructor(settingsOrApiKey?:IConfigurationSettings|string, serverUrl?:string) {
-    // TODO: populate this in a plugin..
-    //var settings = this.getSettingsFromScriptTag() || {};
-
     if (typeof settingsOrApiKey !== 'object') {
       this.config = new Configuration(settingsOrApiKey);
     } else {
@@ -197,7 +194,18 @@ export class ExceptionlessClient {
     return this.config.lastReferenceIdManager.getLast();
   }
 
+  /**
+   * The default ExceptionlessClient instance.
+   * @type {ExceptionlessClient}
+   * @private
+   */
   private static _instance:ExceptionlessClient = null;
+
+
+  /**
+   * The default ExceptionlessClient instance.
+   * @type {ExceptionlessClient}
+   */
   public static get default() {
     if(ExceptionlessClient._instance === null) {
       ExceptionlessClient._instance = new ExceptionlessClient(null);

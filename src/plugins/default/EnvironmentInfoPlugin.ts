@@ -7,15 +7,16 @@ export class EnvironmentInfoPlugin implements IEventPlugin {
   public name:string = 'EnvironmentInfoPlugin';
 
   public run(context:EventPluginContext, next?:() => void): void {
-    if (!context.event.data['@environment'] && context.client.config.environmentInfoCollector) {
-      var ei = context.client.config.environmentInfoCollector.getEnvironmentInfo(context);
-      if (!!ei) {
-        context.event.data['@environment'] = ei;
+    const environment:string = '@environment'; // optimization for minifier.
+
+    var collector = context.client.config.environmentInfoCollector;
+    if (!context.event.data[environment] && collector) {
+      var environmentInfo = collector.getEnvironmentInfo(context);
+      if (!!environmentInfo) {
+        context.event.data[environment] = environmentInfo;
       }
     }
 
-    if (next) {
-      next();
-    }
+    next && next();
   }
 }

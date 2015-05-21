@@ -1,7 +1,7 @@
 import { IConfigurationSettings } from './IConfigurationSettings';
 import { SettingsManager } from './SettingsManager';
 import { ILastReferenceIdManager } from '../lastReferenceIdManager/ILastReferenceIdManager';
-import { InMemoryLastReferenceIdManager } from '../lastReferenceIdManager/InMemoryLastReferenceIdManager';
+import { DefaultLastReferenceIdManager } from '../lastReferenceIdManager/DefaultLastReferenceIdManager';
 import { ConsoleLog } from '../logging/ConsoleLog';
 import { ILog } from '../logging/ILog';
 import { NullLog } from '../logging/NullLog';
@@ -22,12 +22,6 @@ import { ISubmissionClient } from '../submission/ISubmissionClient';
 import { Utils } from '../Utils';
 
 export class Configuration implements IConfigurationSettings {
-  private _apiKey:string;
-  private _enabled:boolean = true;
-  private _serverUrl:string = 'https://collector.exceptionless.io';
-  private _dataExclusions:string[] = [];
-  private _plugins:IEventPlugin[] = [];
-
   /**
    * A default list of tags that will automatically be added to every
    * report submitted to the server.
@@ -44,9 +38,17 @@ export class Configuration implements IConfigurationSettings {
    */
   public defaultData:Object = {};
 
+  /**
+   * Whether the client is currently enabled or not. If it is disabled,
+   * submitted errors will be discarded and no data will be sent to the server.
+   *
+   * @returns {boolean}
+   */
+  public enabled:boolean = true;
+
   public environmentInfoCollector:IEnvironmentInfoCollector;
   public errorParser:IErrorParser;
-  public lastReferenceIdManager:ILastReferenceIdManager = new InMemoryLastReferenceIdManager();
+  public lastReferenceIdManager:ILastReferenceIdManager = new DefaultLastReferenceIdManager();
   public log:ILog;
   public moduleCollector:IModuleCollector;
   public requestInfoCollector:IRequestInfoCollector;
@@ -80,7 +82,7 @@ export class Configuration implements IConfigurationSettings {
 
     this.environmentInfoCollector = inject(configSettings.environmentInfoCollector);
     this.errorParser = inject(configSettings.errorParser);
-    this.lastReferenceIdManager = inject(configSettings.lastReferenceIdManager) || new InMemoryLastReferenceIdManager();
+    this.lastReferenceIdManager = inject(configSettings.lastReferenceIdManager) || new DefaultLastReferenceIdManager();
     this.moduleCollector = inject(configSettings.moduleCollector);
     this.requestInfoCollector = inject(configSettings.requestInfoCollector);
     this.submissionBatchSize = inject(configSettings.submissionBatchSize) || 50;
@@ -91,6 +93,13 @@ export class Configuration implements IConfigurationSettings {
     SettingsManager.applySavedServerSettings(this);
     EventPluginManager.addDefaultPlugins(this);
   }
+
+  /**
+   * The API key that will be used when sending events to the server.
+   * @type {string}
+   * @private
+   */
+  private _apiKey:string;
 
   /**
    * The API key that will be used when sending events to the server.
@@ -119,6 +128,13 @@ export class Configuration implements IConfigurationSettings {
 
   /**
    * The server url that all events will be sent to.
+   * @type {string}
+   * @private
+   */
+  private _serverUrl:string = 'https://collector.exceptionless.io';
+
+  /**
+   * The server url that all events will be sent to.
    * @returns {string}
    */
   public get serverUrl():string {
@@ -130,21 +146,18 @@ export class Configuration implements IConfigurationSettings {
    * @param value
    */
   public set serverUrl(value:string) {
-    if (!!value && value.length > 0) {
+    if (!!value) {
       this._serverUrl = value;
       this.log.info(`serverUrl: ${this._serverUrl}`);
     }
   }
 
   /**
-   * Whether the client is currently enabled or not. If it is disabled,
-   * submitted errors will be discarded and no data will be sent to the server.
-   *
-   * @returns {boolean}
+   * A list of exclusion patterns.
+   * @type {Array}
+   * @private
    */
-  public get enabled():boolean {
-    return this._enabled;
-  }
+  private _dataExclusions:string[] = [];
 
   /**
    *  A list of exclusion patterns that will automatically remove any data that
@@ -175,6 +188,13 @@ export class Configuration implements IConfigurationSettings {
 
   /**
    * The list of plugins that will be used in this configuration.
+   * @type {Array}
+   * @private
+   */
+  private _plugins:IEventPlugin[] = [];
+
+  /**
+   * The list of plugins that will be used in this configuration.
    * @returns {IEventPlugin[]}
    */
   public get plugins():IEventPlugin[] {
@@ -199,7 +219,7 @@ export class Configuration implements IConfigurationSettings {
   public addPlugin(pluginOrName:IEventPlugin|string, priority?:number, pluginAction?:(context:EventPluginContext, next?:() => void) => void): void {
     var plugin:IEventPlugin = !!pluginAction ? { name: <string>pluginOrName, priority: priority, run: pluginAction } : <IEventPlugin>pluginOrName;
     if (!plugin || !plugin.run) {
-      this.log.error('Add plugin failed: No run method was defined.');
+      this.log.error('Add plugin failed: Run method not defined');
       return;
     }
 
@@ -212,15 +232,16 @@ export class Configuration implements IConfigurationSettings {
     }
 
     var pluginExists:boolean = false;
-    for (var index = 0; index < this._plugins.length; index++) {
-      if (this._plugins[index].name === plugin.name) {
+    var plugins = this._plugins; // optimization for minifier.
+    for (var index = 0; index < plugins.length; index++) {
+      if (plugins[index].name === plugin.name) {
         pluginExists = true;
         break;
       }
     }
 
     if (!pluginExists) {
-      this._plugins.push(plugin);
+      plugins.push(plugin);
     }
   }
 
@@ -238,13 +259,14 @@ export class Configuration implements IConfigurationSettings {
   public removePlugin(pluginOrName:IEventPlugin|string): void {
     var name:string = typeof pluginOrName === 'string' ? pluginOrName : pluginOrName.name;
     if (!name) {
-      this.log.error('Remove plugin failed: No plugin name was defined.');
+      this.log.error('Remove plugin failed: Plugin name not defined');
       return;
     }
 
-    for (var index = 0; index < this._plugins.length; index++) {
-      if (this._plugins[index].name === name) {
-        this._plugins.splice(index, 1);
+    var plugins = this._plugins; // optimization for minifier.
+    for (var index = 0; index < plugins.length; index++) {
+      if (plugins[index].name === name) {
+        plugins.splice(index, 1);
         break;
       }
     }
@@ -255,7 +277,7 @@ export class Configuration implements IConfigurationSettings {
    * @param version
    */
   public setVersion(version:string): void {
-    if (!!version && version.length > 0) {
+    if (!!version) {
       this.defaultData['@version'] = version;
     }
   }
@@ -264,12 +286,14 @@ export class Configuration implements IConfigurationSettings {
   public setUserIdentity(identity:string): void;
   public setUserIdentity(identity:string, name:string): void;
   public setUserIdentity(userInfoOrIdentity:IUserInfo|string, name?:string): void {
+    const user:string = '@user'; // optimization for minifier.
     var userInfo:IUserInfo = typeof userInfoOrIdentity !== 'string' ? userInfoOrIdentity : { identity: userInfoOrIdentity, name: name };
+
     var shouldRemove:boolean = !userInfo || (!userInfo.identity && !userInfo.name);
     if (shouldRemove) {
-      delete this.defaultData['@user'];
+      delete this.defaultData[user];
     } else {
-      this.defaultData['@user'] = userInfo;
+      this.defaultData[user] = userInfo;
     }
 
     this.log.info(`user identity: ${shouldRemove ? 'null' : userInfo.identity}`);
@@ -295,7 +319,17 @@ export class Configuration implements IConfigurationSettings {
     this.log = new ConsoleLog();
   }
 
+  /**
+   * The default configuration settings that are applied to new configuration instances.
+   * @type {IConfigurationSettings}
+   * @private
+   */
   private static _defaultSettings:IConfigurationSettings = null;
+
+  /**
+   * The default configuration settings that are applied to new configuration instances.
+   * @returns {IConfigurationSettings}
+   */
   public static get defaults() {
     if (Configuration._defaultSettings === null) {
       Configuration._defaultSettings = {};
