@@ -59,7 +59,7 @@ export interface IEnvironmentInfoCollector {
     getEnvironmentInfo(context: EventPluginContext): IEnvironmentInfo;
 }
 export interface IErrorParser {
-    parse(context: EventPluginContext, exception: Error): void;
+    parse(context: EventPluginContext, exception: Error): IError;
 }
 export interface IModuleCollector {
     getModules(context: EventPluginContext): IModule[];
@@ -102,7 +102,7 @@ export declare class SettingsManager {
     static checkVersion(version: number, config: Configuration): void;
     static updateSettings(config: Configuration): void;
 }
-export declare class InMemoryLastReferenceIdManager implements ILastReferenceIdManager {
+export declare class DefaultLastReferenceIdManager implements ILastReferenceIdManager {
     private _lastReferenceId;
     getLast(): string;
     clearLast(): void;
@@ -183,13 +183,9 @@ export declare class Utils {
     static stringify(data: any, exclusions?: string[]): string;
 }
 export declare class Configuration implements IConfigurationSettings {
-    private _apiKey;
-    private _enabled;
-    private _serverUrl;
-    private _dataExclusions;
-    private _plugins;
     defaultTags: string[];
     defaultData: Object;
+    enabled: boolean;
     environmentInfoCollector: IEnvironmentInfoCollector;
     errorParser: IErrorParser;
     lastReferenceIdManager: ILastReferenceIdManager;
@@ -202,12 +198,15 @@ export declare class Configuration implements IConfigurationSettings {
     storage: IStorage<Object>;
     queue: IEventQueue;
     constructor(configSettings?: IConfigurationSettings);
+    private _apiKey;
     apiKey: string;
     isValid: boolean;
+    private _serverUrl;
     serverUrl: string;
-    enabled: boolean;
+    private _dataExclusions;
     dataExclusions: string[];
     addDataExclusions(...exclusions: string[]): void;
+    private _plugins;
     plugins: IEventPlugin[];
     addPlugin(plugin: IEventPlugin): void;
     addPlugin(name: string, priority: number, pluginAction: (context: EventPluginContext, next?: () => void) => void): void;
@@ -346,11 +345,6 @@ export declare class ErrorPlugin implements IEventPlugin {
     name: string;
     run(context: EventPluginContext, next?: () => void): void;
 }
-export declare class DuplicateCheckerPlugin implements IEventPlugin {
-    priority: number;
-    name: string;
-    run(context: EventPluginContext, next?: () => void): void;
-}
 export declare class ModuleInfoPlugin implements IEventPlugin {
     priority: number;
     name: string;
@@ -395,11 +389,9 @@ export declare class SettingsResponse {
 }
 export declare class NodeEnvironmentInfoCollector implements IEnvironmentInfoCollector {
     getEnvironmentInfo(context: EventPluginContext): IEnvironmentInfo;
-    private getIpAddresses();
 }
 export declare class NodeErrorParser implements IErrorParser {
-    parse(context: EventPluginContext, exception: Error): void;
-    private getStackFrames(context, stackFrames);
+    parse(context: EventPluginContext, exception: Error): IError;
 }
 export declare class NodeRequestInfoCollector implements IRequestInfoCollector {
     getRequestInfo(context: EventPluginContext): IRequestInfo;
@@ -408,39 +400,29 @@ export interface IClientConfiguration {
     settings: Object;
     version: number;
 }
-export declare class SubmissionClientBase implements ISubmissionClient {
+export declare class DefaultSubmissionClient implements ISubmissionClient {
     configurationVersionHeader: string;
     postEvents(events: IEvent[], config: Configuration, callback: (response: SubmissionResponse) => void): void;
     postUserDescription(referenceId: string, description: IUserDescription, config: Configuration, callback: (response: SubmissionResponse) => void): void;
     getSettings(config: Configuration, callback: (response: SettingsResponse) => void): void;
     sendRequest(config: Configuration, method: string, path: string, data: string, callback: (status: number, message: string, data?: string, headers?: Object) => void): void;
 }
-export declare class NodeSubmissionClient extends SubmissionClientBase {
+export declare class NodeSubmissionClient extends DefaultSubmissionClient {
     constructor();
     sendRequest(config: Configuration, method: string, path: string, data: string, callback: (status: number, message: string, data?: string, headers?: Object) => void): void;
 }
 export declare class NodeBootstrapper implements IBootstrapper {
     register(): void;
-    private getExitCodeReason(code);
 }
-export declare class WebErrorParser implements IErrorParser {
-    parse(context: EventPluginContext, exception: Error): void;
-    private getStackFrames(context, stackFrames);
-    private getParameters(parameters);
+export declare class DefaultErrorParser implements IErrorParser {
+    parse(context: EventPluginContext, exception: Error): IError;
 }
-export declare class WebModuleCollector implements IModuleCollector {
+export declare class DefaultModuleCollector implements IModuleCollector {
     getModules(context: EventPluginContext): IModule[];
 }
-export declare class WebRequestInfoCollector implements IRequestInfoCollector {
+export declare class DefaultRequestInfoCollector implements IRequestInfoCollector {
     getRequestInfo(context: EventPluginContext): IRequestInfo;
 }
-export declare class DefaultSubmissionClient extends SubmissionClientBase {
-    private createRequest(config, method, url);
-    sendRequest(config: Configuration, method: string, path: string, data: string, callback: (status: number, message: string, data?: string, headers?: Object) => void): void;
-}
-export declare class WindowBootstrapper implements IBootstrapper {
+export declare class DefaultBootstrapper implements IBootstrapper {
     register(): void;
-    private getDefaultsSettingsFromScriptTag();
-    private processUnhandledException(stackTrace, options?);
-    private processJQueryAjaxError(event, xhr, settings, error);
 }

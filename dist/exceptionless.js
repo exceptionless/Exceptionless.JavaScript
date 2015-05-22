@@ -1189,7 +1189,7 @@ var ContextData = (function () {
         configurable: true
     });
     ContextData.prototype.getException = function () {
-        return this.hasException ? this['@@_Exception'] : null;
+        return this['@@_Exception'] || null;
     };
     ContextData.prototype.markAsUnhandledError = function () {
         this['@@_IsUnhandledError'] = true;
@@ -1202,12 +1202,12 @@ var ContextData = (function () {
         configurable: true
     });
     ContextData.prototype.setSubmissionMethod = function (method) {
-        if (method && method.length > 0) {
+        if (method) {
             this['@@_SubmissionMethod'] = method;
         }
     };
     ContextData.prototype.getSubmissionMethod = function () {
-        return !!this['@@_SubmissionMethod'] ? this['@@_SubmissionMethod'] : null;
+        return this['@@_SubmissionMethod'] || null;
     };
     return ContextData;
 })();
@@ -1216,8 +1216,9 @@ var SettingsManager = (function () {
     function SettingsManager() {
     }
     SettingsManager.changed = function (config) {
-        for (var index = 0; index < this._handlers.length; index++) {
-            this._handlers[index](config);
+        var handlers = this._handlers;
+        for (var index = 0; index < handlers.length; index++) {
+            handlers[index](config);
         }
     };
     SettingsManager.onChanged = function (handler) {
@@ -1232,13 +1233,12 @@ var SettingsManager = (function () {
         return config.storage.get(this._configPath, 1)[0] || {};
     };
     SettingsManager.checkVersion = function (version, config) {
-        if (isNaN(version) || version <= 0) {
-            return;
-        }
-        var savedConfigVersion = parseInt(config.storage.get(this._configPath + "-version", 1)[0]);
-        if (isNaN(savedConfigVersion) || version > savedConfigVersion) {
-            config.log.info("Updating settings from v" + (!isNaN(savedConfigVersion) ? savedConfigVersion : 0) + " to v" + version);
-            this.updateSettings(config);
+        if (version) {
+            var savedConfigVersion = parseInt(config.storage.get(this._configPath + "-version", 1)[0]);
+            if (isNaN(savedConfigVersion) || version > savedConfigVersion) {
+                config.log.info("Updating settings from v" + (!isNaN(savedConfigVersion) ? savedConfigVersion : 0) + " to v" + version);
+                this.updateSettings(config);
+            }
         }
     };
     SettingsManager.updateSettings = function (config) {
@@ -1259,8 +1259,9 @@ var SettingsManager = (function () {
                 }
                 delete config.settings[key];
             }
-            config.storage.save(_this._configPath + "-version", response.settingsVersion);
-            config.storage.save(_this._configPath, response.settings);
+            var path = SettingsManager._configPath;
+            config.storage.save(path + "-version", response.settingsVersion);
+            config.storage.save(path, response.settings);
             config.log.info('Updated settings');
             _this.changed(config);
         });
@@ -1270,22 +1271,22 @@ var SettingsManager = (function () {
     return SettingsManager;
 })();
 exports.SettingsManager = SettingsManager;
-var InMemoryLastReferenceIdManager = (function () {
-    function InMemoryLastReferenceIdManager() {
+var DefaultLastReferenceIdManager = (function () {
+    function DefaultLastReferenceIdManager() {
         this._lastReferenceId = null;
     }
-    InMemoryLastReferenceIdManager.prototype.getLast = function () {
+    DefaultLastReferenceIdManager.prototype.getLast = function () {
         return this._lastReferenceId;
     };
-    InMemoryLastReferenceIdManager.prototype.clearLast = function () {
+    DefaultLastReferenceIdManager.prototype.clearLast = function () {
         this._lastReferenceId = null;
     };
-    InMemoryLastReferenceIdManager.prototype.setLast = function (eventId) {
+    DefaultLastReferenceIdManager.prototype.setLast = function (eventId) {
         this._lastReferenceId = eventId;
     };
-    return InMemoryLastReferenceIdManager;
+    return DefaultLastReferenceIdManager;
 })();
-exports.InMemoryLastReferenceIdManager = InMemoryLastReferenceIdManager;
+exports.DefaultLastReferenceIdManager = DefaultLastReferenceIdManager;
 var ConsoleLog = (function () {
     function ConsoleLog() {
     }
@@ -1364,7 +1365,6 @@ var EventPluginManager = (function () {
     EventPluginManager.addDefaultPlugins = function (config) {
         config.addPlugin(new ConfigurationDefaultsPlugin());
         config.addPlugin(new ErrorPlugin());
-        config.addPlugin(new DuplicateCheckerPlugin());
         config.addPlugin(new ModuleInfoPlugin());
         config.addPlugin(new RequestInfoPlugin());
         config.addPlugin(new EnvironmentInfoPlugin());
@@ -1382,9 +1382,7 @@ var ReferenceIdPlugin = (function () {
         if ((!context.event.reference_id || context.event.reference_id.length === 0) && context.event.type === 'error') {
             context.event.reference_id = Utils.guid().replace('-', '').substring(0, 10);
         }
-        if (next) {
-            next();
-        }
+        next && next();
     };
     return ReferenceIdPlugin;
 })();
@@ -1395,92 +1393,97 @@ var DefaultEventQueue = (function () {
         this._config = config;
     }
     DefaultEventQueue.prototype.enqueue = function (event) {
+        var config = this._config;
         this.ensureQueueTimer();
         if (this.areQueuedItemsDiscarded()) {
-            this._config.log.info('Queue items are currently being discarded. The event will not be queued.');
+            config.log.info('Queue items are currently being discarded. The event will not be queued.');
             return;
         }
         var key = this.queuePath() + "-" + new Date().toJSON() + "-" + Utils.randomNumber();
-        this._config.log.info("Enqueuing event: " + key + " type=" + event.type + " " + (!!event.reference_id ? 'refid=' + event.reference_id : ''));
-        this._config.storage.save(key, event);
+        config.log.info("Enqueuing event: " + key + " type=" + event.type + " " + (!!event.reference_id ? 'refid=' + event.reference_id : ''));
+        config.storage.save(key, event);
     };
     DefaultEventQueue.prototype.process = function () {
         var _this = this;
+        var queueNotProcessed = 'The queue will not be processed.';
+        var config = this._config;
+        var log = config.log;
         this.ensureQueueTimer();
         if (this._processingQueue) {
             return;
         }
-        var queueNotProcessed = 'The queue will not be processed.';
-        this._config.log.info('Processing queue...');
-        if (!this._config.enabled) {
-            this._config.log.info("Configuration is disabled. " + queueNotProcessed);
+        log.info('Processing queue...');
+        if (!config.enabled) {
+            log.info("Configuration is disabled. " + queueNotProcessed);
             return;
         }
-        if (!this._config.isValid) {
-            this._config.log.info("Invalid Api Key. " + queueNotProcessed);
+        if (!config.isValid) {
+            log.info("Invalid Api Key. " + queueNotProcessed);
             return;
         }
         this._processingQueue = true;
         try {
-            var events = this._config.storage.get(this.queuePath(), this._config.submissionBatchSize);
+            var events = config.storage.get(this.queuePath(), config.submissionBatchSize);
             if (!events || events.length == 0) {
                 this._processingQueue = false;
                 return;
             }
-            this._config.log.info("Sending " + events.length + " events to " + this._config.serverUrl + ".");
-            this._config.submissionClient.postEvents(events, this._config, function (response) {
+            log.info("Sending " + events.length + " events to " + config.serverUrl + ".");
+            config.submissionClient.postEvents(events, config, function (response) {
                 _this.processSubmissionResponse(response, events);
-                _this._config.log.info('Finished processing queue.');
+                log.info('Finished processing queue.');
                 _this._processingQueue = false;
             });
         }
         catch (ex) {
-            this._config.log.error("Error processing queue: " + ex);
+            log.error("Error processing queue: " + ex);
             this.suspendProcessing();
             this._processingQueue = false;
         }
     };
     DefaultEventQueue.prototype.processSubmissionResponse = function (response, events) {
         var noSubmission = 'The event will not be submitted.';
+        var config = this._config;
+        var log = config.log;
         if (response.success) {
-            this._config.log.info("Sent " + events.length + " events.");
+            log.info("Sent " + events.length + " events.");
             return;
         }
         if (response.serviceUnavailable) {
-            this._config.log.error('Server returned service unavailable.');
+            log.error('Server returned service unavailable.');
             this.suspendProcessing();
             this.requeueEvents(events);
             return;
         }
         if (response.paymentRequired) {
-            this._config.log.info('Too many events have been submitted, please upgrade your plan.');
+            log.info('Too many events have been submitted, please upgrade your plan.');
             this.suspendProcessing(null, true, true);
             return;
         }
         if (response.unableToAuthenticate) {
-            this._config.log.info("Unable to authenticate, please check your configuration. " + noSubmission);
+            log.info("Unable to authenticate, please check your configuration. " + noSubmission);
             this.suspendProcessing(15);
             return;
         }
         if (response.notFound || response.badRequest) {
-            this._config.log.error("Error while trying to submit data: " + response.message);
+            log.error("Error while trying to submit data: " + response.message);
             this.suspendProcessing(60 * 4);
             return;
         }
         if (response.requestEntityTooLarge) {
             var message = 'Event submission discarded for being too large.';
-            if (this._config.submissionBatchSize > 1) {
-                this._config.log.error(message + " Retrying with smaller batch size.");
-                this._config.submissionBatchSize = Math.max(1, Math.round(this._config.submissionBatchSize / 1.5));
+            if (config.submissionBatchSize > 1) {
+                log.error(message + " Retrying with smaller batch size.");
+                config.submissionBatchSize = Math.max(1, Math.round(config.submissionBatchSize / 1.5));
                 this.requeueEvents(events);
             }
             else {
-                this._config.log.error(message + " " + noSubmission);
+                log.error(message + " " + noSubmission);
             }
             return;
         }
         if (!response.success) {
-            this._config.log.error("Error submitting events: " + response.message);
+            log.error("Error submitting events: " + response.message);
             this.suspendProcessing();
             this.requeueEvents(events);
         }
@@ -1497,10 +1500,11 @@ var DefaultEventQueue = (function () {
         }
     };
     DefaultEventQueue.prototype.suspendProcessing = function (durationInMinutes, discardFutureQueuedItems, clearQueue) {
+        var config = this._config;
         if (!durationInMinutes || durationInMinutes <= 0) {
             durationInMinutes = 5;
         }
-        this._config.log.info("Suspending processing for " + durationInMinutes + " minutes.");
+        config.log.info("Suspending processing for " + durationInMinutes + " minutes.");
         this._suspendProcessingUntil = new Date(new Date().getTime() + (durationInMinutes * 60000));
         if (discardFutureQueuedItems) {
             this._discardQueuedItemsUntil = new Date(new Date().getTime() + (durationInMinutes * 60000));
@@ -1509,7 +1513,7 @@ var DefaultEventQueue = (function () {
             return;
         }
         try {
-            this._config.storage.clear(this.queuePath());
+            config.storage.clear(this.queuePath());
         }
         catch (Exception) { }
     };
@@ -1727,14 +1731,14 @@ var Utils = (function () {
 exports.Utils = Utils;
 var Configuration = (function () {
     function Configuration(configSettings) {
-        this._enabled = true;
+        this.defaultTags = [];
+        this.defaultData = {};
+        this.enabled = true;
+        this.lastReferenceIdManager = new DefaultLastReferenceIdManager();
+        this.settings = {};
         this._serverUrl = 'https://collector.exceptionless.io';
         this._dataExclusions = [];
         this._plugins = [];
-        this.defaultTags = [];
-        this.defaultData = {};
-        this.lastReferenceIdManager = new InMemoryLastReferenceIdManager();
-        this.settings = {};
         function inject(fn) {
             return typeof fn === 'function' ? fn(this) : fn;
         }
@@ -1744,7 +1748,7 @@ var Configuration = (function () {
         this.serverUrl = configSettings.serverUrl;
         this.environmentInfoCollector = inject(configSettings.environmentInfoCollector);
         this.errorParser = inject(configSettings.errorParser);
-        this.lastReferenceIdManager = inject(configSettings.lastReferenceIdManager) || new InMemoryLastReferenceIdManager();
+        this.lastReferenceIdManager = inject(configSettings.lastReferenceIdManager) || new DefaultLastReferenceIdManager();
         this.moduleCollector = inject(configSettings.moduleCollector);
         this.requestInfoCollector = inject(configSettings.requestInfoCollector);
         this.submissionBatchSize = inject(configSettings.submissionBatchSize) || 50;
@@ -1777,17 +1781,10 @@ var Configuration = (function () {
             return this._serverUrl;
         },
         set: function (value) {
-            if (!!value && value.length > 0) {
+            if (!!value) {
                 this._serverUrl = value;
                 this.log.info("serverUrl: " + this._serverUrl);
             }
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(Configuration.prototype, "enabled", {
-        get: function () {
-            return this._enabled;
         },
         enumerable: true,
         configurable: true
@@ -1819,7 +1816,7 @@ var Configuration = (function () {
     Configuration.prototype.addPlugin = function (pluginOrName, priority, pluginAction) {
         var plugin = !!pluginAction ? { name: pluginOrName, priority: priority, run: pluginAction } : pluginOrName;
         if (!plugin || !plugin.run) {
-            this.log.error('Add plugin failed: No run method was defined.');
+            this.log.error('Add plugin failed: Run method not defined');
             return;
         }
         if (!plugin.name) {
@@ -1829,48 +1826,51 @@ var Configuration = (function () {
             plugin.priority = 0;
         }
         var pluginExists = false;
-        for (var index = 0; index < this._plugins.length; index++) {
-            if (this._plugins[index].name === plugin.name) {
+        var plugins = this._plugins;
+        for (var index = 0; index < plugins.length; index++) {
+            if (plugins[index].name === plugin.name) {
                 pluginExists = true;
                 break;
             }
         }
         if (!pluginExists) {
-            this._plugins.push(plugin);
+            plugins.push(plugin);
         }
     };
     Configuration.prototype.removePlugin = function (pluginOrName) {
         var name = typeof pluginOrName === 'string' ? pluginOrName : pluginOrName.name;
         if (!name) {
-            this.log.error('Remove plugin failed: No plugin name was defined.');
+            this.log.error('Remove plugin failed: Plugin name not defined');
             return;
         }
-        for (var index = 0; index < this._plugins.length; index++) {
-            if (this._plugins[index].name === name) {
-                this._plugins.splice(index, 1);
+        var plugins = this._plugins;
+        for (var index = 0; index < plugins.length; index++) {
+            if (plugins[index].name === name) {
+                plugins.splice(index, 1);
                 break;
             }
         }
     };
     Configuration.prototype.setVersion = function (version) {
-        if (!!version && version.length > 0) {
+        if (!!version) {
             this.defaultData['@version'] = version;
         }
     };
     Configuration.prototype.setUserIdentity = function (userInfoOrIdentity, name) {
+        var user = '@user';
         var userInfo = typeof userInfoOrIdentity !== 'string' ? userInfoOrIdentity : { identity: userInfoOrIdentity, name: name };
         var shouldRemove = !userInfo || (!userInfo.identity && !userInfo.name);
         if (shouldRemove) {
-            delete this.defaultData['@user'];
+            delete this.defaultData[user];
         }
         else {
-            this.defaultData['@user'] = userInfo;
+            this.defaultData[user] = userInfo;
         }
         this.log.info("user identity: " + (shouldRemove ? 'null' : userInfo.identity));
     };
     Object.defineProperty(Configuration.prototype, "userAgent", {
         get: function () {
-            return 'exceptionless-js/0.3.0';
+            return 'exceptionless-js/0.3.1';
         },
         enumerable: true,
         configurable: true
@@ -1903,13 +1903,13 @@ var EventBuilder = (function () {
         this.pluginContextData = pluginContextData || new ContextData();
     }
     EventBuilder.prototype.setType = function (type) {
-        if (!!type && type.length > 0) {
+        if (!!type) {
             this.target.type = type;
         }
         return this;
     };
     EventBuilder.prototype.setSource = function (source) {
-        if (!!source && source.length > 0) {
+        if (!!source) {
             this.target.source = source;
         }
         return this;
@@ -1929,7 +1929,7 @@ var EventBuilder = (function () {
         return this;
     };
     EventBuilder.prototype.setMessage = function (message) {
-        if (!!message && message.length > 0) {
+        if (!!message) {
             this.target.message = message;
         }
         return this;
@@ -1990,7 +1990,7 @@ var EventBuilder = (function () {
         this.client.submitEvent(this.target, this.pluginContextData, callback);
     };
     EventBuilder.prototype.isValidIdentifier = function (value) {
-        if (!value || !value.length) {
+        if (!value) {
             return true;
         }
         if (value.length < 8 || value.length > 100) {
@@ -2034,8 +2034,6 @@ var SubmissionResponse = (function () {
 exports.SubmissionResponse = SubmissionResponse;
 var ExceptionlessClient = (function () {
     function ExceptionlessClient(settingsOrApiKey, serverUrl) {
-        // TODO: populate this in a plugin..
-        //var settings = this.getSettingsFromScriptTag() || {};
         if (typeof settingsOrApiKey !== 'object') {
             this.config = new Configuration(settingsOrApiKey);
         }
@@ -2193,9 +2191,7 @@ var ConfigurationDefaultsPlugin = (function () {
                 context.event.data[key] = defaultData[key];
             }
         }
-        if (next) {
-            next();
-        }
+        next && next();
     };
     return ConfigurationDefaultsPlugin;
 })();
@@ -2206,53 +2202,41 @@ var ErrorPlugin = (function () {
         this.name = 'ErrorPlugin';
     }
     ErrorPlugin.prototype.run = function (context, next) {
+        var error = '@error';
         var exception = context.contextData.getException();
         if (!!exception) {
             context.event.type = 'error';
-            if (!context.event.data['@error']) {
+            if (!context.event.data[error]) {
                 var parser = context.client.config.errorParser;
                 if (!parser) {
                     throw new Error('No error parser was defined.');
                 }
-                parser.parse(context, exception);
+                var result = parser.parse(context, exception);
+                if (!!result) {
+                    context.event.data[error] = result;
+                }
             }
         }
-        if (next) {
-            next();
-        }
+        next && next();
     };
     return ErrorPlugin;
 })();
 exports.ErrorPlugin = ErrorPlugin;
-var DuplicateCheckerPlugin = (function () {
-    function DuplicateCheckerPlugin() {
-        this.priority = 50;
-        this.name = 'DuplicateCheckerPlugin';
-    }
-    DuplicateCheckerPlugin.prototype.run = function (context, next) {
-        if (next) {
-            next();
-        }
-    };
-    return DuplicateCheckerPlugin;
-})();
-exports.DuplicateCheckerPlugin = DuplicateCheckerPlugin;
 var ModuleInfoPlugin = (function () {
     function ModuleInfoPlugin() {
         this.priority = 40;
         this.name = 'ModuleInfoPlugin';
     }
     ModuleInfoPlugin.prototype.run = function (context, next) {
-        var moduleCollector = context.client.config.moduleCollector;
-        if (context.event.data['@error'] && !context.event.data['@error'].modules && !!moduleCollector) {
-            var modules = moduleCollector.getModules(context);
+        var error = '@error';
+        var collector = context.client.config.moduleCollector;
+        if (context.event.data[error] && !context.event.data['@error'].modules && !!collector) {
+            var modules = collector.getModules(context);
             if (modules && modules.length > 0) {
-                context.event.data['@error'].modules = modules;
+                context.event.data[error].modules = modules;
             }
         }
-        if (next) {
-            next();
-        }
+        next && next();
     };
     return ModuleInfoPlugin;
 })();
@@ -2263,16 +2247,15 @@ var RequestInfoPlugin = (function () {
         this.name = 'RequestInfoPlugin';
     }
     RequestInfoPlugin.prototype.run = function (context, next) {
-        var requestInfoCollector = context.client.config.requestInfoCollector;
-        if (!context.event.data['@request'] && !!requestInfoCollector) {
-            var ri = requestInfoCollector.getRequestInfo(context);
-            if (!!ri) {
-                context.event.data['@request'] = ri;
+        var request = '@request';
+        var collector = context.client.config.requestInfoCollector;
+        if (!context.event.data[request] && !!collector) {
+            var requestInfo = collector.getRequestInfo(context);
+            if (!!requestInfo) {
+                context.event.data[request] = requestInfo;
             }
         }
-        if (next) {
-            next();
-        }
+        next && next();
     };
     return RequestInfoPlugin;
 })();
@@ -2283,15 +2266,15 @@ var EnvironmentInfoPlugin = (function () {
         this.name = 'EnvironmentInfoPlugin';
     }
     EnvironmentInfoPlugin.prototype.run = function (context, next) {
-        if (!context.event.data['@environment'] && context.client.config.environmentInfoCollector) {
-            var ei = context.client.config.environmentInfoCollector.getEnvironmentInfo(context);
-            if (!!ei) {
-                context.event.data['@environment'] = ei;
+        var environment = '@environment';
+        var collector = context.client.config.environmentInfoCollector;
+        if (!context.event.data[environment] && collector) {
+            var environmentInfo = collector.getEnvironmentInfo(context);
+            if (!!environmentInfo) {
+                context.event.data[environment] = environmentInfo;
             }
         }
-        if (next) {
-            next();
-        }
+        next && next();
     };
     return EnvironmentInfoPlugin;
 })();
@@ -2306,9 +2289,7 @@ var SubmissionMethodPlugin = (function () {
         if (!!submissionMethod) {
             context.event.data['@submission_method'] = submissionMethod;
         }
-        if (next) {
-            next();
-        }
+        next && next();
     };
     return SubmissionMethodPlugin;
 })();
@@ -2334,6 +2315,18 @@ var NodeEnvironmentInfoCollector = (function () {
     function NodeEnvironmentInfoCollector() {
     }
     NodeEnvironmentInfoCollector.prototype.getEnvironmentInfo = function (context) {
+        function getIpAddresses() {
+            var ips = [];
+            var interfaces = os.networkInterfaces();
+            Object.keys(interfaces).forEach(function (name) {
+                interfaces[name].forEach(function (iface) {
+                    if ('IPv4' === iface.family && !iface.internal) {
+                        ips.push(iface.address);
+                    }
+                });
+            });
+            return ips.join(', ');
+        }
         if (!os) {
             return null;
         }
@@ -2348,7 +2341,7 @@ var NodeEnvironmentInfoCollector = (function () {
             architecture: os.arch(),
             o_s_name: os.type(),
             o_s_version: os.release(),
-            ip_address: this.getIpAddresses(),
+            ip_address: getIpAddresses(),
             machine_name: os.hostname(),
             runtime_version: process.version,
             data: {
@@ -2363,18 +2356,6 @@ var NodeEnvironmentInfoCollector = (function () {
         }
         return environmentInfo;
     };
-    NodeEnvironmentInfoCollector.prototype.getIpAddresses = function () {
-        var ips = [];
-        var interfaces = os.networkInterfaces();
-        Object.keys(interfaces).forEach(function (name) {
-            interfaces[name].forEach(function (iface) {
-                if ('IPv4' === iface.family && !iface.internal) {
-                    ips.push(iface.address);
-                }
-            });
-        });
-        return ips.join(', ');
-    };
     return NodeEnvironmentInfoCollector;
 })();
 exports.NodeEnvironmentInfoCollector = NodeEnvironmentInfoCollector;
@@ -2383,33 +2364,32 @@ var NodeErrorParser = (function () {
     function NodeErrorParser() {
     }
     NodeErrorParser.prototype.parse = function (context, exception) {
+        function getStackFrames(context, stackFrames) {
+            var frames = [];
+            for (var index = 0; index < stackFrames.length; index++) {
+                var frame = stackFrames[index];
+                frames.push({
+                    name: frame.getMethodName() || frame.getFunctionName(),
+                    file_name: frame.getFileName(),
+                    line_number: frame.getLineNumber(),
+                    column: frame.getColumnNumber(),
+                    declaring_type: frame.getTypeName(),
+                    data: {
+                        is_native: frame.isNative() || (!!frame.filename && frame.filename[0] !== '/' && frame.filename[0] !== '.')
+                    }
+                });
+            }
+            return frames;
+        }
         if (!nodestacktrace) {
             throw new Error('Unable to load the stack trace library.');
         }
         var stackFrames = nodestacktrace.parse(exception) || [];
-        var error = {
+        return {
             type: exception.name,
             message: exception.message,
-            stack_trace: this.getStackFrames(context, stackFrames)
+            stack_trace: getStackFrames(context, stackFrames)
         };
-        context.event.data['@error'] = error;
-    };
-    NodeErrorParser.prototype.getStackFrames = function (context, stackFrames) {
-        var frames = [];
-        for (var index = 0; index < stackFrames.length; index++) {
-            var frame = stackFrames[index];
-            frames.push({
-                name: frame.getMethodName() || frame.getFunctionName(),
-                file_name: frame.getFileName(),
-                line_number: frame.getLineNumber(),
-                column: frame.getColumnNumber(),
-                declaring_type: frame.getTypeName(),
-                data: {
-                    is_native: frame.isNative() || (!!frame.filename && frame.filename[0] !== '/' && frame.filename[0] !== '.')
-                }
-            });
-        }
-        return frames;
     };
     return NodeErrorParser;
 })();
@@ -2418,11 +2398,12 @@ var NodeRequestInfoCollector = (function () {
     function NodeRequestInfoCollector() {
     }
     NodeRequestInfoCollector.prototype.getRequestInfo = function (context) {
-        if (!context.contextData['@request']) {
+        var requestKey = '@request';
+        if (!context.contextData[requestKey]) {
             return null;
         }
-        var request = context.contextData['@request'];
-        var ri = {
+        var request = context.contextData[requestKey];
+        var requestInfo = {
             client_ip_address: request.ip,
             user_agent: request.headers['user-agent'],
             is_secure: request.secure,
@@ -2436,18 +2417,18 @@ var NodeRequestInfoCollector = (function () {
         var host = request.headers['host'];
         var port = host && parseInt(host.slice(host.indexOf(':') + 1));
         if (port > 0) {
-            ri.port = port;
+            requestInfo.port = port;
         }
-        return ri;
+        return requestInfo;
     };
     return NodeRequestInfoCollector;
 })();
 exports.NodeRequestInfoCollector = NodeRequestInfoCollector;
-var SubmissionClientBase = (function () {
-    function SubmissionClientBase() {
+var DefaultSubmissionClient = (function () {
+    function DefaultSubmissionClient() {
         this.configurationVersionHeader = 'X-Exceptionless-ConfigVersion';
     }
-    SubmissionClientBase.prototype.postEvents = function (events, config, callback) {
+    DefaultSubmissionClient.prototype.postEvents = function (events, config, callback) {
         var _this = this;
         return this.sendRequest(config, 'POST', '/api/v2/events', Utils.stringify(events, config.dataExclusions), function (status, message, data, headers) {
             var settingsVersion = headers && parseInt(headers[_this.configurationVersionHeader]);
@@ -2455,7 +2436,7 @@ var SubmissionClientBase = (function () {
             callback(new SubmissionResponse(status, message));
         });
     };
-    SubmissionClientBase.prototype.postUserDescription = function (referenceId, description, config, callback) {
+    DefaultSubmissionClient.prototype.postUserDescription = function (referenceId, description, config, callback) {
         var _this = this;
         var path = "/api/v2/events/by-ref/" + encodeURIComponent(referenceId) + "/user-description";
         return this.sendRequest(config, 'POST', path, Utils.stringify(description, config.dataExclusions), function (status, message, data, headers) {
@@ -2464,7 +2445,7 @@ var SubmissionClientBase = (function () {
             callback(new SubmissionResponse(status, message));
         });
     };
-    SubmissionClientBase.prototype.getSettings = function (config, callback) {
+    DefaultSubmissionClient.prototype.getSettings = function (config, callback) {
         return this.sendRequest(config, 'GET', '/api/v2/projects/config', null, function (status, message, data) {
             if (status !== 200) {
                 return callback(new SettingsResponse(false, null, -1, null, message));
@@ -2481,252 +2462,6 @@ var SubmissionClientBase = (function () {
             }
             callback(new SettingsResponse(true, settings.settings, settings.version));
         });
-    };
-    SubmissionClientBase.prototype.sendRequest = function (config, method, path, data, callback) {
-        callback(500, 'Not Implemented');
-    };
-    return SubmissionClientBase;
-})();
-exports.SubmissionClientBase = SubmissionClientBase;
-var http = require('http');
-var https = require('https');
-var url = require('url');
-var NodeSubmissionClient = (function (_super) {
-    __extends(NodeSubmissionClient, _super);
-    function NodeSubmissionClient() {
-        _super.call(this);
-        this.configurationVersionHeader = 'x-exceptionless-configversion';
-    }
-    NodeSubmissionClient.prototype.sendRequest = function (config, method, path, data, callback) {
-        function complete(response, data, headers) {
-            var message;
-            if (response.statusCode === 0) {
-                message = 'Unable to connect to server.';
-            }
-            else if (response.statusCode < 200 || response.statusCode > 299) {
-                message = response.statusMessage || response.message;
-            }
-            callback(response.statusCode || 500, message, data, headers);
-        }
-        var parsedHost = url.parse(config.serverUrl);
-        var options = {
-            auth: "client:" + config.apiKey,
-            headers: {},
-            hostname: parsedHost.hostname,
-            method: method,
-            port: parsedHost.port && parseInt(parsedHost.port),
-            path: path,
-        };
-        if (method === 'POST') {
-            options.headers = {
-                'Content-Type': 'application/json',
-                'Content-Length': data.length
-            };
-        }
-        options.headers['User-Agent'] = config.userAgent;
-        var request = (parsedHost.protocol === 'https' ? https : http).request(options, function (response) {
-            var body = '';
-            response.on('data', function (chunk) { return body += chunk; });
-            response.on('end', function () {
-                complete(response, body, response.headers);
-            });
-        });
-        request.on('error', function (e) {
-            callback(500, e.message);
-        });
-        request.write(data);
-        request.end();
-    };
-    return NodeSubmissionClient;
-})(SubmissionClientBase);
-exports.NodeSubmissionClient = NodeSubmissionClient;
-var NodeBootstrapper = (function () {
-    function NodeBootstrapper() {
-    }
-    NodeBootstrapper.prototype.register = function () {
-        var _this = this;
-        if (!(typeof window === 'undefined' && typeof global !== 'undefined' && {}.toString.call(global) === '[object global]')) {
-            return;
-        }
-        var configDefaults = Configuration.defaults;
-        configDefaults.environmentInfoCollector = new NodeEnvironmentInfoCollector();
-        configDefaults.errorParser = new NodeErrorParser();
-        configDefaults.requestInfoCollector = new NodeRequestInfoCollector();
-        configDefaults.submissionClient = new NodeSubmissionClient();
-        process.on('uncaughtException', function (error) {
-            ExceptionlessClient.default.submitUnhandledException(error, 'uncaughtException');
-        });
-        process.on('beforeExit', function (code) {
-            var client = ExceptionlessClient.default;
-            var message = _this.getExitCodeReason(code);
-            if (message !== null) {
-                client.submitLog('beforeExit', message, 'Error');
-            }
-            client.config.queue.process();
-        });
-    };
-    NodeBootstrapper.prototype.getExitCodeReason = function (code) {
-        if (code === 1) {
-            return 'Uncaught Fatal Exception';
-        }
-        if (code === 3) {
-            return 'Internal JavaScript Parse Error';
-        }
-        if (code === 4) {
-            return 'Internal JavaScript Evaluation Failure';
-        }
-        if (code === 5) {
-            return 'Fatal Exception';
-        }
-        if (code === 6) {
-            return 'Non-function Internal Exception Handler ';
-        }
-        if (code === 7) {
-            return 'Internal Exception Handler Run-Time Failure';
-        }
-        if (code === 8) {
-            return 'Uncaught Exception';
-        }
-        if (code === 9) {
-            return 'Invalid Argument';
-        }
-        if (code === 10) {
-            return 'Internal JavaScript Run-Time Failure';
-        }
-        if (code === 12) {
-            return 'Invalid Debug Argument';
-        }
-        if (code > 128) {
-            return 'Signal Exits';
-        }
-        return null;
-    };
-    return NodeBootstrapper;
-})();
-exports.NodeBootstrapper = NodeBootstrapper;
-var WebErrorParser = (function () {
-    function WebErrorParser() {
-    }
-    WebErrorParser.prototype.parse = function (context, exception) {
-        var stackTrace = !!context.contextData['@@_TraceKit.StackTrace']
-            ? context.contextData['@@_TraceKit.StackTrace']
-            : TraceKit.computeStackTrace(exception, 25);
-        if (!stackTrace) {
-            throw new Error('Unable to parse the exceptions stack trace.');
-        }
-        var error = {
-            type: stackTrace.name,
-            message: stackTrace.message || exception.message,
-            stack_trace: this.getStackFrames(context, stackTrace.stack || [])
-        };
-        context.event.data['@error'] = error;
-    };
-    WebErrorParser.prototype.getStackFrames = function (context, stackFrames) {
-        var frames = [];
-        for (var index = 0; index < stackFrames.length; index++) {
-            var frame = stackFrames[index];
-            frames.push({
-                name: frame.func,
-                parameters: this.getParameters(frame.args),
-                file_name: frame.url,
-                line_number: frame.line,
-                column: frame.column
-            });
-        }
-        return frames;
-    };
-    WebErrorParser.prototype.getParameters = function (parameters) {
-        var params = (typeof parameters === 'string' ? [parameters] : parameters) || [];
-        var result = [];
-        for (var index = 0; index < params.length; index++) {
-            result.push({ name: params[index] });
-        }
-        return result;
-    };
-    return WebErrorParser;
-})();
-exports.WebErrorParser = WebErrorParser;
-var WebModuleCollector = (function () {
-    function WebModuleCollector() {
-    }
-    WebModuleCollector.prototype.getModules = function (context) {
-        if (document && document.getElementsByTagName) {
-            return null;
-        }
-        var modules = [];
-        var scripts = document.getElementsByTagName('script');
-        if (scripts && scripts.length > 0) {
-            for (var index = 0; index < scripts.length; index++) {
-                if (scripts[index].src) {
-                    modules.push({
-                        module_id: index,
-                        name: scripts[index].src,
-                        version: Utils.parseVersion(scripts[index].src)
-                    });
-                }
-                else if (!!scripts[index].innerHTML) {
-                    modules.push({
-                        module_id: index,
-                        name: 'Script Tag',
-                        version: Utils.getHashCode(scripts[index].innerHTML)
-                    });
-                }
-            }
-        }
-        return modules;
-    };
-    return WebModuleCollector;
-})();
-exports.WebModuleCollector = WebModuleCollector;
-var WebRequestInfoCollector = (function () {
-    function WebRequestInfoCollector() {
-    }
-    WebRequestInfoCollector.prototype.getRequestInfo = function (context) {
-        if (!document || !navigator || !location) {
-            return null;
-        }
-        var ri = {
-            user_agent: navigator.userAgent,
-            is_secure: location.protocol === 'https:',
-            host: location.hostname,
-            port: location.port && location.port !== '' ? parseInt(location.port) : 80,
-            path: location.pathname,
-            cookies: Utils.getCookies(document.cookie),
-            query_string: Utils.parseQueryString(location.search.substring(1))
-        };
-        if (document.referrer && document.referrer !== '') {
-            ri.referrer = document.referrer;
-        }
-        return ri;
-    };
-    return WebRequestInfoCollector;
-})();
-exports.WebRequestInfoCollector = WebRequestInfoCollector;
-var DefaultSubmissionClient = (function (_super) {
-    __extends(DefaultSubmissionClient, _super);
-    function DefaultSubmissionClient() {
-        _super.apply(this, arguments);
-    }
-    DefaultSubmissionClient.prototype.createRequest = function (config, method, url) {
-        var xhr = new XMLHttpRequest();
-        if ('withCredentials' in xhr) {
-            xhr.open(method, url, true);
-        }
-        else if (typeof XDomainRequest != 'undefined') {
-            xhr = new XDomainRequest();
-            xhr.open(method, url);
-        }
-        else {
-            xhr = null;
-        }
-        if (xhr) {
-            xhr.setRequestHeader('X-Exceptionless-Client', config.userAgent);
-            if (method === 'POST' && xhr.setRequestHeader) {
-                xhr.setRequestHeader('Content-Type', 'application/json');
-            }
-            xhr.timeout = 10000;
-        }
-        return xhr;
     };
     DefaultSubmissionClient.prototype.sendRequest = function (config, method, path, data, callback) {
         var isCompleted = false;
@@ -2771,8 +2506,29 @@ var DefaultSubmissionClient = (function (_super) {
             }
             callback(xhr.status || 500, message, xhr.responseText, parseResponseHeaders(xhr.getAllResponseHeaders()));
         }
+        function createRequest(config, method, url) {
+            var xhr = new XMLHttpRequest();
+            if ('withCredentials' in xhr) {
+                xhr.open(method, url, true);
+            }
+            else if (typeof XDomainRequest != 'undefined') {
+                xhr = new XDomainRequest();
+                xhr.open(method, url);
+            }
+            else {
+                xhr = null;
+            }
+            if (xhr) {
+                xhr.setRequestHeader('X-Exceptionless-Client', config.userAgent);
+                if (method === 'POST' && xhr.setRequestHeader) {
+                    xhr.setRequestHeader('Content-Type', 'application/json');
+                }
+                xhr.timeout = 10000;
+            }
+            return xhr;
+        }
         var url = "" + config.serverUrl + path + "?access_token=" + encodeURIComponent(config.apiKey);
-        var xhr = this.createRequest(config, method || 'POST', url);
+        var xhr = createRequest(config, method || 'POST', url);
         if (!xhr) {
             return callback(503, 'CORS not supported.');
         }
@@ -2790,67 +2546,282 @@ var DefaultSubmissionClient = (function (_super) {
         xhr.send(data);
     };
     return DefaultSubmissionClient;
-})(SubmissionClientBase);
+})();
 exports.DefaultSubmissionClient = DefaultSubmissionClient;
-var WindowBootstrapper = (function () {
-    function WindowBootstrapper() {
+var http = require('http');
+var https = require('https');
+var url = require('url');
+var NodeSubmissionClient = (function (_super) {
+    __extends(NodeSubmissionClient, _super);
+    function NodeSubmissionClient() {
+        _super.call(this);
+        this.configurationVersionHeader = this.configurationVersionHeader.toLowerCase();
     }
-    WindowBootstrapper.prototype.register = function () {
+    NodeSubmissionClient.prototype.sendRequest = function (config, method, path, data, callback) {
+        function complete(response, data, headers) {
+            var message;
+            if (response.statusCode === 0) {
+                message = 'Unable to connect to server.';
+            }
+            else if (response.statusCode < 200 || response.statusCode > 299) {
+                message = response.statusMessage || response.message;
+            }
+            callback(response.statusCode || 500, message, data, headers);
+        }
+        var parsedHost = url.parse(config.serverUrl);
+        var options = {
+            auth: "client:" + config.apiKey,
+            headers: {},
+            hostname: parsedHost.hostname,
+            method: method,
+            port: parsedHost.port && parseInt(parsedHost.port),
+            path: path,
+        };
+        if (method === 'POST') {
+            options.headers = {
+                'Content-Type': 'application/json',
+                'Content-Length': data.length
+            };
+        }
+        options.headers['User-Agent'] = config.userAgent;
+        var request = (parsedHost.protocol === 'https' ? https : http).request(options, function (response) {
+            var body = '';
+            response.on('data', function (chunk) { return body += chunk; });
+            response.on('end', function () {
+                complete(response, body, response.headers);
+            });
+        });
+        request.on('error', function (e) {
+            callback(500, e.message);
+        });
+        request.write(data);
+        request.end();
+    };
+    return NodeSubmissionClient;
+})(DefaultSubmissionClient);
+exports.NodeSubmissionClient = NodeSubmissionClient;
+var NodeBootstrapper = (function () {
+    function NodeBootstrapper() {
+    }
+    NodeBootstrapper.prototype.register = function () {
+        var beforeExit = 'beforeExit';
+        var uncaughtException = 'uncaughtException';
+        if (!(typeof window === 'undefined' && typeof global !== 'undefined' && {}.toString.call(global) === '[object global]')) {
+            return;
+        }
+        var defaults = Configuration.defaults;
+        defaults.environmentInfoCollector = new NodeEnvironmentInfoCollector();
+        defaults.errorParser = new NodeErrorParser();
+        defaults.requestInfoCollector = new NodeRequestInfoCollector();
+        defaults.submissionClient = new NodeSubmissionClient();
+        process.on(uncaughtException, function (error) {
+            ExceptionlessClient.default.submitUnhandledException(error, uncaughtException);
+        });
+        process.on(beforeExit, function (code) {
+            function getExitCodeReason(code) {
+                if (code === 1) {
+                    return 'Uncaught Fatal Exception';
+                }
+                if (code === 3) {
+                    return 'Internal JavaScript Parse Error';
+                }
+                if (code === 4) {
+                    return 'Internal JavaScript Evaluation Failure';
+                }
+                if (code === 5) {
+                    return 'Fatal Exception';
+                }
+                if (code === 6) {
+                    return 'Non-function Internal Exception Handler ';
+                }
+                if (code === 7) {
+                    return 'Internal Exception Handler Run-Time Failure';
+                }
+                if (code === 8) {
+                    return 'Uncaught Exception';
+                }
+                if (code === 9) {
+                    return 'Invalid Argument';
+                }
+                if (code === 10) {
+                    return 'Internal JavaScript Run-Time Failure';
+                }
+                if (code === 12) {
+                    return 'Invalid Debug Argument';
+                }
+                if (code > 128) {
+                    return 'Signal Exits';
+                }
+                return null;
+            }
+            var client = ExceptionlessClient.default;
+            var message = getExitCodeReason(code);
+            if (message !== null) {
+                client.submitLog(beforeExit, message, 'Error');
+            }
+            client.config.queue.process();
+        });
+    };
+    return NodeBootstrapper;
+})();
+exports.NodeBootstrapper = NodeBootstrapper;
+var DefaultErrorParser = (function () {
+    function DefaultErrorParser() {
+    }
+    DefaultErrorParser.prototype.parse = function (context, exception) {
+        function getParameters(parameters) {
+            var params = (typeof parameters === 'string' ? [parameters] : parameters) || [];
+            var result = [];
+            for (var index = 0; index < params.length; index++) {
+                result.push({ name: params[index] });
+            }
+            return result;
+        }
+        function getStackFrames(context, stackFrames) {
+            var frames = [];
+            for (var index = 0; index < stackFrames.length; index++) {
+                var frame = stackFrames[index];
+                frames.push({
+                    name: frame.func,
+                    parameters: getParameters(frame.args),
+                    file_name: frame.url,
+                    line_number: frame.line,
+                    column: frame.column
+                });
+            }
+            return frames;
+        }
+        var traceKitStackTrace = '@@_TraceKit.StackTrace';
+        var stackTrace = !!context.contextData[traceKitStackTrace]
+            ? context.contextData[traceKitStackTrace]
+            : TraceKit.computeStackTrace(exception, 25);
+        if (!stackTrace) {
+            throw new Error('Unable to parse the exceptions stack trace.');
+        }
+        return {
+            type: stackTrace.name,
+            message: stackTrace.message || exception.message,
+            stack_trace: getStackFrames(context, stackTrace.stack || [])
+        };
+    };
+    return DefaultErrorParser;
+})();
+exports.DefaultErrorParser = DefaultErrorParser;
+var DefaultModuleCollector = (function () {
+    function DefaultModuleCollector() {
+    }
+    DefaultModuleCollector.prototype.getModules = function (context) {
+        if (document && document.getElementsByTagName) {
+            return null;
+        }
+        var modules = [];
+        var scripts = document.getElementsByTagName('script');
+        if (scripts && scripts.length > 0) {
+            for (var index = 0; index < scripts.length; index++) {
+                if (scripts[index].src) {
+                    modules.push({
+                        module_id: index,
+                        name: scripts[index].src,
+                        version: Utils.parseVersion(scripts[index].src)
+                    });
+                }
+                else if (!!scripts[index].innerHTML) {
+                    modules.push({
+                        module_id: index,
+                        name: 'Script Tag',
+                        version: Utils.getHashCode(scripts[index].innerHTML)
+                    });
+                }
+            }
+        }
+        return modules;
+    };
+    return DefaultModuleCollector;
+})();
+exports.DefaultModuleCollector = DefaultModuleCollector;
+var DefaultRequestInfoCollector = (function () {
+    function DefaultRequestInfoCollector() {
+    }
+    DefaultRequestInfoCollector.prototype.getRequestInfo = function (context) {
+        if (!document || !navigator || !location) {
+            return null;
+        }
+        var requestInfo = {
+            user_agent: navigator.userAgent,
+            is_secure: location.protocol === 'https:',
+            host: location.hostname,
+            port: location.port && location.port !== '' ? parseInt(location.port) : 80,
+            path: location.pathname,
+            cookies: Utils.getCookies(document.cookie),
+            query_string: Utils.parseQueryString(location.search.substring(1))
+        };
+        if (document.referrer && document.referrer !== '') {
+            requestInfo.referrer = document.referrer;
+        }
+        return requestInfo;
+    };
+    return DefaultRequestInfoCollector;
+})();
+exports.DefaultRequestInfoCollector = DefaultRequestInfoCollector;
+var DefaultBootstrapper = (function () {
+    function DefaultBootstrapper() {
+    }
+    DefaultBootstrapper.prototype.register = function () {
+        function getDefaultsSettingsFromScriptTag() {
+            if (!document || !document.getElementsByTagName) {
+                return null;
+            }
+            var scripts = document.getElementsByTagName('script');
+            for (var index = 0; index < scripts.length; index++) {
+                if (scripts[index].src && scripts[index].src.indexOf('/exceptionless') > -1) {
+                    return Utils.parseQueryString(scripts[index].src.split('?').pop());
+                }
+            }
+            return null;
+        }
+        function processUnhandledException(stackTrace, options) {
+            var builder = ExceptionlessClient.default.createUnhandledException(new Error(stackTrace.message || (options || {}).status || 'Script error'), 'onerror');
+            builder.pluginContextData['@@_TraceKit.StackTrace'] = stackTrace;
+            builder.submit();
+        }
+        function processJQueryAjaxError(event, xhr, settings, error) {
+            var client = ExceptionlessClient.default;
+            if (xhr.status === 404) {
+                client.submitNotFound(settings.url);
+            }
+            else if (xhr.status !== 401) {
+                client.createUnhandledException(error, 'JQuery.ajaxError')
+                    .setSource(settings.url)
+                    .setProperty('status', xhr.status)
+                    .setProperty('request', settings.data)
+                    .setProperty('response', xhr.responseText && xhr.responseText.slice && xhr.responseText.slice(0, 1024))
+                    .submit();
+            }
+        }
         if (typeof window === 'undefined' || typeof document === 'undefined') {
             return;
         }
-        var configDefaults = Configuration.defaults;
-        var settings = this.getDefaultsSettingsFromScriptTag();
+        var defaults = Configuration.defaults;
+        var settings = getDefaultsSettingsFromScriptTag();
         if (settings && (settings.apiKey || settings.serverUrl)) {
-            configDefaults.apiKey = settings.apiKey;
-            configDefaults.serverUrl = settings.serverUrl;
+            defaults.apiKey = settings.apiKey;
+            defaults.serverUrl = settings.serverUrl;
         }
-        configDefaults.errorParser = new WebErrorParser();
-        configDefaults.moduleCollector = new WebModuleCollector();
-        configDefaults.requestInfoCollector = new WebRequestInfoCollector();
-        configDefaults.submissionClient = new DefaultSubmissionClient();
-        TraceKit.report.subscribe(this.processUnhandledException);
+        defaults.errorParser = new DefaultErrorParser();
+        defaults.moduleCollector = new DefaultModuleCollector();
+        defaults.requestInfoCollector = new DefaultRequestInfoCollector();
+        defaults.submissionClient = new DefaultSubmissionClient();
+        TraceKit.report.subscribe(processUnhandledException);
         TraceKit.extendToAsynchronousCallbacks();
         if (typeof $ !== 'undefined' && $(document)) {
-            $(document).ajaxError(this.processJQueryAjaxError);
+            $(document).ajaxError(processJQueryAjaxError);
         }
     };
-    WindowBootstrapper.prototype.getDefaultsSettingsFromScriptTag = function () {
-        if (!document || !document.getElementsByTagName) {
-            return null;
-        }
-        var scripts = document.getElementsByTagName('script');
-        for (var index = 0; index < scripts.length; index++) {
-            if (scripts[index].src && scripts[index].src.indexOf('/exceptionless') > -1) {
-                return Utils.parseQueryString(scripts[index].src.split('?').pop());
-            }
-        }
-        return null;
-    };
-    WindowBootstrapper.prototype.processUnhandledException = function (stackTrace, options) {
-        var builder = ExceptionlessClient.default.createUnhandledException(new Error(stackTrace.message || (options || {}).status || 'Script error'), 'onerror');
-        builder.pluginContextData['@@_TraceKit.StackTrace'] = stackTrace;
-        builder.submit();
-    };
-    WindowBootstrapper.prototype.processJQueryAjaxError = function (event, xhr, settings, error) {
-        var client = ExceptionlessClient.default;
-        if (xhr.status === 404) {
-            client.submitNotFound(settings.url);
-        }
-        else if (xhr.status !== 401) {
-            client.createUnhandledException(error, 'JQuery.ajaxError')
-                .setSource(settings.url)
-                .setProperty('status', xhr.status)
-                .setProperty('request', settings.data)
-                .setProperty('response', xhr.responseText && xhr.responseText.slice ? xhr.responseText.slice(0, 1024) : undefined)
-                .submit();
-        }
-    };
-    return WindowBootstrapper;
+    return DefaultBootstrapper;
 })();
-exports.WindowBootstrapper = WindowBootstrapper;
+exports.DefaultBootstrapper = DefaultBootstrapper;
 new NodeBootstrapper().register();
-new WindowBootstrapper().register();
+new DefaultBootstrapper().register();
 Error.stackTraceLimit = Infinity;
 
 return exports;
