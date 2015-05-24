@@ -35,12 +35,12 @@ export class SettingsManager {
   }
 
   private static getSavedServerSettings(config:Configuration):Object {
-    return config.storage.get(this._configPath, 1)[0] || {};
+    return config.storage.get(this._configPath) || {};
   }
 
   public static checkVersion(version:number, config:Configuration):void {
     if (version) {
-      var savedConfigVersion = parseInt(<string>config.storage.get(`${this._configPath}-version`, 1)[0]);
+      var savedConfigVersion = parseInt(<string>config.storage.get(`${this._configPath}-version`));
       if (isNaN(savedConfigVersion) || version > savedConfigVersion) {
         config.log.info(`Updating settings from v${(!isNaN(savedConfigVersion) ? savedConfigVersion : 0)} to v${version}`);
         this.updateSettings(config);

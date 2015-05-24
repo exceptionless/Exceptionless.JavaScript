@@ -46,7 +46,7 @@ export class DefaultEventQueue implements IEventQueue {
   }
 
   public enqueue(event:IEvent): void {
-    var config:Configuration = this._config; // Optmization for minifier.
+    var config:Configuration = this._config; // Optimization for minifier.
     this.ensureQueueTimer();
 
     if (this.areQueuedItemsDiscarded()) {
@@ -54,15 +54,24 @@ export class DefaultEventQueue implements IEventQueue {
       return;
     }
 
-    var key = `${this.queuePath()}-${new Date().toJSON()}-${Utils.randomNumber()}`;
+    var key = `ex-q-${new Date().toJSON()}-${Utils.randomNumber()}`;
     config.log.info(`Enqueuing event: ${key} type=${event.type} ${!!event.reference_id ? 'refid=' + event.reference_id : ''}`);
     config.storage.save(key, event);
   }
 
   public process(): void {
+    function getEvents(events:{ path:string, value:IEvent }[]):IEvent[] {
+      var items:IEvent[] = [];
+      for (var index = 0; index < events.length; index++) {
+        items.push(events[index].value);
+      }
+
+      return items;
+    }
+
     const queueNotProcessed:string = 'The queue will not be processed.'; // optimization for minifier.
-    var config:Configuration = this._config; // Optmization for minifier.
-    var log:ILog = config.log; // Optmization for minifier.
+    var config:Configuration = this._config; // Optimization for minifier.
+    var log:ILog = config.log; // Optimization for minifier.
 
     this.ensureQueueTimer();
 
@@ -84,14 +93,14 @@ export class DefaultEventQueue implements IEventQueue {
     this._processingQueue = true;
 
     try {
-      var events = config.storage.get(this.queuePath(), config.submissionBatchSize);
+      var events = config.storage.getList('ex-q', config.submissionBatchSize);
       if (!events || events.length == 0) {
         this._processingQueue = false;
         return;
       }
 
       log.info(`Sending ${events.length} events to ${config.serverUrl}.`);
-      config.submissionClient.postEvents(events, config, (response:SubmissionResponse) => {
+      config.submissionClient.postEvents(getEvents(events), config, (response:SubmissionResponse) => {
         this.processSubmissionResponse(response, events);
         log.info('Finished processing queue.');
         this._processingQueue = false;
@@ -103,13 +112,14 @@ export class DefaultEventQueue implements IEventQueue {
     }
   }
 
-  private processSubmissionResponse(response:SubmissionResponse, events:IEvent[]): void {
-    const noSubmission:string = 'The event will not be submitted.'; // Optmization for minifier.
-    var config:Configuration = this._config; // Optmization for minifier.
-    var log:ILog = config.log; // Optmization for minifier.
+  private processSubmissionResponse(response:SubmissionResponse, events:{ path:string, value:IEvent }[]): void {
+    const noSubmission:string = 'The event will not be submitted.'; // Optimization for minifier.
+    var config:Configuration = this._config; // Optimization for minifier.
+    var log:ILog = config.log; // Optimization for minifier.
 
     if (response.success) {
       log.info(`Sent ${events.length} events.`);
+      this.removeEvents(events);
       return;
     }
 
@@ -117,7 +127,6 @@ export class DefaultEventQueue implements IEventQueue {
       // You are currently over your rate limit or the servers are under stress.
       log.error('Server returned service unavailable.');
       this.suspendProcessing();
-      this.requeueEvents(events);
       return;
     }
 
@@ -132,6 +141,7 @@ export class DefaultEventQueue implements IEventQueue {
       // The api key was suspended or could not be authorized.
       log.info(`Unable to authenticate, please check your configuration. ${noSubmission}`);
       this.suspendProcessing(15);
+      this.removeEvents(events);
       return;
     }
 
@@ -139,6 +149,7 @@ export class DefaultEventQueue implements IEventQueue {
       // The service end point could not be found.
       log.error(`Error while trying to submit data: ${response.message}`);
       this.suspendProcessing(60 * 4);
+      this.removeEvents(events);
       return;
     }
 
@@ -147,9 +158,9 @@ export class DefaultEventQueue implements IEventQueue {
       if (config.submissionBatchSize > 1) {
         log.error(`${message} Retrying with smaller batch size.`);
         config.submissionBatchSize = Math.max(1, Math.round(config.submissionBatchSize / 1.5));
-        this.requeueEvents(events);
       } else {
         log.error(`${message} ${noSubmission}`);
+        this.removeEvents(events);
       }
 
       return;
@@ -158,7 +169,6 @@ export class DefaultEventQueue implements IEventQueue {
     if (!response.success) {
       log.error(`Error submitting events: ${ response.message}`);
       this.suspendProcessing();
-      this.requeueEvents(events);
     }
   }
 
@@ -175,7 +185,7 @@ export class DefaultEventQueue implements IEventQueue {
   }
 
   public suspendProcessing(durationInMinutes?:number, discardFutureQueuedItems?:boolean, clearQueue?:boolean): void {
-    var config:Configuration = this._config; // Optmization for minifier.
+    var config:Configuration = this._config; // Optimization for minifier.
 
     if (!durationInMinutes || durationInMinutes <= 0) {
       durationInMinutes = 5;
@@ -188,21 +198,15 @@ export class DefaultEventQueue implements IEventQueue {
       this._discardQueuedItemsUntil = new Date(new Date().getTime() + (durationInMinutes * 60000));
     }
 
-    if (!clearQueue) {
-      return;
+    if (clearQueue) {
+      // Account is over the limit and we want to ensure that the sample size being sent in will contain newer errors.
+      this.removeEvents(config.storage.getList('ex-q'));
     }
-
-    // Account is over the limit and we want to ensure that the sample size being sent in will contain newer errors.
-    try {
-      config.storage.clear(this.queuePath());
-    } catch (Exception) { }
   }
 
-  private requeueEvents(events:IEvent[]): void {
-    this._config.log.info(`Requeuing ${events.length} events.`);
-
-    for (var index = 0; index < events.length; index++) {
-      this.enqueue(events[index]);
+  private removeEvents(events:{ path:string, value:IEvent }[]) {
+    for (var index = 0; index < (events || []).length; index++) {
+      this._config.storage.remove(events[index].path);
     }
   }
 
@@ -212,9 +216,5 @@ export class DefaultEventQueue implements IEventQueue {
 
   private areQueuedItemsDiscarded(): boolean {
     return this._discardQueuedItemsUntil && this._discardQueuedItemsUntil > new Date();
-  }
-
-  private queuePath(): string {
-    return 'ex-q';
   }
 }

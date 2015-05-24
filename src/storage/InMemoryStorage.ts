@@ -8,47 +8,30 @@ export class InMemoryStorage<T> implements IStorage<T> {
     return true;
   }
 
-  public get(searchPattern?:string, limit?:number):T[] {
-    var results:T[] = [];
+  public get(path:string):T {
+    return this._items[path] || null;
+  }
+
+  public getList(searchPattern?:string, limit?:number):{ path:string, value:T }[] {
     var regex = new RegExp(searchPattern || '.*');
 
+    var results:{ path:string, value:T }[] = [];
     for (var key in this._items) {
       if (results.length >= limit) {
         break;
       }
 
       if (regex.test(key)) {
-        results.push(this._items[key]);
-        delete this._items[key];
+        results.push({ path: key, value: this._items[key] });
       }
     }
 
     return results;
   }
 
-  public clear(searchPattern?:string):void {
-    if (!searchPattern) {
-      this._items = {};
-      return;
+  public remove(path:string):void {
+    if (path) {
+      delete this._items[path];
     }
-
-    var regex = new RegExp(searchPattern);
-    for (var key in this._items) {
-      if (regex.test(key)) {
-        delete this._items[key];
-      }
-    }
-  }
-
-  public count(searchPattern?:string):number {
-    var regex = new RegExp(searchPattern || '.*');
-    var results:T[] = [];
-    for (var key in this._items) {
-      if (regex.test(key)) {
-        results.push(key);
-      }
-    }
-
-    return results.length;
   }
 }
