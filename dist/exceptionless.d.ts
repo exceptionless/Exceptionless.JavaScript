@@ -69,9 +69,12 @@ export interface IRequestInfoCollector {
 }
 export interface IStorage<T> {
     save<T>(path: string, value: T): boolean;
-    get(searchPattern?: string, limit?: number): T[];
-    clear(searchPattern?: string): void;
-    count(searchPattern?: string): number;
+    get(path: string): T;
+    getList(searchPattern?: string, limit?: number): {
+        path: string;
+        value: T;
+    }[];
+    remove(path: string): void;
 }
 export interface ISubmissionClient {
     postEvents(events: IEvent[], config: Configuration, callback: (response: SubmissionResponse) => void): void;
@@ -159,17 +162,19 @@ export declare class DefaultEventQueue implements IEventQueue {
     private ensureQueueTimer();
     private onProcessQueue();
     suspendProcessing(durationInMinutes?: number, discardFutureQueuedItems?: boolean, clearQueue?: boolean): void;
-    private requeueEvents(events);
+    private removeEvents(events);
     private isQueueProcessingSuspended();
     private areQueuedItemsDiscarded();
-    private queuePath();
 }
 export declare class InMemoryStorage<T> implements IStorage<T> {
     private _items;
     save<T>(path: string, value: T): boolean;
-    get(searchPattern?: string, limit?: number): T[];
-    clear(searchPattern?: string): void;
-    count(searchPattern?: string): number;
+    get(path: string): T;
+    getList(searchPattern?: string, limit?: number): {
+        path: string;
+        value: T;
+    }[];
+    remove(path: string): void;
 }
 export declare class Utils {
     static addRange<T>(target: T[], ...values: T[]): T[];

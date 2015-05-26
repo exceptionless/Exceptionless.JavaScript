@@ -1230,11 +1230,11 @@ var SettingsManager = (function () {
         this.changed(config);
     };
     SettingsManager.getSavedServerSettings = function (config) {
-        return config.storage.get(this._configPath, 1)[0] || {};
+        return config.storage.get(this._configPath) || {};
     };
     SettingsManager.checkVersion = function (version, config) {
         if (version) {
-            var savedConfigVersion = parseInt(config.storage.get(this._configPath + "-version", 1)[0]);
+            var savedConfigVersion = parseInt(config.storage.get(this._configPath + "-version"));
             if (isNaN(savedConfigVersion) || version > savedConfigVersion) {
                 config.log.info("Updating settings from v" + (!isNaN(savedConfigVersion) ? savedConfigVersion : 0) + " to v" + version);
                 this.updateSettings(config);
@@ -1399,12 +1399,19 @@ var DefaultEventQueue = (function () {
             config.log.info('Queue items are currently being discarded. The event will not be queued.');
             return;
         }
-        var key = this.queuePath() + "-" + new Date().toJSON() + "-" + Utils.randomNumber();
+        var key = "ex-q-" + new Date().toJSON() + "-" + Utils.randomNumber();
         config.log.info("Enqueuing event: " + key + " type=" + event.type + " " + (!!event.reference_id ? 'refid=' + event.reference_id : ''));
         config.storage.save(key, event);
     };
     DefaultEventQueue.prototype.process = function () {
         var _this = this;
+        function getEvents(events) {
+            var items = [];
+            for (var index = 0; index < events.length; index++) {
+                items.push(events[index].value);
+            }
+            return items;
+        }
         var queueNotProcessed = 'The queue will not be processed.';
         var config = this._config;
         var log = config.log;
@@ -1423,13 +1430,13 @@ var DefaultEventQueue = (function () {
         }
         this._processingQueue = true;
         try {
-            var events = config.storage.get(this.queuePath(), config.submissionBatchSize);
+            var events = config.storage.getList('ex-q', config.submissionBatchSize);
             if (!events || events.length == 0) {
                 this._processingQueue = false;
                 return;
             }
             log.info("Sending " + events.length + " events to " + config.serverUrl + ".");
-            config.submissionClient.postEvents(events, config, function (response) {
+            config.submissionClient.postEvents(getEvents(events), config, function (response) {
                 _this.processSubmissionResponse(response, events);
                 log.info('Finished processing queue.');
                 _this._processingQueue = false;
@@ -1447,12 +1454,12 @@ var DefaultEventQueue = (function () {
         var log = config.log;
         if (response.success) {
             log.info("Sent " + events.length + " events.");
+            this.removeEvents(events);
             return;
         }
         if (response.serviceUnavailable) {
             log.error('Server returned service unavailable.');
             this.suspendProcessing();
-            this.requeueEvents(events);
             return;
         }
         if (response.paymentRequired) {
@@ -1463,11 +1470,13 @@ var DefaultEventQueue = (function () {
         if (response.unableToAuthenticate) {
             log.info("Unable to authenticate, please check your configuration. " + noSubmission);
             this.suspendProcessing(15);
+            this.removeEvents(events);
             return;
         }
         if (response.notFound || response.badRequest) {
             log.error("Error while trying to submit data: " + response.message);
             this.suspendProcessing(60 * 4);
+            this.removeEvents(events);
             return;
         }
         if (response.requestEntityTooLarge) {
@@ -1475,17 +1484,16 @@ var DefaultEventQueue = (function () {
             if (config.submissionBatchSize > 1) {
                 log.error(message + " Retrying with smaller batch size.");
                 config.submissionBatchSize = Math.max(1, Math.round(config.submissionBatchSize / 1.5));
-                this.requeueEvents(events);
             }
             else {
                 log.error(message + " " + noSubmission);
+                this.removeEvents(events);
             }
             return;
         }
         if (!response.success) {
             log.error("Error submitting events: " + response.message);
             this.suspendProcessing();
-            this.requeueEvents(events);
         }
     };
     DefaultEventQueue.prototype.ensureQueueTimer = function () {
@@ -1509,18 +1517,13 @@ var DefaultEventQueue = (function () {
         if (discardFutureQueuedItems) {
             this._discardQueuedItemsUntil = new Date(new Date().getTime() + (durationInMinutes * 60000));
         }
-        if (!clearQueue) {
-            return;
+        if (clearQueue) {
+            this.removeEvents(config.storage.getList('ex-q'));
         }
-        try {
-            config.storage.clear(this.queuePath());
-        }
-        catch (Exception) { }
     };
-    DefaultEventQueue.prototype.requeueEvents = function (events) {
-        this._config.log.info("Requeuing " + events.length + " events.");
-        for (var index = 0; index < events.length; index++) {
-            this.enqueue(events[index]);
+    DefaultEventQueue.prototype.removeEvents = function (events) {
+        for (var index = 0; index < (events || []).length; index++) {
+            this._config.storage.remove(events[index].path);
         }
     };
     DefaultEventQueue.prototype.isQueueProcessingSuspended = function () {
@@ -1528,9 +1531,6 @@ var DefaultEventQueue = (function () {
     };
     DefaultEventQueue.prototype.areQueuedItemsDiscarded = function () {
         return this._discardQueuedItemsUntil && this._discardQueuedItemsUntil > new Date();
-    };
-    DefaultEventQueue.prototype.queuePath = function () {
-        return 'ex-q';
     };
     return DefaultEventQueue;
 })();
@@ -1543,41 +1543,26 @@ var InMemoryStorage = (function () {
         this._items[path] = value;
         return true;
     };
-    InMemoryStorage.prototype.get = function (searchPattern, limit) {
-        var results = [];
+    InMemoryStorage.prototype.get = function (path) {
+        return this._items[path] || null;
+    };
+    InMemoryStorage.prototype.getList = function (searchPattern, limit) {
         var regex = new RegExp(searchPattern || '.*');
+        var results = [];
         for (var key in this._items) {
             if (results.length >= limit) {
                 break;
             }
             if (regex.test(key)) {
-                results.push(this._items[key]);
-                delete this._items[key];
+                results.push({ path: key, value: this._items[key] });
             }
         }
         return results;
     };
-    InMemoryStorage.prototype.clear = function (searchPattern) {
-        if (!searchPattern) {
-            this._items = {};
-            return;
+    InMemoryStorage.prototype.remove = function (path) {
+        if (path) {
+            delete this._items[path];
         }
-        var regex = new RegExp(searchPattern);
-        for (var key in this._items) {
-            if (regex.test(key)) {
-                delete this._items[key];
-            }
-        }
-    };
-    InMemoryStorage.prototype.count = function (searchPattern) {
-        var regex = new RegExp(searchPattern || '.*');
-        var results = [];
-        for (var key in this._items) {
-            if (regex.test(key)) {
-                results.push(key);
-            }
-        }
-        return results.length;
     };
     return InMemoryStorage;
 })();
@@ -1870,7 +1855,7 @@ var Configuration = (function () {
     };
     Object.defineProperty(Configuration.prototype, "userAgent", {
         get: function () {
-            return 'exceptionless-js/0.3.1';
+            return 'exceptionless-js/0.4.0';
         },
         enumerable: true,
         configurable: true
@@ -2594,7 +2579,7 @@ var NodeSubmissionClient = (function (_super) {
         request.on('error', function (e) {
             callback(500, e.message);
         });
-        request.write(data);
+        !!data && request.write(data);
         request.end();
     };
     return NodeSubmissionClient;
@@ -2678,11 +2663,12 @@ var DefaultErrorParser = (function () {
             return result;
         }
         function getStackFrames(context, stackFrames) {
+            var anonymous = '<anonymous>';
             var frames = [];
             for (var index = 0; index < stackFrames.length; index++) {
                 var frame = stackFrames[index];
                 frames.push({
-                    name: frame.func,
+                    name: (frame.func || anonymous).replace('?', anonymous),
                     parameters: getParameters(frame.args),
                     file_name: frame.url,
                     line_number: frame.line,
