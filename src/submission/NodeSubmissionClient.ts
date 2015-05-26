@@ -58,7 +58,7 @@ export class NodeSubmissionClient extends DefaultSubmissionClient {
       callback(500, e.message);
     });
 
-    request.write(data);
+    !!data && request.write(data);
     request.end();
   }
 }
