@@ -18,12 +18,13 @@ export class DefaultErrorParser implements IErrorParser {
     }
 
     function getStackFrames(context:EventPluginContext, stackFrames:TraceKit.StackFrame[]): IStackFrame[] {
+      const anonymous:string = '<anonymous>';
       var frames:IStackFrame[] = [];
 
       for (var index = 0; index < stackFrames.length; index++) {
         var frame = stackFrames[index];
         frames.push({
-          name: frame.func,
+          name: (frame.func || anonymous).replace('?', anonymous),
           parameters: getParameters(frame.args),
           file_name: frame.url,
           line_number: frame.line,
