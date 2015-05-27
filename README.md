@@ -47,11 +47,11 @@ client.config.serverUrl = 'http://localhost:50000';
 ```
 3. You can create a new instance of the ExceptionlessClient and specify the `apiKey`, `serverUrl` or [configuration object](https://github.com/exceptionless/Exceptionless.JavaScript/blob/master/src/configuration/IConfigurationSettings.ts).
 ```javascript
-var client = new ExceptionlessClient('API_KEY_HERE');
+var client = new exceptionless.ExceptionlessClient('API_KEY_HERE');
 // or with a api key and server url.
-var client = new ExceptionlessClient('API_KEY_HERE', 'http://localhost:50000');
+var client = new exceptionless.ExceptionlessClient('API_KEY_HERE', 'http://localhost:50000');
 // or with a configuration object
-var client = new ExceptionlessClient({
+var client = new exceptionless.ExceptionlessClient({
   apiKey: 'API_KEY_HERE',
   serverUrl: 'http://localhost:50000',
   submissionBatchSize: 100
