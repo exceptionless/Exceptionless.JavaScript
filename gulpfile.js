@@ -26,8 +26,8 @@ gulp.task('exceptionless.es5.umd', ['typescript.es5', 'typescript.es5.integratio
     .pipe(sourcemaps.init({ loadMaps: true }))
     .pipe(umd({
       exports: 'exports',
-      globalName: 'Exceptionless',
-      namespace: 'Exceptionless'
+      globalName: 'exceptionless',
+      namespace: 'exceptionless'
     }))
     .pipe(replace('}(this, function(require, exports, module) {', '}(this, function(require, exports, module) {\nif (!exports) {\n\tvar exports = {};\n}\nif (!require) {\n\tvar require = function(){};\n}\n'))
     .pipe(sourcemaps.write('.'))
@@ -103,8 +103,8 @@ gulp.task('exceptionless.test.umd', ['typescript.test'], function() {
     .pipe(sourcemaps.init({ loadMaps: true }))
     .pipe(umd({
       exports: 'exports',
-      globalName: 'Exceptionless',
-      namespace: 'Exceptionless'
+      globalName: 'exceptionless',
+      namespace: 'exceptionless'
     }))
     .pipe(replace('}(this, function(require, exports, module) {', '}(this, function(require, exports, module) {\nif (!exports) {\n\tvar exports = {};\n}\nif (!require) {\n\tvar require = function(){};\n}\n'))
     .pipe(sourcemaps.write('.'))

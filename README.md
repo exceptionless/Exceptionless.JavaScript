@@ -41,17 +41,17 @@ You can configure the exceptionless client a few different ways. The section bel
 ```
 2. You can set the `apiKey` or `serverUrl` on the default ExceptionlessClient instance.
 ```javascript
-var client = Exceptionless.ExceptionlessClient.default;
+var client = exceptionless.ExceptionlessClient.default;
 client.config.apiKey = 'API_KEY_HERE';
 client.config.serverUrl = 'http://localhost:50000';
 ```
 3. You can create a new instance of the ExceptionlessClient and specify the `apiKey`, `serverUrl` or [configuration object](https://github.com/exceptionless/Exceptionless.JavaScript/blob/master/src/configuration/IConfigurationSettings.ts).
 ```javascript
-var client = new Exceptionless.ExceptionlessClient('API_KEY_HERE');
+var client = new exceptionless.ExceptionlessClient('API_KEY_HERE');
 // or with a api key and server url.
-var client = new Exceptionless.ExceptionlessClient('API_KEY_HERE', 'http://localhost:50000');
+var client = new exceptionless.ExceptionlessClient('API_KEY_HERE', 'http://localhost:50000');
 // or with a configuration object
-var client = new Exceptionless.ExceptionlessClient({
+var client = new exceptionless.ExceptionlessClient({
   apiKey: 'API_KEY_HERE',
   serverUrl: 'http://localhost:50000',
   submissionBatchSize: 100
@@ -69,11 +69,11 @@ client.config.serverUrl = 'http://localhost:50000';
 ```javascript
 var exceptionless = require('exceptionless');
 
-var client = new Exceptionless.ExceptionlessClient('API_KEY_HERE');
+var client = new exceptionless.ExceptionlessClient('API_KEY_HERE');
 // or with a api key and server url.
-var client = new Exceptionless.ExceptionlessClient('API_KEY_HERE', 'http://localhost:50000');
+var client = new exceptionless.ExceptionlessClient('API_KEY_HERE', 'http://localhost:50000');
 // or with a configuration object
-var client = new Exceptionless.ExceptionlessClient({
+var client = new exceptionless.ExceptionlessClient({
   apiKey: 'API_KEY_HERE',
   serverUrl: 'http://localhost:50000',
   submissionBatchSize: 100
@@ -89,7 +89,7 @@ You may also want to send us log messages, feature usages or other kinds of even
 
 ```javascript
 // javascript
-var client = Exceptionless.ExceptionlessClient.default;
+var client = exceptionless.ExceptionlessClient.default;
 // Node.Js
 // var client = require('exceptionless').ExceptionlessClient.default;
 
@@ -117,7 +117,7 @@ In addition to automatically sending all unhandled exceptions, you may want to m
 
 ```javascript
 // javascript
-var client = Exceptionless.ExceptionlessClient.default;
+var client = exceptionless.ExceptionlessClient.default;
 // Node.Js
 // var client = require('exceptionless').ExceptionlessClient.default;
 
@@ -133,7 +133,7 @@ try {
 You can easily include additional information in your error reports using our fluent [event builder API](https://github.com/exceptionless/Exceptionless.JavaScript/blob/master/src/EventBuilder.ts).
 ```javascript
 // javascript
-var client = Exceptionless.ExceptionlessClient.default;
+var client = exceptionless.ExceptionlessClient.default;
 // Node.Js
 // var client = require('exceptionless').ExceptionlessClient.default;
 

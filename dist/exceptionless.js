@@ -1156,7 +1156,7 @@ window.TraceKit = TraceKit;
   } else if (typeof exports === 'object') {
     module.exports = factory(require, exports, module);
   } else {
-    root.Exceptionless = factory();
+    root.exceptionless = factory();
   }
 }(this, function(require, exports, module) {
 if (!exports) {
@@ -1855,7 +1855,7 @@ var Configuration = (function () {
     };
     Object.defineProperty(Configuration.prototype, "userAgent", {
         get: function () {
-            return 'exceptionless-js/0.4.0';
+            return 'exceptionless-js/0.4.1';
         },
         enumerable: true,
         configurable: true

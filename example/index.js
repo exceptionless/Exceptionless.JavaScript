@@ -8,7 +8,7 @@ function sendEvents(numberToSends, eventType) {
   for (var index = 0; index < numberToSends; index++) {
     switch (eventType) {
       case 0: {
-        Exceptionless.ExceptionlessClient.default.submitLog('sendEvents', 'This is a test message', 'info');
+        exceptionless.ExceptionlessClient.default.submitLog('sendEvents', 'This is a test message', 'info');
         break;
       }
       case 1: {
@@ -35,7 +35,7 @@ function throwIndexOutOfRange(indexer) {
   try {
     getNonexistentData(indexer);
   } catch (e) {
-    Exceptionless.ExceptionlessClient.default.submitException(e);
+    exceptionless.ExceptionlessClient.default.submitException(e);
   }
 }
 
