@@ -2,17 +2,25 @@ import { Configuration } from '../configuration/Configuration';
 import { IEvent } from '../models/IEvent';
 
 describe('DefaultEventQueue', () => {
-  it('should enqueue event', () => {
-    var config = new Configuration({ apiKey:'LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw', serverUrl:'http://localhost:50000'});
+  function getConfiguration(): Configuration {
+    var config:Configuration = new Configuration({
+      apiKey:'LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw',
+      serverUrl:'http://localhost:50000'
+    });
+
     expect(config.storage.getList().length).toBe(0);
+    return config;
+  }
+
+  it('should enqueue event', () => {
+    var config:Configuration = getConfiguration();
     var event:IEvent = { type: 'log', reference_id: '123454321' };
     config.queue.enqueue(event);
     expect(config.storage.getList().length).toBe(1);
   });
 
   it('should process queue', () => {
-    var config = new Configuration({ apiKey:'LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw', serverUrl:'http://localhost:50000'});
-    expect(config.storage.getList().length).toBe(0);
+    var config:Configuration = getConfiguration();
     var event:IEvent = { type: 'log', reference_id: '123454321' };
     config.queue.enqueue(event);
     expect(config.storage.getList().length).toBe(1);
@@ -26,8 +34,7 @@ describe('DefaultEventQueue', () => {
   });
 
   it('should discard event submission', () => {
-    var config = new Configuration({ apiKey:'LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw', serverUrl:'http://localhost:50000'});
-    expect(config.storage.getList().length).toBe(0);
+    var config:Configuration = getConfiguration();
     config.queue.suspendProcessing(1, true);
 
     var event:IEvent = { type: 'log', reference_id: '123454321' };
@@ -36,8 +43,7 @@ describe('DefaultEventQueue', () => {
   });
 
   it('should suspend processing', (done) => {
-    var config = new Configuration({ apiKey:'LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw', serverUrl:'http://localhost:50000'});
-    expect(config.storage.getList().length).toBe(0);
+    var config:Configuration = getConfiguration();
     config.queue.suspendProcessing(.0001);
 
     var event:IEvent = { type: 'log', reference_id: '123454321' };

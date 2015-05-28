@@ -68,12 +68,10 @@ export interface IRequestInfoCollector {
     getRequestInfo(context: EventPluginContext): IRequestInfo;
 }
 export interface IStorage<T> {
-    save<T>(path: string, value: T): boolean;
+    save(path: string, value: T): boolean;
     get(path: string): T;
-    getList(searchPattern?: string, limit?: number): {
-        path: string;
         value: T;
-    }[];
+    getList(searchPattern?: string, limit?: number): IStorageItem<T>[];
     remove(path: string): void;
 }
 export interface ISubmissionClient {
@@ -168,12 +166,11 @@ export declare class DefaultEventQueue implements IEventQueue {
 }
 export declare class InMemoryStorage<T> implements IStorage<T> {
     private _items;
-    save<T>(path: string, value: T): boolean;
+    private _maxItems;
+    constructor(maxItems?: number);
+    save(path: string, value: T): boolean;
     get(path: string): T;
-    getList(searchPattern?: string, limit?: number): {
-        path: string;
-        value: T;
-    }[];
+    getList(searchPattern?: string, limit?: number): IStorageItem<T>[];
     remove(path: string): void;
 }
 export declare class Utils {
@@ -383,6 +380,11 @@ export declare class SubmissionMethodPlugin implements IEventPlugin {
     priority: number;
     name: string;
     run(context: EventPluginContext, next?: () => void): void;
+}
+export interface IStorageItem<T> {
+    created: number;
+    path: string;
+    value: T;
 }
 export declare class SettingsResponse {
     success: boolean;

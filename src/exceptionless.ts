@@ -46,6 +46,7 @@ import { DefaultModuleCollector } from './services/DefaultModuleCollector';
 import { DefaultRequestInfoCollector } from './services/DefaultRequestInfoCollector';
 import { InMemoryStorage } from './storage/InMemoryStorage';
 import { IStorage } from './storage/IStorage';
+import { IStorageItem } from './storage/IStorageItem';
 import { DefaultSubmissionClient } from './submission/DefaultSubmissionClient';
 import { ISubmissionClient } from './submission/ISubmissionClient';
 import { NodeSubmissionClient } from './submission/NodeSubmissionClient';

@@ -3,7 +3,7 @@
   "version": "0.4.1",
   "description": "JavaScript client for Exceptionless",
   "license": "Apache",
-  "main": "dist/exceptionless.es5.js",
+  "main": "dist/exceptionless.js",
   "scripts": {
     "prepublish": "tsd reinstall -s",
     "start": "gulp",

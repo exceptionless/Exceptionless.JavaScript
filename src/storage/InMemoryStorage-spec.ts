@@ -1,5 +1,6 @@
 import { IEvent } from '../models/IEvent';
 import { InMemoryStorage } from './InMemoryStorage';
+import { IStorageItem } from './IStorageItem';
 
 describe('InMemoryStorage', () => {
   it('should save events', () => {
@@ -89,5 +90,62 @@ describe('InMemoryStorage', () => {
     }
 
     expect(storage.getList().length).toBe(0);
+  });
+
+  it('should get with limit', () => {
+    var storage = new InMemoryStorage<IEvent>(250);
+    for (var index:number = 0; index < 260; index++) {
+      storage.save('ex-q-' + index, { type: 'log', reference_id: index.toString() });
+    }
+
+    expect(storage.getList().length).toBe(250);
+    expect(storage.getList(null).length).toBe(250);
+    expect(storage.getList(null, 1).length).toBe(1)
+  });
+
+  it('should get the oldest events', () => {
+    function getDate(baseDate:Date, offset:number) {
+      return new Date(baseDate.getTime() + (offset * 60000));
+    }
+
+    const date:Date = new Date();
+    var storage = new InMemoryStorage<IEvent>();
+    for (var index:number = 0; index < 10; index++) {
+      storage.save('ex-q-' + index, {
+        date: getDate(date, index),
+        type: 'log',
+        reference_id: index.toString()
+      });
+
+      expect(storage.getList().length).toBe(index + 1);
+    }
+
+    var offset:number = 0;
+    var events:IStorageItem<IEvent>[] = storage.getList('ex-q-', 2);
+    while (events && events.length > 0) {
+      expect(2).toBe(events.length);
+      for (var ei = 0; ei < 2; ei++) {
+        expect(getDate(date, offset++)).toEqual(events[ei].value.date);
+        storage.remove(events[ei].path);
+      }
+
+      events = storage.getList('ex-q-', 2);
+    }
+  });
+
+  it('should respect max items limit', () => {
+    var storage = new InMemoryStorage<IEvent>(5);
+    for (var index:number = 0; index < 5; index++) {
+      storage.save('ex-q-' + index, { type: 'log', reference_id: index.toString() });
+    }
+
+    var events:IStorageItem<IEvent>[] = storage.getList();
+    expect(events.length).toBe(5);
+    expect(events[0].path).toBe('ex-q-0');
+    storage.save('ex-q-6', { type: 'log', reference_id: '6' });
+
+    events = storage.getList();
+    expect(events.length).toBe(5);
+    expect(events[0].path).toBe('ex-q-1');
   });
 });
