@@ -1,3 +1,5 @@
+/// <reference path="../typings/tsd.d.ts" />
+
 import { Configuration } from '../configuration/Configuration';
 import { ContextData } from 'ContextData';
 import { ExceptionlessClient } from '../ExceptionlessClient';
