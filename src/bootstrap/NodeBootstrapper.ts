@@ -13,7 +13,6 @@ export class NodeBootstrapper implements IBootstrapper {
   public register(): void {
     const beforeExit:string = 'beforeExit';
     const uncaughtException:string = 'uncaughtException';
-    var process, global: any;
 
     if (!(typeof window === 'undefined' && typeof global !== 'undefined' && {}.toString.call(global) === '[object global]')) {
       return;
