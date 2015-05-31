@@ -1,5 +1,3 @@
-/// <reference path="../typings/tsd.d.ts" />
-
 import { IEvent } from '../models/IEvent';
 import { InMemoryStorage } from './InMemoryStorage';
 import { IStorageItem } from './IStorageItem';

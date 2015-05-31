@@ -1,5 +1,3 @@
-/// <reference path="typings/tsd.d.ts" />
-
 import { ExceptionlessClient } from 'ExceptionlessClient';
 import { EventPluginContext } from './plugins/EventPluginContext';
 

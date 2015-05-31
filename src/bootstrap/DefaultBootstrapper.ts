@@ -1,5 +1,3 @@
-/// <reference path="../typings/tsd.d.ts" />
-
 import { IBootstrapper } from 'IBootstrapper';
 import { Configuration } from '../configuration/Configuration';
 import { IConfigurationSettings } from '../configuration/IConfigurationSettings';

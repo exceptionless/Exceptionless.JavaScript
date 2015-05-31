@@ -1,5 +1,3 @@
-/// <reference path="../typings/tsd.d.ts" />
-
 import { Configuration } from '../configuration/Configuration';
 import { IEvent } from '../models/IEvent';
 import { IUserDescription } from '../models/IUserDescription';

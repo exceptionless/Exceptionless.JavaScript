@@ -1,5 +1,3 @@
-/// <reference path="../typings/tsd.d.ts" />
-
 import { Configuration } from './Configuration';
 import { EventPluginContext } from '../plugins/EventPluginContext';
 
