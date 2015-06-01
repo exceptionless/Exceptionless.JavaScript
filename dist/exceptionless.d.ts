@@ -1,6 +1,3 @@
-export interface IBootstrapper {
-    register(): void;
-}
 export interface ILastReferenceIdManager {
     getLast(): string;
     clearLast(): void;
@@ -393,32 +390,9 @@ export declare class SettingsResponse {
     exception: any;
     constructor(success: boolean, settings: any, settingsVersion?: number, exception?: any, message?: string);
 }
-export declare class NodeEnvironmentInfoCollector implements IEnvironmentInfoCollector {
-    getEnvironmentInfo(context: EventPluginContext): IEnvironmentInfo;
-}
-export declare class NodeErrorParser implements IErrorParser {
-    parse(context: EventPluginContext, exception: Error): IError;
-}
-export declare class NodeRequestInfoCollector implements IRequestInfoCollector {
-    getRequestInfo(context: EventPluginContext): IRequestInfo;
-}
 export interface IClientConfiguration {
     settings: Object;
     version: number;
-}
-export declare class DefaultSubmissionClient implements ISubmissionClient {
-    configurationVersionHeader: string;
-    postEvents(events: IEvent[], config: Configuration, callback: (response: SubmissionResponse) => void): void;
-    postUserDescription(referenceId: string, description: IUserDescription, config: Configuration, callback: (response: SubmissionResponse) => void): void;
-    getSettings(config: Configuration, callback: (response: SettingsResponse) => void): void;
-    sendRequest(config: Configuration, method: string, path: string, data: string, callback: (status: number, message: string, data?: string, headers?: Object) => void): void;
-}
-export declare class NodeSubmissionClient extends DefaultSubmissionClient {
-    constructor();
-    sendRequest(config: Configuration, method: string, path: string, data: string, callback: (status: number, message: string, data?: string, headers?: Object) => void): void;
-}
-export declare class NodeBootstrapper implements IBootstrapper {
-    register(): void;
 }
 export declare class DefaultErrorParser implements IErrorParser {
     parse(context: EventPluginContext, exception: Error): IError;
@@ -429,6 +403,10 @@ export declare class DefaultModuleCollector implements IModuleCollector {
 export declare class DefaultRequestInfoCollector implements IRequestInfoCollector {
     getRequestInfo(context: EventPluginContext): IRequestInfo;
 }
-export declare class DefaultBootstrapper implements IBootstrapper {
-    register(): void;
+export declare class DefaultSubmissionClient implements ISubmissionClient {
+    configurationVersionHeader: string;
+    postEvents(events: IEvent[], config: Configuration, callback: (response: SubmissionResponse) => void): void;
+    postUserDescription(referenceId: string, description: IUserDescription, config: Configuration, callback: (response: SubmissionResponse) => void): void;
+    getSettings(config: Configuration, callback: (response: SettingsResponse) => void): void;
+    sendRequest(config: Configuration, method: string, path: string, data: string, callback: (status: number, message: string, data?: string, headers?: Object) => void): void;
 }

@@ -7,11 +7,12 @@
     "target": "es5"
   },
   "bundles": {
-    "exceptionless": {
+    "exceptionless.node": {
       "files": [
-        "typings/tracekit/tracekit.d.ts",
+        "typings/node/node.d.ts",
+        "typings/stack-trace/stack-trace.d.ts",
 
-        "exceptionless.ts"
+        "exceptionless.node.ts"
       ]
     }
   }

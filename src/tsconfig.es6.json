@@ -8,11 +8,9 @@
   "bundles": {
     "exceptionless.es6": {
       "files": [
-        "typings/node/node.d.ts",
-        "typings/stack-trace/stack-trace.d.ts",
         "typings/tracekit/tracekit.d.ts",
 
-        "Exceptionless.ts"
+        "exceptionless.ts"
       ]
     }
   }

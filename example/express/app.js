@@ -1,7 +1,7 @@
 var express = require('express');
 var app = express();
 
-var client = require('../../dist/exceptionless').ExceptionlessClient.default;
+var client = require('../../dist/exceptionless.node').ExceptionlessClient.default;
 client.config.apiKey = 'LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw';
 client.config.serverUrl = 'http://localhost:50000';
 client.config.useDebugLogger();

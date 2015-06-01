@@ -35,72 +35,93 @@ import { IEnvironmentInfoCollector } from './services/IEnvironmentInfoCollector'
 import { IErrorParser } from './services/IErrorParser';
 import { IModuleCollector } from './services/IModuleCollector';
 import { IRequestInfoCollector } from './services/IRequestInfoCollector';
-import { DefaultErrorParser } from './services/DefaultErrorParser';
-import { DefaultModuleCollector } from './services/DefaultModuleCollector';
-import { DefaultRequestInfoCollector } from './services/DefaultRequestInfoCollector';
+import { NodeEnvironmentInfoCollector } from './services/NodeEnvironmentInfoCollector';
+import { NodeErrorParser } from './services/NodeErrorParser';
+import { NodeRequestInfoCollector } from './services/NodeRequestInfoCollector';
 import { InMemoryStorage } from './storage/InMemoryStorage';
 import { IStorage } from './storage/IStorage';
 import { IStorageItem } from './storage/IStorageItem';
 import { DefaultSubmissionClient } from './submission/DefaultSubmissionClient';
 import { ISubmissionClient } from './submission/ISubmissionClient';
+import { NodeSubmissionClient } from './submission/NodeSubmissionClient';
 import { SettingsResponse } from './submission/SettingsResponse';
 import { SubmissionResponse } from './submission/SubmissionResponse';
 import { EventBuilder } from 'EventBuilder';
 import { ExceptionlessClient } from 'ExceptionlessClient';
 import { Utils } from 'Utils';
 
-function getDefaultsSettingsFromScriptTag(): IConfigurationSettings {
-  if (!document || !document.getElementsByTagName) {
+const beforeExit:string = 'beforeExit';
+const uncaughtException:string = 'uncaughtException';
+
+var defaults = Configuration.defaults;
+defaults.environmentInfoCollector = new NodeEnvironmentInfoCollector();
+defaults.errorParser = new NodeErrorParser();
+defaults.requestInfoCollector = new NodeRequestInfoCollector();
+defaults.submissionClient = new NodeSubmissionClient();
+
+process.on(uncaughtException, function (error:Error) {
+  ExceptionlessClient.default.submitUnhandledException(error, uncaughtException);
+});
+
+process.on(beforeExit, function (code:number) {
+  /**
+   * exit codes: https://nodejs.org/api/process.html#process_event_exit
+   */
+  function  getExitCodeReason(code:number): string {
+    if (code === 1) {
+      return 'Uncaught Fatal Exception';
+    }
+
+    if (code === 3) {
+      return 'Internal JavaScript Parse Error';
+    }
+
+    if (code === 4) {
+      return 'Internal JavaScript Evaluation Failure';
+    }
+
+    if (code === 5) {
+      return 'Fatal Exception';
+    }
+
+    if (code === 6) {
+      return 'Non-function Internal Exception Handler ';
+    }
+
+    if (code === 7) {
+      return 'Internal Exception Handler Run-Time Failure';
+    }
+
+    if (code === 8) {
+      return 'Uncaught Exception';
+    }
+
+    if (code === 9) {
+      return 'Invalid Argument';
+    }
+
+    if (code === 10) {
+      return 'Internal JavaScript Run-Time Failure';
+    }
+
+    if (code === 12) {
+      return 'Invalid Debug Argument';
+    }
+
+    if (code > 128) {
+      return 'Signal Exits';
+    }
+
     return null;
   }
 
-  var scripts = document.getElementsByTagName('script');
-  for (var index = 0; index < scripts.length; index++) {
-    if (scripts[index].src && scripts[index].src.indexOf('/exceptionless') > -1) {
-      return Utils.parseQueryString(scripts[index].src.split('?').pop());
-    }
-  }
-  return null;
-}
-
-function processUnhandledException(stackTrace:TraceKit.StackTrace, options?:any): void {
-  var builder = ExceptionlessClient.default.createUnhandledException(new Error(stackTrace.message || (options || {}).status || 'Script error'), 'onerror');
-  builder.pluginContextData['@@_TraceKit.StackTrace'] = stackTrace;
-  builder.submit();
-}
-
-function processJQueryAjaxError(event, xhr, settings, error:Error): void {
   var client = ExceptionlessClient.default;
-  if (xhr.status === 404) {
-    client.submitNotFound(settings.url);
-  } else if (xhr.status !== 401) {
-    client.createUnhandledException(error, 'JQuery.ajaxError')
-      .setSource(settings.url)
-      .setProperty('status', xhr.status)
-      .setProperty('request', settings.data)
-      .setProperty('response', xhr.responseText && xhr.responseText.slice && xhr.responseText.slice(0, 1024))
-      .submit();
+  var message = getExitCodeReason(code);
+  if (message !== null) {
+    client.submitLog(beforeExit, message, 'Error')
   }
-}
 
-var defaults = Configuration.defaults;
-var settings = getDefaultsSettingsFromScriptTag();
-if (settings && (settings.apiKey || settings.serverUrl)) {
-  defaults.apiKey = settings.apiKey;
-  defaults.serverUrl = settings.serverUrl;
-}
-
-defaults.errorParser = new DefaultErrorParser();
-defaults.moduleCollector = new DefaultModuleCollector();
-defaults.requestInfoCollector = new DefaultRequestInfoCollector();
-defaults.submissionClient = new DefaultSubmissionClient();
-
-TraceKit.report.subscribe(processUnhandledException);
-TraceKit.extendToAsynchronousCallbacks();
-
-if (typeof $ !== 'undefined' && $(document)) {
-  $(document).ajaxError(processJQueryAjaxError);
-}
+  client.config.queue.process()
+});
 
 (<any>Error).stackTraceLimit = Infinity;
-declare var $;

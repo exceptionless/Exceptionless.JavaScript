@@ -21,6 +21,10 @@ gulp.task('typescript.es5.integrations', function() {
   return tsProject.src('src/integrations/tsconfig.json').pipe(gulp.dest('dist/temp'));
 });
 
+gulp.task('typescript.node.es5', function() {
+  return tsProject.src('src/tsconfig.node.es5.json').pipe(gulp.dest('dist/temp'));
+});
+
 gulp.task('exceptionless.es5.umd', ['typescript.es5', 'typescript.es5.integrations'], function() {
   return gulp.src('dist/temp/src/exceptionless.js')
     .pipe(sourcemaps.init({ loadMaps: true }))
@@ -29,7 +33,7 @@ gulp.task('exceptionless.es5.umd', ['typescript.es5', 'typescript.es5.integratio
       globalName: 'exceptionless',
       namespace: 'exceptionless'
     }))
-    .pipe(replace('}(this, function(require, exports, module) {', '}(this, function(require, exports, module) {\nif (!exports) {\n\tvar exports = {};\n}\nif (!require) {\n\tvar require = function(){};\n}\n'))
+    .pipe(replace('}(this, function(require, exports, module) {', '}(this, function(require, exports, module) {\nif (!exports) {\n\tvar exports = {};\n}\n'))
     .pipe(sourcemaps.write('.'))
     .pipe(gulp.dest('dist/temp'));
 });
@@ -54,7 +58,6 @@ gulp.task('exceptionless.es5', ['exceptionless.es5.umd'], function() {
     .pipe(sourcemaps.init({ loadMaps: true }))
     .pipe(concat('exceptionless.js'))
     .pipe(replace('exceptionless-js/1.0.0.0', 'exceptionless-js/' + package.version))
-    .pipe(replace('require(\'source-map/lib/source-map/source-map-consumer\')', 'null')) // needed for node until source maps dependency is fixed
     .pipe(sourcemaps.write('.'))
     .pipe(gulp.dest('dist'));
 
@@ -62,10 +65,17 @@ gulp.task('exceptionless.es5', ['exceptionless.es5.umd'], function() {
     .pipe(sourcemaps.init({ loadMaps: true }))
     .pipe(concat('exceptionless.min.js'))
     .pipe(replace('exceptionless-js/1.0.0.0', 'exceptionless-js/' + package.version))
-    .pipe(replace('require(\'source-map/lib/source-map/source-map-consumer\')', 'null')) // needed for node until source maps dependency is fixed
     .pipe(uglify({ output: { beautify: false }}))
     .pipe(sourcemaps.write('.'))
     .pipe(gulp.dest('dist'))
+});
+
+gulp.task('exceptionless.node.es5', ['typescript.node.es5'], function() {
+  gulp.src('dist/temp/src/exceptionless.node.js')
+    .pipe(sourcemaps.init({ loadMaps: true }))
+    .pipe(replace('exceptionless-js/1.0.0.0', 'exceptionless-js/' + package.version))
+    .pipe(sourcemaps.write('.'))
+    .pipe(gulp.dest('dist'));
 });
 
 gulp.task('typescript.es6', function() {
@@ -92,7 +102,7 @@ gulp.task('watch', ['build'], function() {
   gulp.watch('*.ts', ['build']);
 });
 
-gulp.task('build', ['clean', 'exceptionless.es5']);
+gulp.task('build', ['clean', 'exceptionless.es5', 'exceptionless.node.es5']);
 
 gulp.task('typescript.test', function() {
   return tsProject.src('src/tsconfig.test.json').pipe(gulp.dest('dist/temp'));
@@ -106,7 +116,7 @@ gulp.task('exceptionless.test.umd', ['typescript.test'], function() {
       globalName: 'exceptionless',
       namespace: 'exceptionless'
     }))
-    .pipe(replace('}(this, function(require, exports, module) {', '}(this, function(require, exports, module) {\nif (!exports) {\n\tvar exports = {};\n}\nif (!require) {\n\tvar require = function(){};\n}\n'))
+    .pipe(replace('}(this, function(require, exports, module) {', '}(this, function(require, exports, module) {\nif (!exports) {\n\tvar exports = {};\n}\n'))
     .pipe(sourcemaps.write('.'))
     .pipe(gulp.dest('dist/temp'));
 });

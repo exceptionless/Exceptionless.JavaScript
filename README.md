@@ -28,7 +28,7 @@ Use this method to install exceptionless into your node app.
 1. Install the package by running `npm install exceptionless --save-dev`.
 2. Add the exceptionless client to your app:
 ```javascript
-var client = require('exceptionless').ExceptionlessClient.default;
+var client = require('exceptionless.node').ExceptionlessClient.default;
 ```
 
 ### Configuring the client.
@@ -61,13 +61,13 @@ var client = new exceptionless.ExceptionlessClient({
 #### Node.js
 1. You can set the `apiKey` or `serverUrl` on the default ExceptionlessClient instance.
 ```javascript
-var client = require('exceptionless').ExceptionlessClient.default;
+var client = require('exceptionless.node').ExceptionlessClient.default;
 client.config.apiKey = 'API_KEY_HERE';
 client.config.serverUrl = 'http://localhost:50000';
 ```
 2. You can create a new instance of the ExceptionlessClient and specify the `apiKey`, `serverUrl` or [configuration object](https://github.com/exceptionless/Exceptionless.JavaScript/blob/master/src/configuration/IConfigurationSettings.ts).
 ```javascript
-var exceptionless = require('exceptionless');
+var exceptionless = require('exceptionless.node');
 
 var client = new exceptionless.ExceptionlessClient('API_KEY_HERE');
 // or with a api key and server url.
@@ -91,7 +91,7 @@ You may also want to send us log messages, feature usages or other kinds of even
 // javascript
 var client = exceptionless.ExceptionlessClient.default;
 // Node.Js
-// var client = require('exceptionless').ExceptionlessClient.default;
+// var client = require('exceptionless.node').ExceptionlessClient.default;
 
 client.submitLog('Logging made easy');
 
@@ -119,7 +119,7 @@ In addition to automatically sending all unhandled exceptions, you may want to m
 // javascript
 var client = exceptionless.ExceptionlessClient.default;
 // Node.Js
-// var client = require('exceptionless').ExceptionlessClient.default;
+// var client = require('exceptionless.node').ExceptionlessClient.default;
 
 try {
   throw new Error('test');
@@ -135,7 +135,7 @@ You can easily include additional information in your error reports using our fl
 // javascript
 var client = exceptionless.ExceptionlessClient.default;
 // Node.Js
-// var client = require('exceptionless').ExceptionlessClient.default;
+// var client = require('exceptionless.node').ExceptionlessClient.default;
 
 try {
   throw new Error('Unable to create order from quote.');
