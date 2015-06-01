@@ -1,3 +1,7 @@
+// Update once ts issue is fixed: https://github.com/Microsoft/TypeScript/issues/2192
+//import * as exceptionless from '../../dist/exceptionless'
+declare var exceptionless;
+
 angular.module('exceptionless', [])
   .constant('$ExceptionlessClient', exceptionless.ExceptionlessClient.default)
   .factory('exceptionlessHttpInterceptor', ['$q', '$ExceptionlessClient', function ($q, $ExceptionlessClient) {
@@ -102,5 +106,3 @@ angular.module('exceptionless', [])
       $ExceptionlessClient.config.queue.process();
     });
   }]);
-
-declare var exceptionless;

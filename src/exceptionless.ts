@@ -103,4 +103,5 @@ if (typeof $ !== 'undefined' && $(document)) {
 }
 
 (<any>Error).stackTraceLimit = Infinity;
+
 declare var $;

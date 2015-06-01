@@ -13,19 +13,19 @@ gulp.task('clean', function () {
   del.sync(['dist'], { force: true });
 });
 
-gulp.task('typescript.es5', function() {
-  return tsProject.src('src/tsconfig.es5.json').pipe(gulp.dest('dist/temp'));
+gulp.task('typescript', function() {
+  return tsProject.src('src/tsconfig.json').pipe(gulp.dest('dist/temp'));
 });
 
-gulp.task('typescript.es5.integrations', function() {
+gulp.task('typescript.integrations', ['typescript'], function() {
   return tsProject.src('src/integrations/tsconfig.json').pipe(gulp.dest('dist/temp'));
 });
 
-gulp.task('typescript.node.es5', function() {
-  return tsProject.src('src/tsconfig.node.es5.json').pipe(gulp.dest('dist/temp'));
+gulp.task('typescript.node', function() {
+  return tsProject.src('src/tsconfig.node.json').pipe(gulp.dest('dist/temp'));
 });
 
-gulp.task('exceptionless.es5.umd', ['typescript.es5', 'typescript.es5.integrations'], function() {
+gulp.task('exceptionless.umd', ['typescript', 'typescript.integrations'], function() {
   return gulp.src('dist/temp/src/exceptionless.js')
     .pipe(sourcemaps.init({ loadMaps: true }))
     .pipe(umd({
@@ -38,7 +38,7 @@ gulp.task('exceptionless.es5.umd', ['typescript.es5', 'typescript.es5.integratio
     .pipe(gulp.dest('dist/temp'));
 });
 
-gulp.task('exceptionless.es5', ['exceptionless.es5.umd'], function() {
+gulp.task('exceptionless', ['exceptionless.umd'], function() {
   gulp.src('dist/temp/src/exceptionless.d.ts')
     .pipe(gulp.dest('dist'));
 
@@ -70,29 +70,9 @@ gulp.task('exceptionless.es5', ['exceptionless.es5.umd'], function() {
     .pipe(gulp.dest('dist'))
 });
 
-gulp.task('exceptionless.node.es5', ['typescript.node.es5'], function() {
+gulp.task('exceptionless.node', ['typescript.node'], function() {
   gulp.src('dist/temp/src/exceptionless.node.js')
     .pipe(sourcemaps.init({ loadMaps: true }))
-    .pipe(replace('exceptionless-js/1.0.0.0', 'exceptionless-js/' + package.version))
-    .pipe(sourcemaps.write('.'))
-    .pipe(gulp.dest('dist'));
-});
-
-gulp.task('typescript.es6', function() {
-  return tsProject.src('src/tsconfig.es6.json').pipe(gulp.dest('dist/temp'));
-});
-
-gulp.task('exceptionless.es6', ['typescript.es6'], function() {
-  gulp.src('dist/temp/src/exceptionless.es6.d.ts').pipe(gulp.dest('dist'));
-
-  var files = [
-    'node_modules/tracekit/tracekit.js',
-    'dist/temp/src/exceptionless.es6.js'
-  ];
-
-  gulp.src(files)
-    .pipe(sourcemaps.init({ loadMaps: true }))
-    .pipe(concat('exceptionless.es6.js'))
     .pipe(replace('exceptionless-js/1.0.0.0', 'exceptionless-js/' + package.version))
     .pipe(sourcemaps.write('.'))
     .pipe(gulp.dest('dist'));
@@ -102,7 +82,7 @@ gulp.task('watch', ['build'], function() {
   gulp.watch('*.ts', ['build']);
 });
 
-gulp.task('build', ['clean', 'exceptionless.es5', 'exceptionless.node.es5']);
+gulp.task('build', ['clean', 'exceptionless', 'exceptionless.node']);
 
 gulp.task('typescript.test', function() {
   return tsProject.src('src/tsconfig.test.json').pipe(gulp.dest('dist/temp'));

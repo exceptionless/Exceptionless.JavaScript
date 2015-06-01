@@ -1,0 +1,19 @@
+{
+  "compilerOptions": {
+    "declaration": true,
+    "module": "commonjs",
+    "removeComments": true,
+    "sourceMap": true,
+    "target": "es5"
+  },
+  "bundles": {
+    "exceptionless.node": {
+      "files": [
+        "typings/node/node.d.ts",
+        "typings/stack-trace/stack-trace.d.ts",
+
+        "exceptionless.node.ts"
+      ]
+    }
+  }
+}
