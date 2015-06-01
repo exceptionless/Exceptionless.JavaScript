@@ -1,9 +1,9 @@
 {
   "name": "exceptionless",
-  "version": "0.4.1",
+  "version": "0.5.0",
   "description": "JavaScript client for Exceptionless",
   "license": "Apache",
-  "main": "dist/exceptionless.js",
+  "main": "dist/exceptionless.node.js",
   "scripts": {
     "prepublish": "tsd reinstall -s",
     "start": "gulp",
@@ -20,8 +20,8 @@
   ],
   "devDependencies": {
     "bower": "~1.4.1",
-    "del": "^1.1.1",
-    "es5-shim": "^4.1.1",
+    "del": "^1.2.0",
+    "es5-shim": "^4.1.4",
     "es6-shim": "^0.31.2",
     "gulp": "^3.8.11",
     "gulp-concat": "^2.5.2",
@@ -31,11 +31,11 @@
     "gulp-uglify": "^1.2.0",
     "gulp-wrap-umd": "^0.2.1",
     "jasmine-core": "^2.3.4",
-    "karma": "~0.12.31",
+    "karma": "~0.12.35",
     "karma-cli": "0.0.4",
     "karma-jasmine": "~0.3.5",
-    "karma-phantomjs-launcher": "^0.1.4",
-    "rimraf": "^2.3.3",
+    "karma-phantomjs-launcher": "^0.2.0",
+    "rimraf": "^2.3.4",
     "tracekit": "^0.2.0",
     "tsproject": "^0.8.10",
     "typescript": "1.5.0-beta"

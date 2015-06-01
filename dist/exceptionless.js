@@ -1162,17 +1162,8 @@ window.TraceKit = TraceKit;
 if (!exports) {
 	var exports = {};
 }
-if (!require) {
-	var require = function(){};
-}
 
 
-var __extends = this.__extends || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    __.prototype = b.prototype;
-    d.prototype = new __();
-};
 var ContextData = (function () {
     function ContextData() {
     }
@@ -1869,7 +1860,7 @@ var Configuration = (function () {
     };
     Object.defineProperty(Configuration.prototype, "userAgent", {
         get: function () {
-            return 'exceptionless-js/0.4.1';
+            return 'exceptionless-js/0.5.0';
         },
         enumerable: true,
         configurable: true
@@ -2309,120 +2300,105 @@ var SettingsResponse = (function () {
     return SettingsResponse;
 })();
 exports.SettingsResponse = SettingsResponse;
-var os = require('os');
-var NodeEnvironmentInfoCollector = (function () {
-    function NodeEnvironmentInfoCollector() {
+var DefaultErrorParser = (function () {
+    function DefaultErrorParser() {
     }
-    NodeEnvironmentInfoCollector.prototype.getEnvironmentInfo = function (context) {
-        function getIpAddresses() {
-            var ips = [];
-            var interfaces = os.networkInterfaces();
-            Object.keys(interfaces).forEach(function (name) {
-                interfaces[name].forEach(function (iface) {
-                    if ('IPv4' === iface.family && !iface.internal) {
-                        ips.push(iface.address);
-                    }
-                });
-            });
-            return ips.join(', ');
-        }
-        if (!os) {
-            return null;
-        }
-        var environmentInfo = {
-            processor_count: os.cpus().length,
-            total_physical_memory: os.totalmem(),
-            available_physical_memory: os.freemem(),
-            command_line: process.argv.join(' '),
-            process_name: process.title,
-            process_id: process.pid + '',
-            process_memory_size: process.memoryUsage().heapTotal,
-            architecture: os.arch(),
-            o_s_name: os.type(),
-            o_s_version: os.release(),
-            ip_address: getIpAddresses(),
-            machine_name: os.hostname(),
-            runtime_version: process.version,
-            data: {
-                loadavg: os.loadavg(),
-                platform: os.platform(),
-                tmpdir: os.tmpdir(),
-                uptime: os.uptime()
+    DefaultErrorParser.prototype.parse = function (context, exception) {
+        function getParameters(parameters) {
+            var params = (typeof parameters === 'string' ? [parameters] : parameters) || [];
+            var result = [];
+            for (var index = 0; index < params.length; index++) {
+                result.push({ name: params[index] });
             }
-        };
-        if (os.endianness) {
-            environmentInfo.data.endianness = os.endianness();
+            return result;
         }
-        return environmentInfo;
-    };
-    return NodeEnvironmentInfoCollector;
-})();
-exports.NodeEnvironmentInfoCollector = NodeEnvironmentInfoCollector;
-var nodestacktrace = require('stack-trace');
-var NodeErrorParser = (function () {
-    function NodeErrorParser() {
-    }
-    NodeErrorParser.prototype.parse = function (context, exception) {
         function getStackFrames(context, stackFrames) {
+            var anonymous = '<anonymous>';
             var frames = [];
             for (var index = 0; index < stackFrames.length; index++) {
                 var frame = stackFrames[index];
                 frames.push({
-                    name: frame.getMethodName() || frame.getFunctionName(),
-                    file_name: frame.getFileName(),
-                    line_number: frame.getLineNumber(),
-                    column: frame.getColumnNumber(),
-                    declaring_type: frame.getTypeName(),
-                    data: {
-                        is_native: frame.isNative() || (!!frame.filename && frame.filename[0] !== '/' && frame.filename[0] !== '.')
-                    }
+                    name: (frame.func || anonymous).replace('?', anonymous),
+                    parameters: getParameters(frame.args),
+                    file_name: frame.url,
+                    line_number: frame.line,
+                    column: frame.column
                 });
             }
             return frames;
         }
-        if (!nodestacktrace) {
-            throw new Error('Unable to load the stack trace library.');
+        var traceKitStackTrace = '@@_TraceKit.StackTrace';
+        var stackTrace = !!context.contextData[traceKitStackTrace]
+            ? context.contextData[traceKitStackTrace]
+            : TraceKit.computeStackTrace(exception, 25);
+        if (!stackTrace) {
+            throw new Error('Unable to parse the exceptions stack trace.');
         }
-        var stackFrames = nodestacktrace.parse(exception) || [];
         return {
-            type: exception.name,
-            message: exception.message,
-            stack_trace: getStackFrames(context, stackFrames)
+            type: stackTrace.name,
+            message: stackTrace.message || exception.message,
+            stack_trace: getStackFrames(context, stackTrace.stack || [])
         };
     };
-    return NodeErrorParser;
+    return DefaultErrorParser;
 })();
-exports.NodeErrorParser = NodeErrorParser;
-var NodeRequestInfoCollector = (function () {
-    function NodeRequestInfoCollector() {
+exports.DefaultErrorParser = DefaultErrorParser;
+var DefaultModuleCollector = (function () {
+    function DefaultModuleCollector() {
     }
-    NodeRequestInfoCollector.prototype.getRequestInfo = function (context) {
-        var requestKey = '@request';
-        if (!context.contextData[requestKey]) {
+    DefaultModuleCollector.prototype.getModules = function (context) {
+        if (document && document.getElementsByTagName) {
             return null;
         }
-        var request = context.contextData[requestKey];
+        var modules = [];
+        var scripts = document.getElementsByTagName('script');
+        if (scripts && scripts.length > 0) {
+            for (var index = 0; index < scripts.length; index++) {
+                if (scripts[index].src) {
+                    modules.push({
+                        module_id: index,
+                        name: scripts[index].src,
+                        version: Utils.parseVersion(scripts[index].src)
+                    });
+                }
+                else if (!!scripts[index].innerHTML) {
+                    modules.push({
+                        module_id: index,
+                        name: 'Script Tag',
+                        version: Utils.getHashCode(scripts[index].innerHTML)
+                    });
+                }
+            }
+        }
+        return modules;
+    };
+    return DefaultModuleCollector;
+})();
+exports.DefaultModuleCollector = DefaultModuleCollector;
+var DefaultRequestInfoCollector = (function () {
+    function DefaultRequestInfoCollector() {
+    }
+    DefaultRequestInfoCollector.prototype.getRequestInfo = function (context) {
+        if (!document || !navigator || !location) {
+            return null;
+        }
         var requestInfo = {
-            client_ip_address: request.ip,
-            user_agent: request.headers['user-agent'],
-            is_secure: request.secure,
-            http_method: request.method,
-            host: request.hostname || request.host,
-            path: request.path,
-            post_data: request.body,
-            cookies: Utils.getCookies((request || {}).headers['cookie']),
-            query_string: request.params
+            user_agent: navigator.userAgent,
+            is_secure: location.protocol === 'https:',
+            host: location.hostname,
+            port: location.port && location.port !== '' ? parseInt(location.port) : 80,
+            path: location.pathname,
+            cookies: Utils.getCookies(document.cookie),
+            query_string: Utils.parseQueryString(location.search.substring(1))
         };
-        var host = request.headers['host'];
-        var port = host && parseInt(host.slice(host.indexOf(':') + 1));
-        if (port > 0) {
-            requestInfo.port = port;
+        if (document.referrer && document.referrer !== '') {
+            requestInfo.referrer = document.referrer;
         }
         return requestInfo;
     };
-    return NodeRequestInfoCollector;
+    return DefaultRequestInfoCollector;
 })();
-exports.NodeRequestInfoCollector = NodeRequestInfoCollector;
+exports.DefaultRequestInfoCollector = DefaultRequestInfoCollector;
 var DefaultSubmissionClient = (function () {
     function DefaultSubmissionClient() {
         this.configurationVersionHeader = 'X-Exceptionless-ConfigVersion';
@@ -2547,281 +2523,52 @@ var DefaultSubmissionClient = (function () {
     return DefaultSubmissionClient;
 })();
 exports.DefaultSubmissionClient = DefaultSubmissionClient;
-var http = require('http');
-var https = require('https');
-var url = require('url');
-var NodeSubmissionClient = (function (_super) {
-    __extends(NodeSubmissionClient, _super);
-    function NodeSubmissionClient() {
-        _super.call(this);
-        this.configurationVersionHeader = this.configurationVersionHeader.toLowerCase();
+function getDefaultsSettingsFromScriptTag() {
+    if (!document || !document.getElementsByTagName) {
+        return null;
     }
-    NodeSubmissionClient.prototype.sendRequest = function (config, method, path, data, callback) {
-        function complete(response, data, headers) {
-            var message;
-            if (response.statusCode === 0) {
-                message = 'Unable to connect to server.';
-            }
-            else if (response.statusCode < 200 || response.statusCode > 299) {
-                message = response.statusMessage || response.message;
-            }
-            callback(response.statusCode || 500, message, data, headers);
+    var scripts = document.getElementsByTagName('script');
+    for (var index = 0; index < scripts.length; index++) {
+        if (scripts[index].src && scripts[index].src.indexOf('/exceptionless') > -1) {
+            return Utils.parseQueryString(scripts[index].src.split('?').pop());
         }
-        var parsedHost = url.parse(config.serverUrl);
-        var options = {
-            auth: "client:" + config.apiKey,
-            headers: {},
-            hostname: parsedHost.hostname,
-            method: method,
-            port: parsedHost.port && parseInt(parsedHost.port),
-            path: path,
-        };
-        if (method === 'POST') {
-            options.headers = {
-                'Content-Type': 'application/json',
-                'Content-Length': data.length
-            };
-        }
-        options.headers['User-Agent'] = config.userAgent;
-        var request = (parsedHost.protocol === 'https' ? https : http).request(options, function (response) {
-            var body = '';
-            response.on('data', function (chunk) { return body += chunk; });
-            response.on('end', function () {
-                complete(response, body, response.headers);
-            });
-        });
-        request.on('error', function (e) {
-            callback(500, e.message);
-        });
-        !!data && request.write(data);
-        request.end();
-    };
-    return NodeSubmissionClient;
-})(DefaultSubmissionClient);
-exports.NodeSubmissionClient = NodeSubmissionClient;
-var NodeBootstrapper = (function () {
-    function NodeBootstrapper() {
     }
-    NodeBootstrapper.prototype.register = function () {
-        var beforeExit = 'beforeExit';
-        var uncaughtException = 'uncaughtException';
-        if (!(typeof window === 'undefined' && typeof global !== 'undefined' && {}.toString.call(global) === '[object global]')) {
-            return;
-        }
-        var defaults = Configuration.defaults;
-        defaults.environmentInfoCollector = new NodeEnvironmentInfoCollector();
-        defaults.errorParser = new NodeErrorParser();
-        defaults.requestInfoCollector = new NodeRequestInfoCollector();
-        defaults.submissionClient = new NodeSubmissionClient();
-        process.on(uncaughtException, function (error) {
-            ExceptionlessClient.default.submitUnhandledException(error, uncaughtException);
-        });
-        process.on(beforeExit, function (code) {
-            function getExitCodeReason(code) {
-                if (code === 1) {
-                    return 'Uncaught Fatal Exception';
-                }
-                if (code === 3) {
-                    return 'Internal JavaScript Parse Error';
-                }
-                if (code === 4) {
-                    return 'Internal JavaScript Evaluation Failure';
-                }
-                if (code === 5) {
-                    return 'Fatal Exception';
-                }
-                if (code === 6) {
-                    return 'Non-function Internal Exception Handler ';
-                }
-                if (code === 7) {
-                    return 'Internal Exception Handler Run-Time Failure';
-                }
-                if (code === 8) {
-                    return 'Uncaught Exception';
-                }
-                if (code === 9) {
-                    return 'Invalid Argument';
-                }
-                if (code === 10) {
-                    return 'Internal JavaScript Run-Time Failure';
-                }
-                if (code === 12) {
-                    return 'Invalid Debug Argument';
-                }
-                if (code > 128) {
-                    return 'Signal Exits';
-                }
-                return null;
-            }
-            var client = ExceptionlessClient.default;
-            var message = getExitCodeReason(code);
-            if (message !== null) {
-                client.submitLog(beforeExit, message, 'Error');
-            }
-            client.config.queue.process();
-        });
-    };
-    return NodeBootstrapper;
-})();
-exports.NodeBootstrapper = NodeBootstrapper;
-var DefaultErrorParser = (function () {
-    function DefaultErrorParser() {
+    return null;
+}
+function processUnhandledException(stackTrace, options) {
+    var builder = ExceptionlessClient.default.createUnhandledException(new Error(stackTrace.message || (options || {}).status || 'Script error'), 'onerror');
+    builder.pluginContextData['@@_TraceKit.StackTrace'] = stackTrace;
+    builder.submit();
+}
+function processJQueryAjaxError(event, xhr, settings, error) {
+    var client = ExceptionlessClient.default;
+    if (xhr.status === 404) {
+        client.submitNotFound(settings.url);
     }
-    DefaultErrorParser.prototype.parse = function (context, exception) {
-        function getParameters(parameters) {
-            var params = (typeof parameters === 'string' ? [parameters] : parameters) || [];
-            var result = [];
-            for (var index = 0; index < params.length; index++) {
-                result.push({ name: params[index] });
-            }
-            return result;
-        }
-        function getStackFrames(context, stackFrames) {
-            var anonymous = '<anonymous>';
-            var frames = [];
-            for (var index = 0; index < stackFrames.length; index++) {
-                var frame = stackFrames[index];
-                frames.push({
-                    name: (frame.func || anonymous).replace('?', anonymous),
-                    parameters: getParameters(frame.args),
-                    file_name: frame.url,
-                    line_number: frame.line,
-                    column: frame.column
-                });
-            }
-            return frames;
-        }
-        var traceKitStackTrace = '@@_TraceKit.StackTrace';
-        var stackTrace = !!context.contextData[traceKitStackTrace]
-            ? context.contextData[traceKitStackTrace]
-            : TraceKit.computeStackTrace(exception, 25);
-        if (!stackTrace) {
-            throw new Error('Unable to parse the exceptions stack trace.');
-        }
-        return {
-            type: stackTrace.name,
-            message: stackTrace.message || exception.message,
-            stack_trace: getStackFrames(context, stackTrace.stack || [])
-        };
-    };
-    return DefaultErrorParser;
-})();
-exports.DefaultErrorParser = DefaultErrorParser;
-var DefaultModuleCollector = (function () {
-    function DefaultModuleCollector() {
+    else if (xhr.status !== 401) {
+        client.createUnhandledException(error, 'JQuery.ajaxError')
+            .setSource(settings.url)
+            .setProperty('status', xhr.status)
+            .setProperty('request', settings.data)
+            .setProperty('response', xhr.responseText && xhr.responseText.slice && xhr.responseText.slice(0, 1024))
+            .submit();
     }
-    DefaultModuleCollector.prototype.getModules = function (context) {
-        if (document && document.getElementsByTagName) {
-            return null;
-        }
-        var modules = [];
-        var scripts = document.getElementsByTagName('script');
-        if (scripts && scripts.length > 0) {
-            for (var index = 0; index < scripts.length; index++) {
-                if (scripts[index].src) {
-                    modules.push({
-                        module_id: index,
-                        name: scripts[index].src,
-                        version: Utils.parseVersion(scripts[index].src)
-                    });
-                }
-                else if (!!scripts[index].innerHTML) {
-                    modules.push({
-                        module_id: index,
-                        name: 'Script Tag',
-                        version: Utils.getHashCode(scripts[index].innerHTML)
-                    });
-                }
-            }
-        }
-        return modules;
-    };
-    return DefaultModuleCollector;
-})();
-exports.DefaultModuleCollector = DefaultModuleCollector;
-var DefaultRequestInfoCollector = (function () {
-    function DefaultRequestInfoCollector() {
-    }
-    DefaultRequestInfoCollector.prototype.getRequestInfo = function (context) {
-        if (!document || !navigator || !location) {
-            return null;
-        }
-        var requestInfo = {
-            user_agent: navigator.userAgent,
-            is_secure: location.protocol === 'https:',
-            host: location.hostname,
-            port: location.port && location.port !== '' ? parseInt(location.port) : 80,
-            path: location.pathname,
-            cookies: Utils.getCookies(document.cookie),
-            query_string: Utils.parseQueryString(location.search.substring(1))
-        };
-        if (document.referrer && document.referrer !== '') {
-            requestInfo.referrer = document.referrer;
-        }
-        return requestInfo;
-    };
-    return DefaultRequestInfoCollector;
-})();
-exports.DefaultRequestInfoCollector = DefaultRequestInfoCollector;
-var DefaultBootstrapper = (function () {
-    function DefaultBootstrapper() {
-    }
-    DefaultBootstrapper.prototype.register = function () {
-        function getDefaultsSettingsFromScriptTag() {
-            if (!document || !document.getElementsByTagName) {
-                return null;
-            }
-            var scripts = document.getElementsByTagName('script');
-            for (var index = 0; index < scripts.length; index++) {
-                if (scripts[index].src && scripts[index].src.indexOf('/exceptionless') > -1) {
-                    return Utils.parseQueryString(scripts[index].src.split('?').pop());
-                }
-            }
-            return null;
-        }
-        function processUnhandledException(stackTrace, options) {
-            var builder = ExceptionlessClient.default.createUnhandledException(new Error(stackTrace.message || (options || {}).status || 'Script error'), 'onerror');
-            builder.pluginContextData['@@_TraceKit.StackTrace'] = stackTrace;
-            builder.submit();
-        }
-        function processJQueryAjaxError(event, xhr, settings, error) {
-            var client = ExceptionlessClient.default;
-            if (xhr.status === 404) {
-                client.submitNotFound(settings.url);
-            }
-            else if (xhr.status !== 401) {
-                client.createUnhandledException(error, 'JQuery.ajaxError')
-                    .setSource(settings.url)
-                    .setProperty('status', xhr.status)
-                    .setProperty('request', settings.data)
-                    .setProperty('response', xhr.responseText && xhr.responseText.slice && xhr.responseText.slice(0, 1024))
-                    .submit();
-            }
-        }
-        if (typeof window === 'undefined' || typeof document === 'undefined') {
-            return;
-        }
-        var defaults = Configuration.defaults;
-        var settings = getDefaultsSettingsFromScriptTag();
-        if (settings && (settings.apiKey || settings.serverUrl)) {
-            defaults.apiKey = settings.apiKey;
-            defaults.serverUrl = settings.serverUrl;
-        }
-        defaults.errorParser = new DefaultErrorParser();
-        defaults.moduleCollector = new DefaultModuleCollector();
-        defaults.requestInfoCollector = new DefaultRequestInfoCollector();
-        defaults.submissionClient = new DefaultSubmissionClient();
-        TraceKit.report.subscribe(processUnhandledException);
-        TraceKit.extendToAsynchronousCallbacks();
-        if (typeof $ !== 'undefined' && $(document)) {
-            $(document).ajaxError(processJQueryAjaxError);
-        }
-    };
-    return DefaultBootstrapper;
-})();
-exports.DefaultBootstrapper = DefaultBootstrapper;
-new NodeBootstrapper().register();
-new DefaultBootstrapper().register();
+}
+var defaults = Configuration.defaults;
+var settings = getDefaultsSettingsFromScriptTag();
+if (settings && (settings.apiKey || settings.serverUrl)) {
+    defaults.apiKey = settings.apiKey;
+    defaults.serverUrl = settings.serverUrl;
+}
+defaults.errorParser = new DefaultErrorParser();
+defaults.moduleCollector = new DefaultModuleCollector();
+defaults.requestInfoCollector = new DefaultRequestInfoCollector();
+defaults.submissionClient = new DefaultSubmissionClient();
+TraceKit.report.subscribe(processUnhandledException);
+TraceKit.extendToAsynchronousCallbacks();
+if (typeof $ !== 'undefined' && $(document)) {
+    $(document).ajaxError(processJQueryAjaxError);
+}
 Error.stackTraceLimit = Infinity;
 
 return exports;
