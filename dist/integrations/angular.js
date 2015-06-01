@@ -44,6 +44,9 @@ angular.module('exceptionless', [])
     }])
     .run(['$rootScope', '$ExceptionlessClient', function ($rootScope, $ExceptionlessClient) {
         $rootScope.$on('$routeChangeSuccess', function (event, next, current) {
+            if (!current) {
+                return;
+            }
             $ExceptionlessClient.createFeatureUsage(current.name)
                 .setProperty('next', next)
                 .setProperty('current', current)
@@ -56,7 +59,7 @@ angular.module('exceptionless', [])
                 .submit();
         });
         $rootScope.$on('$stateChangeSuccess', function (event, toState, toParams, fromState, fromParams) {
-            if (toState.name === 'otherwise') {
+            if (!toState || toState.name === 'otherwise') {
                 return;
             }
             $ExceptionlessClient.createFeatureUsage(toState.controller || toState.name)
@@ -67,6 +70,9 @@ angular.module('exceptionless', [])
                 .submit();
         });
         $rootScope.$on('$stateNotFound', function (event, unfoundState, fromState, fromParams) {
+            if (!unfoundState) {
+                return;
+            }
             $ExceptionlessClient.createNotFound(unfoundState.to)
                 .setProperty('unfoundState', unfoundState)
                 .setProperty('fromState', fromState)
