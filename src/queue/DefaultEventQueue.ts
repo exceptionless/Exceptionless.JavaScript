@@ -167,7 +167,7 @@ export class DefaultEventQueue implements IEventQueue {
     }
 
     if (!response.success) {
-      log.error(`Error submitting events: ${ response.message}`);
+      log.error(`Error submitting events: ${response.message || 'Please check the network tab for more info.'}`);
       this.suspendProcessing();
     }
   }

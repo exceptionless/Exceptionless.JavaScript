@@ -55,7 +55,9 @@ export class DefaultSubmissionClient implements ISubmissionClient {
 
   public sendRequest(config:Configuration, method:string, path:string, data:string, callback: (status:number, message:string, data?:string, headers?:Object) => void): void {
     var isCompleted = false;
-    function complete(xhr:XMLHttpRequest) {
+    var useSetTimeout = false;
+    
+    function complete(mode:string, xhr:XMLHttpRequest) {
       function parseResponseHeaders(headerStr) {
         var headers = {};
         var headerPairs = (headerStr || '').split('\u000d\u000a');
@@ -77,11 +79,15 @@ export class DefaultSubmissionClient implements ISubmissionClient {
       } else {
         isCompleted = true;
       }
-
+      
       var message:string;
-      if (xhr.status === 0) {
+      var status:number = xhr.status;
+      if (mode === 'timeout' || status === 0) {
         message = 'Unable to connect to server.';
-      } else if (xhr.status < 200 || xhr.status > 299) {
+        status = 0;
+      } else if (mode === 'loaded' && !status) {
+          status = method === 'POST' ? 202 : 200;
+      } else if (status < 200 || status > 299) {
         if (!!xhr.responseBody && !!xhr.responseBody.message) {
           message = xhr.responseBody.message;
         } else if (!!xhr.responseText && xhr.responseText.indexOf('message') !== -1) {
@@ -95,26 +101,27 @@ export class DefaultSubmissionClient implements ISubmissionClient {
         }
       }
 
-      callback(xhr.status || 500, message, xhr.responseText, parseResponseHeaders(xhr.getAllResponseHeaders()));
+      callback(status || 500, message || '', xhr.responseText, parseResponseHeaders(xhr.getAllResponseHeaders && xhr.getAllResponseHeaders()));
     }
 
     function createRequest(config:Configuration, method:string, url:string): XMLHttpRequest {
       var xhr:any = new XMLHttpRequest();
       if ('withCredentials' in xhr) {
         xhr.open(method, url, true);
+        
+        xhr.setRequestHeader('X-Exceptionless-Client', config.userAgent);
+        if (method === 'POST') {
+          xhr.setRequestHeader('Content-Type', 'application/json');
+        }
       } else if (typeof XDomainRequest != 'undefined') {
+        useSetTimeout = true;
         xhr = new XDomainRequest();
-        xhr.open(method, url);
+        xhr.open(method, location.protocol === 'http:' ? url.replace('https:', 'http:') : url);
       } else {
         xhr = null;
       }
 
       if (xhr) {
-        xhr.setRequestHeader('X-Exceptionless-Client', config.userAgent);
-        if (method === 'POST' && xhr.setRequestHeader) {
-          xhr.setRequestHeader('Content-Type', 'application/json');
-        }
-
         xhr.timeout = 10000;
       }
 
@@ -134,14 +141,19 @@ export class DefaultSubmissionClient implements ISubmissionClient {
           return;
         }
 
-        complete(xhr);
+        complete('loaded', xhr);
       };
     }
 
-    xhr.ontimeout = () => complete(xhr);
-    xhr.onerror = () => complete(xhr);
-    xhr.onload = () => complete(xhr);
+    xhr.onprogress = () => {};
+    xhr.ontimeout = () => complete('timeout', xhr);
+    xhr.onerror = () => complete('error', xhr);
+    xhr.onload = () => complete('loaded', xhr);
 
-    xhr.send(data);
+    if (useSetTimeout) {
+      setTimeout(() => xhr.send(data), 500);
+    } else {
+      xhr.send(data);
+    }
   }
 }

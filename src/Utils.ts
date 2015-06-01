@@ -168,7 +168,7 @@ export class Utils {
       });
     }
 
-    if (toString.call(data) === '[object Array]') {
+    if (({}).toString.call(data) === '[object Array]') {
       var result = [];
       for (var index = 0; index < data.length; index++) {
         result[index] = JSON.parse(stringifyImpl(data[index], exclusions || []));

@@ -323,7 +323,7 @@ var DefaultEventQueue = (function () {
             return;
         }
         if (!response.success) {
-            log.error("Error submitting events: " + response.message);
+            log.error("Error submitting events: " + (response.message || 'Please check the network tab for more info.'));
             this.suspendProcessing();
         }
     };
@@ -548,7 +548,7 @@ var Utils = (function () {
                 return value;
             });
         }
-        if (toString.call(data) === '[object Array]') {
+        if (({}).toString.call(data) === '[object Array]') {
             var result = [];
             for (var index = 0; index < data.length; index++) {
                 result[index] = JSON.parse(stringifyImpl(data[index], exclusions || []));
@@ -1296,7 +1296,8 @@ var DefaultSubmissionClient = (function () {
     };
     DefaultSubmissionClient.prototype.sendRequest = function (config, method, path, data, callback) {
         var isCompleted = false;
-        function complete(xhr) {
+        var useSetTimeout = false;
+        function complete(mode, xhr) {
             function parseResponseHeaders(headerStr) {
                 var headers = {};
                 var headerPairs = (headerStr || '').split('\u000d\u000a');
@@ -1316,10 +1317,15 @@ var DefaultSubmissionClient = (function () {
                 isCompleted = true;
             }
             var message;
-            if (xhr.status === 0) {
+            var status = xhr.status;
+            if (mode === 'timeout' || status === 0) {
                 message = 'Unable to connect to server.';
+                status = 0;
             }
-            else if (xhr.status < 200 || xhr.status > 299) {
+            else if (mode === 'loaded' && !status) {
+                status = method === 'POST' ? 202 : 200;
+            }
+            else if (status < 200 || status > 299) {
                 if (!!xhr.responseBody && !!xhr.responseBody.message) {
                     message = xhr.responseBody.message;
                 }
@@ -1335,25 +1341,26 @@ var DefaultSubmissionClient = (function () {
                     message = xhr.statusText;
                 }
             }
-            callback(xhr.status || 500, message, xhr.responseText, parseResponseHeaders(xhr.getAllResponseHeaders()));
+            callback(status || 500, message || '', xhr.responseText, parseResponseHeaders(xhr.getAllResponseHeaders && xhr.getAllResponseHeaders()));
         }
         function createRequest(config, method, url) {
             var xhr = new XMLHttpRequest();
             if ('withCredentials' in xhr) {
                 xhr.open(method, url, true);
+                xhr.setRequestHeader('X-Exceptionless-Client', config.userAgent);
+                if (method === 'POST') {
+                    xhr.setRequestHeader('Content-Type', 'application/json');
+                }
             }
             else if (typeof XDomainRequest != 'undefined') {
+                useSetTimeout = true;
                 xhr = new XDomainRequest();
-                xhr.open(method, url);
+                xhr.open(method, location.protocol === 'http:' ? url.replace('https:', 'http:') : url);
             }
             else {
                 xhr = null;
             }
             if (xhr) {
-                xhr.setRequestHeader('X-Exceptionless-Client', config.userAgent);
-                if (method === 'POST' && xhr.setRequestHeader) {
-                    xhr.setRequestHeader('Content-Type', 'application/json');
-                }
                 xhr.timeout = 10000;
             }
             return xhr;
@@ -1368,13 +1375,19 @@ var DefaultSubmissionClient = (function () {
                 if (xhr.readyState !== 4) {
                     return;
                 }
-                complete(xhr);
+                complete('loaded', xhr);
             };
         }
-        xhr.ontimeout = function () { return complete(xhr); };
-        xhr.onerror = function () { return complete(xhr); };
-        xhr.onload = function () { return complete(xhr); };
-        xhr.send(data);
+        xhr.onprogress = function () { };
+        xhr.ontimeout = function () { return complete('timeout', xhr); };
+        xhr.onerror = function () { return complete('error', xhr); };
+        xhr.onload = function () { return complete('loaded', xhr); };
+        if (useSetTimeout) {
+            setTimeout(function () { return xhr.send(data); }, 500);
+        }
+        else {
+            xhr.send(data);
+        }
     };
     return DefaultSubmissionClient;
 })();
