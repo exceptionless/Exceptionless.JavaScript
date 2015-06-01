@@ -45,11 +45,11 @@ export class DefaultSubmissionClient implements ISubmissionClient {
         config.log.error(`Unable to parse settings: '${data}'`);
       }
 
-      if (!settings || !settings.settings || !settings.version) {
+      if (!settings || isNaN(settings.version)) {
         return callback(new SettingsResponse(false, null, -1, null, 'Invalid configuration settings.'));
       }
 
-      callback(new SettingsResponse(true, settings.settings, settings.version));
+      callback(new SettingsResponse(true, settings.settings || {}, settings.version));
     });
   }
 
