@@ -375,13 +375,14 @@ var InMemoryStorage = (function () {
         if (!path || !value) {
             return false;
         }
+        this.remove(path);
         if (this._items.push({ created: new Date().getTime(), path: path, value: value }) > this._maxItems) {
             this._items.shift();
         }
         return true;
     };
     InMemoryStorage.prototype.get = function (path) {
-        var item = path ? this.getList(path, 1)[0] : null;
+        var item = path ? this.getList("^" + path + "$", 1)[0] : null;
         return item ? item.value : null;
     };
     InMemoryStorage.prototype.getList = function (searchPattern, limit) {
@@ -403,7 +404,7 @@ var InMemoryStorage = (function () {
     };
     InMemoryStorage.prototype.remove = function (path) {
         if (path) {
-            var item = this.getList(path, 1)[0];
+            var item = this.getList("^" + path + "$", 1)[0];
             if (item) {
                 this._items.splice(this._items.indexOf(item), 1);
             }
@@ -1287,10 +1288,10 @@ var DefaultSubmissionClient = (function () {
             catch (e) {
                 config.log.error("Unable to parse settings: '" + data + "'");
             }
-            if (!settings || !settings.settings || !settings.version) {
+            if (!settings || isNaN(settings.version)) {
                 return callback(new SettingsResponse(false, null, -1, null, 'Invalid configuration settings.'));
             }
-            callback(new SettingsResponse(true, settings.settings, settings.version));
+            callback(new SettingsResponse(true, settings.settings || {}, settings.version));
         });
     };
     DefaultSubmissionClient.prototype.sendRequest = function (config, method, path, data, callback) {

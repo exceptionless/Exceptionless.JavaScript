@@ -15,6 +15,7 @@ export class InMemoryStorage<T> implements IStorage<T> {
       return false;
     }
 
+    this.remove(path);
     if (this._items.push({ created: new Date().getTime(), path: path, value: value }) > this._maxItems) {
       this._items.shift();
     }
@@ -23,7 +24,7 @@ export class InMemoryStorage<T> implements IStorage<T> {
   }
 
   public get(path:string):T {
-    var item:IStorageItem<T> = path ? this.getList(path, 1)[0] : null;
+    var item:IStorageItem<T> = path ? this.getList(`^${path}$`, 1)[0] : null;
     return item ? item.value : null;
   }
 
@@ -50,7 +51,7 @@ export class InMemoryStorage<T> implements IStorage<T> {
 
   public remove(path:string):void {
     if (path) {
-      var item = this.getList(path, 1)[0];
+      var item = this.getList(`^${path}$`, 1)[0];
       if (item) {
         this._items.splice(this._items.indexOf(item), 1);
       }

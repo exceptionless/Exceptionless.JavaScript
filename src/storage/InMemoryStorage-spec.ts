@@ -18,6 +18,23 @@ describe('InMemoryStorage', () => {
     expect(storage.getList(key + '1').length).toBe(1);
   });
 
+  it('should save once', () => {
+    var storage = new InMemoryStorage<number>();
+    storage.save('one', 1);
+    expect(storage.getList().length).toBe(1);
+    storage.save('one', 1);
+    expect(storage.getList().length).toBe(1);
+  });
+
+  it('should get by key', () => {
+    var storage = new InMemoryStorage<any>();
+    storage.save('ex-server-settings.json-version', 1);
+    storage.save('ex-server-settings.json', { exist: true });
+    expect(storage.getList().length).toBe(2);
+    expect(storage.get('ex-server-settings.json-version')).toBe(1);
+    expect(storage.get('ex-server-settings.json')).toEqual({ exist: true });
+  });
+
   it('should get saved events', () => {
     var storage = new InMemoryStorage<IEvent>();
     var key = 'ex-q-';
