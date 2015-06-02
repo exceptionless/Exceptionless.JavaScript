@@ -17,7 +17,7 @@ export class NodeSubmissionClient extends DefaultSubmissionClient {
   }
 
   public sendRequest(config:Configuration, method:string, path:string, data:string, callback: (status:number, message:string, data?:string, headers?:Object) => void): void {
-    function complete(response:http.IncomingMessage, data:string, headers:Object) {
+    function complete(response:http.IncomingMessage, responseBody:string, responseHeaders:Object) {
       var message:string;
       if (response.statusCode === 0) {
         message = 'Unable to connect to server.';
@@ -25,7 +25,7 @@ export class NodeSubmissionClient extends DefaultSubmissionClient {
         message = response.statusMessage || (<any>response).message;
       }
 
-      callback(response.statusCode || 500, message, data, headers);
+      callback(response.statusCode || 500, message, responseBody, responseHeaders);
     }
 
     var parsedHost = url.parse(config.serverUrl);
@@ -35,7 +35,7 @@ export class NodeSubmissionClient extends DefaultSubmissionClient {
       hostname: parsedHost.hostname,
       method: method,
       port: parsedHost.port && parseInt(parsedHost.port),
-      path: path,
+      path: path
     };
 
     if (method === 'POST') {
@@ -44,21 +44,16 @@ export class NodeSubmissionClient extends DefaultSubmissionClient {
         'Content-Length': data.length
       }
     }
-
+    
     options.headers['User-Agent'] = config.userAgent;
     var request:http.ClientRequest = (parsedHost.protocol === 'https' ? https : http).request(options, (response:http.IncomingMessage) => {
       var body = '';
-      response.on('data', chunk => body += chunk);
-      response.on('end', () => {
-        complete(response, body, response.headers);
-      });
+      response.setEncoding('utf8');
+      response.on('data', (chunk) => body += chunk);
+      response.on('end', () => complete(response, body, response.headers));
     });
 
-    request.on('error', function(e) {
-      callback(500, e.message);
-    });
-
-    !!data && request.write(data);
-    request.end();
+    request.on('error', (error:Error) => callback(500, error.message));
+    request.end(data);
   }
 }

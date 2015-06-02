@@ -1166,7 +1166,7 @@ var NodeEnvironmentInfoCollector = (function () {
             total_physical_memory: os.totalmem(),
             available_physical_memory: os.freemem(),
             command_line: process.argv.join(' '),
-            process_name: process.title,
+            process_name: (process.title || '').replace(/[\uE000-\uF8FF]/g, ''),
             process_id: process.pid + '',
             process_memory_size: process.memoryUsage().heapTotal,
             architecture: os.arch(),
@@ -1402,7 +1402,7 @@ var NodeSubmissionClient = (function (_super) {
         this.configurationVersionHeader = this.configurationVersionHeader.toLowerCase();
     }
     NodeSubmissionClient.prototype.sendRequest = function (config, method, path, data, callback) {
-        function complete(response, data, headers) {
+        function complete(response, responseBody, responseHeaders) {
             var message;
             if (response.statusCode === 0) {
                 message = 'Unable to connect to server.';
@@ -1410,7 +1410,7 @@ var NodeSubmissionClient = (function (_super) {
             else if (response.statusCode < 200 || response.statusCode > 299) {
                 message = response.statusMessage || response.message;
             }
-            callback(response.statusCode || 500, message, data, headers);
+            callback(response.statusCode || 500, message, responseBody, responseHeaders);
         }
         var parsedHost = url.parse(config.serverUrl);
         var options = {
@@ -1419,7 +1419,7 @@ var NodeSubmissionClient = (function (_super) {
             hostname: parsedHost.hostname,
             method: method,
             port: parsedHost.port && parseInt(parsedHost.port),
-            path: path,
+            path: path
         };
         if (method === 'POST') {
             options.headers = {
@@ -1430,16 +1430,12 @@ var NodeSubmissionClient = (function (_super) {
         options.headers['User-Agent'] = config.userAgent;
         var request = (parsedHost.protocol === 'https' ? https : http).request(options, function (response) {
             var body = '';
+            response.setEncoding('utf8');
             response.on('data', function (chunk) { return body += chunk; });
-            response.on('end', function () {
-                complete(response, body, response.headers);
-            });
+            response.on('end', function () { return complete(response, body, response.headers); });
         });
-        request.on('error', function (e) {
-            callback(500, e.message);
-        });
-        !!data && request.write(data);
-        request.end();
+        request.on('error', function (error) { return callback(500, error.message); });
+        request.end(data);
     };
     return NodeSubmissionClient;
 })(DefaultSubmissionClient);

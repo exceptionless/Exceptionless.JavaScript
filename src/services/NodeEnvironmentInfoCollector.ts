@@ -23,13 +23,13 @@ export class NodeEnvironmentInfoCollector implements IEnvironmentInfoCollector {
     if (!os) {
       return null;
     }
-
+    
     var environmentInfo: IEnvironmentInfo = {
       processor_count: os.cpus().length,
       total_physical_memory: os.totalmem(),
       available_physical_memory: os.freemem(),
       command_line: process.argv.join(' '),
-      process_name: process.title,
+      process_name: (process.title || '').replace(/[\uE000-\uF8FF]/g, ''),
       process_id: process.pid + '',
       process_memory_size: process.memoryUsage().heapTotal,
       //thread_id: '',
