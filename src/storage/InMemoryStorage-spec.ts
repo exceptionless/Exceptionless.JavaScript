@@ -125,11 +125,11 @@ describe('InMemoryStorage', () => {
       return new Date(baseDate.getTime() + (offset * 60000));
     }
 
-    const date:Date = new Date();
+    const DATE:Date = new Date();
     var storage = new InMemoryStorage<IEvent>();
     for (var index:number = 0; index < 10; index++) {
       storage.save('ex-q-' + index, {
-        date: getDate(date, index),
+        date: getDate(DATE, index),
         type: 'log',
         reference_id: index.toString()
       });
@@ -142,7 +142,7 @@ describe('InMemoryStorage', () => {
     while (events && events.length > 0) {
       expect(2).toBe(events.length);
       for (var ei = 0; ei < 2; ei++) {
-        expect(getDate(date, offset++)).toEqual(events[ei].value.date);
+        expect(getDate(DATE, offset++)).toEqual(events[ei].value.date);
         storage.remove(events[ei].path);
       }
 

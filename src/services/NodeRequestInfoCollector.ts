@@ -5,12 +5,12 @@ import { Utils } from '../Utils';
 
 export class NodeRequestInfoCollector implements IRequestInfoCollector {
   getRequestInfo(context:EventPluginContext):IRequestInfo {
-    const requestKey:string = '@request'; // optimization for minifier.
-    if (!context.contextData[requestKey]) {
+    const REQUEST_KEY:string = '@request'; // optimization for minifier.
+    if (!context.contextData[REQUEST_KEY]) {
       return null;
     }
 
-    var request = context.contextData[requestKey];
+    var request = context.contextData[REQUEST_KEY];
     var requestInfo:IRequestInfo = {
       client_ip_address: request.ip,
       user_agent: request.headers['user-agent'],

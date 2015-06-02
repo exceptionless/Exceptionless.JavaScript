@@ -18,13 +18,13 @@ export class DefaultErrorParser implements IErrorParser {
     }
 
     function getStackFrames(context:EventPluginContext, stackFrames:TraceKit.StackFrame[]): IStackFrame[] {
-      const anonymous:string = '<anonymous>';
+      const ANONYMOUS:string = '<anonymous>';
       var frames:IStackFrame[] = [];
 
       for (var index = 0; index < stackFrames.length; index++) {
         var frame = stackFrames[index];
         frames.push({
-          name: (frame.func || anonymous).replace('?', anonymous),
+          name: (frame.func || ANONYMOUS).replace('?', ANONYMOUS),
           parameters: getParameters(frame.args),
           file_name: frame.url,
           line_number: frame.line,
@@ -35,10 +35,10 @@ export class DefaultErrorParser implements IErrorParser {
       return frames;
     }
 
-    const traceKitStackTrace:string = '@@_TraceKit.StackTrace'; // optimization for minifier.
+    const TRACEKIT_STACK_TRACE_KEY:string = '@@_TraceKit.StackTrace'; // optimization for minifier.
 
-    var stackTrace:TraceKit.StackTrace = !!context.contextData[traceKitStackTrace]
-      ? context.contextData[traceKitStackTrace]
+    var stackTrace:TraceKit.StackTrace = !!context.contextData[TRACEKIT_STACK_TRACE_KEY]
+      ? context.contextData[TRACEKIT_STACK_TRACE_KEY]
       : TraceKit.computeStackTrace(exception, 25);
 
     if (!stackTrace) {

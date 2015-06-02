@@ -54,9 +54,12 @@ export class DefaultSubmissionClient implements ISubmissionClient {
   }
 
   public sendRequest(config:Configuration, method:string, path:string, data:string, callback: (status:number, message:string, data?:string, headers?:Object) => void): void {
-    var isCompleted = false;
-    var useSetTimeout = false;
-    
+    const TIMEOUT:string = 'timeout';  // optimization for minifier.
+    const LOADED:string = 'loaded';  // optimization for minifier.
+    const WITH_CREDENTIALS:string = 'withCredentials';  // optimization for minifier.
+
+    var isCompleted:boolean = false;
+    var useSetTimeout:boolean = false;
     function complete(mode:string, xhr:XMLHttpRequest) {
       function parseResponseHeaders(headerStr) {
         var headers = {};
@@ -76,39 +79,40 @@ export class DefaultSubmissionClient implements ISubmissionClient {
 
       if (isCompleted) {
         return;
-      } else {
-        isCompleted = true;
       }
-      
-      var message:string;
+
+      isCompleted = true;
+
+      var message:string = xhr.statusText;
+      var responseText:string = xhr.responseText;
       var status:number = xhr.status;
-      if (mode === 'timeout' || status === 0) {
+
+      if (mode === TIMEOUT || status === 0) {
         message = 'Unable to connect to server.';
         status = 0;
-      } else if (mode === 'loaded' && !status) {
+      } else if (mode === LOADED && !status) {
           status = method === 'POST' ? 202 : 200;
       } else if (status < 200 || status > 299) {
-        if (!!xhr.responseBody && !!xhr.responseBody.message) {
-          message = xhr.responseBody.message;
-        } else if (!!xhr.responseText && xhr.responseText.indexOf('message') !== -1) {
+        var responseBody:any = xhr.responseBody;
+        if (!!responseBody && !!responseBody.message) {
+          message = responseBody.message;
+        } else if (!!responseText && responseText.indexOf('message') !== -1) {
           try {
-            message =  JSON.parse(xhr.responseText).message;
+            message =  JSON.parse(responseText).message;
           } catch (e) {
-            message = xhr.responseText;
+            message = responseText;
           }
-        } else {
-          message = xhr.statusText;
         }
       }
 
-      callback(status || 500, message || '', xhr.responseText, parseResponseHeaders(xhr.getAllResponseHeaders && xhr.getAllResponseHeaders()));
+      callback(status || 500, message || '', responseText, parseResponseHeaders(xhr.getAllResponseHeaders && xhr.getAllResponseHeaders()));
     }
 
     function createRequest(config:Configuration, method:string, url:string): XMLHttpRequest {
       var xhr:any = new XMLHttpRequest();
-      if ('withCredentials' in xhr) {
+      if (WITH_CREDENTIALS in xhr) {
         xhr.open(method, url, true);
-        
+
         xhr.setRequestHeader('X-Exceptionless-Client', config.userAgent);
         if (method === 'POST') {
           xhr.setRequestHeader('Content-Type', 'application/json');
@@ -131,24 +135,24 @@ export class DefaultSubmissionClient implements ISubmissionClient {
     var url = `${config.serverUrl}${path}?access_token=${encodeURIComponent(config.apiKey)}`;
     var xhr = createRequest(config, method || 'POST', url);
     if (!xhr) {
-      return callback(503,'CORS not supported.');
+      return callback(503, 'CORS not supported.');
     }
 
-    if ('withCredentials' in xhr) {
+    if (WITH_CREDENTIALS in xhr) {
       xhr.onreadystatechange = () => {
         // xhr not ready.
         if (xhr.readyState !== 4) {
           return;
         }
 
-        complete('loaded', xhr);
+        complete(LOADED, xhr);
       };
     }
 
     xhr.onprogress = () => {};
-    xhr.ontimeout = () => complete('timeout', xhr);
+    xhr.ontimeout = () => complete(TIMEOUT, xhr);
     xhr.onerror = () => complete('error', xhr);
-    xhr.onload = () => complete('loaded', xhr);
+    xhr.onload = () => complete(LOADED, xhr);
 
     if (useSetTimeout) {
       setTimeout(() => xhr.send(data), 500);

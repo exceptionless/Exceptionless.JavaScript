@@ -286,14 +286,14 @@ export class Configuration implements IConfigurationSettings {
   public setUserIdentity(identity:string): void;
   public setUserIdentity(identity:string, name:string): void;
   public setUserIdentity(userInfoOrIdentity:IUserInfo|string, name?:string): void {
-    const user:string = '@user'; // optimization for minifier.
+    const USER_KEY:string = '@user'; // optimization for minifier.
     var userInfo:IUserInfo = typeof userInfoOrIdentity !== 'string' ? userInfoOrIdentity : { identity: userInfoOrIdentity, name: name };
 
     var shouldRemove:boolean = !userInfo || (!userInfo.identity && !userInfo.name);
     if (shouldRemove) {
-      delete this.defaultData[user];
+      delete this.defaultData[USER_KEY];
     } else {
-      this.defaultData[user] = userInfo;
+      this.defaultData[USER_KEY] = userInfo;
     }
 
     this.log.info(`user identity: ${shouldRemove ? 'null' : userInfo.identity}`);

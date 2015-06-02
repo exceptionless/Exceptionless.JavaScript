@@ -1848,14 +1848,14 @@ var Configuration = (function () {
         }
     };
     Configuration.prototype.setUserIdentity = function (userInfoOrIdentity, name) {
-        var user = '@user';
+        var USER_KEY = '@user';
         var userInfo = typeof userInfoOrIdentity !== 'string' ? userInfoOrIdentity : { identity: userInfoOrIdentity, name: name };
         var shouldRemove = !userInfo || (!userInfo.identity && !userInfo.name);
         if (shouldRemove) {
-            delete this.defaultData[user];
+            delete this.defaultData[USER_KEY];
         }
         else {
-            this.defaultData[user] = userInfo;
+            this.defaultData[USER_KEY] = userInfo;
         }
         this.log.info("user identity: " + (shouldRemove ? 'null' : userInfo.identity));
     };
@@ -2193,18 +2193,18 @@ var ErrorPlugin = (function () {
         this.name = 'ErrorPlugin';
     }
     ErrorPlugin.prototype.run = function (context, next) {
-        var error = '@error';
+        var ERROR_KEY = '@error';
         var exception = context.contextData.getException();
         if (!!exception) {
             context.event.type = 'error';
-            if (!context.event.data[error]) {
+            if (!context.event.data[ERROR_KEY]) {
                 var parser = context.client.config.errorParser;
                 if (!parser) {
                     throw new Error('No error parser was defined.');
                 }
                 var result = parser.parse(context, exception);
                 if (!!result) {
-                    context.event.data[error] = result;
+                    context.event.data[ERROR_KEY] = result;
                 }
             }
         }
@@ -2219,12 +2219,12 @@ var ModuleInfoPlugin = (function () {
         this.name = 'ModuleInfoPlugin';
     }
     ModuleInfoPlugin.prototype.run = function (context, next) {
-        var error = '@error';
+        var ERROR_KEY = '@error';
         var collector = context.client.config.moduleCollector;
-        if (context.event.data[error] && !context.event.data['@error'].modules && !!collector) {
+        if (context.event.data[ERROR_KEY] && !context.event.data['@error'].modules && !!collector) {
             var modules = collector.getModules(context);
             if (modules && modules.length > 0) {
-                context.event.data[error].modules = modules;
+                context.event.data[ERROR_KEY].modules = modules;
             }
         }
         next && next();
@@ -2238,12 +2238,12 @@ var RequestInfoPlugin = (function () {
         this.name = 'RequestInfoPlugin';
     }
     RequestInfoPlugin.prototype.run = function (context, next) {
-        var request = '@request';
+        var REQUEST_KEY = '@request';
         var collector = context.client.config.requestInfoCollector;
-        if (!context.event.data[request] && !!collector) {
+        if (!context.event.data[REQUEST_KEY] && !!collector) {
             var requestInfo = collector.getRequestInfo(context);
             if (!!requestInfo) {
-                context.event.data[request] = requestInfo;
+                context.event.data[REQUEST_KEY] = requestInfo;
             }
         }
         next && next();
@@ -2257,12 +2257,12 @@ var EnvironmentInfoPlugin = (function () {
         this.name = 'EnvironmentInfoPlugin';
     }
     EnvironmentInfoPlugin.prototype.run = function (context, next) {
-        var environment = '@environment';
+        var ENVIRONMENT_KEY = '@environment';
         var collector = context.client.config.environmentInfoCollector;
-        if (!context.event.data[environment] && collector) {
+        if (!context.event.data[ENVIRONMENT_KEY] && collector) {
             var environmentInfo = collector.getEnvironmentInfo(context);
             if (!!environmentInfo) {
-                context.event.data[environment] = environmentInfo;
+                context.event.data[ENVIRONMENT_KEY] = environmentInfo;
             }
         }
         next && next();
@@ -2314,12 +2314,12 @@ var DefaultErrorParser = (function () {
             return result;
         }
         function getStackFrames(context, stackFrames) {
-            var anonymous = '<anonymous>';
+            var ANONYMOUS = '<anonymous>';
             var frames = [];
             for (var index = 0; index < stackFrames.length; index++) {
                 var frame = stackFrames[index];
                 frames.push({
-                    name: (frame.func || anonymous).replace('?', anonymous),
+                    name: (frame.func || ANONYMOUS).replace('?', ANONYMOUS),
                     parameters: getParameters(frame.args),
                     file_name: frame.url,
                     line_number: frame.line,
@@ -2328,9 +2328,9 @@ var DefaultErrorParser = (function () {
             }
             return frames;
         }
-        var traceKitStackTrace = '@@_TraceKit.StackTrace';
-        var stackTrace = !!context.contextData[traceKitStackTrace]
-            ? context.contextData[traceKitStackTrace]
+        var TRACEKIT_STACK_TRACE_KEY = '@@_TraceKit.StackTrace';
+        var stackTrace = !!context.contextData[TRACEKIT_STACK_TRACE_KEY]
+            ? context.contextData[TRACEKIT_STACK_TRACE_KEY]
             : TraceKit.computeStackTrace(exception, 25);
         if (!stackTrace) {
             throw new Error('Unable to parse the exceptions stack trace.');
@@ -2440,6 +2440,9 @@ var DefaultSubmissionClient = (function () {
         });
     };
     DefaultSubmissionClient.prototype.sendRequest = function (config, method, path, data, callback) {
+        var TIMEOUT = 'timeout';
+        var LOADED = 'loaded';
+        var WITH_CREDENTIALS = 'withCredentials';
         var isCompleted = false;
         var useSetTimeout = false;
         function complete(mode, xhr) {
@@ -2458,39 +2461,36 @@ var DefaultSubmissionClient = (function () {
             if (isCompleted) {
                 return;
             }
-            else {
-                isCompleted = true;
-            }
-            var message;
+            isCompleted = true;
+            var message = xhr.statusText;
+            var responseText = xhr.responseText;
             var status = xhr.status;
-            if (mode === 'timeout' || status === 0) {
+            if (mode === TIMEOUT || status === 0) {
                 message = 'Unable to connect to server.';
                 status = 0;
             }
-            else if (mode === 'loaded' && !status) {
+            else if (mode === LOADED && !status) {
                 status = method === 'POST' ? 202 : 200;
             }
             else if (status < 200 || status > 299) {
-                if (!!xhr.responseBody && !!xhr.responseBody.message) {
-                    message = xhr.responseBody.message;
+                var responseBody = xhr.responseBody;
+                if (!!responseBody && !!responseBody.message) {
+                    message = responseBody.message;
                 }
-                else if (!!xhr.responseText && xhr.responseText.indexOf('message') !== -1) {
+                else if (!!responseText && responseText.indexOf('message') !== -1) {
                     try {
-                        message = JSON.parse(xhr.responseText).message;
+                        message = JSON.parse(responseText).message;
                     }
                     catch (e) {
-                        message = xhr.responseText;
+                        message = responseText;
                     }
                 }
-                else {
-                    message = xhr.statusText;
-                }
             }
-            callback(status || 500, message || '', xhr.responseText, parseResponseHeaders(xhr.getAllResponseHeaders && xhr.getAllResponseHeaders()));
+            callback(status || 500, message || '', responseText, parseResponseHeaders(xhr.getAllResponseHeaders && xhr.getAllResponseHeaders()));
         }
         function createRequest(config, method, url) {
             var xhr = new XMLHttpRequest();
-            if ('withCredentials' in xhr) {
+            if (WITH_CREDENTIALS in xhr) {
                 xhr.open(method, url, true);
                 xhr.setRequestHeader('X-Exceptionless-Client', config.userAgent);
                 if (method === 'POST') {
@@ -2515,18 +2515,18 @@ var DefaultSubmissionClient = (function () {
         if (!xhr) {
             return callback(503, 'CORS not supported.');
         }
-        if ('withCredentials' in xhr) {
+        if (WITH_CREDENTIALS in xhr) {
             xhr.onreadystatechange = function () {
                 if (xhr.readyState !== 4) {
                     return;
                 }
-                complete('loaded', xhr);
+                complete(LOADED, xhr);
             };
         }
         xhr.onprogress = function () { };
-        xhr.ontimeout = function () { return complete('timeout', xhr); };
+        xhr.ontimeout = function () { return complete(TIMEOUT, xhr); };
         xhr.onerror = function () { return complete('error', xhr); };
-        xhr.onload = function () { return complete('loaded', xhr); };
+        xhr.onload = function () { return complete(LOADED, xhr); };
         if (useSetTimeout) {
             setTimeout(function () { return xhr.send(data); }, 500);
         }

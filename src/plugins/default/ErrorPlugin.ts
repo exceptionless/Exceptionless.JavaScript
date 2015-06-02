@@ -6,13 +6,13 @@ export class ErrorPlugin implements IEventPlugin {
   public name:string = 'ErrorPlugin';
 
   public run(context:EventPluginContext, next?:() => void): void {
-    const error:string = '@error'; // optimization for minifier.
+    const ERROR_KEY:string = '@error'; // optimization for minifier.
 
     var exception = context.contextData.getException();
     if (!!exception) {
       context.event.type = 'error';
 
-      if (!context.event.data[error]) {
+      if (!context.event.data[ERROR_KEY]) {
         var parser = context.client.config.errorParser;
         if (!parser) {
           throw new Error('No error parser was defined.');
@@ -20,7 +20,7 @@ export class ErrorPlugin implements IEventPlugin {
 
         var result = parser.parse(context, exception);
         if (!!result) {
-          context.event.data[error] = result;
+          context.event.data[ERROR_KEY] = result;
         }
       }
     }

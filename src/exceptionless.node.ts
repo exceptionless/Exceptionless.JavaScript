@@ -50,8 +50,8 @@ import { EventBuilder } from 'EventBuilder';
 import { ExceptionlessClient } from 'ExceptionlessClient';
 import { Utils } from 'Utils';
 
-const beforeExit:string = 'beforeExit';
-const uncaughtException:string = 'uncaughtException';
+const BEFORE_EXIT:string = 'BEFORE_EXIT';
+const UNCAUGHT_EXCEPTION:string = 'UNCAUGHT_EXCEPTION';
 
 var defaults = Configuration.defaults;
 defaults.environmentInfoCollector = new NodeEnvironmentInfoCollector();
@@ -59,11 +59,11 @@ defaults.errorParser = new NodeErrorParser();
 defaults.requestInfoCollector = new NodeRequestInfoCollector();
 defaults.submissionClient = new NodeSubmissionClient();
 
-process.on(uncaughtException, function (error:Error) {
-  ExceptionlessClient.default.submitUnhandledException(error, uncaughtException);
+process.on(UNCAUGHT_EXCEPTION, function (error:Error) {
+  ExceptionlessClient.default.submitUnhandledException(error, UNCAUGHT_EXCEPTION);
 });
 
-process.on(beforeExit, function (code:number) {
+process.on(BEFORE_EXIT, function (code:number) {
   /**
    * exit codes: https://nodejs.org/api/process.html#process_event_exit
    */
@@ -118,7 +118,7 @@ process.on(beforeExit, function (code:number) {
   var client = ExceptionlessClient.default;
   var message = getExitCodeReason(code);
   if (message !== null) {
-    client.submitLog(beforeExit, message, 'Error')
+    client.submitLog(BEFORE_EXIT, message, 'Error')
   }
 
   client.config.queue.process()
