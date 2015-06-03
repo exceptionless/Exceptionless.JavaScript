@@ -3,8 +3,6 @@
 
 Exceptionless JavaScript/Node client
 
-**We are working towards a 1.0 and would love your help! Please note that we may break the api from build to build until we reach a 1.0. Please feel free to create an issue or send us a pull request.**
-
 ## Using Exceptionless
 
 ### Installing
