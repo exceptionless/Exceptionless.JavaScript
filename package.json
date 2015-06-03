@@ -1,9 +1,12 @@
 {
   "name": "exceptionless",
-  "version": "0.5.0",
+  "version": "0.5.2",
   "description": "JavaScript client for Exceptionless",
   "license": "Apache",
   "main": "dist/exceptionless.node.js",
+  "jspm": {
+    "main": "dist/exceptionless.js"
+  },
   "scripts": {
     "prepublish": "tsd reinstall -s",
     "start": "gulp",
