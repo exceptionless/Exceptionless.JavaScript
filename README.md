@@ -17,7 +17,7 @@ Use one of the below methods to install exceptionless into your web app.
 1. Install the package by running `bower install exceptionless` or skip this step and use the scripts hosted on our CDN.
 2. Add the script to your html page. We recommend placing this as the very first script.
 ```html
-<script type="application/javascript" src="bower_components/exceptionless/dist/exceptionless.min.js"></script>
+<script src="bower_components/exceptionless/dist/exceptionless.min.js"></script>
 ```
 
 ##### CDN
@@ -37,7 +37,7 @@ You can configure the exceptionless client a few different ways. The section bel
 #### JavaScript
 1. You can configure the `apiKey` or `serverUrl` as part of the script tag. This will be applied to all new instances of the ExceptionlessClient
 ```html
-<script type="application/javascript" src="bower_components/exceptionless/dist/exceptionless.min.js?apiKey=API_KEY_HERE"></script>
+<script src="bower_components/exceptionless/dist/exceptionless.min.js?apiKey=API_KEY_HERE"></script>
 ```
 2. You can set the `apiKey` or `serverUrl` on the default ExceptionlessClient instance.
 ```javascript
