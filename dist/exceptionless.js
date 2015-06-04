@@ -973,7 +973,7 @@ TraceKit.computeStackTrace = (function computeStackTraceWrapper() {
 
             if (typeof item.func === 'undefined') {
               try {
-                item.func = parts.input.substring(0, parts.input.indexOf('{'))
+                item.func = parts.input.substring(0, parts.input.indexOf('{'));
               } catch (e) { }
             }
 
@@ -1097,6 +1097,7 @@ TraceKit.computeStackTrace = (function computeStackTraceWrapper() {
     computeStackTrace.guessFunctionName = guessFunctionName;
     computeStackTrace.gatherContext = gatherContext;
     computeStackTrace.ofCaller = computeStackTraceOfCaller;
+    computeStackTrace.getSource = getSource;
 
     return computeStackTrace;
 }());
@@ -1861,7 +1862,7 @@ var Configuration = (function () {
     };
     Object.defineProperty(Configuration.prototype, "userAgent", {
         get: function () {
-            return 'exceptionless-js/0.5.0';
+            return 'exceptionless-js/0.9.0';
         },
         enumerable: true,
         configurable: true
