@@ -1862,7 +1862,7 @@ var Configuration = (function () {
     };
     Object.defineProperty(Configuration.prototype, "userAgent", {
         get: function () {
-            return 'exceptionless-js/0.9.1';
+            return 'exceptionless-js/0.9.2';
         },
         enumerable: true,
         configurable: true
@@ -2058,10 +2058,10 @@ var ExceptionlessClient = (function () {
     };
     ExceptionlessClient.prototype.createLog = function (sourceOrMessage, message, level) {
         var builder = this.createEvent().setType('log');
-        if (sourceOrMessage && message && level) {
+        if (message && level) {
             builder = builder.setSource(sourceOrMessage).setMessage(message).setProperty('@level', level);
         }
-        else if (sourceOrMessage && message) {
+        else if (message) {
             builder = builder.setSource(sourceOrMessage).setMessage(message);
         }
         else {
