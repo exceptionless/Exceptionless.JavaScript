@@ -65,7 +65,7 @@ export class ExceptionlessClient {
       builder = builder.setSource(sourceOrMessage).setMessage(message);
     } else {
       // TODO: Look into using https://www.stevefenton.co.uk/Content/Blog/Date/201304/Blog/Obtaining-A-Class-Name-At-Runtime-In-TypeScript/
-      var caller = (<any>(arguments.callee.caller));
+      var caller:any = arguments.callee.caller;
       builder = builder.setSource(caller && caller.name).setMessage(sourceOrMessage);
     }
 

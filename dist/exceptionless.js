@@ -1862,7 +1862,7 @@ var Configuration = (function () {
     };
     Object.defineProperty(Configuration.prototype, "userAgent", {
         get: function () {
-            return 'exceptionless-js/0.9.2';
+            return 'exceptionless-js/0.9.1';
         },
         enumerable: true,
         configurable: true
@@ -2065,7 +2065,7 @@ var ExceptionlessClient = (function () {
             builder = builder.setSource(sourceOrMessage).setMessage(message);
         }
         else {
-            var caller = (arguments.callee.caller);
+            var caller = arguments.callee.caller;
             builder = builder.setSource(caller && caller.name).setMessage(sourceOrMessage);
         }
         return builder;
