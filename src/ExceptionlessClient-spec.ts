@@ -25,4 +25,13 @@ describe('ExceptionlessClient', () => {
       done();
     });
   }, 5000);
+
+  it('should accept null sourceOrMessage', () => {
+    var client = new ExceptionlessClient('LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw', 'http://localhost:50000');
+    var builder = client.createLog(null, 'Unit Test message', 'Trace');
+
+    expect(builder.target.source).toBeUndefined();
+    expect(builder.target.message).toBe('Unit Test message');
+    expect(builder.target.data['@level']).toBe('Trace');
+  });
 });
