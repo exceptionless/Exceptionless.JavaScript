@@ -59,14 +59,14 @@ export class ExceptionlessClient {
   public createLog(sourceOrMessage:string, message?:string, level?:string): EventBuilder {
     var builder = this.createEvent().setType('log');
 
-    if (sourceOrMessage && message && level) {
+    if (message && level) {
       builder = builder.setSource(sourceOrMessage).setMessage(message).setProperty('@level', level);
-    } else if (sourceOrMessage && message) {
+    } else if (message) {
       builder = builder.setSource(sourceOrMessage).setMessage(message);
     } else {
       // TODO: Look into using https://www.stevefenton.co.uk/Content/Blog/Date/201304/Blog/Obtaining-A-Class-Name-At-Runtime-In-TypeScript/
-      var source = (<any>(arguments.callee.caller)).name;
-      builder = builder.setSource(source).setMessage(sourceOrMessage);
+      var caller = (<any>(arguments.callee.caller));
+      builder = builder.setSource(caller && caller.name).setMessage(sourceOrMessage);
     }
 
     return builder;

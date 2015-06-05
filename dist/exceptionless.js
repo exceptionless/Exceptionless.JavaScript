@@ -2065,8 +2065,8 @@ var ExceptionlessClient = (function () {
             builder = builder.setSource(sourceOrMessage).setMessage(message);
         }
         else {
-            var source = (arguments.callee.caller).name;
-            builder = builder.setSource(source).setMessage(sourceOrMessage);
+            var caller = (arguments.callee.caller);
+            builder = builder.setSource(caller && caller.name).setMessage(sourceOrMessage);
         }
         return builder;
     };
