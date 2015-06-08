@@ -2323,8 +2323,8 @@ var DefaultErrorParser = (function () {
                     name: (frame.func || ANONYMOUS).replace('?', ANONYMOUS),
                     parameters: getParameters(frame.args),
                     file_name: frame.url,
-                    line_number: frame.line,
-                    column: frame.column
+                    line_number: frame.line || 0,
+                    column: frame.column || 0
                 });
             }
             return frames;

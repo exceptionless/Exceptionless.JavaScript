@@ -1202,8 +1202,8 @@ var NodeErrorParser = (function () {
                 frames.push({
                     name: frame.getMethodName() || frame.getFunctionName(),
                     file_name: frame.getFileName(),
-                    line_number: frame.getLineNumber(),
-                    column: frame.getColumnNumber(),
+                    line_number: frame.getLineNumber() || 0,
+                    column: frame.getColumnNumber() || 0,
                     declaring_type: frame.getTypeName(),
                     data: {
                         is_native: frame.isNative() || (!!frame.filename && frame.filename[0] !== '/' && frame.filename[0] !== '.')
