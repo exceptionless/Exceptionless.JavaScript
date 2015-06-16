@@ -34,13 +34,13 @@ You can configure the exceptionless client a few different ways. The section bel
 
 #### JavaScript
 1. You can configure the `apiKey` as part of the script tag. This will be applied to all new instances of the ExceptionlessClient
-```html
-<script src="bower_components/exceptionless/dist/exceptionless.min.js?apiKey=API_KEY_HERE"></script>
-```
+  ```html
+  <script src="bower_components/exceptionless/dist/exceptionless.min.js?apiKey=API_KEY_HERE"></script>
+  ```
 2. You can set the `apiKey` on the default ExceptionlessClient instance.
-```javascript
-exceptionless.ExceptionlessClient.default.config.apiKey = 'API_KEY_HERE';
-```
+  ```javascript
+  exceptionless.ExceptionlessClient.default.config.apiKey = 'API_KEY_HERE';
+  ```
 3. You can create a new instance of the ExceptionlessClient and specify the `apiKey`, `serverUrl` or [configuration object](https://github.com/exceptionless/Exceptionless.JavaScript/blob/master/src/configuration/IConfigurationSettings.ts).
 ```javascript
 var client = new exceptionless.ExceptionlessClient('API_KEY_HERE');
@@ -56,24 +56,24 @@ var client = new exceptionless.ExceptionlessClient({
 
 #### Node.js
 1. You can set the `apiKey` on the default ExceptionlessClient instance.
-```javascript
-var client = require('exceptionless.node').ExceptionlessClient.default;
-client.config.apiKey = 'API_KEY_HERE';
-```
+  ```javascript
+  var client = require('exceptionless.node').ExceptionlessClient.default;
+  client.config.apiKey = 'API_KEY_HERE';
+  ```
 2. You can create a new instance of the ExceptionlessClient and specify the `apiKey`, `serverUrl` or [configuration object](https://github.com/exceptionless/Exceptionless.JavaScript/blob/master/src/configuration/IConfigurationSettings.ts).
-```javascript
-var exceptionless = require('exceptionless.node');
+  ```javascript
+  var exceptionless = require('exceptionless.node');
 
-var client = new exceptionless.ExceptionlessClient('API_KEY_HERE');
-// or with a api key and server url.
-var client = new exceptionless.ExceptionlessClient('API_KEY_HERE', 'http://localhost:50000');
-// or with a configuration object
-var client = new exceptionless.ExceptionlessClient({
-  apiKey: 'API_KEY_HERE',
-  serverUrl: 'http://localhost:50000',
-  submissionBatchSize: 100
-});
-```
+  var client = new exceptionless.ExceptionlessClient('API_KEY_HERE');
+  // or with a api key and server url.
+  var client = new exceptionless.ExceptionlessClient('API_KEY_HERE', 'http://localhost:50000');
+  // or with a configuration object
+  var client = new exceptionless.ExceptionlessClient({
+    apiKey: 'API_KEY_HERE',
+    serverUrl: 'http://localhost:50000',
+    submissionBatchSize: 100
+  });
+  ```
 
 ### Sending Events
 Once configured, Exceptionless will automatically send any unhandled exceptions that happen in your application. The sections below will show you how to send us different event types as well as customize the data that is sent in.
