@@ -42,3 +42,8 @@ function throwIndexOutOfRange(indexer) {
 function throwStringErrorImpl(message) {
   throw new Error(message);
 }
+
+function logClientConfigurationSettings() {
+  var client = exceptionless.ExceptionlessClient.default;
+  console.log(client.config.settings);
+}
