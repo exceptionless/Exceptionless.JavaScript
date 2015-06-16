@@ -33,15 +33,13 @@ var client = require('exceptionless.node').ExceptionlessClient.default;
 You can configure the exceptionless client a few different ways. The section below will cover the different ways you can configure the ExceptionlessClient. _NOTE: The only required setting that you need to configure is the clients `apiKey`._
 
 #### JavaScript
-1. You can configure the `apiKey` or `serverUrl` as part of the script tag. This will be applied to all new instances of the ExceptionlessClient
+1. You can configure the `apiKey` as part of the script tag. This will be applied to all new instances of the ExceptionlessClient
 ```html
 <script src="bower_components/exceptionless/dist/exceptionless.min.js?apiKey=API_KEY_HERE"></script>
 ```
-2. You can set the `apiKey` or `serverUrl` on the default ExceptionlessClient instance.
+2. You can set the `apiKey` on the default ExceptionlessClient instance.
 ```javascript
-var client = exceptionless.ExceptionlessClient.default;
-client.config.apiKey = 'API_KEY_HERE';
-client.config.serverUrl = 'http://localhost:50000';
+exceptionless.ExceptionlessClient.default.config.apiKey = 'API_KEY_HERE';
 ```
 3. You can create a new instance of the ExceptionlessClient and specify the `apiKey`, `serverUrl` or [configuration object](https://github.com/exceptionless/Exceptionless.JavaScript/blob/master/src/configuration/IConfigurationSettings.ts).
 ```javascript
@@ -57,11 +55,10 @@ var client = new exceptionless.ExceptionlessClient({
 ```
 
 #### Node.js
-1. You can set the `apiKey` or `serverUrl` on the default ExceptionlessClient instance.
+1. You can set the `apiKey` on the default ExceptionlessClient instance.
 ```javascript
 var client = require('exceptionless.node').ExceptionlessClient.default;
 client.config.apiKey = 'API_KEY_HERE';
-client.config.serverUrl = 'http://localhost:50000';
 ```
 2. You can create a new instance of the ExceptionlessClient and specify the `apiKey`, `serverUrl` or [configuration object](https://github.com/exceptionless/Exceptionless.JavaScript/blob/master/src/configuration/IConfigurationSettings.ts).
 ```javascript
@@ -157,6 +154,23 @@ try {
     // Submit the event.
     .submit();
 }
+```
+
+## Self hosted options
+
+The Exceptionless client can also be configured to send data to your self hosted instance. This is configured by setting the serverUrl setting to point to your Exceptionless instance.
+
+#### JavaScript
+You can set the `serverUrl` on the default ExceptionlessClient instance.
+```javascript
+exceptionless.ExceptionlessClient.default.config.serverUrl = 'http://localhost:50000';
+```
+
+#### Node.js
+You can set the `serverUrl` on the default ExceptionlessClient instance.
+```javascript
+var client = require('exceptionless.node').ExceptionlessClient.default;
+client.config.serverUrl = 'http://localhost:50000';
 ```
 
 ## Getting Started (Development)
