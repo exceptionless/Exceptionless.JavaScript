@@ -24,24 +24,24 @@
   "devDependencies": {
     "bower": "~1.4.1",
     "del": "^1.2.0",
-    "es5-shim": "^4.1.4",
-    "es6-shim": "^0.31.3",
+    "es5-shim": "^4.1.10",
+    "es6-shim": "^0.32.2",
     "gulp": "^3.9.0",
-    "gulp-concat": "^2.5.2",
+    "gulp-concat": "^2.6.0",
     "gulp-karma": "0.0.4",
     "gulp-replace": "^0.5.3",
     "gulp-sourcemaps": "^1.5.2",
     "gulp-uglify": "^1.2.0",
     "gulp-wrap-umd": "^0.2.1",
     "jasmine-core": "^2.3.4",
-    "karma": "~0.12.36",
-    "karma-cli": "0.0.4",
-    "karma-jasmine": "~0.3.5",
+    "karma": "~0.13.3",
+    "karma-cli": "0.1.0",
+    "karma-jasmine": "~0.3.6",
     "karma-phantomjs-launcher": "^0.2.0",
-    "rimraf": "^2.3.4",
+    "rimraf": "^2.4.2",
     "tracekit": "^0.2.1",
-    "tsproject": "^0.8.10",
-    "typescript": "1.5.0-beta"
+    "tsproject": "^1.0.0-rc",
+    "typescript": "1.5.3"
   },
   "dependencies": {
     "stack-trace": "0.0.9"
