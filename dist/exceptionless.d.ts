@@ -1,13 +1,3 @@
-export interface ILastReferenceIdManager {
-    getLast(): string;
-    clearLast(): void;
-    setLast(eventId: string): void;
-}
-export interface ILog {
-    info(message: string): void;
-    warn(message: string): void;
-    error(message: string): void;
-}
 export interface IEvent {
     type?: string;
     source?: string;
@@ -20,37 +10,20 @@ export interface IEvent {
     reference_id?: string;
     session_id?: string;
 }
+export interface ILastReferenceIdManager {
+    getLast(): string;
+    clearLast(): void;
+    setLast(eventId: string): void;
+}
+export interface ILog {
+    info(message: string): void;
+    warn(message: string): void;
+    error(message: string): void;
+}
 export interface IEventQueue {
     enqueue(event: IEvent): void;
     process(): void;
     suspendProcessing(durationInMinutes?: number, discardFutureQueuedItems?: boolean, clearQueue?: boolean): void;
-}
-export interface IEnvironmentInfo {
-    processor_count?: number;
-    total_physical_memory?: number;
-    available_physical_memory?: number;
-    command_line?: string;
-    process_name?: string;
-    process_id?: string;
-    process_memory_size?: number;
-    thread_id?: string;
-    architecture?: string;
-    o_s_name?: string;
-    o_s_version?: string;
-    ip_address?: string;
-    machine_name?: string;
-    install_id?: string;
-    runtime_version?: string;
-    data?: any;
-}
-export declare class ContextData {
-    setException(exception: Error): void;
-    hasException: boolean;
-    getException(): Error;
-    markAsUnhandledError(): void;
-    isUnhandledError: boolean;
-    setSubmissionMethod(method: string): void;
-    getSubmissionMethod(): string;
 }
 export interface IEnvironmentInfoCollector {
     getEnvironmentInfo(context: EventPluginContext): IEnvironmentInfo;
@@ -251,6 +224,15 @@ export interface IUserDescription {
     description?: string;
     data?: any;
 }
+export declare class ContextData {
+    setException(exception: Error): void;
+    hasException: boolean;
+    getException(): Error;
+    markAsUnhandledError(): void;
+    isUnhandledError: boolean;
+    setSubmissionMethod(method: string): void;
+    getSubmissionMethod(): string;
+}
 export declare class SubmissionResponse {
     success: boolean;
     badRequest: boolean;
@@ -333,6 +315,38 @@ export interface IModule {
     created_date?: Date;
     modified_date?: Date;
 }
+export interface IRequestInfo {
+    user_agent?: string;
+    http_method?: string;
+    is_secure?: boolean;
+    host?: string;
+    port?: number;
+    path?: string;
+    referrer?: string;
+    client_ip_address?: string;
+    cookies?: any;
+    post_data?: any;
+    query_string?: any;
+    data?: any;
+}
+export interface IEnvironmentInfo {
+    processor_count?: number;
+    total_physical_memory?: number;
+    available_physical_memory?: number;
+    command_line?: string;
+    process_name?: string;
+    process_id?: string;
+    process_memory_size?: number;
+    thread_id?: string;
+    architecture?: string;
+    o_s_name?: string;
+    o_s_version?: string;
+    ip_address?: string;
+    machine_name?: string;
+    install_id?: string;
+    runtime_version?: string;
+    data?: any;
+}
 export declare class ConfigurationDefaultsPlugin implements IEventPlugin {
     priority: number;
     name: string;
@@ -347,20 +361,6 @@ export declare class ModuleInfoPlugin implements IEventPlugin {
     priority: number;
     name: string;
     run(context: EventPluginContext, next?: () => void): void;
-}
-export interface IRequestInfo {
-    user_agent?: string;
-    http_method?: string;
-    is_secure?: boolean;
-    host?: string;
-    port?: number;
-    path?: string;
-    referrer?: string;
-    client_ip_address?: string;
-    cookies?: any;
-    post_data?: any;
-    query_string?: any;
-    data?: any;
 }
 export declare class RequestInfoPlugin implements IEventPlugin {
     priority: number;

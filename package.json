@@ -40,7 +40,7 @@
     "karma-phantomjs-launcher": "^0.2.0",
     "rimraf": "^2.4.2",
     "tracekit": "^0.2.1",
-    "tsproject": "^1.0.0-rc",
+    "tsproject": "^1.0.0-rc.2",
     "typescript": "1.5.3"
   },
   "dependencies": {

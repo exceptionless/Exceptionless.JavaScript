@@ -1,48 +1,10 @@
-var __extends = this.__extends || function (d, b) {
+var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
     __.prototype = b.prototype;
     d.prototype = new __();
 };
-var ContextData = (function () {
-    function ContextData() {
-    }
-    ContextData.prototype.setException = function (exception) {
-        if (exception) {
-            this['@@_Exception'] = exception;
-        }
-    };
-    Object.defineProperty(ContextData.prototype, "hasException", {
-        get: function () {
-            return !!this['@@_Exception'];
-        },
-        enumerable: true,
-        configurable: true
-    });
-    ContextData.prototype.getException = function () {
-        return this['@@_Exception'] || null;
-    };
-    ContextData.prototype.markAsUnhandledError = function () {
-        this['@@_IsUnhandledError'] = true;
-    };
-    Object.defineProperty(ContextData.prototype, "isUnhandledError", {
-        get: function () {
-            return !!this['@@_IsUnhandledError'];
-        },
-        enumerable: true,
-        configurable: true
-    });
-    ContextData.prototype.setSubmissionMethod = function (method) {
-        if (method) {
-            this['@@_SubmissionMethod'] = method;
-        }
-    };
-    ContextData.prototype.getSubmissionMethod = function () {
-        return this['@@_SubmissionMethod'] || null;
-    };
-    return ContextData;
-})();
-exports.ContextData = ContextData;
+var http = require("http");
 var SettingsManager = (function () {
     function SettingsManager() {
     }
@@ -841,6 +803,45 @@ var EventBuilder = (function () {
     return EventBuilder;
 })();
 exports.EventBuilder = EventBuilder;
+var ContextData = (function () {
+    function ContextData() {
+    }
+    ContextData.prototype.setException = function (exception) {
+        if (exception) {
+            this['@@_Exception'] = exception;
+        }
+    };
+    Object.defineProperty(ContextData.prototype, "hasException", {
+        get: function () {
+            return !!this['@@_Exception'];
+        },
+        enumerable: true,
+        configurable: true
+    });
+    ContextData.prototype.getException = function () {
+        return this['@@_Exception'] || null;
+    };
+    ContextData.prototype.markAsUnhandledError = function () {
+        this['@@_IsUnhandledError'] = true;
+    };
+    Object.defineProperty(ContextData.prototype, "isUnhandledError", {
+        get: function () {
+            return !!this['@@_IsUnhandledError'];
+        },
+        enumerable: true,
+        configurable: true
+    });
+    ContextData.prototype.setSubmissionMethod = function (method) {
+        if (method) {
+            this['@@_SubmissionMethod'] = method;
+        }
+    };
+    ContextData.prototype.getSubmissionMethod = function () {
+        return this['@@_SubmissionMethod'] || null;
+    };
+    return ContextData;
+})();
+exports.ContextData = ContextData;
 var SubmissionResponse = (function () {
     function SubmissionResponse(statusCode, message) {
         this.success = false;
@@ -1142,119 +1143,7 @@ var SettingsResponse = (function () {
 })();
 exports.SettingsResponse = SettingsResponse;
 var os = require('os');
-var NodeEnvironmentInfoCollector = (function () {
-    function NodeEnvironmentInfoCollector() {
-    }
-    NodeEnvironmentInfoCollector.prototype.getEnvironmentInfo = function (context) {
-        function getIpAddresses() {
-            var ips = [];
-            var interfaces = os.networkInterfaces();
-            Object.keys(interfaces).forEach(function (name) {
-                interfaces[name].forEach(function (iface) {
-                    if ('IPv4' === iface.family && !iface.internal) {
-                        ips.push(iface.address);
-                    }
-                });
-            });
-            return ips.join(', ');
-        }
-        if (!os) {
-            return null;
-        }
-        var environmentInfo = {
-            processor_count: os.cpus().length,
-            total_physical_memory: os.totalmem(),
-            available_physical_memory: os.freemem(),
-            command_line: process.argv.join(' '),
-            process_name: (process.title || '').replace(/[\uE000-\uF8FF]/g, ''),
-            process_id: process.pid + '',
-            process_memory_size: process.memoryUsage().heapTotal,
-            architecture: os.arch(),
-            o_s_name: os.type(),
-            o_s_version: os.release(),
-            ip_address: getIpAddresses(),
-            machine_name: os.hostname(),
-            runtime_version: process.version,
-            data: {
-                loadavg: os.loadavg(),
-                platform: os.platform(),
-                tmpdir: os.tmpdir(),
-                uptime: os.uptime()
-            }
-        };
-        if (os.endianness) {
-            environmentInfo.data.endianness = os.endianness();
-        }
-        return environmentInfo;
-    };
-    return NodeEnvironmentInfoCollector;
-})();
-exports.NodeEnvironmentInfoCollector = NodeEnvironmentInfoCollector;
 var nodestacktrace = require('stack-trace');
-var NodeErrorParser = (function () {
-    function NodeErrorParser() {
-    }
-    NodeErrorParser.prototype.parse = function (context, exception) {
-        function getStackFrames(context, stackFrames) {
-            var frames = [];
-            for (var index = 0; index < stackFrames.length; index++) {
-                var frame = stackFrames[index];
-                frames.push({
-                    name: frame.getMethodName() || frame.getFunctionName(),
-                    file_name: frame.getFileName(),
-                    line_number: frame.getLineNumber() || 0,
-                    column: frame.getColumnNumber() || 0,
-                    declaring_type: frame.getTypeName(),
-                    data: {
-                        is_native: frame.isNative() || (!!frame.filename && frame.filename[0] !== '/' && frame.filename[0] !== '.')
-                    }
-                });
-            }
-            return frames;
-        }
-        if (!nodestacktrace) {
-            throw new Error('Unable to load the stack trace library.');
-        }
-        var stackFrames = nodestacktrace.parse(exception) || [];
-        return {
-            type: exception.name,
-            message: exception.message,
-            stack_trace: getStackFrames(context, stackFrames)
-        };
-    };
-    return NodeErrorParser;
-})();
-exports.NodeErrorParser = NodeErrorParser;
-var NodeRequestInfoCollector = (function () {
-    function NodeRequestInfoCollector() {
-    }
-    NodeRequestInfoCollector.prototype.getRequestInfo = function (context) {
-        var REQUEST_KEY = '@request';
-        if (!context.contextData[REQUEST_KEY]) {
-            return null;
-        }
-        var request = context.contextData[REQUEST_KEY];
-        var requestInfo = {
-            client_ip_address: request.ip,
-            user_agent: request.headers['user-agent'],
-            is_secure: request.secure,
-            http_method: request.method,
-            host: request.hostname || request.host,
-            path: request.path,
-            post_data: request.body,
-            cookies: Utils.getCookies((request || {}).headers['cookie']),
-            query_string: request.params
-        };
-        var host = request.headers['host'];
-        var port = host && parseInt(host.slice(host.indexOf(':') + 1));
-        if (port > 0) {
-            requestInfo.port = port;
-        }
-        return requestInfo;
-    };
-    return NodeRequestInfoCollector;
-})();
-exports.NodeRequestInfoCollector = NodeRequestInfoCollector;
 var DefaultSubmissionClient = (function () {
     function DefaultSubmissionClient() {
         this.configurationVersionHeader = 'X-Exceptionless-ConfigVersion';
@@ -1392,9 +1281,120 @@ var DefaultSubmissionClient = (function () {
     return DefaultSubmissionClient;
 })();
 exports.DefaultSubmissionClient = DefaultSubmissionClient;
-var http = require('http');
 var https = require('https');
 var url = require('url');
+var NodeEnvironmentInfoCollector = (function () {
+    function NodeEnvironmentInfoCollector() {
+    }
+    NodeEnvironmentInfoCollector.prototype.getEnvironmentInfo = function (context) {
+        function getIpAddresses() {
+            var ips = [];
+            var interfaces = os.networkInterfaces();
+            Object.keys(interfaces).forEach(function (name) {
+                interfaces[name].forEach(function (iface) {
+                    if ('IPv4' === iface.family && !iface.internal) {
+                        ips.push(iface.address);
+                    }
+                });
+            });
+            return ips.join(', ');
+        }
+        if (!os) {
+            return null;
+        }
+        var environmentInfo = {
+            processor_count: os.cpus().length,
+            total_physical_memory: os.totalmem(),
+            available_physical_memory: os.freemem(),
+            command_line: process.argv.join(' '),
+            process_name: (process.title || '').replace(/[\uE000-\uF8FF]/g, ''),
+            process_id: process.pid + '',
+            process_memory_size: process.memoryUsage().heapTotal,
+            architecture: os.arch(),
+            o_s_name: os.type(),
+            o_s_version: os.release(),
+            ip_address: getIpAddresses(),
+            machine_name: os.hostname(),
+            runtime_version: process.version,
+            data: {
+                loadavg: os.loadavg(),
+                platform: os.platform(),
+                tmpdir: os.tmpdir(),
+                uptime: os.uptime()
+            }
+        };
+        if (os.endianness) {
+            environmentInfo.data.endianness = os.endianness();
+        }
+        return environmentInfo;
+    };
+    return NodeEnvironmentInfoCollector;
+})();
+exports.NodeEnvironmentInfoCollector = NodeEnvironmentInfoCollector;
+var NodeErrorParser = (function () {
+    function NodeErrorParser() {
+    }
+    NodeErrorParser.prototype.parse = function (context, exception) {
+        function getStackFrames(context, stackFrames) {
+            var frames = [];
+            for (var index = 0; index < stackFrames.length; index++) {
+                var frame = stackFrames[index];
+                frames.push({
+                    name: frame.getMethodName() || frame.getFunctionName(),
+                    file_name: frame.getFileName(),
+                    line_number: frame.getLineNumber() || 0,
+                    column: frame.getColumnNumber() || 0,
+                    declaring_type: frame.getTypeName(),
+                    data: {
+                        is_native: frame.isNative() || (!!frame.filename && frame.filename[0] !== '/' && frame.filename[0] !== '.')
+                    }
+                });
+            }
+            return frames;
+        }
+        if (!nodestacktrace) {
+            throw new Error('Unable to load the stack trace library.');
+        }
+        var stackFrames = nodestacktrace.parse(exception) || [];
+        return {
+            type: exception.name,
+            message: exception.message,
+            stack_trace: getStackFrames(context, stackFrames)
+        };
+    };
+    return NodeErrorParser;
+})();
+exports.NodeErrorParser = NodeErrorParser;
+var NodeRequestInfoCollector = (function () {
+    function NodeRequestInfoCollector() {
+    }
+    NodeRequestInfoCollector.prototype.getRequestInfo = function (context) {
+        var REQUEST_KEY = '@request';
+        if (!context.contextData[REQUEST_KEY]) {
+            return null;
+        }
+        var request = context.contextData[REQUEST_KEY];
+        var requestInfo = {
+            client_ip_address: request.ip,
+            user_agent: request.headers['user-agent'],
+            is_secure: request.secure,
+            http_method: request.method,
+            host: request.hostname || request.host,
+            path: request.path,
+            post_data: request.body,
+            cookies: Utils.getCookies((request || {}).headers['cookie']),
+            query_string: request.params
+        };
+        var host = request.headers['host'];
+        var port = host && parseInt(host.slice(host.indexOf(':') + 1));
+        if (port > 0) {
+            requestInfo.port = port;
+        }
+        return requestInfo;
+    };
+    return NodeRequestInfoCollector;
+})();
+exports.NodeRequestInfoCollector = NodeRequestInfoCollector;
 var NodeSubmissionClient = (function (_super) {
     __extends(NodeSubmissionClient, _super);
     function NodeSubmissionClient() {

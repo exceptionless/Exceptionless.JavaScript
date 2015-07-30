@@ -1165,45 +1165,6 @@ if (!exports) {
 }
 
 
-var ContextData = (function () {
-    function ContextData() {
-    }
-    ContextData.prototype.setException = function (exception) {
-        if (exception) {
-            this['@@_Exception'] = exception;
-        }
-    };
-    Object.defineProperty(ContextData.prototype, "hasException", {
-        get: function () {
-            return !!this['@@_Exception'];
-        },
-        enumerable: true,
-        configurable: true
-    });
-    ContextData.prototype.getException = function () {
-        return this['@@_Exception'] || null;
-    };
-    ContextData.prototype.markAsUnhandledError = function () {
-        this['@@_IsUnhandledError'] = true;
-    };
-    Object.defineProperty(ContextData.prototype, "isUnhandledError", {
-        get: function () {
-            return !!this['@@_IsUnhandledError'];
-        },
-        enumerable: true,
-        configurable: true
-    });
-    ContextData.prototype.setSubmissionMethod = function (method) {
-        if (method) {
-            this['@@_SubmissionMethod'] = method;
-        }
-    };
-    ContextData.prototype.getSubmissionMethod = function () {
-        return this['@@_SubmissionMethod'] || null;
-    };
-    return ContextData;
-})();
-exports.ContextData = ContextData;
 var SettingsManager = (function () {
     function SettingsManager() {
     }
@@ -2002,6 +1963,45 @@ var EventBuilder = (function () {
     return EventBuilder;
 })();
 exports.EventBuilder = EventBuilder;
+var ContextData = (function () {
+    function ContextData() {
+    }
+    ContextData.prototype.setException = function (exception) {
+        if (exception) {
+            this['@@_Exception'] = exception;
+        }
+    };
+    Object.defineProperty(ContextData.prototype, "hasException", {
+        get: function () {
+            return !!this['@@_Exception'];
+        },
+        enumerable: true,
+        configurable: true
+    });
+    ContextData.prototype.getException = function () {
+        return this['@@_Exception'] || null;
+    };
+    ContextData.prototype.markAsUnhandledError = function () {
+        this['@@_IsUnhandledError'] = true;
+    };
+    Object.defineProperty(ContextData.prototype, "isUnhandledError", {
+        get: function () {
+            return !!this['@@_IsUnhandledError'];
+        },
+        enumerable: true,
+        configurable: true
+    });
+    ContextData.prototype.setSubmissionMethod = function (method) {
+        if (method) {
+            this['@@_SubmissionMethod'] = method;
+        }
+    };
+    ContextData.prototype.getSubmissionMethod = function () {
+        return this['@@_SubmissionMethod'] || null;
+    };
+    return ContextData;
+})();
+exports.ContextData = ContextData;
 var SubmissionResponse = (function () {
     function SubmissionResponse(statusCode, message) {
         this.success = false;
