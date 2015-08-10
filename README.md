@@ -19,7 +19,10 @@ Use one of the below methods to install exceptionless into your web app.
 ```
 
 ##### CDN
-We will be adding cdn support in the near future.
+1. Add the following script to your page.
+```html
+<script src="https://cdn.rawgit.com/exceptionless/Exceptionless.JavaScript/v1.0.1/dist/exceptionless.js"></script>
+```
 
 #### Node.js
 Use this method to install exceptionless into your node app.
@@ -183,9 +186,9 @@ client.config.serverUrl = 'http://localhost:50000';
 
 ## Getting Started (Development)
 
-The JavaScript client can be installed via [bower](http://bower.io/search/?q=exceptionless), [npm](https://www.npmjs.com/package/exceptionless) or cdn. If you need help, please contact us via in-app support or [open an issue](https://github.com/exceptionless/Exceptionless.JavaScript/issues/new). We’re always here to help if you have any questions!
+The JavaScript client can be installed via [bower](http://bower.io/search/?q=exceptionless), [npm](https://www.npmjs.com/package/exceptionless) or CDN. If you need help, please contact us via in-app support or [open an issue](https://github.com/exceptionless/Exceptionless.JavaScript/issues/new). We’re always here to help if you have any questions!
 
-**This section is for development purposes only! If you are trying to use the Exceptionless JavaScript libraries, please get them from bower, npm or the cdn.**
+**This section is for development purposes only! If you are trying to use the Exceptionless JavaScript libraries, please get them from bower, npm or the CDN.**
 
 1. You will need to clone this repo.
 2. Install [Node.js](https://nodejs.org). _We only use node for our build and test processes._

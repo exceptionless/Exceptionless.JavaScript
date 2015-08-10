@@ -1,5 +1,5 @@
 /*
- TraceKit - Cross brower stack traces - github.com/csnover/TraceKit
+ TraceKit - Cross browser stack traces - github.com/csnover/TraceKit
  MIT license
 */
 
@@ -185,9 +185,7 @@ TraceKit.report = (function reportModuleWrapper() {
                 stack = {
                     'mode': 'onerror',
                     'message': message,
-                    'url': document.location.href,
-                    'stack': [location],
-                    'useragent': navigator.userAgent
+                    'stack': [location]
                 };
             }
         }
@@ -367,8 +365,9 @@ TraceKit.computeStackTrace = (function computeStackTraceWrapper() {
             // cross-domain errors will be triggered.
             var source = '';
 
-            url = url || '';
-            if (url.indexOf && url.indexOf(document.domain) !== -1) {
+            var domain = '';
+            try { domain = document.domain; } catch (e) {}
+            if (url.indexOf(domain) !== -1) {
                 source = loadSource(url);
             }
             sourceCache[url] = source ? source.split('\n') : [];
@@ -637,8 +636,8 @@ TraceKit.computeStackTrace = (function computeStackTraceWrapper() {
             return null;
         }
 
-        var chrome = /^\s*at (.*?) ?\(?((?:file|https?|chrome-extension):.*?):(\d+)(?::(\d+))?\)?\s*$/i,
-            gecko = /^\s*(.*?)(?:\((.*?)\))?@?((?:file|https?|chrome):.*?):(\d+)(?::(\d+))?\s*$/i,
+        var chrome = /^\s*at (.*?) ?\(((?:file|https?|chrome-extension|native|eval).*?)(?::(\d+))?(?::(\d+))?\)?\s*$/i,
+            gecko = /^\s*(.*?)(?:\((.*?)\))?@?((?:file|https?|chrome|\[).*?)(?::(\d+))?(?::(\d+))?\s*$/i,
             winjs = /^\s*at (?:((?:\[object object\])?.+) )?\(?((?:ms-appx|http|https):.*?):(\d+)(?::(\d+))?\)?\s*$/i,
             lines = ex.stack.split('\n'),
             stack = [],
@@ -647,28 +646,31 @@ TraceKit.computeStackTrace = (function computeStackTraceWrapper() {
             reference = /^(.*) is undefined$/.exec(ex.message);
 
         for (var i = 0, j = lines.length; i < j; ++i) {
-            if ((parts = gecko.exec(lines[i]))) {
+            if ((parts = chrome.exec(lines[i]))) {
+                var isNative = parts[2] && parts[2].indexOf('native') !== -1;
                 element = {
-                    'url': parts[3],
+                    'url': !isNative ? parts[2] : null,
                     'func': parts[1] || UNKNOWN_FUNCTION,
-                    'args': parts[2] ? parts[2].split(',') : '',
-                    'line': +parts[4],
-                    'column': parts[5] ? +parts[5] : null
-                };
-            } else if ((parts = chrome.exec(lines[i]))) {
-                element = {
-                    'url': parts[2],
-                    'func': parts[1] || UNKNOWN_FUNCTION,
-                    'line': +parts[3],
+                    'args': isNative ? [parts[2]] : [],
+                    'line': parts[3] ? +parts[3] : null,
                     'column': parts[4] ? +parts[4] : null
                 };
             } else if ((parts = winjs.exec(lines[i]))) {
-              element = {
-                'url': parts[2],
-                'func': parts[1] || UNKNOWN_FUNCTION,
-                'line': +parts[3],
-                'column': parts[4] ? +parts[4] : null
-              };
+                element = {
+                    'url': parts[2],
+                    'func': parts[1] || UNKNOWN_FUNCTION,
+                    'args': [],
+                    'line': +parts[3],
+                    'column': parts[4] ? +parts[4] : null
+                };
+            } else if ((parts = gecko.exec(lines[i]))) {
+                element = {
+                    'url': parts[3],
+                    'func': parts[1] || UNKNOWN_FUNCTION,
+                    'args': parts[2] ? parts[2].split(',') : [],
+                    'line': parts[4] ? +parts[4] : null,
+                    'column': parts[5] ? +parts[5] : null
+                };
             } else {
                 continue;
             }
@@ -701,15 +703,13 @@ TraceKit.computeStackTrace = (function computeStackTraceWrapper() {
             'mode': 'stack',
             'name': ex.name,
             'message': ex.message,
-            'url': document.location.href,
-            'stack': stack,
-            'useragent': navigator.userAgent
+            'stack': stack
         };
     }
 
     /**
      * Computes stack trace information from the stacktrace property.
-     * Opera 10 uses this property.
+     * Opera 10+ uses this property.
      * @param {Error} ex
      * @return {?Object.<string, *>} Stack trace information.
      */
@@ -718,22 +718,37 @@ TraceKit.computeStackTrace = (function computeStackTraceWrapper() {
         // else to it because Opera is not very good at providing it
         // reliably in other circumstances.
         var stacktrace = ex.stacktrace;
+        if (!stacktrace) {
+            return;
+        }
 
-        var testRE = / line (\d+), column (\d+) in (?:<anonymous function: ([^>]+)>|([^\)]+))\((.*)\) in (.*):\s*$/i,
+        var opera10Regex = / line (\d+).*script (?:in )?(\S+)(?:: in function (\S+))?$/i,
+            opera11Regex = / line (\d+), column (\d+)\s*(?:in (?:<anonymous function: ([^>]+)>|([^\)]+))\((.*)\))? in (.*):\s*$/i,
             lines = stacktrace.split('\n'),
             stack = [],
             parts;
 
-        for (var i = 0, j = lines.length; i < j; i += 2) {
-            if ((parts = testRE.exec(lines[i]))) {
-                var element = {
+        for (var line = 0; line < lines.length; line += 2) {
+            var element = null;
+            if ((parts = opera10Regex.exec(lines[line]))) {
+                element = {
+                    'url': parts[2],
+                    'line': +parts[1],
+                    'column': null,
+                    'func': parts[3],
+                    'args':[]
+                };
+            } else if ((parts = opera11Regex.exec(lines[line]))) {
+                element = {
+                    'url': parts[6],
                     'line': +parts[1],
                     'column': +parts[2],
                     'func': parts[3] || parts[4],
-                    'args': parts[5] ? parts[5].split(',') : [],
-                    'url': parts[6]
+                    'args': parts[5] ? parts[5].split(',') : []
                 };
+            }
 
+            if (element) {
                 if (!element.func && element.line) {
                     element.func = guessFunctionName(element.url, element.line);
                 }
@@ -744,7 +759,7 @@ TraceKit.computeStackTrace = (function computeStackTraceWrapper() {
                 }
 
                 if (!element.context) {
-                    element.context = [lines[i + 1]];
+                    element.context = [lines[line + 1]];
                 }
 
                 stack.push(element);
@@ -759,9 +774,7 @@ TraceKit.computeStackTrace = (function computeStackTraceWrapper() {
             'mode': 'stacktrace',
             'name': ex.name,
             'message': ex.message,
-            'url': document.location.href,
-            'stack': stack,
-            'useragent': navigator.userAgent
+            'stack': stack
         };
     }
 
@@ -775,6 +788,7 @@ TraceKit.computeStackTrace = (function computeStackTraceWrapper() {
      * @return {?Object.<string, *>} Stack information.
      */
     function computeStackTraceFromOperaMultiLineMessage(ex) {
+        // TODO: Clean this function up
         // Opera includes a stack trace into the exception message. An example is:
         //
         // Statement on line 3: Undefined variable: undefinedFunc
@@ -800,34 +814,36 @@ TraceKit.computeStackTrace = (function computeStackTraceWrapper() {
             stack = [],
             scripts = document.getElementsByTagName('script'),
             inlineScriptBlocks = [],
-            parts,
-            i,
-            len,
-            source;
+            parts;
 
-        for (i in scripts) {
-            if (_has(scripts, i) && !scripts[i].src) {
-                inlineScriptBlocks.push(scripts[i]);
+        for (var s in scripts) {
+            if (_has(scripts, s) && !scripts[s].src) {
+                inlineScriptBlocks.push(scripts[s]);
             }
         }
 
-        for (i = 2, len = lines.length; i < len; i += 2) {
+        for (var line = 2; line < lines.length; line += 2) {
             var item = null;
-            if ((parts = lineRE1.exec(lines[i]))) {
+            if ((parts = lineRE1.exec(lines[line]))) {
                 item = {
                     'url': parts[2],
                     'func': parts[3],
-                    'line': +parts[1]
+                    'args': [],
+                    'line': +parts[1],
+                    'column': null
                 };
-            } else if ((parts = lineRE2.exec(lines[i]))) {
+            } else if ((parts = lineRE2.exec(lines[line]))) {
                 item = {
                     'url': parts[3],
-                    'func': parts[4]
+                    'func': parts[4],
+                    'args': [],
+                    'line': +parts[1],
+                    'column': null // TODO: Check to see if inline#1 (+parts[2]) points to the script number or column number.
                 };
                 var relativeLine = (+parts[1]); // relative to the start of the <SCRIPT> block
                 var script = inlineScriptBlocks[parts[2] - 1];
                 if (script) {
-                    source = getSource(item.url);
+                    var source = getSource(item.url);
                     if (source) {
                         source = source.join('\n');
                         var pos = source.indexOf(script.innerText);
@@ -836,15 +852,16 @@ TraceKit.computeStackTrace = (function computeStackTraceWrapper() {
                         }
                     }
                 }
-            } else if ((parts = lineRE3.exec(lines[i]))) {
-                var url = window.location.href.replace(/#.*$/, ''),
-                    line = parts[1];
-                var re = new RegExp(escapeCodeAsRegExpForMatchingInsideHTML(lines[i + 1]));
-                source = findSourceInUrls(re, [url]);
+            } else if ((parts = lineRE3.exec(lines[line]))) {
+                var url = window.location.href.replace(/#.*$/, '');
+                var re = new RegExp(escapeCodeAsRegExpForMatchingInsideHTML(lines[line + 1]));
+                var src = findSourceInUrls(re, [url]);
                 item = {
                     'url': url,
-                    'line': source ? source.line : line,
-                    'func': ''
+                    'func': '',
+                    'args': [],
+                    'line': src ? src.line : parts[1],
+                    'column': null
                 };
             }
 
@@ -854,11 +871,11 @@ TraceKit.computeStackTrace = (function computeStackTraceWrapper() {
                 }
                 var context = gatherContext(item.url, item.line);
                 var midline = (context ? context[Math.floor(context.length / 2)] : null);
-                if (context && midline.replace(/^\s*/, '') === lines[i + 1].replace(/^\s*/, '')) {
+                if (context && midline.replace(/^\s*/, '') === lines[line + 1].replace(/^\s*/, '')) {
                     item.context = context;
                 } else {
                     // if (context) alert("Context mismatch. Correct midline:\n" + lines[i+1] + "\n\nMidline:\n" + midline + "\n\nContext:\n" + context.join("\n") + "\n\nURL:\n" + item.url);
-                    item.context = [lines[i + 1]];
+                    item.context = [lines[line + 1]];
                 }
                 stack.push(item);
             }
@@ -871,9 +888,7 @@ TraceKit.computeStackTrace = (function computeStackTraceWrapper() {
             'mode': 'multiline',
             'name': ex.name,
             'message': lines[0],
-            'url': document.location.href,
-            'stack': stack,
-            'useragent': navigator.userAgent
+            'stack': stack
         };
     }
 
@@ -961,6 +976,7 @@ TraceKit.computeStackTrace = (function computeStackTraceWrapper() {
             item = {
                 'url': null,
                 'func': UNKNOWN_FUNCTION,
+                'args': [],
                 'line': null,
                 'column': null
             };
@@ -1010,9 +1026,7 @@ TraceKit.computeStackTrace = (function computeStackTraceWrapper() {
             'mode': 'callers',
             'name': ex.name,
             'message': ex.message,
-            'url': document.location.href,
-            'stack': stack,
-            'useragent': navigator.userAgent
+            'stack': stack
         };
         augmentStackTraceWithInitialElement(result, ex.sourceURL || ex.fileName, ex.line || ex.lineNumber, ex.message || ex.description);
         return result;
@@ -1823,7 +1837,7 @@ var Configuration = (function () {
     };
     Object.defineProperty(Configuration.prototype, "userAgent", {
         get: function () {
-            return 'exceptionless-js/1.0.0';
+            return 'exceptionless-js/1.0.1';
         },
         enumerable: true,
         configurable: true
