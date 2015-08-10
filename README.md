@@ -21,7 +21,7 @@ Use one of the below methods to install exceptionless into your web app.
 ##### CDN
 1. Add the following script to your page.
 ```html
-<script src="https://cdn.rawgit.com/exceptionless/Exceptionless.JavaScript/v1.0.1/dist/exceptionless.js"></script>
+<script src="https://cdn.rawgit.com/exceptionless/Exceptionless.JavaScript/v1.0.1/dist/exceptionless.min.js"></script>
 ```
 
 #### Node.js
