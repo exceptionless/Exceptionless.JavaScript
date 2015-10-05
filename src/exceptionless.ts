@@ -27,7 +27,7 @@ import { ErrorPlugin } from './plugins/default/ErrorPlugin';
 import { ModuleInfoPlugin } from './plugins/default/ModuleInfoPlugin';
 import { ReferenceIdPlugin } from './plugins/default/ReferenceIdPlugin';
 import { RequestInfoPlugin } from './plugins/default/RequestInfoPlugin';
-import { EnvironmentInfoPlugin } from 'plugins/default/EnvironmentInfoPlugin';
+import { EnvironmentInfoPlugin } from './plugins/default/EnvironmentInfoPlugin';
 import { SubmissionMethodPlugin } from './plugins/default/SubmissionMethodPlugin';
 import { DefaultEventQueue } from './queue/DefaultEventQueue';
 import { IEventQueue } from './queue/IEventQueue';
