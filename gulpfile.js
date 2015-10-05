@@ -79,7 +79,7 @@ gulp.task('exceptionless.node', ['typescript.node'], function() {
 });
 
 gulp.task('watch', ['build'], function() {
-  gulp.watch('*.ts', ['build']);
+  gulp.watch('src/**/*.ts', ['build']);
 });
 
 gulp.task('build', ['clean', 'exceptionless', 'exceptionless.node']);
