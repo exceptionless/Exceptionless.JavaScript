@@ -14,8 +14,10 @@ import { IEventQueue } from '../queue/IEventQueue';
 import { DefaultEventQueue } from '../queue/DefaultEventQueue';
 import { IEnvironmentInfoCollector } from '../services/IEnvironmentInfoCollector';
 import { IErrorParser } from '../services/IErrorParser';
+import { IExitController } from '../services/IExitController';
 import { IModuleCollector } from '../services/IModuleCollector';
 import { IRequestInfoCollector } from '../services/IRequestInfoCollector';
+import { DefaultExitController } from '../services/DefaultExitController';
 import { IStorage } from '../storage/IStorage';
 import { InMemoryStorage } from '../storage/InMemoryStorage';
 import { ISubmissionClient } from '../submission/ISubmissionClient';
@@ -69,6 +71,8 @@ export class Configuration implements IConfigurationSettings {
 
   public queue:IEventQueue;
 
+  public exitController:IExitController;
+
   constructor(configSettings?:IConfigurationSettings) {
     function inject(fn:any) {
       return typeof fn === 'function' ? fn(this) : fn;
@@ -89,6 +93,7 @@ export class Configuration implements IConfigurationSettings {
     this.submissionClient = inject(configSettings.submissionClient);
     this.storage = inject(configSettings.storage) || new InMemoryStorage<any>();
     this.queue = inject(configSettings.queue) || new DefaultEventQueue(this);
+    this.exitController = inject(configSettings.exitController) || new DefaultExitController();
 
     SettingsManager.applySavedServerSettings(this);
     EventPluginManager.addDefaultPlugins(this);

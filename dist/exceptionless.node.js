@@ -4,6 +4,7 @@ var __extends = (this && this.__extends) || function (d, b) {
     __.prototype = b.prototype;
     d.prototype = new __();
 };
+var child = require("child_process");
 var http = require("http");
 var SettingsManager = (function () {
     function SettingsManager() {
@@ -328,6 +329,21 @@ var DefaultEventQueue = (function () {
     return DefaultEventQueue;
 })();
 exports.DefaultEventQueue = DefaultEventQueue;
+var DefaultExitController = (function () {
+    function DefaultExitController() {
+    }
+    Object.defineProperty(DefaultExitController.prototype, "isApplicationExiting", {
+        get: function () {
+            return false;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    DefaultExitController.prototype.processExit = function (config) {
+    };
+    return DefaultExitController;
+})();
+exports.DefaultExitController = DefaultExitController;
 var InMemoryStorage = (function () {
     function InMemoryStorage(maxItems) {
         this._items = [];
@@ -548,6 +564,7 @@ var Configuration = (function () {
         this.submissionClient = inject(configSettings.submissionClient);
         this.storage = inject(configSettings.storage) || new InMemoryStorage();
         this.queue = inject(configSettings.queue) || new DefaultEventQueue(this);
+        this.exitController = inject(configSettings.exitController) || new DefaultExitController();
         SettingsManager.applySavedServerSettings(this);
         EventPluginManager.addDefaultPlugins(this);
     }
@@ -1144,6 +1161,8 @@ var SettingsResponse = (function () {
 exports.SettingsResponse = SettingsResponse;
 var os = require('os');
 var nodestacktrace = require('stack-trace');
+var https = require('https');
+var url = require('url');
 var DefaultSubmissionClient = (function () {
     function DefaultSubmissionClient() {
         this.configurationVersionHeader = 'X-Exceptionless-ConfigVersion';
@@ -1281,8 +1300,44 @@ var DefaultSubmissionClient = (function () {
     return DefaultSubmissionClient;
 })();
 exports.DefaultSubmissionClient = DefaultSubmissionClient;
-var https = require('https');
-var url = require('url');
+function complete(response, responseBody, responseHeaders, callback) {
+    var message;
+    if (response.statusCode === 0) {
+        message = 'Unable to connect to server.';
+    }
+    else if (response.statusCode < 200 || response.statusCode > 299) {
+        message = response.statusMessage || response.message;
+    }
+    callback(response.statusCode || 500, message, responseBody, responseHeaders);
+}
+function submitRequest(request, callback) {
+    var parsedHost = url.parse(request.serverUrl);
+    var options = {
+        auth: "client:" + request.apiKey,
+        headers: {},
+        hostname: parsedHost.hostname,
+        method: request.method,
+        port: parsedHost.port && parseInt(parsedHost.port),
+        path: request.path
+    };
+    options.headers['User-Agent'] = request.userAgent;
+    if (request.method === 'POST') {
+        options.headers = {
+            'Content-Type': 'application/json',
+            'Content-Length': request.data.length
+        };
+    }
+    var protocol = (parsedHost.protocol === 'https' ? https : http);
+    var clientRequest = protocol.request(options, function (response) {
+        var body = '';
+        response.setEncoding('utf8');
+        response.on('data', function (chunk) { return body += chunk; });
+        response.on('end', function () { return complete(response, body, response.headers, callback); });
+    });
+    clientRequest.on('error', function (error) { return callback(500, error.message); });
+    clientRequest.end(request.data);
+}
+exports.submitRequest = submitRequest;
 var NodeEnvironmentInfoCollector = (function () {
     function NodeEnvironmentInfoCollector() {
     }
@@ -1365,6 +1420,23 @@ var NodeErrorParser = (function () {
     return NodeErrorParser;
 })();
 exports.NodeErrorParser = NodeErrorParser;
+var NodeExitController = (function () {
+    function NodeExitController() {
+    }
+    Object.defineProperty(NodeExitController.prototype, "isApplicationExiting", {
+        get: function () {
+            return this._isApplicationExiting;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    NodeExitController.prototype.processExit = function (config) {
+        this._isApplicationExiting = true;
+        config.queue.process();
+    };
+    return NodeExitController;
+})();
+exports.NodeExitController = NodeExitController;
 var NodeRequestInfoCollector = (function () {
     function NodeRequestInfoCollector() {
     }
@@ -1402,55 +1474,57 @@ var NodeSubmissionClient = (function (_super) {
         this.configurationVersionHeader = this.configurationVersionHeader.toLowerCase();
     }
     NodeSubmissionClient.prototype.sendRequest = function (config, method, path, data, callback) {
-        function complete(response, responseBody, responseHeaders) {
-            var message;
-            if (response.statusCode === 0) {
-                message = 'Unable to connect to server.';
-            }
-            else if (response.statusCode < 200 || response.statusCode > 299) {
-                message = response.statusMessage || response.message;
-            }
-            callback(response.statusCode || 500, message, responseBody, responseHeaders);
-        }
-        var parsedHost = url.parse(config.serverUrl);
-        var options = {
-            auth: "client:" + config.apiKey,
-            headers: {},
-            hostname: parsedHost.hostname,
+        var request = {
             method: method,
-            port: parsedHost.port && parseInt(parsedHost.port),
-            path: path
+            path: path,
+            data: data,
+            serverUrl: config.serverUrl,
+            apiKey: config.apiKey,
+            userAgent: config.userAgent
         };
-        if (method === 'POST') {
-            options.headers = {
-                'Content-Type': 'application/json',
-                'Content-Length': data.length
-            };
+        var exitController = config.exitController;
+        if (exitController.isApplicationExiting) {
+            this.sendRequestSync(request, callback);
         }
-        options.headers['User-Agent'] = config.userAgent;
-        var request = (parsedHost.protocol === 'https' ? https : http).request(options, function (response) {
-            var body = '';
-            response.setEncoding('utf8');
-            response.on('data', function (chunk) { return body += chunk; });
-            response.on('end', function () { return complete(response, body, response.headers); });
+        else {
+            submitRequest(request, callback);
+        }
+    };
+    NodeSubmissionClient.prototype.sendRequestSync = function (request, callback) {
+        var requestJson = JSON.stringify(request);
+        var res = child.spawnSync(process.execPath, [require.resolve('./submitSync.js')], {
+            input: requestJson,
+            stdio: ['pipe', 'pipe', process.stderr]
         });
-        request.on('error', function (error) { return callback(500, error.message); });
-        request.end(data);
+        var out = res.stdout.toString();
+        var result = JSON.parse(out);
+        callback(result.status, result.message, result.data, result.headers);
     };
     return NodeSubmissionClient;
 })(DefaultSubmissionClient);
 exports.NodeSubmissionClient = NodeSubmissionClient;
-var BEFORE_EXIT = 'BEFORE_EXIT';
-var UNCAUGHT_EXCEPTION = 'UNCAUGHT_EXCEPTION';
+var EXIT = 'exit';
+var UNCAUGHT_EXCEPTION = 'uncaughtException';
 var defaults = Configuration.defaults;
 defaults.environmentInfoCollector = new NodeEnvironmentInfoCollector();
 defaults.errorParser = new NodeErrorParser();
+defaults.exitController = new NodeExitController();
 defaults.requestInfoCollector = new NodeRequestInfoCollector();
 defaults.submissionClient = new NodeSubmissionClient();
+function getListenerCount(emitter, event) {
+    if (emitter.listenerCount) {
+        return emitter.listenerCount(event);
+    }
+    return require("events").listenerCount(emitter, event);
+}
 process.on(UNCAUGHT_EXCEPTION, function (error) {
     ExceptionlessClient.default.submitUnhandledException(error, UNCAUGHT_EXCEPTION);
+    var uncaughtListenerCount = getListenerCount(process, UNCAUGHT_EXCEPTION);
+    if (uncaughtListenerCount <= 1) {
+        process.exit(1);
+    }
 });
-process.on(BEFORE_EXIT, function (code) {
+process.on(EXIT, function (code) {
     function getExitCodeReason(code) {
         if (code === 1) {
             return 'Uncaught Fatal Exception';
@@ -1488,11 +1562,12 @@ process.on(BEFORE_EXIT, function (code) {
         return null;
     }
     var client = ExceptionlessClient.default;
+    var config = client.config;
     var message = getExitCodeReason(code);
     if (message !== null) {
-        client.submitLog(BEFORE_EXIT, message, 'Error');
+        client.submitLog(EXIT, message, 'Error');
     }
-    client.config.queue.process();
+    config.exitController.processExit(config);
 });
 Error.stackTraceLimit = Infinity;
 

@@ -37,6 +37,7 @@ import { IModuleCollector } from './services/IModuleCollector';
 import { IRequestInfoCollector } from './services/IRequestInfoCollector';
 import { NodeEnvironmentInfoCollector } from './services/NodeEnvironmentInfoCollector';
 import { NodeErrorParser } from './services/NodeErrorParser';
+import { NodeExitController } from './services/NodeExitController';
 import { NodeRequestInfoCollector } from './services/NodeRequestInfoCollector';
 import { InMemoryStorage } from './storage/InMemoryStorage';
 import { IStorage } from './storage/IStorage';
@@ -50,22 +51,42 @@ import { EventBuilder } from 'EventBuilder';
 import { ExceptionlessClient } from 'ExceptionlessClient';
 import { Utils } from 'Utils';
 
-const BEFORE_EXIT:string = 'BEFORE_EXIT';
-const UNCAUGHT_EXCEPTION:string = 'UNCAUGHT_EXCEPTION';
+const EXIT:string = 'exit';
+const UNCAUGHT_EXCEPTION:string = 'uncaughtException';
 
 var defaults = Configuration.defaults;
 defaults.environmentInfoCollector = new NodeEnvironmentInfoCollector();
 defaults.errorParser = new NodeErrorParser();
+defaults.exitController = new NodeExitController();
 defaults.requestInfoCollector = new NodeRequestInfoCollector();
 defaults.submissionClient = new NodeSubmissionClient();
 
+function getListenerCount(emitter, event):number {
+  if (emitter.listenerCount) {
+    return emitter.listenerCount(event);
+  }
+
+  return require("events").listenerCount(emitter, event);
+}
+
 process.on(UNCAUGHT_EXCEPTION, function (error:Error) {
   ExceptionlessClient.default.submitUnhandledException(error, UNCAUGHT_EXCEPTION);
+
+  /*
+   * Default Node behavior: If this is the only uncaught-listener, we still exit.
+   * Discussion: https://nodejs.org/api/process.html#process_event_uncaughtexception
+   */
+  var uncaughtListenerCount = getListenerCount(process, UNCAUGHT_EXCEPTION);
+  if (uncaughtListenerCount <= 1) {
+    process.exit(1);
+  }
 });
 
-process.on(BEFORE_EXIT, function (code:number) {
+process.on(EXIT, function (code:number) {
   /**
    * exit codes: https://nodejs.org/api/process.html#process_event_exit
+   * From now on, only synchronous code may run. As soon as this method
+   * ends, the application inevitably will exit.
    */
   function  getExitCodeReason(code:number): string {
     if (code === 1) {
@@ -116,12 +137,16 @@ process.on(BEFORE_EXIT, function (code:number) {
   }
 
   var client = ExceptionlessClient.default;
+  var config = client.config;
   var message = getExitCodeReason(code);
+
   if (message !== null) {
-    client.submitLog(BEFORE_EXIT, message, 'Error')
+    client.submitLog(EXIT, message, 'Error')
   }
 
-  client.config.queue.process()
+  config.exitController.processExit(config);
+
+  // Application will now exit.
 });
 
 (<any>Error).stackTraceLimit = Infinity;

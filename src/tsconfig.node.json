@@ -10,6 +10,7 @@
     "exceptionless.node": {
       "files": [
         "typings/node/node.d.ts",
+        "node.fix.d.ts",
         "typings/stack-trace/stack-trace.d.ts",
 
         "exceptionless.node.ts"
@@ -17,6 +18,9 @@
     },
     "submitSync": {
       "files": [
+        "typings/node/node.d.ts",
+        "node.fix.d.ts",
+
         "submitSync.ts"
       ]
     }
