@@ -51,8 +51,10 @@ import { EventBuilder } from './EventBuilder';
 import { ExceptionlessClient } from './ExceptionlessClient';
 import { Utils } from './Utils';
 
-const EXIT:string = 'exit';
-const UNCAUGHT_EXCEPTION:string = 'uncaughtException';
+const EXIT: string = 'exit';
+const UNCAUGHT_EXCEPTION: string = 'uncaughtException';
+const SIGINT: string = 'SIGINT';
+const SIGINT_CODE: number = 2;
 
 var defaults = Configuration.defaults;
 defaults.environmentInfoCollector = new NodeEnvironmentInfoCollector();
@@ -61,34 +63,51 @@ defaults.exitController = new NodeExitController();
 defaults.requestInfoCollector = new NodeRequestInfoCollector();
 defaults.submissionClient = new NodeSubmissionClient();
 
-function getListenerCount(emitter, event):number {
+function getListenerCount(emitter, event:string): number {
   if (emitter.listenerCount) {
     return emitter.listenerCount(event);
   }
-
   return require("events").listenerCount(emitter, event);
 }
 
-process.on(UNCAUGHT_EXCEPTION, function (error:Error) {
-  ExceptionlessClient.default.submitUnhandledException(error, UNCAUGHT_EXCEPTION);
+/*
+ * Adding a event handler for 'uncaughtException' modifies the default
+ * Node behavior, so it won't exit or log to the console. Instead,
+ * we hijack the event emitter and forward the exception to the callback.
+ */
+function onUncaughtException(callback: (error: Error) => void) {
+  var originalEmit = process.emit;
 
-  /*
-   * Default Node behavior: If this is the only uncaught-listener, we still exit.
-   * Discussion: https://nodejs.org/api/process.html#process_event_uncaughtexception
-   */
-  var uncaughtListenerCount = getListenerCount(process, UNCAUGHT_EXCEPTION);
-  if (uncaughtListenerCount <= 1) {
-    process.exit(1);
+  process.emit = function(type: string, error: Error) {
+    if (type === UNCAUGHT_EXCEPTION) {
+      callback(error);
+    }
+
+    return originalEmit.apply(this, arguments);
   }
+}
+
+onUncaughtException(function(error: Error) {
+  ExceptionlessClient.default.submitUnhandledException(error, UNCAUGHT_EXCEPTION);
 });
 
-process.on(EXIT, function (code:number) {
+/*
+ * We cannot hijack SIGINT, so if there are no other handlers,
+ * we just reproduce default Node.js behavior by exiting.
+ */
+process.on(SIGINT, function() {
+  if (getListenerCount(process, SIGINT) <= 1) {
+    process.exit(128 + SIGINT_CODE);
+  }
+})
+
+process.on(EXIT, function(code: number) {
   /**
    * exit codes: https://nodejs.org/api/process.html#process_event_exit
    * From now on, only synchronous code may run. As soon as this method
    * ends, the application inevitably will exit.
    */
-  function  getExitCodeReason(code:number): string {
+  function getExitCodeReason(code: number): string {
     if (code === 1) {
       return 'Uncaught Fatal Exception';
     }
@@ -127,10 +146,6 @@ process.on(EXIT, function (code:number) {
 
     if (code === 12) {
       return 'Invalid Debug Argument';
-    }
-
-    if (code > 128) {
-      return 'Signal Exits';
     }
 
     return null;

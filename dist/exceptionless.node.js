@@ -1504,6 +1504,8 @@ var NodeSubmissionClient = (function (_super) {
 exports.NodeSubmissionClient = NodeSubmissionClient;
 var EXIT = 'exit';
 var UNCAUGHT_EXCEPTION = 'uncaughtException';
+var SIGINT = 'SIGINT';
+var SIGINT_CODE = 2;
 var defaults = Configuration.defaults;
 defaults.environmentInfoCollector = new NodeEnvironmentInfoCollector();
 defaults.errorParser = new NodeErrorParser();
@@ -1516,11 +1518,21 @@ function getListenerCount(emitter, event) {
     }
     return require("events").listenerCount(emitter, event);
 }
-process.on(UNCAUGHT_EXCEPTION, function (error) {
+function onUncaughtException(callback) {
+    var originalEmit = process.emit;
+    process.emit = function (type, error) {
+        if (type === UNCAUGHT_EXCEPTION) {
+            callback(error);
+        }
+        return originalEmit.apply(this, arguments);
+    };
+}
+onUncaughtException(function (error) {
     ExceptionlessClient.default.submitUnhandledException(error, UNCAUGHT_EXCEPTION);
-    var uncaughtListenerCount = getListenerCount(process, UNCAUGHT_EXCEPTION);
-    if (uncaughtListenerCount <= 1) {
-        process.exit(1);
+});
+process.on(SIGINT, function () {
+    if (getListenerCount(process, SIGINT) <= 1) {
+        process.exit(128 + SIGINT_CODE);
     }
 });
 process.on(EXIT, function (code) {
@@ -1554,9 +1566,6 @@ process.on(EXIT, function (code) {
         }
         if (code === 12) {
             return 'Invalid Debug Argument';
-        }
-        if (code > 128) {
-            return 'Signal Exits';
         }
         return null;
     }
