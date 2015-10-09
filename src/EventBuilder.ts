@@ -4,7 +4,7 @@ import { IEvent } from './models/IEvent';
 import { IUserInfo } from './models/IUserInfo';
 import { ContextData } from './plugins/ContextData';
 import { EventPluginContext } from './plugins/EventPluginContext';
-import { Utils } from 'Utils';
+import { Utils } from './Utils';
 
 export class EventBuilder {
   private _validIdentifierErrorMessage:string = "must contain between 8 and 100 alphanumeric or '-' characters."; // optimization for minifier.

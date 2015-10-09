@@ -1,10 +1,10 @@
 import { Configuration } from '../configuration/Configuration';
 import { IEvent } from '../models/IEvent';
 import { IUserDescription } from '../models/IUserDescription';
-import { ISubmissionClient } from 'ISubmissionClient';
-import { DefaultSubmissionClient } from 'DefaultSubmissionClient';
-import { SettingsResponse } from 'SettingsResponse';
-import { SubmissionResponse } from 'SubmissionResponse';
+import { ISubmissionClient } from './ISubmissionClient';
+import { DefaultSubmissionClient } from './DefaultSubmissionClient';
+import { SettingsResponse } from './SettingsResponse';
+import { SubmissionResponse } from './SubmissionResponse';
 
 describe('DefaultSubmissionClient', () => {
   it('should submit events', (done) => {

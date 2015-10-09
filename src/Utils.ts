@@ -1,4 +1,4 @@
-import { IStackFrame } from 'models/IStackFrame';
+import { IStackFrame } from './models/IStackFrame';
 
 export class Utils {
   public static addRange<T>(target:T[], ...values:T[]) {

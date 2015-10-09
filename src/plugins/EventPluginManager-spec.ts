@@ -1,8 +1,8 @@
 import { Configuration } from '../configuration/Configuration';
-import { ContextData } from 'ContextData';
+import { ContextData } from './ContextData';
 import { ExceptionlessClient } from '../ExceptionlessClient';
-import { EventPluginManager } from 'EventPluginManager';
-import { EventPluginContext } from 'EventPluginContext';
+import { EventPluginManager } from './EventPluginManager';
+import { EventPluginContext } from './EventPluginContext';
 
 describe('EventPluginManager', () => {
   it('should add items to the event.', (done) => {

@@ -1,6 +1,6 @@
 import { IError } from '../models/IError';
 import { IParameter } from '../models/IParameter';
-import { IErrorParser } from 'IErrorParser';
+import { IErrorParser } from './IErrorParser';
 import { IStackFrame } from '../models/IStackFrame';
 import { EventPluginContext } from '../plugins/EventPluginContext';
 

@@ -47,9 +47,9 @@ import { ISubmissionClient } from './submission/ISubmissionClient';
 import { NodeSubmissionClient } from './submission/NodeSubmissionClient';
 import { SettingsResponse } from './submission/SettingsResponse';
 import { SubmissionResponse } from './submission/SubmissionResponse';
-import { EventBuilder } from 'EventBuilder';
-import { ExceptionlessClient } from 'ExceptionlessClient';
-import { Utils } from 'Utils';
+import { EventBuilder } from './EventBuilder';
+import { ExceptionlessClient } from './ExceptionlessClient';
+import { Utils } from './Utils';
 
 const EXIT:string = 'exit';
 const UNCAUGHT_EXCEPTION:string = 'uncaughtException';

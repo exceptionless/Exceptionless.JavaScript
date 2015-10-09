@@ -1,5 +1,5 @@
 import { IEvent } from './models/IEvent';
-import { Utils } from 'Utils';
+import { Utils } from './Utils';
 
 describe('Utils', () => {
   it('should add range', () => {
