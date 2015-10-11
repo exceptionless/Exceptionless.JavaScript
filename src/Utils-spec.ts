@@ -23,7 +23,7 @@ describe('Utils', () => {
     expect(Utils.stringify([{one: afoo, two: afoo}])).toBe('[{"one":{"a":"foo"}}]');
   });
 
-  it('should exclude properties', () => {
+  describe('stringify', () => {
     var user:any = {
       id:1,
       name: 'Blake',
@@ -37,11 +37,27 @@ describe('Utils', () => {
       }
     };
 
-    expect(Utils.stringify(user)).toBe(JSON.stringify(user));
-    expect(Utils.stringify(user, ['pAssword'])).toBe('{"id":1,"name":"Blake","passwordResetToken":"a reset token","myPasswordValue":"123456","myPassword":"123456","customValue":"Password","value":{}}');
-    expect(Utils.stringify(user, ['*password'])).toBe('{"id":1,"name":"Blake","myPasswordValue":"123456","myPassword":"123456","customValue":"Password","value":{}}');
-    expect(Utils.stringify(user, ['password*'])).toBe('{"id":1,"name":"Blake","passwordResetToken":"a reset token","myPasswordValue":"123456","customValue":"Password","value":{}}');
-    expect(Utils.stringify(user, ['*password*'])).toBe('{"id":1,"name":"Blake","customValue":"Password","value":{}}');
+    it('should behave like JSON.stringify', () => {
+      expect(Utils.stringify(user)).toBe(JSON.stringify(user));
+    });
+
+    describe('with exclude pattern', () => {
+      it('pAssword', () => {
+        expect(Utils.stringify(user, ['pAssword'])).toBe('{"id":1,"name":"Blake","passwordResetToken":"a reset token","myPasswordValue":"123456","myPassword":"123456","customValue":"Password","value":{}}');
+      });
+
+      it('*password', () => {
+        expect(Utils.stringify(user, ['*password'])).toBe('{"id":1,"name":"Blake","passwordResetToken":"a reset token","myPasswordValue":"123456","customValue":"Password","value":{}}');
+      });
+
+      it('password*', () => {
+        expect(Utils.stringify(user, ['password*'])).toBe('{"id":1,"name":"Blake","myPasswordValue":"123456","myPassword":"123456","customValue":"Password","value":{}}');
+      });
+
+      it('*password*', () => {
+        expect(Utils.stringify(user, ['*password*'])).toBe('{"id":1,"name":"Blake","customValue":"Password","value":{}}');
+      });
+    });
   });
 
   it('should stringify array', () => {

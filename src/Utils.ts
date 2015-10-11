@@ -133,15 +133,14 @@ export class Utils {
         pattern = pattern.substring(0, pattern.length - 1);
       }
 
-
       if (startsWithWildcard && endsWithWildcard)
         return value.indexOf(pattern) !== -1;
 
       if (startsWithWildcard)
-        return value.lastIndexOf(pattern, 0) !== -1;
+        return value.lastIndexOf(pattern) === (value.length - pattern.length);
 
       if (endsWithWildcard)
-        return value.lastIndexOf(pattern) === (value.length - pattern.length);
+        return value.indexOf(pattern) === 0;
 
       return value === pattern;
     }
