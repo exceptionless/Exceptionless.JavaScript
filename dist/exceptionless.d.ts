@@ -31,10 +31,6 @@ export interface IEnvironmentInfoCollector {
 export interface IErrorParser {
     parse(context: EventPluginContext, exception: Error): IError;
 }
-export interface IExitController {
-    isApplicationExiting: boolean;
-    processExit(config: Configuration): void;
-}
 export interface IModuleCollector {
     getModules(context: EventPluginContext): IModule[];
 }
@@ -46,6 +42,9 @@ export interface IStorage<T> {
     get(path: string): T;
     getList(searchPattern?: string, limit?: number): IStorageItem<T>[];
     remove(path: string): void;
+}
+export interface ISubmissionAdapter {
+    sendRequest(request: SubmissionRequest, callback: SubmissionCallback): void;
 }
 export interface ISubmissionClient {
     postEvents(events: IEvent[], config: Configuration, callback: (response: SubmissionResponse) => void): void;
@@ -63,9 +62,9 @@ export interface IConfigurationSettings {
     requestInfoCollector?: IRequestInfoCollector;
     submissionBatchSize?: number;
     submissionClient?: ISubmissionClient;
+    submissionAdapter?: ISubmissionAdapter;
     storage?: IStorage<any>;
     queue?: IEventQueue;
-    exitController?: IExitController;
 }
 export declare class SettingsManager {
     private static _configPath;
@@ -138,10 +137,6 @@ export declare class DefaultEventQueue implements IEventQueue {
     private isQueueProcessingSuspended();
     private areQueuedItemsDiscarded();
 }
-export declare class DefaultExitController implements IExitController {
-    isApplicationExiting: boolean;
-    processExit(config: Configuration): void;
-}
 export declare class InMemoryStorage<T> implements IStorage<T> {
     private _items;
     private _maxItems;
@@ -150,6 +145,14 @@ export declare class InMemoryStorage<T> implements IStorage<T> {
     get(path: string): T;
     getList(searchPattern?: string, limit?: number): IStorageItem<T>[];
     remove(path: string): void;
+}
+export declare class DefaultSubmissionClient implements ISubmissionClient {
+    configurationVersionHeader: string;
+    postEvents(events: IEvent[], config: Configuration, callback: (response: SubmissionResponse) => void): void;
+    postUserDescription(referenceId: string, description: IUserDescription, config: Configuration, callback: (response: SubmissionResponse) => void): void;
+    getSettings(config: Configuration, callback: (response: SettingsResponse) => void): void;
+    private createRequest(config, method, path, data?);
+    private createSubmissionCallback(config, callback);
 }
 export declare class Utils {
     static addRange<T>(target: T[], ...values: T[]): T[];
@@ -173,11 +176,11 @@ export declare class Configuration implements IConfigurationSettings {
     moduleCollector: IModuleCollector;
     requestInfoCollector: IRequestInfoCollector;
     submissionBatchSize: number;
+    submissionAdapter: ISubmissionAdapter;
     submissionClient: ISubmissionClient;
     settings: Object;
     storage: IStorage<Object>;
     queue: IEventQueue;
-    exitController: IExitController;
     constructor(configSettings?: IConfigurationSettings);
     private _apiKey;
     apiKey: string;
@@ -392,6 +395,17 @@ export interface IStorageItem<T> {
     path: string;
     value: T;
 }
+export interface SubmissionCallback {
+    (status: number, message: string, data?: string, headers?: Object): void;
+}
+export interface SubmissionRequest {
+    serverUrl: string;
+    apiKey: string;
+    userAgent: string;
+    method: string;
+    path: string;
+    data: string;
+}
 export declare class SettingsResponse {
     success: boolean;
     settings: any;
@@ -413,10 +427,6 @@ export declare class DefaultModuleCollector implements IModuleCollector {
 export declare class DefaultRequestInfoCollector implements IRequestInfoCollector {
     getRequestInfo(context: EventPluginContext): IRequestInfo;
 }
-export declare class DefaultSubmissionClient implements ISubmissionClient {
-    configurationVersionHeader: string;
-    postEvents(events: IEvent[], config: Configuration, callback: (response: SubmissionResponse) => void): void;
-    postUserDescription(referenceId: string, description: IUserDescription, config: Configuration, callback: (response: SubmissionResponse) => void): void;
-    getSettings(config: Configuration, callback: (response: SettingsResponse) => void): void;
-    sendRequest(config: Configuration, method: string, path: string, data: string, callback: (status: number, message: string, data?: string, headers?: Object) => void): void;
+export declare class DefaultSubmissionAdapter implements ISubmissionAdapter {
+    sendRequest(request: SubmissionRequest, callback: SubmissionCallback): void;
 }

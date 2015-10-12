@@ -41,7 +41,7 @@ import { DefaultRequestInfoCollector } from './services/DefaultRequestInfoCollec
 import { InMemoryStorage } from './storage/InMemoryStorage';
 import { IStorage } from './storage/IStorage';
 import { IStorageItem } from './storage/IStorageItem';
-import { DefaultSubmissionClient } from './submission/DefaultSubmissionClient';
+import { DefaultSubmissionAdapter } from './submission/DefaultSubmissionAdapter';
 import { ISubmissionClient } from './submission/ISubmissionClient';
 import { SettingsResponse } from './submission/SettingsResponse';
 import { SubmissionResponse } from './submission/SubmissionResponse';
@@ -93,7 +93,7 @@ if (settings && (settings.apiKey || settings.serverUrl)) {
 defaults.errorParser = new DefaultErrorParser();
 defaults.moduleCollector = new DefaultModuleCollector();
 defaults.requestInfoCollector = new DefaultRequestInfoCollector();
-defaults.submissionClient = new DefaultSubmissionClient();
+defaults.submissionAdapter = new DefaultSubmissionAdapter();
 
 TraceKit.report.subscribe(processUnhandledException);
 TraceKit.extendToAsynchronousCallbacks();

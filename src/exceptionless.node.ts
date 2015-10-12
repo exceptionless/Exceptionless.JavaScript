@@ -37,14 +37,11 @@ import { IModuleCollector } from './services/IModuleCollector';
 import { IRequestInfoCollector } from './services/IRequestInfoCollector';
 import { NodeEnvironmentInfoCollector } from './services/NodeEnvironmentInfoCollector';
 import { NodeErrorParser } from './services/NodeErrorParser';
-import { NodeExitController } from './services/NodeExitController';
 import { NodeRequestInfoCollector } from './services/NodeRequestInfoCollector';
 import { InMemoryStorage } from './storage/InMemoryStorage';
 import { IStorage } from './storage/IStorage';
 import { IStorageItem } from './storage/IStorageItem';
-import { DefaultSubmissionClient } from './submission/DefaultSubmissionClient';
-import { ISubmissionClient } from './submission/ISubmissionClient';
-import { NodeSubmissionClient } from './submission/NodeSubmissionClient';
+import { NodeSubmissionAdapter } from './submission/NodeSubmissionAdapter';
 import { SettingsResponse } from './submission/SettingsResponse';
 import { SubmissionResponse } from './submission/SubmissionResponse';
 import { EventBuilder } from './EventBuilder';
@@ -59,9 +56,8 @@ const SIGINT_CODE: number = 2;
 var defaults = Configuration.defaults;
 defaults.environmentInfoCollector = new NodeEnvironmentInfoCollector();
 defaults.errorParser = new NodeErrorParser();
-defaults.exitController = new NodeExitController();
 defaults.requestInfoCollector = new NodeRequestInfoCollector();
-defaults.submissionClient = new NodeSubmissionClient();
+defaults.submissionAdapter = new NodeSubmissionAdapter();
 
 function getListenerCount(emitter, event:string): number {
   if (emitter.listenerCount) {
@@ -158,8 +154,6 @@ process.on(EXIT, function(code: number) {
   if (message !== null) {
     client.submitLog(EXIT, message, 'Error')
   }
-
-  config.exitController.processExit(config);
 
   // Application will now exit.
 });

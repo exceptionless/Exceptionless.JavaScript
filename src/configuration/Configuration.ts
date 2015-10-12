@@ -14,13 +14,13 @@ import { IEventQueue } from '../queue/IEventQueue';
 import { DefaultEventQueue } from '../queue/DefaultEventQueue';
 import { IEnvironmentInfoCollector } from '../services/IEnvironmentInfoCollector';
 import { IErrorParser } from '../services/IErrorParser';
-import { IExitController } from '../services/IExitController';
 import { IModuleCollector } from '../services/IModuleCollector';
 import { IRequestInfoCollector } from '../services/IRequestInfoCollector';
-import { DefaultExitController } from '../services/DefaultExitController';
 import { IStorage } from '../storage/IStorage';
 import { InMemoryStorage } from '../storage/InMemoryStorage';
+import { ISubmissionAdapter } from '../submission/ISubmissionAdapter';
 import { ISubmissionClient } from '../submission/ISubmissionClient';
+import { DefaultSubmissionClient } from '../submission/DefaultSubmissionClient';
 import { Utils } from '../Utils';
 
 export class Configuration implements IConfigurationSettings {
@@ -59,6 +59,7 @@ export class Configuration implements IConfigurationSettings {
    * Maximum number of events that should be sent to the server together in a batch. (Defaults to 50)
    */
   public submissionBatchSize:number;
+  public submissionAdapter:ISubmissionAdapter;
   public submissionClient:ISubmissionClient;
 
   /**
@@ -70,8 +71,6 @@ export class Configuration implements IConfigurationSettings {
   public storage:IStorage<Object>;
 
   public queue:IEventQueue;
-
-  public exitController:IExitController;
 
   constructor(configSettings?:IConfigurationSettings) {
     function inject(fn:any) {
@@ -90,10 +89,10 @@ export class Configuration implements IConfigurationSettings {
     this.moduleCollector = inject(configSettings.moduleCollector);
     this.requestInfoCollector = inject(configSettings.requestInfoCollector);
     this.submissionBatchSize = inject(configSettings.submissionBatchSize) || 50;
-    this.submissionClient = inject(configSettings.submissionClient);
+    this.submissionAdapter = inject(configSettings.submissionAdapter);
+    this.submissionClient = inject(configSettings.submissionClient) || new DefaultSubmissionClient();
     this.storage = inject(configSettings.storage) || new InMemoryStorage<any>();
     this.queue = inject(configSettings.queue) || new DefaultEventQueue(this);
-    this.exitController = inject(configSettings.exitController) || new DefaultExitController();
 
     SettingsManager.applySavedServerSettings(this);
     EventPluginManager.addDefaultPlugins(this);

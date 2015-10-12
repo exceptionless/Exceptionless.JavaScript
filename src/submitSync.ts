@@ -1,4 +1,5 @@
-import { NodeSubmissionRequest, submitRequest } from './submission/NodeSubmissionRequest';
+import { NodeSubmissionAdapter } from './submission/NodeSubmissionAdapter';
+import { SubmissionRequest } from './submission/SubmissionRequest';;
 
 import * as stream from 'stream';
 import { StringDecoder } from 'string_decoder';
@@ -14,9 +15,9 @@ jsonStream._write = (chunk: Buffer|string, encoding: string, next: Function) => 
 
 jsonStream.on("finish", () => {
   var json = strings.join("");
-  var request:NodeSubmissionRequest = JSON.parse(json);
-
-  submitRequest(request, (status, message, data, headers) => {
+  var request:SubmissionRequest = JSON.parse(json);
+  var adapter = new NodeSubmissionAdapter();
+  adapter.sendRequest(request, (status, message, data, headers) => {
     var result = {
       status,
       message,
