@@ -1,103 +1,142 @@
 # Exceptionless.JavaScript
-[![Build status](https://ci.appveyor.com/api/projects/status/ahu7u4tvls56wqqu?svg=true)](https://ci.appveyor.com/project/Exceptionless/exceptionless-javascript) [![Gitter](https://badges.gitter.im/Join Chat.svg)](https://gitter.im/exceptionless/Discuss)
+[![Build status](https://img.shields.io/appveyor/ci/Exceptionless/exceptionless-javascript.svg)](https://ci.appveyor.com/project/Exceptionless/exceptionless-javascript) [![Gitter](https://img.shields.io/badge/gitter-join_chat-brightgreen.svg)](https://gitter.im/exceptionless/Discuss) [![NPM version](https://img.shields.io/npm/v/exceptionless.svg)](https://www.npmjs.org/package/then-request)
 
-Exceptionless JavaScript/Node client
+
+The definition of the word exceptionless is: to be without exception. Exceptionless.js provides real-time error reporting for your JavaScript applications in the browser or in Node.js. It organizes the gathered information into simple actionable data that will help your app become exceptionless!
+
+## Show me the code! ##
+
+```html
+<script src="https://cdn.rawgit.com/exceptionless/Exceptionless.JavaScript/v1.0.1/dist/exceptionless.min.js"></script>
+<script>
+  var client = exceptionless.ExceptionlessClient.default;
+  client.config.apiKey = 'API_KEY_HERE';
+
+  try {
+    throw new Error('test');
+  } catch (error) {
+    client.submitException(error);
+  }
+</script>
+```
+
+```javascript
+var client = require('exceptionless').ExceptionlessClient.default;
+client.config.apiKey = 'API_KEY_HERE';
+
+try {
+  throw new Error('test');
+} catch (error) {
+  client.submitException(error);
+}
+
+```
 
 ## Using Exceptionless
 
-### Installing
+### Installation
 
-Please follow the instructions below for installing the exceptionless JavaScript client.
+You can install Exceptionless.js either in your browser application using Bower or a `script` tag, or you can use the Node Package Manager (npm) to install the Node.js package.
 
-#### JavaScript
-Use one of the below methods to install exceptionless into your web app.
-##### Bower
-1. Install the package by running `bower install exceptionless` or skip this step and use the scripts hosted on our CDN.
-2. Add the script to your html page. We recommend placing this as the very first script.
-```html
-<script src="bower_components/exceptionless/dist/exceptionless.min.js"></script>
-```
+#### Browser application
+Use one of the following methods to install Exceptionless.js into your browser application:
 
-##### CDN
-1. Add the following script to your page.
-```html
-<script src="https://cdn.rawgit.com/exceptionless/Exceptionless.JavaScript/v1.0.1/dist/exceptionless.min.js"></script>
-```
+- **CDN:**
 
-#### Node.js
-Use this method to install exceptionless into your node app.
-1. Install the package by running `npm install exceptionless --save-dev`.
-2. Add the exceptionless client to your app:
-```javascript
-var client = require('exceptionless.node').ExceptionlessClient.default;
-```
-
-### Configuring the client.
-You can configure the exceptionless client a few different ways. The section below will cover the different ways you can configure the ExceptionlessClient. _NOTE: The only required setting that you need to configure is the clients `apiKey`._
-
-#### JavaScript
-1. You can configure the `apiKey` as part of the script tag. This will be applied to all new instances of the ExceptionlessClient
+  Add the following script to your page:
 
   ```html
-<script src="bower_components/exceptionless/dist/exceptionless.min.js?apiKey=API_KEY_HERE"></script>
-```
+  <script src="https://cdn.rawgit.com/exceptionless/Exceptionless.JavaScript/v1.0.1/dist/exceptionless.min.js"></script>
+  ```
 
-2. You can set the `apiKey` on the default ExceptionlessClient instance.
+- **Bower:**
 
-  ```javascript
-exceptionless.ExceptionlessClient.default.config.apiKey = 'API_KEY_HERE';
-```
+  1. Install the package by running `bower install exceptionless`.
+  2. Add the script to your HTML page:
 
-3. You can create a new instance of the ExceptionlessClient and specify the `apiKey`, `serverUrl` or [configuration object](https://github.com/exceptionless/Exceptionless.JavaScript/blob/master/src/configuration/IConfigurationSettings.ts).
+    ```html
+    <script src="bower_components/exceptionless/dist/exceptionless.min.js"></script>
+    ```
 
-  ```javascript
-var client = new exceptionless.ExceptionlessClient('API_KEY_HERE');
-// or with a api key and server url.
-var client = new exceptionless.ExceptionlessClient('API_KEY_HERE', 'http://localhost:50000');
-// or with a configuration object
-var client = new exceptionless.ExceptionlessClient({
-  apiKey: 'API_KEY_HERE',
-  serverUrl: 'http://localhost:50000',
-  submissionBatchSize: 100
-});
-```
+In either case, we recommend placing the `script` tag at the very beginning of your page.
 
 #### Node.js
-1. You can set the `apiKey` on the default ExceptionlessClient instance.
+Use this method to install Exceptionless.js into your Node application:
+
+1. Install the package by running `npm install exceptionless --save`.
+2. Require the Exceptionless.js module in your application:
 
   ```javascript
-var client = require('exceptionless.node').ExceptionlessClient.default;
-client.config.apiKey = 'API_KEY_HERE';
-```
+  var client = require('exceptionless').ExceptionlessClient.default;
+  ```
 
-2. You can create a new instance of the ExceptionlessClient and specify the `apiKey`, `serverUrl` or [configuration object](https://github.com/exceptionless/Exceptionless.JavaScript/blob/master/src/configuration/IConfigurationSettings.ts).
+### Configuring the client
+In order to use Exceptionless.js, the `apiKey` setting has to be configured first.
+You can configure the `ExceptionlessClient` class using one of the following ways:
+
+#### Browser application
+- You can configure the `apiKey` as part of the script tag. This will be applied to all new instances of the `ExceptionlessClient` class:
+
+  ```html
+  <script src="bower_components/exceptionless/dist/exceptionless.min.js?apiKey=API_KEY_HERE"></script>
+  ```
+
+- You can set the `apiKey` on the default `ExceptionlessClient` instance:
 
   ```javascript
-var exceptionless = require('exceptionless.node');
+  exceptionless.ExceptionlessClient.default.config.apiKey = 'API_KEY_HERE';
+  ```
 
-var client = new exceptionless.ExceptionlessClient('API_KEY_HERE');
-// or with a api key and server url.
-var client = new exceptionless.ExceptionlessClient('API_KEY_HERE', 'http://localhost:50000');
-// or with a configuration object
-var client = new exceptionless.ExceptionlessClient({
-  apiKey: 'API_KEY_HERE',
-  serverUrl: 'http://localhost:50000',
-  submissionBatchSize: 100
-});
-```
+- You can create a new instance of the `ExceptionlessClient` class and specify the `apiKey`, `serverUrl` or [configuration object](https://github.com/exceptionless/Exceptionless.JavaScript/blob/master/src/configuration/IConfigurationSettings.ts):
 
-### Sending Events
-Once configured, Exceptionless will automatically send any unhandled exceptions that happen in your application. The sections below will show you how to send us different event types as well as customize the data that is sent in.
+  ```javascript
+  var client = new exceptionless.ExceptionlessClient('API_KEY_HERE');
+  // or with an api key and server url
+  var client = new exceptionless.ExceptionlessClient('API_KEY_HERE', 'http://localhost:50000');
+  // or with a configuration object
+  var client = new exceptionless.ExceptionlessClient({
+    apiKey: 'API_KEY_HERE',
+    serverUrl: 'http://localhost:50000',
+    submissionBatchSize: 100
+  });
+  ```
 
-####Sending Events
+#### Node.js
+- You can set the `apiKey` on the default `ExceptionlessClient` instance:
 
-You may also want to send us log messages, feature usages or other kinds of events. You can do this very easily with our fluent api.
+  ```javascript
+  var client = require('exceptionless').ExceptionlessClient.default;
+  client.config.apiKey = 'API_KEY_HERE';
+  ```
+
+- You can create a new instance of the `ExceptionlessClient` class and specify the `apiKey`, `serverUrl` or [configuration object](https://github.com/exceptionless/Exceptionless.JavaScript/blob/master/src/configuration/IConfigurationSettings.ts):
+
+  ```javascript
+  var exceptionless = require('exceptionless');
+
+  var client = new exceptionless.ExceptionlessClient('API_KEY_HERE');
+  // or with an api key and server url
+  var client = new exceptionless.ExceptionlessClient('API_KEY_HERE', 'http://localhost:50000');
+  // or with a configuration object
+  var client = new exceptionless.ExceptionlessClient({
+    apiKey: 'API_KEY_HERE',
+    serverUrl: 'http://localhost:50000',
+    submissionBatchSize: 100
+  });
+  ```
+
+### Submitting Events and Errors
+Once configured, Exceptionless.js will automatically submit any unhandled exceptions that happen in your application to the Exceptionless server. The following sections will show you how to manually submit different event types as well as customize the data that is sent:
+
+####Submitting Events
+
+You may also want to submit log messages, feature usage data or other kinds of events. You can do this very easily with the fluent API:
 
 ```javascript
-// javascript
+// Browser
 var client = exceptionless.ExceptionlessClient.default;
-// Node.Js
-// var client = require('exceptionless.node').ExceptionlessClient.default;
+// Node.js
+// var client = require('exceptionless').ExceptionlessClient.default;
 
 client.submitLog('Logging made easy');
 
@@ -117,15 +156,15 @@ client.createNotFound('/somepage').addTags('Exceptionless').submit();
 // Submit a custom event type
 client.submitEvent({ message = 'Low Fuel', type = 'racecar', source = 'Fuel System' });
 ```
-####Manually Sending Errors
+####Manually submitting Errors
 
 In addition to automatically sending all unhandled exceptions, you may want to manually send exceptions to the service. You can do so by using code like this:
 
 ```javascript
-// javascript
+// Browser
 var client = exceptionless.ExceptionlessClient.default;
-// Node.Js
-// var client = require('exceptionless.node').ExceptionlessClient.default;
+// Node.js
+// var client = require('exceptionless').ExceptionlessClient.default;
 
 try {
   throw new Error('test');
@@ -136,12 +175,13 @@ try {
 
 ####Sending Additional Information
 
-You can easily include additional information in your error reports using our fluent [event builder API](https://github.com/exceptionless/Exceptionless.JavaScript/blob/master/src/EventBuilder.ts).
+You can easily include additional information in your error reports using the fluent [event builder API](https://github.com/exceptionless/Exceptionless.JavaScript/blob/master/src/EventBuilder.ts).
+
 ```javascript
-// javascript
+// Browser
 var client = exceptionless.ExceptionlessClient.default;
-// Node.Js
-// var client = require('exceptionless.node').ExceptionlessClient.default;
+// Node.js
+// var client = require('exceptionless').ExceptionlessClient.default;
 
 try {
   throw new Error('Unable to create order from quote.');
@@ -169,40 +209,57 @@ try {
 
 ## Self hosted options
 
-The Exceptionless client can also be configured to send data to your self hosted instance. This is configured by setting the serverUrl setting to point to your Exceptionless instance.
+The Exceptionless client can also be configured to send data to your self hosted instance. This is configured by setting the `serverUrl` setting to point to your Exceptionless instance:
 
-#### JavaScript
-You can set the `serverUrl` on the default ExceptionlessClient instance.
+#### Browser
+You can set the `serverUrl` on the default `ExceptionlessClient` instance:
+
 ```javascript
 exceptionless.ExceptionlessClient.default.config.serverUrl = 'http://localhost:50000';
 ```
 
 #### Node.js
-You can set the `serverUrl` on the default ExceptionlessClient instance.
+You can set the `serverUrl` on the default `ExceptionlessClient` instance:
+
 ```javascript
 var client = require('exceptionless.node').ExceptionlessClient.default;
 client.config.serverUrl = 'http://localhost:50000';
 ```
 
-## Getting Started (Development)
+## Support
 
-The JavaScript client can be installed via [bower](http://bower.io/search/?q=exceptionless), [npm](https://www.npmjs.com/package/exceptionless) or CDN. If you need help, please contact us via in-app support or [open an issue](https://github.com/exceptionless/Exceptionless.JavaScript/issues/new). We’re always here to help if you have any questions!
+If you need help, please contact us via in-app support, [open an issue](https://github.com/exceptionless/Exceptionless.JavaScript/issues/new) or [join our chat on gitter](https://gitter.im/exceptionless/Discuss). We’re always here to help if you have any questions!
 
-**This section is for development purposes only! If you are trying to use the Exceptionless JavaScript libraries, please get them from bower, npm or the CDN.**
+## Contributing
 
-1. You will need to clone this repo.
-2. Install [Node.js](https://nodejs.org). _We only use node for our build and test processes._
+If you find a bug or want to contribute a feature, feel free to create a pull request.
+
+1. Clone this repository:
+
+  ```sh
+  git clone https://github.com/exceptionless/Exceptionless.JavaScript.git
+  ```
+
+2. Install [Node.js](https://nodejs.org). Node is used for building and testing purposes.
+
 3. Install [tsd](https://github.com/DefinitelyTyped/tsd) and [gulp](http://gulpjs.com) and the development dependencies using [npm](https://www.npmjs.com).
-```javascript
-npm install -g tsd
-npm install -g gulp
-npm install
-```
+
+  ```sh
+  npm install -g tsd
+  npm install -g gulp
+  npm install
+  ```
+
 4. Build the project by running the following gulp command.
-```javascript
-gulp build
-```
+
+  ```sh
+  gulp build
+  ```
+
 5. Test the project by running the following gulp command.
-```javascript
-gulp test
-```
+
+  ```sh
+  gulp test
+  ```
+
+During development, you can use relative paths to require Exceptionless, e.g. `require('./dist/exceptionless.node.js')` when you are running Node.js from the git root directory.
