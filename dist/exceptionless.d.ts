@@ -22,7 +22,7 @@ export interface ILog {
 }
 export interface IEventQueue {
     enqueue(event: IEvent): void;
-    process(): void;
+    process(isAppExiting?: boolean): void;
     suspendProcessing(durationInMinutes?: number, discardFutureQueuedItems?: boolean, clearQueue?: boolean): void;
 }
 export interface IEnvironmentInfoCollector {
@@ -44,10 +44,10 @@ export interface IStorage<T> {
     remove(path: string): void;
 }
 export interface ISubmissionAdapter {
-    sendRequest(request: SubmissionRequest, callback: SubmissionCallback): void;
+    sendRequest(request: SubmissionRequest, callback: SubmissionCallback, isAppExiting?: boolean): void;
 }
 export interface ISubmissionClient {
-    postEvents(events: IEvent[], config: Configuration, callback: (response: SubmissionResponse) => void): void;
+    postEvents(events: IEvent[], config: Configuration, callback: (response: SubmissionResponse) => void, isAppExiting?: boolean): void;
     postUserDescription(referenceId: string, description: IUserDescription, config: Configuration, callback: (response: SubmissionResponse) => void): void;
     getSettings(config: Configuration, callback: (response: SettingsResponse) => void): void;
 }
@@ -128,7 +128,7 @@ export declare class DefaultEventQueue implements IEventQueue {
     private _queueTimer;
     constructor(config: Configuration);
     enqueue(event: IEvent): void;
-    process(): void;
+    process(isAppExiting?: boolean): void;
     private processSubmissionResponse(response, events);
     private ensureQueueTimer();
     private onProcessQueue();
@@ -148,7 +148,7 @@ export declare class InMemoryStorage<T> implements IStorage<T> {
 }
 export declare class DefaultSubmissionClient implements ISubmissionClient {
     configurationVersionHeader: string;
-    postEvents(events: IEvent[], config: Configuration, callback: (response: SubmissionResponse) => void): void;
+    postEvents(events: IEvent[], config: Configuration, callback: (response: SubmissionResponse) => void, isAppExiting?: boolean): void;
     postUserDescription(referenceId: string, description: IUserDescription, config: Configuration, callback: (response: SubmissionResponse) => void): void;
     getSettings(config: Configuration, callback: (response: SettingsResponse) => void): void;
     private createRequest(config, method, path, data?);
@@ -428,5 +428,5 @@ export declare class DefaultRequestInfoCollector implements IRequestInfoCollecto
     getRequestInfo(context: EventPluginContext): IRequestInfo;
 }
 export declare class DefaultSubmissionAdapter implements ISubmissionAdapter {
-    sendRequest(request: SubmissionRequest, callback: SubmissionCallback): void;
+    sendRequest(request: SubmissionRequest, callback: SubmissionCallback, isAppExiting?: boolean): void;
 }

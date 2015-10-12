@@ -6,8 +6,12 @@ var url = require('url');
 var NodeSubmissionAdapter = (function () {
     function NodeSubmissionAdapter() {
     }
-    NodeSubmissionAdapter.prototype.sendRequest = function (request, callback) {
+    NodeSubmissionAdapter.prototype.sendRequest = function (request, callback, isAppExiting) {
         var _this = this;
+        if (isAppExiting) {
+            this.sendRequestSync(request, callback);
+            return;
+        }
         var parsedHost = url.parse(request.serverUrl);
         var options = {
             auth: "client:" + request.apiKey,

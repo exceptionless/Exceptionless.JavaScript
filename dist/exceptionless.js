@@ -1370,7 +1370,7 @@ var DefaultEventQueue = (function () {
         config.log.info("Enqueuing event: " + key + " type=" + event.type + " " + (!!event.reference_id ? 'refid=' + event.reference_id : ''));
         config.storage.save(key, event);
     };
-    DefaultEventQueue.prototype.process = function () {
+    DefaultEventQueue.prototype.process = function (isAppExiting) {
         var _this = this;
         function getEvents(events) {
             var items = [];
@@ -1407,7 +1407,7 @@ var DefaultEventQueue = (function () {
                 _this.processSubmissionResponse(response, events);
                 log.info('Finished processing queue.');
                 _this._processingQueue = false;
-            });
+            }, isAppExiting);
         }
         catch (ex) {
             log.error("Error processing queue: " + ex);
@@ -1553,11 +1553,11 @@ var DefaultSubmissionClient = (function () {
     function DefaultSubmissionClient() {
         this.configurationVersionHeader = 'x-exceptionless-configversion';
     }
-    DefaultSubmissionClient.prototype.postEvents = function (events, config, callback) {
+    DefaultSubmissionClient.prototype.postEvents = function (events, config, callback, isAppExiting) {
         var data = Utils.stringify(events, config.dataExclusions);
         var request = this.createRequest(config, 'POST', '/api/v2/events', data);
         var cb = this.createSubmissionCallback(config, callback);
-        return config.submissionAdapter.sendRequest(request, cb);
+        return config.submissionAdapter.sendRequest(request, cb, isAppExiting);
     };
     DefaultSubmissionClient.prototype.postUserDescription = function (referenceId, description, config, callback) {
         var path = "/api/v2/events/by-ref/" + encodeURIComponent(referenceId) + "/user-description";
@@ -2478,7 +2478,7 @@ exports.DefaultRequestInfoCollector = DefaultRequestInfoCollector;
 var DefaultSubmissionAdapter = (function () {
     function DefaultSubmissionAdapter() {
     }
-    DefaultSubmissionAdapter.prototype.sendRequest = function (request, callback) {
+    DefaultSubmissionAdapter.prototype.sendRequest = function (request, callback, isAppExiting) {
         var TIMEOUT = 'timeout';
         var LOADED = 'loaded';
         var WITH_CREDENTIALS = 'withCredentials';

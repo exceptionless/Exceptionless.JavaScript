@@ -8,7 +8,12 @@ import url = require('url');
 import child = require('child_process');
 
 export class NodeSubmissionAdapter implements ISubmissionAdapter {
-  public sendRequest(request: SubmissionRequest, callback: SubmissionCallback) {
+  public sendRequest(request:SubmissionRequest, callback:SubmissionCallback, isAppExiting?:boolean) {
+    if (isAppExiting) {
+      this.sendRequestSync(request, callback);
+      return;
+    }
+
     var parsedHost = url.parse(request.serverUrl);
 
     var options: https.RequestOptions = {

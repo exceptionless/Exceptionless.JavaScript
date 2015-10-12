@@ -155,6 +155,8 @@ process.on(EXIT, function(code: number) {
     client.submitLog(EXIT, message, 'Error')
   }
 
+  config.queue.process(true);
+
   // Application will now exit.
 });
 

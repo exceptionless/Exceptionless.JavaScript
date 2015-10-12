@@ -15,12 +15,12 @@ declare var XDomainRequest:{ new (); create(); };
 export class DefaultSubmissionClient implements ISubmissionClient {
   public configurationVersionHeader:string = 'x-exceptionless-configversion';
 
-  public postEvents(events:IEvent[], config:Configuration, callback:(response:SubmissionResponse) => void):void {
+  public postEvents(events:IEvent[], config:Configuration, callback:(response:SubmissionResponse) => void, isAppExiting?:boolean):void {
     var data = Utils.stringify(events, config.dataExclusions);
     var request = this.createRequest(config, 'POST', '/api/v2/events', data);
     var cb = this.createSubmissionCallback(config, callback);
 
-    return config.submissionAdapter.sendRequest(request, cb);
+    return config.submissionAdapter.sendRequest(request, cb, isAppExiting);
   }
 
   public postUserDescription(referenceId:string, description:IUserDescription, config:Configuration, callback:(response:SubmissionResponse) => void):void {
