@@ -261,3 +261,5 @@ If you find a bug or want to contribute a feature, feel free to create a pull re
   ```sh
   gulp test
   ```
+
+During development, you can use relative paths to require Exceptionless, e.g. `require('./dist/exceptionless.node.js')` when you are running Node.js from the git root directory.
