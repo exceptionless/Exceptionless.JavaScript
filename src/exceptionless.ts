@@ -27,7 +27,7 @@ import { ErrorPlugin } from './plugins/default/ErrorPlugin';
 import { ModuleInfoPlugin } from './plugins/default/ModuleInfoPlugin';
 import { ReferenceIdPlugin } from './plugins/default/ReferenceIdPlugin';
 import { RequestInfoPlugin } from './plugins/default/RequestInfoPlugin';
-import { EnvironmentInfoPlugin } from 'plugins/default/EnvironmentInfoPlugin';
+import { EnvironmentInfoPlugin } from './plugins/default/EnvironmentInfoPlugin';
 import { SubmissionMethodPlugin } from './plugins/default/SubmissionMethodPlugin';
 import { DefaultEventQueue } from './queue/DefaultEventQueue';
 import { IEventQueue } from './queue/IEventQueue';
@@ -41,13 +41,13 @@ import { DefaultRequestInfoCollector } from './services/DefaultRequestInfoCollec
 import { InMemoryStorage } from './storage/InMemoryStorage';
 import { IStorage } from './storage/IStorage';
 import { IStorageItem } from './storage/IStorageItem';
-import { DefaultSubmissionClient } from './submission/DefaultSubmissionClient';
+import { DefaultSubmissionAdapter } from './submission/DefaultSubmissionAdapter';
 import { ISubmissionClient } from './submission/ISubmissionClient';
 import { SettingsResponse } from './submission/SettingsResponse';
 import { SubmissionResponse } from './submission/SubmissionResponse';
-import { EventBuilder } from 'EventBuilder';
-import { ExceptionlessClient } from 'ExceptionlessClient';
-import { Utils } from 'Utils';
+import { EventBuilder } from './EventBuilder';
+import { ExceptionlessClient } from './ExceptionlessClient';
+import { Utils } from './Utils';
 
 function getDefaultsSettingsFromScriptTag(): IConfigurationSettings {
   if (!document || !document.getElementsByTagName) {
@@ -93,7 +93,7 @@ if (settings && (settings.apiKey || settings.serverUrl)) {
 defaults.errorParser = new DefaultErrorParser();
 defaults.moduleCollector = new DefaultModuleCollector();
 defaults.requestInfoCollector = new DefaultRequestInfoCollector();
-defaults.submissionClient = new DefaultSubmissionClient();
+defaults.submissionAdapter = new DefaultSubmissionAdapter();
 
 TraceKit.report.subscribe(processUnhandledException);
 TraceKit.extendToAsynchronousCallbacks();

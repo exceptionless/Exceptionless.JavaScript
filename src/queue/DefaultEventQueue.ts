@@ -59,7 +59,7 @@ export class DefaultEventQueue implements IEventQueue {
     config.storage.save(key, event);
   }
 
-  public process(): void {
+  public process(isAppExiting?:boolean): void {
     function getEvents(events:{ path:string, value:IEvent }[]):IEvent[] {
       var items:IEvent[] = [];
       for (var index = 0; index < events.length; index++) {
@@ -104,7 +104,7 @@ export class DefaultEventQueue implements IEventQueue {
         this.processSubmissionResponse(response, events);
         log.info('Finished processing queue.');
         this._processingQueue = false;
-      });
+      }, isAppExiting);
     } catch (ex) {
       log.error(`Error processing queue: ${ex}`);
       this.suspendProcessing();

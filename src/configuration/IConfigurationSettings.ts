@@ -6,6 +6,7 @@ import { IErrorParser } from '../services/IErrorParser';
 import { IModuleCollector } from '../services/IModuleCollector';
 import { IRequestInfoCollector } from '../services/IRequestInfoCollector';
 import { IStorage } from '../storage/IStorage';
+import { ISubmissionAdapter } from '../submission/ISubmissionAdapter';
 import { ISubmissionClient } from '../submission/ISubmissionClient';
 
 export interface IConfigurationSettings {
@@ -19,6 +20,7 @@ export interface IConfigurationSettings {
   requestInfoCollector?:IRequestInfoCollector;
   submissionBatchSize?:number;
   submissionClient?:ISubmissionClient;
+  submissionAdapter?:ISubmissionAdapter;
   storage?:IStorage<any>;
   queue?:IEventQueue;
 }

@@ -1370,7 +1370,7 @@ var DefaultEventQueue = (function () {
         config.log.info("Enqueuing event: " + key + " type=" + event.type + " " + (!!event.reference_id ? 'refid=' + event.reference_id : ''));
         config.storage.save(key, event);
     };
-    DefaultEventQueue.prototype.process = function () {
+    DefaultEventQueue.prototype.process = function (isAppExiting) {
         var _this = this;
         function getEvents(events) {
             var items = [];
@@ -1407,7 +1407,7 @@ var DefaultEventQueue = (function () {
                 _this.processSubmissionResponse(response, events);
                 log.info('Finished processing queue.');
                 _this._processingQueue = false;
-            });
+            }, isAppExiting);
         }
         catch (ex) {
             log.error("Error processing queue: " + ex);
@@ -1549,6 +1549,65 @@ var InMemoryStorage = (function () {
     return InMemoryStorage;
 })();
 exports.InMemoryStorage = InMemoryStorage;
+var DefaultSubmissionClient = (function () {
+    function DefaultSubmissionClient() {
+        this.configurationVersionHeader = 'x-exceptionless-configversion';
+    }
+    DefaultSubmissionClient.prototype.postEvents = function (events, config, callback, isAppExiting) {
+        var data = Utils.stringify(events, config.dataExclusions);
+        var request = this.createRequest(config, 'POST', '/api/v2/events', data);
+        var cb = this.createSubmissionCallback(config, callback);
+        return config.submissionAdapter.sendRequest(request, cb, isAppExiting);
+    };
+    DefaultSubmissionClient.prototype.postUserDescription = function (referenceId, description, config, callback) {
+        var path = "/api/v2/events/by-ref/" + encodeURIComponent(referenceId) + "/user-description";
+        var data = Utils.stringify(description, config.dataExclusions);
+        var request = this.createRequest(config, 'POST', path, data);
+        var cb = this.createSubmissionCallback(config, callback);
+        return config.submissionAdapter.sendRequest(request, cb);
+    };
+    DefaultSubmissionClient.prototype.getSettings = function (config, callback) {
+        var request = this.createRequest(config, 'GET', '/api/v2/projects/config');
+        var cb = function (status, message, data, headers) {
+            if (status !== 200) {
+                return callback(new SettingsResponse(false, null, -1, null, message));
+            }
+            var settings;
+            try {
+                settings = JSON.parse(data);
+            }
+            catch (e) {
+                config.log.error("Unable to parse settings: '" + data + "'");
+            }
+            if (!settings || isNaN(settings.version)) {
+                return callback(new SettingsResponse(false, null, -1, null, 'Invalid configuration settings.'));
+            }
+            callback(new SettingsResponse(true, settings.settings || {}, settings.version));
+        };
+        return config.submissionAdapter.sendRequest(request, cb);
+    };
+    DefaultSubmissionClient.prototype.createRequest = function (config, method, path, data) {
+        if (data === void 0) { data = null; }
+        return {
+            method: method,
+            path: path,
+            data: data,
+            serverUrl: config.serverUrl,
+            apiKey: config.apiKey,
+            userAgent: config.userAgent
+        };
+    };
+    DefaultSubmissionClient.prototype.createSubmissionCallback = function (config, callback) {
+        var _this = this;
+        return function (status, message, data, headers) {
+            var settingsVersion = headers && parseInt(headers[_this.configurationVersionHeader]);
+            SettingsManager.checkVersion(settingsVersion, config);
+            callback(new SubmissionResponse(status, message));
+        };
+    };
+    return DefaultSubmissionClient;
+})();
+exports.DefaultSubmissionClient = DefaultSubmissionClient;
 var Utils = (function () {
     function Utils() {
     }
@@ -1662,9 +1721,9 @@ var Utils = (function () {
             if (startsWithWildcard && endsWithWildcard)
                 return value.indexOf(pattern) !== -1;
             if (startsWithWildcard)
-                return value.lastIndexOf(pattern, 0) !== -1;
-            if (endsWithWildcard)
                 return value.lastIndexOf(pattern) === (value.length - pattern.length);
+            if (endsWithWildcard)
+                return value.indexOf(pattern) === 0;
             return value === pattern;
         }
         function stringifyImpl(data, exclusions) {
@@ -1719,7 +1778,8 @@ var Configuration = (function () {
         this.moduleCollector = inject(configSettings.moduleCollector);
         this.requestInfoCollector = inject(configSettings.requestInfoCollector);
         this.submissionBatchSize = inject(configSettings.submissionBatchSize) || 50;
-        this.submissionClient = inject(configSettings.submissionClient);
+        this.submissionAdapter = inject(configSettings.submissionAdapter);
+        this.submissionClient = inject(configSettings.submissionClient) || new DefaultSubmissionClient();
         this.storage = inject(configSettings.storage) || new InMemoryStorage();
         this.queue = inject(configSettings.queue) || new DefaultEventQueue(this);
         SettingsManager.applySavedServerSettings(this);
@@ -2415,46 +2475,10 @@ var DefaultRequestInfoCollector = (function () {
     return DefaultRequestInfoCollector;
 })();
 exports.DefaultRequestInfoCollector = DefaultRequestInfoCollector;
-var DefaultSubmissionClient = (function () {
-    function DefaultSubmissionClient() {
-        this.configurationVersionHeader = 'X-Exceptionless-ConfigVersion';
+var DefaultSubmissionAdapter = (function () {
+    function DefaultSubmissionAdapter() {
     }
-    DefaultSubmissionClient.prototype.postEvents = function (events, config, callback) {
-        var _this = this;
-        return this.sendRequest(config, 'POST', '/api/v2/events', Utils.stringify(events, config.dataExclusions), function (status, message, data, headers) {
-            var settingsVersion = headers && parseInt(headers[_this.configurationVersionHeader]);
-            SettingsManager.checkVersion(settingsVersion, config);
-            callback(new SubmissionResponse(status, message));
-        });
-    };
-    DefaultSubmissionClient.prototype.postUserDescription = function (referenceId, description, config, callback) {
-        var _this = this;
-        var path = "/api/v2/events/by-ref/" + encodeURIComponent(referenceId) + "/user-description";
-        return this.sendRequest(config, 'POST', path, Utils.stringify(description, config.dataExclusions), function (status, message, data, headers) {
-            var settingsVersion = headers && parseInt(headers[_this.configurationVersionHeader]);
-            SettingsManager.checkVersion(settingsVersion, config);
-            callback(new SubmissionResponse(status, message));
-        });
-    };
-    DefaultSubmissionClient.prototype.getSettings = function (config, callback) {
-        return this.sendRequest(config, 'GET', '/api/v2/projects/config', null, function (status, message, data) {
-            if (status !== 200) {
-                return callback(new SettingsResponse(false, null, -1, null, message));
-            }
-            var settings;
-            try {
-                settings = JSON.parse(data);
-            }
-            catch (e) {
-                config.log.error("Unable to parse settings: '" + data + "'");
-            }
-            if (!settings || isNaN(settings.version)) {
-                return callback(new SettingsResponse(false, null, -1, null, 'Invalid configuration settings.'));
-            }
-            callback(new SettingsResponse(true, settings.settings || {}, settings.version));
-        });
-    };
-    DefaultSubmissionClient.prototype.sendRequest = function (config, method, path, data, callback) {
+    DefaultSubmissionAdapter.prototype.sendRequest = function (request, callback, isAppExiting) {
         var TIMEOUT = 'timeout';
         var LOADED = 'loaded';
         var WITH_CREDENTIALS = 'withCredentials';
@@ -2468,7 +2492,7 @@ var DefaultSubmissionClient = (function () {
                     var headerPair = headerPairs[index];
                     var separator = headerPair.indexOf('\u003a\u0020');
                     if (separator > 0) {
-                        headers[headerPair.substring(0, separator)] = headerPair.substring(separator + 2);
+                        headers[headerPair.substring(0, separator)] = headerPair.substring(separator + 2).toLowerCase();
                     }
                 }
                 return headers;
@@ -2485,7 +2509,7 @@ var DefaultSubmissionClient = (function () {
                 status = 0;
             }
             else if (mode === LOADED && !status) {
-                status = method === 'POST' ? 202 : 200;
+                status = request.method === 'POST' ? 202 : 200;
             }
             else if (status < 200 || status > 299) {
                 var responseBody = xhr.responseBody;
@@ -2503,11 +2527,11 @@ var DefaultSubmissionClient = (function () {
             }
             callback(status || 500, message || '', responseText, parseResponseHeaders(xhr.getAllResponseHeaders && xhr.getAllResponseHeaders()));
         }
-        function createRequest(config, method, url) {
+        function createRequest(userAgent, method, url) {
             var xhr = new XMLHttpRequest();
             if (WITH_CREDENTIALS in xhr) {
                 xhr.open(method, url, true);
-                xhr.setRequestHeader('X-Exceptionless-Client', config.userAgent);
+                xhr.setRequestHeader('X-Exceptionless-Client', userAgent);
                 if (method === 'POST') {
                     xhr.setRequestHeader('Content-Type', 'application/json');
                 }
@@ -2525,8 +2549,8 @@ var DefaultSubmissionClient = (function () {
             }
             return xhr;
         }
-        var url = "" + config.serverUrl + path + "?access_token=" + encodeURIComponent(config.apiKey);
-        var xhr = createRequest(config, method || 'POST', url);
+        var url = "" + request.serverUrl + request.path + "?access_token=" + encodeURIComponent(request.apiKey);
+        var xhr = createRequest(request.userAgent, request.method || 'POST', url);
         if (!xhr) {
             return callback(503, 'CORS not supported.');
         }
@@ -2543,15 +2567,15 @@ var DefaultSubmissionClient = (function () {
         xhr.onerror = function () { return complete('error', xhr); };
         xhr.onload = function () { return complete(LOADED, xhr); };
         if (useSetTimeout) {
-            setTimeout(function () { return xhr.send(data); }, 500);
+            setTimeout(function () { return xhr.send(request.data); }, 500);
         }
         else {
-            xhr.send(data);
+            xhr.send(request.data);
         }
     };
-    return DefaultSubmissionClient;
+    return DefaultSubmissionAdapter;
 })();
-exports.DefaultSubmissionClient = DefaultSubmissionClient;
+exports.DefaultSubmissionAdapter = DefaultSubmissionAdapter;
 function getDefaultsSettingsFromScriptTag() {
     if (!document || !document.getElementsByTagName) {
         return null;
@@ -2592,7 +2616,7 @@ if (settings && (settings.apiKey || settings.serverUrl)) {
 defaults.errorParser = new DefaultErrorParser();
 defaults.moduleCollector = new DefaultModuleCollector();
 defaults.requestInfoCollector = new DefaultRequestInfoCollector();
-defaults.submissionClient = new DefaultSubmissionClient();
+defaults.submissionAdapter = new DefaultSubmissionAdapter();
 TraceKit.report.subscribe(processUnhandledException);
 TraceKit.extendToAsynchronousCallbacks();
 if (typeof $ !== 'undefined' && $(document)) {

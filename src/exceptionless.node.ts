@@ -27,7 +27,7 @@ import { ErrorPlugin } from './plugins/default/ErrorPlugin';
 import { ModuleInfoPlugin } from './plugins/default/ModuleInfoPlugin';
 import { ReferenceIdPlugin } from './plugins/default/ReferenceIdPlugin';
 import { RequestInfoPlugin } from './plugins/default/RequestInfoPlugin';
-import { EnvironmentInfoPlugin } from 'plugins/default/EnvironmentInfoPlugin';
+import { EnvironmentInfoPlugin } from './plugins/default/EnvironmentInfoPlugin';
 import { SubmissionMethodPlugin } from './plugins/default/SubmissionMethodPlugin';
 import { DefaultEventQueue } from './queue/DefaultEventQueue';
 import { IEventQueue } from './queue/IEventQueue';
@@ -41,33 +41,69 @@ import { NodeRequestInfoCollector } from './services/NodeRequestInfoCollector';
 import { InMemoryStorage } from './storage/InMemoryStorage';
 import { IStorage } from './storage/IStorage';
 import { IStorageItem } from './storage/IStorageItem';
-import { DefaultSubmissionClient } from './submission/DefaultSubmissionClient';
-import { ISubmissionClient } from './submission/ISubmissionClient';
-import { NodeSubmissionClient } from './submission/NodeSubmissionClient';
+import { NodeSubmissionAdapter } from './submission/NodeSubmissionAdapter';
 import { SettingsResponse } from './submission/SettingsResponse';
 import { SubmissionResponse } from './submission/SubmissionResponse';
-import { EventBuilder } from 'EventBuilder';
-import { ExceptionlessClient } from 'ExceptionlessClient';
-import { Utils } from 'Utils';
+import { EventBuilder } from './EventBuilder';
+import { ExceptionlessClient } from './ExceptionlessClient';
+import { Utils } from './Utils';
 
-const BEFORE_EXIT:string = 'BEFORE_EXIT';
-const UNCAUGHT_EXCEPTION:string = 'UNCAUGHT_EXCEPTION';
+const EXIT: string = 'exit';
+const UNCAUGHT_EXCEPTION: string = 'uncaughtException';
+const SIGINT: string = 'SIGINT';
+const SIGINT_CODE: number = 2;
 
 var defaults = Configuration.defaults;
 defaults.environmentInfoCollector = new NodeEnvironmentInfoCollector();
 defaults.errorParser = new NodeErrorParser();
 defaults.requestInfoCollector = new NodeRequestInfoCollector();
-defaults.submissionClient = new NodeSubmissionClient();
+defaults.submissionAdapter = new NodeSubmissionAdapter();
 
-process.on(UNCAUGHT_EXCEPTION, function (error:Error) {
+function getListenerCount(emitter, event:string): number {
+  if (emitter.listenerCount) {
+    return emitter.listenerCount(event);
+  }
+  return require("events").listenerCount(emitter, event);
+}
+
+/*
+ * Adding a event handler for 'uncaughtException' modifies the default
+ * Node behavior, so it won't exit or log to the console. Instead,
+ * we hijack the event emitter and forward the exception to the callback.
+ */
+function onUncaughtException(callback: (error: Error) => void) {
+  var originalEmit = process.emit;
+
+  process.emit = function(type: string, error: Error) {
+    if (type === UNCAUGHT_EXCEPTION) {
+      callback(error);
+    }
+
+    return originalEmit.apply(this, arguments);
+  }
+}
+
+onUncaughtException(function(error: Error) {
   ExceptionlessClient.default.submitUnhandledException(error, UNCAUGHT_EXCEPTION);
 });
 
-process.on(BEFORE_EXIT, function (code:number) {
+/*
+ * We cannot hijack SIGINT, so if there are no other handlers,
+ * we just reproduce default Node.js behavior by exiting.
+ */
+process.on(SIGINT, function() {
+  if (getListenerCount(process, SIGINT) <= 1) {
+    process.exit(128 + SIGINT_CODE);
+  }
+})
+
+process.on(EXIT, function(code: number) {
   /**
    * exit codes: https://nodejs.org/api/process.html#process_event_exit
+   * From now on, only synchronous code may run. As soon as this method
+   * ends, the application inevitably will exit.
    */
-  function  getExitCodeReason(code:number): string {
+  function getExitCodeReason(code: number): string {
     if (code === 1) {
       return 'Uncaught Fatal Exception';
     }
@@ -108,20 +144,20 @@ process.on(BEFORE_EXIT, function (code:number) {
       return 'Invalid Debug Argument';
     }
 
-    if (code > 128) {
-      return 'Signal Exits';
-    }
-
     return null;
   }
 
   var client = ExceptionlessClient.default;
+  var config = client.config;
   var message = getExitCodeReason(code);
+
   if (message !== null) {
-    client.submitLog(BEFORE_EXIT, message, 'Error')
+    client.submitLog(EXIT, message, 'Error')
   }
 
-  client.config.queue.process()
+  config.queue.process(true);
+
+  // Application will now exit.
 });
 
 (<any>Error).stackTraceLimit = Infinity;

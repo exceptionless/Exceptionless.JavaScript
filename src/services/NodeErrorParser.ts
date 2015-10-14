@@ -1,5 +1,5 @@
 import { IError } from '../models/IError';
-import { IErrorParser } from 'IErrorParser';
+import { IErrorParser } from './IErrorParser';
 import { IStackFrame } from '../models/IStackFrame';
 import { EventPluginContext } from '../plugins/EventPluginContext';
 

@@ -71,7 +71,13 @@ gulp.task('exceptionless', ['exceptionless.umd'], function() {
 });
 
 gulp.task('exceptionless.node', ['typescript.node'], function() {
-  gulp.src('dist/temp/src/exceptionless.node.js')
+
+  var files = [
+    'dist/temp/src/exceptionless.node.js',
+    'dist/temp/src/submitSync.js'
+  ];
+
+  gulp.src(files)
     .pipe(sourcemaps.init({ loadMaps: true }))
     .pipe(replace('exceptionless-js/1.0.0.0', 'exceptionless-js/' + package.version))
     .pipe(sourcemaps.write('.'))
@@ -79,7 +85,7 @@ gulp.task('exceptionless.node', ['typescript.node'], function() {
 });
 
 gulp.task('watch', ['build'], function() {
-  gulp.watch('*.ts', ['build']);
+  gulp.watch('src/**/*.ts', ['build']);
 });
 
 gulp.task('build', ['clean', 'exceptionless', 'exceptionless.node']);

@@ -1,4 +1,4 @@
-import { ExceptionlessClient } from 'ExceptionlessClient';
+import { ExceptionlessClient } from './ExceptionlessClient';
 import { EventPluginContext } from './plugins/EventPluginContext';
 
 describe('ExceptionlessClient', () => {

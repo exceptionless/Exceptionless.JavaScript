@@ -1,80 +1,148 @@
 import { Configuration } from '../configuration/Configuration';
 import { IEvent } from '../models/IEvent';
 import { IUserDescription } from '../models/IUserDescription';
-import { ISubmissionClient } from 'ISubmissionClient';
-import { DefaultSubmissionClient } from 'DefaultSubmissionClient';
-import { SettingsResponse } from 'SettingsResponse';
-import { SubmissionResponse } from 'SubmissionResponse';
+import { ISubmissionClient } from './ISubmissionClient';
+import { ISubmissionAdapter } from './ISubmissionAdapter';
+import { DefaultSubmissionClient } from './DefaultSubmissionClient';
+import { SettingsResponse } from './SettingsResponse';
+import { SubmissionCallback } from './SubmissionCallback';
+import { SubmissionRequest } from './SubmissionRequest';
+import { SubmissionResponse } from './SubmissionResponse';
+
+
+class TestAdapter implements ISubmissionAdapter {
+  private request;
+  private checks: { (request: SubmissionRequest):void }[] = [];
+  private callback:SubmissionCallback;
+  private status = 202;
+  private message = null;
+  private data;
+  private headers;
+
+  constructor(check: (request: SubmissionRequest) => void) {
+    this.checks.push(check);
+  }
+
+  public withResponse(status:number, message:string, data?:string, headers?:any) {
+    this.status = status;
+    this.message = message;
+    this.data = data;
+    this.headers = headers;
+    return this;
+  }
+
+  public withCheck(check: (request: SubmissionRequest) => void) {
+    this.checks.push(check);
+    return this;
+  }
+
+  public sendRequest(request:SubmissionRequest, callback:SubmissionCallback, isAppExiting?:boolean) {
+    this.request = request;
+    this.callback = callback;
+
+    if (isAppExiting) {
+      this.done();
+    }
+  }
+
+  public done(){
+    if (!this.request) {
+      fail("sendRequest hasn't been called.");
+      return;
+    }
+
+    this.checks.forEach(c => c(this.request));
+    this.callback(this.status, this.message, this.data, this.headers);
+  }
+}
 
 describe('DefaultSubmissionClient', () => {
+
+  var adapter:TestAdapter;
+  var config:Configuration;
+  var submissionClient: ISubmissionClient;
+
+  beforeEach(()=>{
+
+    var apiKey = 'LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw';
+    var serverUrl = 'http://localhost:50000'
+
+    submissionClient = new DefaultSubmissionClient();
+
+    config = new Configuration({
+      apiKey,
+      serverUrl
+    });
+
+    adapter = new TestAdapter(r => {
+      expect(r.apiKey).toBe(apiKey);
+      expect(r.serverUrl).toBe(serverUrl);
+    });
+
+    config.submissionAdapter = adapter;
+  });
+
   it('should submit events', (done) => {
-    function processResponse(response:SubmissionResponse) {
-      if (response.success) {
-        expect(response.message).toBe(null);
-      } else {
-        expect(response.message).toBe('Unable to connect to server.');
-      }
+    var events = [{ type: 'log', message: 'From js client', reference_id: '123454321' }];
 
-      done();
-    }
+    adapter.withCheck(r => {
+      expect(r.data).toBe(JSON.stringify(events));
+      expect(r.method).toBe('POST');
+      expect(r.path).toBe('/api/v2/events');
+    });
 
-    var config = new Configuration({ apiKey:'LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw', serverUrl:'http://localhost:50000'});
-    var submissionClient = new DefaultSubmissionClient();
-    submissionClient.postEvents([{ type: 'log', message: 'From js client', reference_id: '123454321' }], config, processResponse);
-  }, 5000);
+    submissionClient.postEvents(events, config, () => done());
+
+    adapter.done();
+  });
 
   it('should submit invalid object data', (done) => {
-    function processResponse(response:SubmissionResponse) {
-      if (response.success) {
-        expect(response.message).toBe(null);
-      } else {
-        expect(response.message).toBe('Unable to connect to server.');
-      }
-
-      done();
-    }
-
-    var config = new Configuration({ apiKey:'LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw', serverUrl:'http://localhost:50000'});
-    var event:IEvent = { type: 'log', message: 'From js client', reference_id: '123454321', data: {
+    var events:IEvent[] = [{ type: 'log', message: 'From js client', reference_id: '123454321', data: {
       name: 'blake',
       age: function() { throw new Error('Test'); }
-    }};
+    }}];
 
-    var submissionClient = new DefaultSubmissionClient();
-    submissionClient.postEvents([event], config, processResponse);
-  }, 5000);
+    adapter.withCheck(r => {
+      expect(r.data).toBe(JSON.stringify(events));
+      expect(r.method).toBe('POST');
+      expect(r.path).toBe('/api/v2/events');
+    });
+
+    submissionClient.postEvents(events, config, () => done());
+
+    adapter.done();
+  });
 
   it('should submit user description', (done) => {
-    function processResponse(response:SubmissionResponse) {
-      if (response.success) {
-        expect(response.message).toBe(null);
-      } else {
-        expect(response.message).toBe('Unable to connect to server.');
-      }
+    var description = {
+      email_address: 'norply@exceptionless.io',
+      description: 'unit test'
+    };
 
-      done();
-    }
+    adapter.withCheck(r => {
+      expect(r.data).toBe(JSON.stringify(description));
+      expect(r.method).toBe('POST');
+      expect(r.path).toBe('/api/v2/events/by-ref/123454321/user-description')
+    });
 
-    var config = new Configuration({ apiKey:'LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw', serverUrl:'http://localhost:50000'});
-    var submissionClient = new DefaultSubmissionClient();
-    submissionClient.postUserDescription('123454321', { email_address: 'norply@exceptionless.io', description: 'unit test' }, config, processResponse)
-  }, 5000);
+    submissionClient.postUserDescription('123454321', description, config, () => done());
+
+    adapter.done();
+  });
 
   it('should get project settings', (done) => {
-    function processResponse(response:SettingsResponse) {
-      if (response.success) {
-        expect(response.message).toBe(null);
-        expect(response.settings).not.toBe(null);
-        expect(response.settingsVersion).toBeGreaterThan(-1);
-      } else {
-        expect(response.message).toBe('Unable to connect to server.');
-      }
+
+    adapter.withResponse(200, null, JSON.stringify({ version: 1 }));
+
+    submissionClient.getSettings(config, response => {
+      expect(response.success).toBe(true);
+      expect(response.message).toBe(null);
+      expect(response.settings).not.toBe(null);
+      expect(response.settingsVersion).toBeGreaterThan(-1);
 
       done();
-    }
+    });
 
-    var config = new Configuration({ apiKey:'LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw', serverUrl:'http://localhost:50000'});
-    var submissionClient = new DefaultSubmissionClient();
-    submissionClient.getSettings(config, processResponse);
-  }, 5000);
+    adapter.done();
+  });
 });

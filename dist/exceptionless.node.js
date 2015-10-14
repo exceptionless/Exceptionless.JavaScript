@@ -1,9 +1,4 @@
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    __.prototype = b.prototype;
-    d.prototype = new __();
-};
+var child = require("child_process");
 var http = require("http");
 var SettingsManager = (function () {
     function SettingsManager() {
@@ -196,7 +191,7 @@ var DefaultEventQueue = (function () {
         config.log.info("Enqueuing event: " + key + " type=" + event.type + " " + (!!event.reference_id ? 'refid=' + event.reference_id : ''));
         config.storage.save(key, event);
     };
-    DefaultEventQueue.prototype.process = function () {
+    DefaultEventQueue.prototype.process = function (isAppExiting) {
         var _this = this;
         function getEvents(events) {
             var items = [];
@@ -233,7 +228,7 @@ var DefaultEventQueue = (function () {
                 _this.processSubmissionResponse(response, events);
                 log.info('Finished processing queue.');
                 _this._processingQueue = false;
-            });
+            }, isAppExiting);
         }
         catch (ex) {
             log.error("Error processing queue: " + ex);
@@ -375,6 +370,65 @@ var InMemoryStorage = (function () {
     return InMemoryStorage;
 })();
 exports.InMemoryStorage = InMemoryStorage;
+var DefaultSubmissionClient = (function () {
+    function DefaultSubmissionClient() {
+        this.configurationVersionHeader = 'x-exceptionless-configversion';
+    }
+    DefaultSubmissionClient.prototype.postEvents = function (events, config, callback, isAppExiting) {
+        var data = Utils.stringify(events, config.dataExclusions);
+        var request = this.createRequest(config, 'POST', '/api/v2/events', data);
+        var cb = this.createSubmissionCallback(config, callback);
+        return config.submissionAdapter.sendRequest(request, cb, isAppExiting);
+    };
+    DefaultSubmissionClient.prototype.postUserDescription = function (referenceId, description, config, callback) {
+        var path = "/api/v2/events/by-ref/" + encodeURIComponent(referenceId) + "/user-description";
+        var data = Utils.stringify(description, config.dataExclusions);
+        var request = this.createRequest(config, 'POST', path, data);
+        var cb = this.createSubmissionCallback(config, callback);
+        return config.submissionAdapter.sendRequest(request, cb);
+    };
+    DefaultSubmissionClient.prototype.getSettings = function (config, callback) {
+        var request = this.createRequest(config, 'GET', '/api/v2/projects/config');
+        var cb = function (status, message, data, headers) {
+            if (status !== 200) {
+                return callback(new SettingsResponse(false, null, -1, null, message));
+            }
+            var settings;
+            try {
+                settings = JSON.parse(data);
+            }
+            catch (e) {
+                config.log.error("Unable to parse settings: '" + data + "'");
+            }
+            if (!settings || isNaN(settings.version)) {
+                return callback(new SettingsResponse(false, null, -1, null, 'Invalid configuration settings.'));
+            }
+            callback(new SettingsResponse(true, settings.settings || {}, settings.version));
+        };
+        return config.submissionAdapter.sendRequest(request, cb);
+    };
+    DefaultSubmissionClient.prototype.createRequest = function (config, method, path, data) {
+        if (data === void 0) { data = null; }
+        return {
+            method: method,
+            path: path,
+            data: data,
+            serverUrl: config.serverUrl,
+            apiKey: config.apiKey,
+            userAgent: config.userAgent
+        };
+    };
+    DefaultSubmissionClient.prototype.createSubmissionCallback = function (config, callback) {
+        var _this = this;
+        return function (status, message, data, headers) {
+            var settingsVersion = headers && parseInt(headers[_this.configurationVersionHeader]);
+            SettingsManager.checkVersion(settingsVersion, config);
+            callback(new SubmissionResponse(status, message));
+        };
+    };
+    return DefaultSubmissionClient;
+})();
+exports.DefaultSubmissionClient = DefaultSubmissionClient;
 var Utils = (function () {
     function Utils() {
     }
@@ -488,9 +542,9 @@ var Utils = (function () {
             if (startsWithWildcard && endsWithWildcard)
                 return value.indexOf(pattern) !== -1;
             if (startsWithWildcard)
-                return value.lastIndexOf(pattern, 0) !== -1;
-            if (endsWithWildcard)
                 return value.lastIndexOf(pattern) === (value.length - pattern.length);
+            if (endsWithWildcard)
+                return value.indexOf(pattern) === 0;
             return value === pattern;
         }
         function stringifyImpl(data, exclusions) {
@@ -545,7 +599,8 @@ var Configuration = (function () {
         this.moduleCollector = inject(configSettings.moduleCollector);
         this.requestInfoCollector = inject(configSettings.requestInfoCollector);
         this.submissionBatchSize = inject(configSettings.submissionBatchSize) || 50;
-        this.submissionClient = inject(configSettings.submissionClient);
+        this.submissionAdapter = inject(configSettings.submissionAdapter);
+        this.submissionClient = inject(configSettings.submissionClient) || new DefaultSubmissionClient();
         this.storage = inject(configSettings.storage) || new InMemoryStorage();
         this.queue = inject(configSettings.queue) || new DefaultEventQueue(this);
         SettingsManager.applySavedServerSettings(this);
@@ -1144,143 +1199,6 @@ var SettingsResponse = (function () {
 exports.SettingsResponse = SettingsResponse;
 var os = require('os');
 var nodestacktrace = require('stack-trace');
-var DefaultSubmissionClient = (function () {
-    function DefaultSubmissionClient() {
-        this.configurationVersionHeader = 'X-Exceptionless-ConfigVersion';
-    }
-    DefaultSubmissionClient.prototype.postEvents = function (events, config, callback) {
-        var _this = this;
-        return this.sendRequest(config, 'POST', '/api/v2/events', Utils.stringify(events, config.dataExclusions), function (status, message, data, headers) {
-            var settingsVersion = headers && parseInt(headers[_this.configurationVersionHeader]);
-            SettingsManager.checkVersion(settingsVersion, config);
-            callback(new SubmissionResponse(status, message));
-        });
-    };
-    DefaultSubmissionClient.prototype.postUserDescription = function (referenceId, description, config, callback) {
-        var _this = this;
-        var path = "/api/v2/events/by-ref/" + encodeURIComponent(referenceId) + "/user-description";
-        return this.sendRequest(config, 'POST', path, Utils.stringify(description, config.dataExclusions), function (status, message, data, headers) {
-            var settingsVersion = headers && parseInt(headers[_this.configurationVersionHeader]);
-            SettingsManager.checkVersion(settingsVersion, config);
-            callback(new SubmissionResponse(status, message));
-        });
-    };
-    DefaultSubmissionClient.prototype.getSettings = function (config, callback) {
-        return this.sendRequest(config, 'GET', '/api/v2/projects/config', null, function (status, message, data) {
-            if (status !== 200) {
-                return callback(new SettingsResponse(false, null, -1, null, message));
-            }
-            var settings;
-            try {
-                settings = JSON.parse(data);
-            }
-            catch (e) {
-                config.log.error("Unable to parse settings: '" + data + "'");
-            }
-            if (!settings || isNaN(settings.version)) {
-                return callback(new SettingsResponse(false, null, -1, null, 'Invalid configuration settings.'));
-            }
-            callback(new SettingsResponse(true, settings.settings || {}, settings.version));
-        });
-    };
-    DefaultSubmissionClient.prototype.sendRequest = function (config, method, path, data, callback) {
-        var TIMEOUT = 'timeout';
-        var LOADED = 'loaded';
-        var WITH_CREDENTIALS = 'withCredentials';
-        var isCompleted = false;
-        var useSetTimeout = false;
-        function complete(mode, xhr) {
-            function parseResponseHeaders(headerStr) {
-                var headers = {};
-                var headerPairs = (headerStr || '').split('\u000d\u000a');
-                for (var index = 0; index < headerPairs.length; index++) {
-                    var headerPair = headerPairs[index];
-                    var separator = headerPair.indexOf('\u003a\u0020');
-                    if (separator > 0) {
-                        headers[headerPair.substring(0, separator)] = headerPair.substring(separator + 2);
-                    }
-                }
-                return headers;
-            }
-            if (isCompleted) {
-                return;
-            }
-            isCompleted = true;
-            var message = xhr.statusText;
-            var responseText = xhr.responseText;
-            var status = xhr.status;
-            if (mode === TIMEOUT || status === 0) {
-                message = 'Unable to connect to server.';
-                status = 0;
-            }
-            else if (mode === LOADED && !status) {
-                status = method === 'POST' ? 202 : 200;
-            }
-            else if (status < 200 || status > 299) {
-                var responseBody = xhr.responseBody;
-                if (!!responseBody && !!responseBody.message) {
-                    message = responseBody.message;
-                }
-                else if (!!responseText && responseText.indexOf('message') !== -1) {
-                    try {
-                        message = JSON.parse(responseText).message;
-                    }
-                    catch (e) {
-                        message = responseText;
-                    }
-                }
-            }
-            callback(status || 500, message || '', responseText, parseResponseHeaders(xhr.getAllResponseHeaders && xhr.getAllResponseHeaders()));
-        }
-        function createRequest(config, method, url) {
-            var xhr = new XMLHttpRequest();
-            if (WITH_CREDENTIALS in xhr) {
-                xhr.open(method, url, true);
-                xhr.setRequestHeader('X-Exceptionless-Client', config.userAgent);
-                if (method === 'POST') {
-                    xhr.setRequestHeader('Content-Type', 'application/json');
-                }
-            }
-            else if (typeof XDomainRequest != 'undefined') {
-                useSetTimeout = true;
-                xhr = new XDomainRequest();
-                xhr.open(method, location.protocol === 'http:' ? url.replace('https:', 'http:') : url);
-            }
-            else {
-                xhr = null;
-            }
-            if (xhr) {
-                xhr.timeout = 10000;
-            }
-            return xhr;
-        }
-        var url = "" + config.serverUrl + path + "?access_token=" + encodeURIComponent(config.apiKey);
-        var xhr = createRequest(config, method || 'POST', url);
-        if (!xhr) {
-            return callback(503, 'CORS not supported.');
-        }
-        if (WITH_CREDENTIALS in xhr) {
-            xhr.onreadystatechange = function () {
-                if (xhr.readyState !== 4) {
-                    return;
-                }
-                complete(LOADED, xhr);
-            };
-        }
-        xhr.onprogress = function () { };
-        xhr.ontimeout = function () { return complete(TIMEOUT, xhr); };
-        xhr.onerror = function () { return complete('error', xhr); };
-        xhr.onload = function () { return complete(LOADED, xhr); };
-        if (useSetTimeout) {
-            setTimeout(function () { return xhr.send(data); }, 500);
-        }
-        else {
-            xhr.send(data);
-        }
-    };
-    return DefaultSubmissionClient;
-})();
-exports.DefaultSubmissionClient = DefaultSubmissionClient;
 var https = require('https');
 var url = require('url');
 var NodeEnvironmentInfoCollector = (function () {
@@ -1395,62 +1313,97 @@ var NodeRequestInfoCollector = (function () {
     return NodeRequestInfoCollector;
 })();
 exports.NodeRequestInfoCollector = NodeRequestInfoCollector;
-var NodeSubmissionClient = (function (_super) {
-    __extends(NodeSubmissionClient, _super);
-    function NodeSubmissionClient() {
-        _super.call(this);
-        this.configurationVersionHeader = this.configurationVersionHeader.toLowerCase();
+var NodeSubmissionAdapter = (function () {
+    function NodeSubmissionAdapter() {
     }
-    NodeSubmissionClient.prototype.sendRequest = function (config, method, path, data, callback) {
-        function complete(response, responseBody, responseHeaders) {
-            var message;
-            if (response.statusCode === 0) {
-                message = 'Unable to connect to server.';
-            }
-            else if (response.statusCode < 200 || response.statusCode > 299) {
-                message = response.statusMessage || response.message;
-            }
-            callback(response.statusCode || 500, message, responseBody, responseHeaders);
+    NodeSubmissionAdapter.prototype.sendRequest = function (request, callback, isAppExiting) {
+        var _this = this;
+        if (isAppExiting) {
+            this.sendRequestSync(request, callback);
+            return;
         }
-        var parsedHost = url.parse(config.serverUrl);
+        var parsedHost = url.parse(request.serverUrl);
         var options = {
-            auth: "client:" + config.apiKey,
+            auth: "client:" + request.apiKey,
             headers: {},
             hostname: parsedHost.hostname,
-            method: method,
+            method: request.method,
             port: parsedHost.port && parseInt(parsedHost.port),
-            path: path
+            path: request.path
         };
-        if (method === 'POST') {
+        options.headers['User-Agent'] = request.userAgent;
+        if (request.method === 'POST') {
             options.headers = {
                 'Content-Type': 'application/json',
-                'Content-Length': data.length
+                'Content-Length': request.data.length
             };
         }
-        options.headers['User-Agent'] = config.userAgent;
-        var request = (parsedHost.protocol === 'https' ? https : http).request(options, function (response) {
+        var protocol = (parsedHost.protocol === 'https' ? https : http);
+        var clientRequest = protocol.request(options, function (response) {
             var body = '';
             response.setEncoding('utf8');
             response.on('data', function (chunk) { return body += chunk; });
-            response.on('end', function () { return complete(response, body, response.headers); });
+            response.on('end', function () { return _this.complete(response, body, response.headers, callback); });
         });
-        request.on('error', function (error) { return callback(500, error.message); });
-        request.end(data);
+        clientRequest.on('error', function (error) { return callback(500, error.message); });
+        clientRequest.end(request.data);
     };
-    return NodeSubmissionClient;
-})(DefaultSubmissionClient);
-exports.NodeSubmissionClient = NodeSubmissionClient;
-var BEFORE_EXIT = 'BEFORE_EXIT';
-var UNCAUGHT_EXCEPTION = 'UNCAUGHT_EXCEPTION';
+    NodeSubmissionAdapter.prototype.complete = function (response, responseBody, responseHeaders, callback) {
+        var message;
+        if (response.statusCode === 0) {
+            message = 'Unable to connect to server.';
+        }
+        else if (response.statusCode < 200 || response.statusCode > 299) {
+            message = response.statusMessage || response.message;
+        }
+        callback(response.statusCode || 500, message, responseBody, responseHeaders);
+    };
+    NodeSubmissionAdapter.prototype.sendRequestSync = function (request, callback) {
+        var requestJson = JSON.stringify(request);
+        var res = child.spawnSync(process.execPath, [require.resolve('./submitSync.js')], {
+            input: requestJson,
+            stdio: ['pipe', 'pipe', process.stderr]
+        });
+        var out = res.stdout.toString();
+        var result = JSON.parse(out);
+        callback(result.status, result.message, result.data, result.headers);
+    };
+    return NodeSubmissionAdapter;
+})();
+exports.NodeSubmissionAdapter = NodeSubmissionAdapter;
+var EXIT = 'exit';
+var UNCAUGHT_EXCEPTION = 'uncaughtException';
+var SIGINT = 'SIGINT';
+var SIGINT_CODE = 2;
 var defaults = Configuration.defaults;
 defaults.environmentInfoCollector = new NodeEnvironmentInfoCollector();
 defaults.errorParser = new NodeErrorParser();
 defaults.requestInfoCollector = new NodeRequestInfoCollector();
-defaults.submissionClient = new NodeSubmissionClient();
-process.on(UNCAUGHT_EXCEPTION, function (error) {
+defaults.submissionAdapter = new NodeSubmissionAdapter();
+function getListenerCount(emitter, event) {
+    if (emitter.listenerCount) {
+        return emitter.listenerCount(event);
+    }
+    return require("events").listenerCount(emitter, event);
+}
+function onUncaughtException(callback) {
+    var originalEmit = process.emit;
+    process.emit = function (type, error) {
+        if (type === UNCAUGHT_EXCEPTION) {
+            callback(error);
+        }
+        return originalEmit.apply(this, arguments);
+    };
+}
+onUncaughtException(function (error) {
     ExceptionlessClient.default.submitUnhandledException(error, UNCAUGHT_EXCEPTION);
 });
-process.on(BEFORE_EXIT, function (code) {
+process.on(SIGINT, function () {
+    if (getListenerCount(process, SIGINT) <= 1) {
+        process.exit(128 + SIGINT_CODE);
+    }
+});
+process.on(EXIT, function (code) {
     function getExitCodeReason(code) {
         if (code === 1) {
             return 'Uncaught Fatal Exception';
@@ -1482,17 +1435,15 @@ process.on(BEFORE_EXIT, function (code) {
         if (code === 12) {
             return 'Invalid Debug Argument';
         }
-        if (code > 128) {
-            return 'Signal Exits';
-        }
         return null;
     }
     var client = ExceptionlessClient.default;
+    var config = client.config;
     var message = getExitCodeReason(code);
     if (message !== null) {
-        client.submitLog(BEFORE_EXIT, message, 'Error');
+        client.submitLog(EXIT, message, 'Error');
     }
-    client.config.queue.process();
+    config.queue.process(true);
 });
 Error.stackTraceLimit = Infinity;
 

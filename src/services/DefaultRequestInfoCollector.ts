@@ -1,5 +1,5 @@
 import { IRequestInfo } from '../models/IRequestInfo';
-import { IRequestInfoCollector } from 'IRequestInfoCollector';
+import { IRequestInfoCollector } from './IRequestInfoCollector';
 import { EventPluginContext } from '../plugins/EventPluginContext';
 import { Utils } from '../Utils';
 

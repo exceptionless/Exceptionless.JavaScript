@@ -1,4 +1,4 @@
-import { Configuration } from 'Configuration';
+import { Configuration } from './Configuration';
 import { SettingsResponse } from '../submission/SettingsResponse';
 import { Utils } from '../Utils';
 

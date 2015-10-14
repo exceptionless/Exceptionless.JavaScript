@@ -1,5 +1,5 @@
 import { IModule } from '../models/IModule';
-import { IModuleCollector } from 'IModuleCollector';
+import { IModuleCollector } from './IModuleCollector';
 import { EventPluginContext } from '../plugins/EventPluginContext';
 import { Utils } from '../Utils';
 
