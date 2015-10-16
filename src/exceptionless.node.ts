@@ -37,6 +37,7 @@ import { IModuleCollector } from './services/IModuleCollector';
 import { IRequestInfoCollector } from './services/IRequestInfoCollector';
 import { NodeEnvironmentInfoCollector } from './services/NodeEnvironmentInfoCollector';
 import { NodeErrorParser } from './services/NodeErrorParser';
+import { NodeModuleCollector } from './services/NodeModuleCollector';
 import { NodeRequestInfoCollector } from './services/NodeRequestInfoCollector';
 import { InMemoryStorage } from './storage/InMemoryStorage';
 import { IStorage } from './storage/IStorage';
@@ -56,6 +57,7 @@ const SIGINT_CODE: number = 2;
 var defaults = Configuration.defaults;
 defaults.environmentInfoCollector = new NodeEnvironmentInfoCollector();
 defaults.errorParser = new NodeErrorParser();
+defaults.moduleCollector = new NodeModuleCollector();
 defaults.requestInfoCollector = new NodeRequestInfoCollector();
 defaults.submissionAdapter = new NodeSubmissionAdapter();
 

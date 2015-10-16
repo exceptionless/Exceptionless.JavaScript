@@ -1199,6 +1199,7 @@ var SettingsResponse = (function () {
 exports.SettingsResponse = SettingsResponse;
 var os = require('os');
 var nodestacktrace = require('stack-trace');
+var path = require('path');
 var https = require('https');
 var url = require('url');
 var NodeEnvironmentInfoCollector = (function () {
@@ -1283,6 +1284,63 @@ var NodeErrorParser = (function () {
     return NodeErrorParser;
 })();
 exports.NodeErrorParser = NodeErrorParser;
+var NodeModuleCollector = (function () {
+    function NodeModuleCollector() {
+        this.initialized = false;
+        this.installedModules = {};
+    }
+    NodeModuleCollector.prototype.getModules = function (context) {
+        var _this = this;
+        this.initialize();
+        if (!require.main)
+            return [];
+        var modulePath = path.dirname(require.main.filename) + '/node_modules/';
+        var pathLength = modulePath.length;
+        var loadedKeys = Object.keys(require.cache);
+        var loadedModules = {};
+        loadedKeys.forEach(function (key) {
+            var id = key.substr(pathLength);
+            console.log(id);
+            id = id.substr(0, id.indexOf('/'));
+            loadedModules[id] = true;
+        });
+        return Object.keys(loadedModules)
+            .map(function (key) { return _this.installedModules[key]; })
+            .filter(function (m) { return m !== undefined; });
+    };
+    NodeModuleCollector.prototype.initialize = function () {
+        var _this = this;
+        if (this.initialized)
+            return;
+        this.initialized = true;
+        var output = child.spawnSync('npm', ['ls', '--depth=0', '--json']).stdout;
+        if (!output)
+            return;
+        var json;
+        try {
+            json = JSON.parse(output.toString());
+        }
+        catch (e) {
+            return;
+        }
+        var items = json.dependencies;
+        if (!items)
+            return;
+        var id = 0;
+        this.installedModules = {};
+        Object.keys(items).forEach(function (key) {
+            var item = items[key];
+            var theModule = {
+                module_id: id++,
+                name: key,
+                version: item.version
+            };
+            _this.installedModules[key] = theModule;
+        });
+    };
+    return NodeModuleCollector;
+})();
+exports.NodeModuleCollector = NodeModuleCollector;
 var NodeRequestInfoCollector = (function () {
     function NodeRequestInfoCollector() {
     }
@@ -1378,6 +1436,7 @@ var SIGINT_CODE = 2;
 var defaults = Configuration.defaults;
 defaults.environmentInfoCollector = new NodeEnvironmentInfoCollector();
 defaults.errorParser = new NodeErrorParser();
+defaults.moduleCollector = new NodeModuleCollector();
 defaults.requestInfoCollector = new NodeRequestInfoCollector();
 defaults.submissionAdapter = new NodeSubmissionAdapter();
 function getListenerCount(emitter, event) {
