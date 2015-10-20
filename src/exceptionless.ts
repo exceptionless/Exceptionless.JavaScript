@@ -69,7 +69,9 @@ function processUnhandledException(stackTrace:TraceKit.StackTrace, options?:any)
   builder.submit();
 }
 
-function processJQueryAjaxError(event, xhr, settings, error:Error): void {
+/*
+TODO: We currently are unable to parse string exceptions.
+function processJQueryAjaxError(event, xhr, settings, error:string): void {
   var client = ExceptionlessClient.default;
   if (xhr.status === 404) {
     client.submitNotFound(settings.url);
@@ -82,6 +84,7 @@ function processJQueryAjaxError(event, xhr, settings, error:Error): void {
       .submit();
   }
 }
+*/
 
 var defaults = Configuration.defaults;
 var settings = getDefaultsSettingsFromScriptTag();
@@ -98,9 +101,9 @@ defaults.submissionAdapter = new DefaultSubmissionAdapter();
 TraceKit.report.subscribe(processUnhandledException);
 TraceKit.extendToAsynchronousCallbacks();
 
-if (typeof $ !== 'undefined' && $(document)) {
-  $(document).ajaxError(processJQueryAjaxError);
-}
+//if (typeof $ !== 'undefined' && $(document)) {
+//  $(document).ajaxError(processJQueryAjaxError);
+//}
 
 (<any>Error).stackTraceLimit = Infinity;
 
