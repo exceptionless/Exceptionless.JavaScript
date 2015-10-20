@@ -14,14 +14,14 @@ export class NodeSubmissionAdapter implements ISubmissionAdapter {
       return;
     }
 
-    var parsedHost = url.parse(request.serverUrl);
+    let parsedHost = url.parse(request.serverUrl);
 
-    var options: https.RequestOptions = {
+    let options: https.RequestOptions = {
       auth: `client:${request.apiKey}`,
       headers: {},
       hostname: parsedHost.hostname,
       method: request.method,
-      port: parsedHost.port && parseInt(parsedHost.port),
+      port: parsedHost.port && parseInt(parsedHost.port, 10),
       path: request.path
     };
 
@@ -31,12 +31,12 @@ export class NodeSubmissionAdapter implements ISubmissionAdapter {
       options.headers = {
         'Content-Type': 'application/json',
         'Content-Length': request.data.length
-      }
+      };
     }
 
-    var protocol = (parsedHost.protocol === 'https' ? https : http);
-    var clientRequest: http.ClientRequest = protocol.request(options, (response: http.IncomingMessage) => {
-      var body = '';
+    let protocol = (parsedHost.protocol === 'https' ? https : http);
+    let clientRequest: http.ClientRequest = protocol.request(options, (response: http.IncomingMessage) => {
+      let body = '';
       response.setEncoding('utf8');
       response.on('data', (chunk) => body += chunk);
       response.on('end', () => this.complete(response, body, response.headers, callback));
@@ -47,7 +47,7 @@ export class NodeSubmissionAdapter implements ISubmissionAdapter {
   }
 
   private complete(response: http.IncomingMessage, responseBody: string, responseHeaders: Object, callback: SubmissionCallback): void {
-    var message: string;
+    let message: string;
     if (response.statusCode === 0) {
     message = 'Unable to connect to server.';
     } else if (response.statusCode < 200 || response.statusCode > 299) {
@@ -58,15 +58,15 @@ export class NodeSubmissionAdapter implements ISubmissionAdapter {
   }
 
   private sendRequestSync(request: SubmissionRequest, callback: SubmissionCallback): void {
-    var requestJson = JSON.stringify(request);
-    var res = child.spawnSync(process.execPath, [require.resolve('./submitSync.js')],
+    let requestJson = JSON.stringify(request);
+    let res = child.spawnSync(process.execPath, [require.resolve('./submitSync.js')],
       {
         input: requestJson,
         stdio: ['pipe', 'pipe', process.stderr]
       });
 
-    var out = res.stdout.toString();
-    var result = JSON.parse(out);
+    let out = res.stdout.toString();
+    let result = JSON.parse(out);
 
     callback(result.status, result.message, result.data, result.headers);
   }

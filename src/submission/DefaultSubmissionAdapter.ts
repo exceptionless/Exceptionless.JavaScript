@@ -6,23 +6,24 @@ declare var XDomainRequest: { new (); create(); };
 
 export class DefaultSubmissionAdapter implements ISubmissionAdapter {
   public sendRequest(request: SubmissionRequest, callback: SubmissionCallback, isAppExiting?:boolean) {
+    // TODO: Handle sending events when app is exiting with send beacon.
     const TIMEOUT: string = 'timeout';  // optimization for minifier.
     const LOADED: string = 'loaded';  // optimization for minifier.
     const WITH_CREDENTIALS: string = 'withCredentials';  // optimization for minifier.
 
-    var isCompleted: boolean = false;
-    var useSetTimeout: boolean = false;
+    let isCompleted: boolean = false;
+    let useSetTimeout: boolean = false;
     function complete(mode: string, xhr: XMLHttpRequest) {
       function parseResponseHeaders(headerStr) {
-        var headers = {};
-        var headerPairs = (headerStr || '').split('\u000d\u000a');
-        for (var index: number = 0; index < headerPairs.length; index++) {
-          var headerPair = headerPairs[index];
+        let headers = {};
+        let headerPairs = (headerStr || '').split('\u000d\u000a');
+        for (let index: number = 0; index < headerPairs.length; index++) {
+          let headerPair = headerPairs[index];
           // Can't use split() here because it does the wrong thing
           // if the header value has the string ": " in it.
-          var separator = headerPair.indexOf('\u003a\u0020');
+          let separator = headerPair.indexOf('\u003a\u0020');
           if (separator > 0) {
-            headers[headerPair.substring(0, separator)] = headerPair.substring(separator + 2).toLowerCase();
+            headers[headerPair.substring(0, separator).toLowerCase()] = headerPair.substring(separator + 2);
           }
         }
 
@@ -35,9 +36,9 @@ export class DefaultSubmissionAdapter implements ISubmissionAdapter {
 
       isCompleted = true;
 
-      var message: string = xhr.statusText;
-      var responseText: string = xhr.responseText;
-      var status: number = xhr.status;
+      let message: string = xhr.statusText;
+      let responseText: string = xhr.responseText;
+      let status: number = xhr.status;
 
       if (mode === TIMEOUT || status === 0) {
         message = 'Unable to connect to server.';
@@ -45,7 +46,7 @@ export class DefaultSubmissionAdapter implements ISubmissionAdapter {
       } else if (mode === LOADED && !status) {
         status = request.method === 'POST' ? 202 : 200;
       } else if (status < 200 || status > 299) {
-        var responseBody: any = xhr.responseBody;
+        let responseBody: any = xhr.responseBody;
         if (!!responseBody && !!responseBody.message) {
           message = responseBody.message;
         } else if (!!responseText && responseText.indexOf('message') !== -1) {
@@ -61,7 +62,7 @@ export class DefaultSubmissionAdapter implements ISubmissionAdapter {
     }
 
     function createRequest(userAgent:string, method: string, url: string): XMLHttpRequest {
-      var xhr: any = new XMLHttpRequest();
+      let xhr: any = new XMLHttpRequest();
       if (WITH_CREDENTIALS in xhr) {
         xhr.open(method, url, true);
 
@@ -69,7 +70,7 @@ export class DefaultSubmissionAdapter implements ISubmissionAdapter {
         if (method === 'POST') {
           xhr.setRequestHeader('Content-Type', 'application/json');
         }
-      } else if (typeof XDomainRequest != 'undefined') {
+      } else if (typeof XDomainRequest !== 'undefined') {
         useSetTimeout = true;
         xhr = new XDomainRequest();
         xhr.open(method, location.protocol === 'http:' ? url.replace('https:', 'http:') : url);
@@ -84,8 +85,8 @@ export class DefaultSubmissionAdapter implements ISubmissionAdapter {
       return xhr;
     }
 
-    var url = `${request.serverUrl}${request.path}?access_token=${encodeURIComponent(request.apiKey) }`;
-    var xhr = createRequest(request.userAgent, request.method || 'POST', url);
+    let url = `${request.serverUrl}${request.path}?access_token=${encodeURIComponent(request.apiKey) }`;
+    let xhr = createRequest(request.userAgent, request.method || 'POST', url);
     if (!xhr) {
       return callback(503, 'CORS not supported.');
     }
@@ -101,7 +102,7 @@ export class DefaultSubmissionAdapter implements ISubmissionAdapter {
       };
     }
 
-    xhr.onprogress = () => { };
+    xhr.onprogress = () => {};
     xhr.ontimeout = () => complete(TIMEOUT, xhr);
     xhr.onerror = () => complete('error', xhr);
     xhr.onload = () => complete(LOADED, xhr);

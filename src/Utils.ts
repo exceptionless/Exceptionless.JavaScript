@@ -1,5 +1,3 @@
-import { IStackFrame } from './models/IStackFrame';
-
 export class Utils {
   public static addRange<T>(target:T[], ...values:T[]) {
     if (!target) {
@@ -10,7 +8,7 @@ export class Utils {
       return target;
     }
 
-    for (var index = 0; index < values.length; index++) {
+    for (let index = 0; index < values.length; index++) {
       if (values[index] && target.indexOf(values[index]) < 0) {
         target.push(values[index]);
       }
@@ -24,9 +22,9 @@ export class Utils {
       return null;
     }
 
-    var hash:number = 0;
-    for (var index = 0; index < source.length; index++) {
-      var character   = source.charCodeAt(index);
+    let hash:number = 0;
+    for (let index = 0; index < source.length; index++) {
+      let character   = source.charCodeAt(index);
       hash  = ((hash << 5) - hash) + character;
       hash |= 0;
     }
@@ -35,11 +33,11 @@ export class Utils {
   }
 
   public static getCookies(cookies:string): Object {
-    var result:Object = {};
+    let result:Object = {};
 
-    var parts:string[] = (cookies || '').split('; ');
-    for (var index = 0; index < parts.length; index++) {
-      var cookie:string[] = parts[index].split('=');
+    let parts:string[] = (cookies || '').split('; ');
+    for (let index = 0; index < parts.length; index++) {
+      let cookie:string[] = parts[index].split('=');
       result[cookie[0]] = cookie[1];
     }
 
@@ -55,15 +53,15 @@ export class Utils {
   }
 
   public static merge(defaultValues:Object, values:Object) {
-    var result:Object = {};
+    let result:Object = {};
 
-    for (var key in defaultValues || {}) {
+    for (let key in defaultValues || {}) {
       if (!!defaultValues[key]) {
         result[key] = defaultValues[key];
       }
     }
 
-    for (var key in values || {}) {
+    for (let key in values || {}) {
       if (!!values[key]) {
         result[key] = values[key];
       }
@@ -77,8 +75,8 @@ export class Utils {
       return null;
     }
 
-    var versionRegex = /(v?((\d+)\.(\d+)(\.(\d+))?)(?:-([\dA-Za-z\-]+(?:\.[\dA-Za-z\-]+)*))?(?:\+([\dA-Za-z\-]+(?:\.[\dA-Za-z\-]+)*))?)/;
-    var matches = versionRegex.exec(source);
+    let versionRegex = /(v?((\d+)\.(\d+)(\.(\d+))?)(?:-([\dA-Za-z\-]+(?:\.[\dA-Za-z\-]+)*))?(?:\+([\dA-Za-z\-]+(?:\.[\dA-Za-z\-]+)*))?)/;
+    let matches = versionRegex.exec(source);
     if (matches && matches.length > 0) {
       return matches[0];
     }
@@ -91,14 +89,14 @@ export class Utils {
       return null;
     }
 
-    var pairs:string[] = query.split('&');
+    let pairs:string[] = query.split('&');
     if (pairs.length === 0) {
       return null;
     }
 
-    var result:Object = {};
-    for (var index = 0; index < pairs.length; index++) {
-      var pair = pairs[index].split('=');
+    let result:Object = {};
+    for (let index = 0; index < pairs.length; index++) {
+      let pair = pairs[index].split('=');
       result[decodeURIComponent(pair[0])] = decodeURIComponent(pair[1]);
     }
 
@@ -115,7 +113,7 @@ export class Utils {
         return false;
       }
 
-      var trim = /^[\s\uFEFF\xA0]+|[\s\uFEFF\xA0]+$/g;
+      let trim = /^[\s\uFEFF\xA0]+|[\s\uFEFF\xA0]+$/g;
       pattern = pattern.toLowerCase().replace(trim, '');
       value = value.toLowerCase().replace(trim, '');
 
@@ -123,33 +121,36 @@ export class Utils {
         return false;
       }
 
-      var startsWithWildcard:boolean = pattern[0] === '*';
+      let startsWithWildcard:boolean = pattern[0] === '*';
       if (startsWithWildcard) {
         pattern = pattern.slice(1);
       }
 
-      var endsWithWildcard:boolean = pattern[pattern.length - 1] === '*';
+      let endsWithWildcard:boolean = pattern[pattern.length - 1] === '*';
       if (endsWithWildcard) {
         pattern = pattern.substring(0, pattern.length - 1);
       }
 
-      if (startsWithWildcard && endsWithWildcard)
+      if (startsWithWildcard && endsWithWildcard) {
         return value.indexOf(pattern) !== -1;
+      }
 
-      if (startsWithWildcard)
+      if (startsWithWildcard) {
         return value.lastIndexOf(pattern) === (value.length - pattern.length);
+      }
 
-      if (endsWithWildcard)
+      if (endsWithWildcard) {
         return value.indexOf(pattern) === 0;
+      }
 
       return value === pattern;
     }
 
-    function stringifyImpl(data:any, exclusions:string[]): string {
-      var cache:string[] = [];
-      return JSON.stringify(data, function(key:string, value:any) {
-        for (var index = 0; index < (exclusions || []).length; index++) {
-          if (checkForMatch(exclusions[index], key)){
+    function stringifyImpl(obj:any, excludedKeys:string[]): string {
+      let cache:string[] = [];
+      return JSON.stringify(obj, function(key:string, value:any) {
+        for (let index = 0; index < (excludedKeys || []).length; index++) {
+          if (checkForMatch(excludedKeys[index], key)) {
             return;
           }
         }
@@ -168,8 +169,8 @@ export class Utils {
     }
 
     if (({}).toString.call(data) === '[object Array]') {
-      var result = [];
-      for (var index = 0; index < data.length; index++) {
+      let result = [];
+      for (let index = 0; index < data.length; index++) {
         result[index] = JSON.parse(stringifyImpl(data[index], exclusions || []));
       }
 

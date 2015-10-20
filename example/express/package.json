@@ -4,7 +4,7 @@
   "description": "Exceptionless Sample Node App",
   "main": "app.js",
   "author": "Exceptionless",
-  "license": "Apache",
+  "license": "Apache-2.0",
   "dependencies": {
     "express": "^4.12.4",
     "stack-trace": "0.0.9"

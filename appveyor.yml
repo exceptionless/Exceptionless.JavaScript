@@ -1,10 +1,7 @@
-version: 0.1.{build}
-
-environment:
-  nodejs_version: "0.10"
+version: 1.1.{build}
 
 install:
-  - ps: Install-Product node $env:nodejs_version
+  - ps: Install-Product node 4
   - npm install -g tsd
   - npm install -g gulp
   - npm install -g bower

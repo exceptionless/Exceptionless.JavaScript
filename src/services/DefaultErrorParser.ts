@@ -7,22 +7,22 @@ import { EventPluginContext } from '../plugins/EventPluginContext';
 export class DefaultErrorParser implements IErrorParser {
   public parse(context:EventPluginContext, exception:Error): IError {
     function getParameters(parameters:string|string[]): IParameter[] {
-      var params:string[] = (typeof parameters === 'string' ? [parameters] : parameters) || [];
+      let params:string[] = (typeof parameters === 'string' ? [parameters] : parameters) || [];
 
-      var result:IParameter[] = [];
-      for (var index = 0; index < params.length; index++) {
-        result.push({ name: params[index] })
+      let result:IParameter[] = [];
+      for (let index = 0; index < params.length; index++) {
+        result.push({ name: params[index] });
       }
 
       return result;
     }
 
-    function getStackFrames(context:EventPluginContext, stackFrames:TraceKit.StackFrame[]): IStackFrame[] {
+    function getStackFrames(stackFrames:TraceKit.StackFrame[]): IStackFrame[] {
       const ANONYMOUS:string = '<anonymous>';
-      var frames:IStackFrame[] = [];
+      let frames:IStackFrame[] = [];
 
-      for (var index = 0; index < stackFrames.length; index++) {
-        var frame = stackFrames[index];
+      for (let index = 0; index < stackFrames.length; index++) {
+        let frame = stackFrames[index];
         frames.push({
           name: (frame.func || ANONYMOUS).replace('?', ANONYMOUS),
           parameters: getParameters(frame.args),
@@ -37,7 +37,7 @@ export class DefaultErrorParser implements IErrorParser {
 
     const TRACEKIT_STACK_TRACE_KEY:string = '@@_TraceKit.StackTrace'; // optimization for minifier.
 
-    var stackTrace:TraceKit.StackTrace = !!context.contextData[TRACEKIT_STACK_TRACE_KEY]
+    let stackTrace:TraceKit.StackTrace = !!context.contextData[TRACEKIT_STACK_TRACE_KEY]
       ? context.contextData[TRACEKIT_STACK_TRACE_KEY]
       : TraceKit.computeStackTrace(exception, 25);
 
@@ -48,7 +48,7 @@ export class DefaultErrorParser implements IErrorParser {
     return {
       type: stackTrace.name,
       message: stackTrace.message || exception.message,
-      stack_trace: getStackFrames(context, stackTrace.stack || [])
+      stack_trace: getStackFrames(stackTrace.stack || [])
     };
   }
 }

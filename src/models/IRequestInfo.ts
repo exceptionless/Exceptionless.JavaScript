@@ -10,5 +10,5 @@ export interface IRequestInfo {
   cookies?:any;
   post_data?:any;
   query_string?:any;
-  data?:any
+  data?:any;
 }

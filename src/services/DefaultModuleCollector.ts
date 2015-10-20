@@ -9,10 +9,10 @@ export class DefaultModuleCollector implements IModuleCollector {
       return null;
     }
 
-    var modules:IModule[] = [];
-    var scripts = document.getElementsByTagName('script');
+    let modules:IModule[] = [];
+    let scripts = document.getElementsByTagName('script');
     if (scripts && scripts.length > 0) {
-      for (var index = 0; index < scripts.length; index++) {
+      for (let index = 0; index < scripts.length; index++) {
         if (scripts[index].src) {
           modules.push({
             module_id: index,

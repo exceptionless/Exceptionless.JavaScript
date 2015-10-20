@@ -54,8 +54,8 @@ function getDefaultsSettingsFromScriptTag(): IConfigurationSettings {
     return null;
   }
 
-  var scripts = document.getElementsByTagName('script');
-  for (var index = 0; index < scripts.length; index++) {
+  let scripts = document.getElementsByTagName('script');
+  for (let index = 0; index < scripts.length; index++) {
     if (scripts[index].src && scripts[index].src.indexOf('/exceptionless') > -1) {
       return Utils.parseQueryString(scripts[index].src.split('?').pop());
     }
@@ -64,13 +64,15 @@ function getDefaultsSettingsFromScriptTag(): IConfigurationSettings {
 }
 
 function processUnhandledException(stackTrace:TraceKit.StackTrace, options?:any): void {
-  var builder = ExceptionlessClient.default.createUnhandledException(new Error(stackTrace.message || (options || {}).status || 'Script error'), 'onerror');
+  let builder = ExceptionlessClient.default.createUnhandledException(new Error(stackTrace.message || (options || {}).status || 'Script error'), 'onerror');
   builder.pluginContextData['@@_TraceKit.StackTrace'] = stackTrace;
   builder.submit();
 }
 
-function processJQueryAjaxError(event, xhr, settings, error:Error): void {
-  var client = ExceptionlessClient.default;
+/*
+TODO: We currently are unable to parse string exceptions.
+function processJQueryAjaxError(event, xhr, settings, error:string): void {
+  let client = ExceptionlessClient.default;
   if (xhr.status === 404) {
     client.submitNotFound(settings.url);
   } else if (xhr.status !== 401) {
@@ -82,9 +84,10 @@ function processJQueryAjaxError(event, xhr, settings, error:Error): void {
       .submit();
   }
 }
+*/
 
-var defaults = Configuration.defaults;
-var settings = getDefaultsSettingsFromScriptTag();
+let defaults = Configuration.defaults;
+let settings = getDefaultsSettingsFromScriptTag();
 if (settings && (settings.apiKey || settings.serverUrl)) {
   defaults.apiKey = settings.apiKey;
   defaults.serverUrl = settings.serverUrl;
@@ -98,9 +101,13 @@ defaults.submissionAdapter = new DefaultSubmissionAdapter();
 TraceKit.report.subscribe(processUnhandledException);
 TraceKit.extendToAsynchronousCallbacks();
 
-if (typeof $ !== 'undefined' && $(document)) {
-  $(document).ajaxError(processJQueryAjaxError);
-}
+// window && window.addEventListener && window.addEventListener('beforeunload', function () {
+//   ExceptionlessClient.default.config.queue.process(true);
+// });
+
+// if (typeof $ !== 'undefined' && $(document)) {
+//   $(document).ajaxError(processJQueryAjaxError);
+// }
 
 (<any>Error).stackTraceLimit = Infinity;
 

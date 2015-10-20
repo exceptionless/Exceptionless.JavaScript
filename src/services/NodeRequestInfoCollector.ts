@@ -10,8 +10,9 @@ export class NodeRequestInfoCollector implements IRequestInfoCollector {
       return null;
     }
 
-    var request = context.contextData[REQUEST_KEY];
-    var requestInfo:IRequestInfo = {
+    let request = context.contextData[REQUEST_KEY];
+    // TODO: include referrer
+    let requestInfo:IRequestInfo = {
       client_ip_address: request.ip,
       user_agent: request.headers['user-agent'],
       is_secure: request.secure,
@@ -19,13 +20,12 @@ export class NodeRequestInfoCollector implements IRequestInfoCollector {
       host: request.hostname || request.host,
       path: request.path,
       post_data: request.body,
-      //referrer: TODO,
-      cookies: Utils.getCookies((request || {}).headers['cookie']),
+      cookies: Utils.getCookies((request || {}).headers.cookie),
       query_string: request.params
     };
 
-    var host = request.headers['host'];
-    var port:number = host && parseInt(host.slice(host.indexOf(':') + 1));
+    let host = request.headers.host;
+    let port:number = host && parseInt(host.slice(host.indexOf(':') + 1), 10);
     if (port > 0) {
       requestInfo.port = port;
     }

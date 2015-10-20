@@ -6,7 +6,7 @@ export interface IInnerError {
   type?:string;
   code?:string;
   data?:any;
-  inner?:IInnerError
+  inner?:IInnerError;
   stack_trace?:IStackFrame[];
   target_method?:IMethod;
 }

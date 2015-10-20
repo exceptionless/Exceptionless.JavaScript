@@ -1,5 +1,5 @@
 // Update once ts issue is fixed: https://github.com/Microsoft/TypeScript/issues/2192
-//import * as exceptionless from '../../dist/exceptionless'
+// import * as exceptionless from '../../dist/exceptionless'
 declare var exceptionless;
 
 angular.module('exceptionless', [])
@@ -29,7 +29,7 @@ angular.module('exceptionless', [])
     }]);
     $provide.decorator('$log', ['$delegate', function ($delegate) {
       function decorateRegularCall(property, logLevel) {
-        var previousFn = $delegate[property];
+        let previousFn = $delegate[property];
         return $delegate[property] = function () {
           previousFn.apply(null, arguments);
           if (arguments[0] && arguments[0].length > 0) {

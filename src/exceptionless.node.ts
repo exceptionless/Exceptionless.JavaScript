@@ -54,7 +54,7 @@ const UNCAUGHT_EXCEPTION: string = 'uncaughtException';
 const SIGINT: string = 'SIGINT';
 const SIGINT_CODE: number = 2;
 
-var defaults = Configuration.defaults;
+let defaults = Configuration.defaults;
 defaults.environmentInfoCollector = new NodeEnvironmentInfoCollector();
 defaults.errorParser = new NodeErrorParser();
 defaults.moduleCollector = new NodeModuleCollector();
@@ -65,7 +65,7 @@ function getListenerCount(emitter, event:string): number {
   if (emitter.listenerCount) {
     return emitter.listenerCount(event);
   }
-  return require("events").listenerCount(emitter, event);
+  return require('events').listenerCount(emitter, event);
 }
 
 /*
@@ -74,7 +74,7 @@ function getListenerCount(emitter, event:string): number {
  * we hijack the event emitter and forward the exception to the callback.
  */
 function onUncaughtException(callback: (error: Error) => void) {
-  var originalEmit = process.emit;
+  let originalEmit = process.emit;
 
   process.emit = function(type: string, error: Error) {
     if (type === UNCAUGHT_EXCEPTION) {
@@ -82,7 +82,7 @@ function onUncaughtException(callback: (error: Error) => void) {
     }
 
     return originalEmit.apply(this, arguments);
-  }
+  };
 }
 
 onUncaughtException(function(error: Error) {
@@ -97,7 +97,7 @@ process.on(SIGINT, function() {
   if (getListenerCount(process, SIGINT) <= 1) {
     process.exit(128 + SIGINT_CODE);
   }
-})
+});
 
 process.on(EXIT, function(code: number) {
   /**
@@ -105,60 +105,58 @@ process.on(EXIT, function(code: number) {
    * From now on, only synchronous code may run. As soon as this method
    * ends, the application inevitably will exit.
    */
-  function getExitCodeReason(code: number): string {
-    if (code === 1) {
+  function getExitCodeReason(exitCode: number): string {
+    if (exitCode === 1) {
       return 'Uncaught Fatal Exception';
     }
 
-    if (code === 3) {
+    if (exitCode === 3) {
       return 'Internal JavaScript Parse Error';
     }
 
-    if (code === 4) {
+    if (exitCode === 4) {
       return 'Internal JavaScript Evaluation Failure';
     }
 
-    if (code === 5) {
+    if (exitCode === 5) {
       return 'Fatal Exception';
     }
 
-    if (code === 6) {
+    if (exitCode === 6) {
       return 'Non-function Internal Exception Handler ';
     }
 
-    if (code === 7) {
+    if (exitCode === 7) {
       return 'Internal Exception Handler Run-Time Failure';
     }
 
-    if (code === 8) {
+    if (exitCode === 8) {
       return 'Uncaught Exception';
     }
 
-    if (code === 9) {
+    if (exitCode === 9) {
       return 'Invalid Argument';
     }
 
-    if (code === 10) {
+    if (exitCode === 10) {
       return 'Internal JavaScript Run-Time Failure';
     }
 
-    if (code === 12) {
+    if (exitCode === 12) {
       return 'Invalid Debug Argument';
     }
 
     return null;
   }
 
-  var client = ExceptionlessClient.default;
-  var config = client.config;
-  var message = getExitCodeReason(code);
+  let client = ExceptionlessClient.default;
+  let message = getExitCodeReason(code);
 
   if (message !== null) {
-    client.submitLog(EXIT, message, 'Error')
+    client.submitLog(EXIT, message, 'Error');
   }
 
-  config.queue.process(true);
-
+  client.config.queue.process(true);
   // Application will now exit.
 });
 

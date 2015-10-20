@@ -7,14 +7,14 @@ import nodestacktrace = require('stack-trace');
 
 export class NodeErrorParser implements IErrorParser {
   public parse(context:EventPluginContext, exception:Error): IError {
-    function getStackFrames(context:EventPluginContext, stackFrames:any[]): IStackFrame[] {
-      var frames:IStackFrame[] = [];
+    function getStackFrames(stackFrames:any[]): IStackFrame[] {
+      let frames:IStackFrame[] = [];
 
-      for (var index = 0; index < stackFrames.length; index++) {
-        var frame = stackFrames[index];
+      for (let index = 0; index < stackFrames.length; index++) {
+        let frame = stackFrames[index];
         frames.push({
           name: frame.getMethodName() || frame.getFunctionName(),
-          //parameters: frame.args,
+          // parameters: frame.args,
           file_name: frame.getFileName(),
           line_number: frame.getLineNumber() || 0,
           column: frame.getColumnNumber() || 0,
@@ -32,11 +32,11 @@ export class NodeErrorParser implements IErrorParser {
       throw new Error('Unable to load the stack trace library.');
     }
 
-    var stackFrames = nodestacktrace.parse(exception) || [];
+    let stackFrames = nodestacktrace.parse(exception) || [];
     return {
       type: exception.name,
       message: exception.message,
-      stack_trace: getStackFrames(context, stackFrames)
+      stack_trace: getStackFrames(stackFrames)
     };
   }
 }

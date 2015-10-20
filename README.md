@@ -7,7 +7,7 @@ The definition of the word exceptionless is: to be without exception. Exceptionl
 ## Show me the code! ##
 
 ```html
-<script src="https://cdn.rawgit.com/exceptionless/Exceptionless.JavaScript/v1.0.1/dist/exceptionless.min.js"></script>
+<script src="https://cdn.rawgit.com/exceptionless/Exceptionless.JavaScript/v1.1.0/dist/exceptionless.min.js"></script>
 <script>
   var client = exceptionless.ExceptionlessClient.default;
   client.config.apiKey = 'API_KEY_HERE';
@@ -46,7 +46,7 @@ Use one of the following methods to install Exceptionless.js into your browser a
   Add the following script to your page:
 
   ```html
-  <script src="https://cdn.rawgit.com/exceptionless/Exceptionless.JavaScript/v1.0.1/dist/exceptionless.min.js"></script>
+  <script src="https://cdn.rawgit.com/exceptionless/Exceptionless.JavaScript/v1.1.0/dist/exceptionless.min.js"></script>
   ```
 
 - **Bower:**

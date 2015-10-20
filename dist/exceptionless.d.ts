@@ -69,12 +69,12 @@ export interface IConfigurationSettings {
 export declare class SettingsManager {
     private static _configPath;
     private static _handlers;
-    private static changed(config);
     static onChanged(handler: (config: Configuration) => void): void;
     static applySavedServerSettings(config: Configuration): void;
-    private static getSavedServerSettings(config);
     static checkVersion(version: number, config: Configuration): void;
     static updateSettings(config: Configuration): void;
+    private static changed(config);
+    private static getSavedServerSettings(config);
 }
 export declare class DefaultLastReferenceIdManager implements ILastReferenceIdManager {
     private _lastReferenceId;
@@ -129,13 +129,13 @@ export declare class DefaultEventQueue implements IEventQueue {
     constructor(config: Configuration);
     enqueue(event: IEvent): void;
     process(isAppExiting?: boolean): void;
-    private processSubmissionResponse(response, events);
-    private ensureQueueTimer();
-    private onProcessQueue();
     suspendProcessing(durationInMinutes?: number, discardFutureQueuedItems?: boolean, clearQueue?: boolean): void;
-    private removeEvents(events);
-    private isQueueProcessingSuspended();
     private areQueuedItemsDiscarded();
+    private ensureQueueTimer();
+    private isQueueProcessingSuspended();
+    private onProcessQueue();
+    private processSubmissionResponse(response, events);
+    private removeEvents(events);
 }
 export declare class InMemoryStorage<T> implements IStorage<T> {
     private _items;
@@ -166,6 +166,7 @@ export declare class Utils {
     static stringify(data: any, exclusions?: string[]): string;
 }
 export declare class Configuration implements IConfigurationSettings {
+    private static _defaultSettings;
     defaultTags: string[];
     defaultData: Object;
     enabled: boolean;
@@ -181,6 +182,7 @@ export declare class Configuration implements IConfigurationSettings {
     settings: Object;
     storage: IStorage<Object>;
     queue: IEventQueue;
+    private _plugins;
     constructor(configSettings?: IConfigurationSettings);
     private _apiKey;
     apiKey: string;
@@ -190,7 +192,6 @@ export declare class Configuration implements IConfigurationSettings {
     private _dataExclusions;
     dataExclusions: string[];
     addDataExclusions(...exclusions: string[]): void;
-    private _plugins;
     plugins: IEventPlugin[];
     addPlugin(plugin: IEventPlugin): void;
     addPlugin(name: string, priority: number, pluginAction: (context: EventPluginContext, next?: () => void) => void): void;
@@ -203,14 +204,13 @@ export declare class Configuration implements IConfigurationSettings {
     userAgent: string;
     useReferenceIds(): void;
     useDebugLogger(): void;
-    private static _defaultSettings;
     static defaults: IConfigurationSettings;
 }
 export declare class EventBuilder {
-    private _validIdentifierErrorMessage;
     target: IEvent;
     client: ExceptionlessClient;
     pluginContextData: ContextData;
+    private _validIdentifierErrorMessage;
     constructor(event: IEvent, client: ExceptionlessClient, pluginContextData?: ContextData);
     setType(type: string): EventBuilder;
     setSource(source: string): EventBuilder;
@@ -228,9 +228,6 @@ export declare class EventBuilder {
     addRequestInfo(request: Object): EventBuilder;
     submit(callback?: (context: EventPluginContext) => void): void;
     private isValidIdentifier(value);
-}
-export interface IError extends IInnerError {
-    modules?: IModule[];
 }
 export interface IUserDescription {
     email_address?: string;
@@ -259,6 +256,7 @@ export declare class SubmissionResponse {
     constructor(statusCode: number, message?: string);
 }
 export declare class ExceptionlessClient {
+    private static _instance;
     config: Configuration;
     constructor();
     constructor(settings: IConfigurationSettings);
@@ -285,39 +283,7 @@ export declare class ExceptionlessClient {
     submitEvent(event: IEvent, pluginContextData?: ContextData, callback?: (context: EventPluginContext) => void): void;
     updateUserEmailAndDescription(referenceId: string, email: string, description: string, callback?: (response: SubmissionResponse) => void): void;
     getLastReferenceId(): string;
-    private static _instance;
     static default: ExceptionlessClient;
-}
-export interface IParameter {
-    data?: any;
-    generic_arguments?: string[];
-    name?: string;
-    type?: string;
-    type_namespace?: string;
-}
-export interface IMethod {
-    data?: any;
-    generic_arguments?: string[];
-    parameters?: IParameter[];
-    is_signature_target?: boolean;
-    declaring_namespace?: string;
-    declaring_type?: string;
-    name?: string;
-    module_id?: number;
-}
-export interface IStackFrame extends IMethod {
-    file_name?: string;
-    line_number?: number;
-    column?: number;
-}
-export interface IInnerError {
-    message?: string;
-    type?: string;
-    code?: string;
-    data?: any;
-    inner?: IInnerError;
-    stack_trace?: IStackFrame[];
-    target_method?: IMethod;
 }
 export interface IModule {
     data?: any;
@@ -389,6 +355,40 @@ export declare class SubmissionMethodPlugin implements IEventPlugin {
     priority: number;
     name: string;
     run(context: EventPluginContext, next?: () => void): void;
+}
+export interface IParameter {
+    data?: any;
+    generic_arguments?: string[];
+    name?: string;
+    type?: string;
+    type_namespace?: string;
+}
+export interface IMethod {
+    data?: any;
+    generic_arguments?: string[];
+    parameters?: IParameter[];
+    is_signature_target?: boolean;
+    declaring_namespace?: string;
+    declaring_type?: string;
+    name?: string;
+    module_id?: number;
+}
+export interface IStackFrame extends IMethod {
+    file_name?: string;
+    line_number?: number;
+    column?: number;
+}
+export interface IInnerError {
+    message?: string;
+    type?: string;
+    code?: string;
+    data?: any;
+    inner?: IInnerError;
+    stack_trace?: IStackFrame[];
+    target_method?: IMethod;
+}
+export interface IError extends IInnerError {
+    modules?: IModule[];
 }
 export interface IStorageItem<T> {
     created: number;

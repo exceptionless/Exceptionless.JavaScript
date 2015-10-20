@@ -9,9 +9,9 @@ export class EnvironmentInfoPlugin implements IEventPlugin {
   public run(context:EventPluginContext, next?:() => void): void {
     const ENVIRONMENT_KEY:string = '@environment'; // optimization for minifier.
 
-    var collector = context.client.config.environmentInfoCollector;
+    let collector = context.client.config.environmentInfoCollector;
     if (!context.event.data[ENVIRONMENT_KEY] && collector) {
-      var environmentInfo = collector.getEnvironmentInfo(context);
+      let environmentInfo:IEnvironmentInfo = collector.getEnvironmentInfo(context);
       if (!!environmentInfo) {
         context.event.data[ENVIRONMENT_KEY] = environmentInfo;
       }
