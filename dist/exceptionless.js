@@ -1897,7 +1897,7 @@ var Configuration = (function () {
     };
     Object.defineProperty(Configuration.prototype, "userAgent", {
         get: function () {
-            return 'exceptionless-js/1.0.1';
+            return 'exceptionless-js/1.1.0';
         },
         enumerable: true,
         configurable: true
@@ -2593,20 +2593,6 @@ function processUnhandledException(stackTrace, options) {
     builder.pluginContextData['@@_TraceKit.StackTrace'] = stackTrace;
     builder.submit();
 }
-function processJQueryAjaxError(event, xhr, settings, error) {
-    var client = ExceptionlessClient.default;
-    if (xhr.status === 404) {
-        client.submitNotFound(settings.url);
-    }
-    else if (xhr.status !== 401) {
-        client.createUnhandledException(error, 'JQuery.ajaxError')
-            .setSource(settings.url)
-            .setProperty('status', xhr.status)
-            .setProperty('request', settings.data)
-            .setProperty('response', xhr.responseText && xhr.responseText.slice && xhr.responseText.slice(0, 1024))
-            .submit();
-    }
-}
 var defaults = Configuration.defaults;
 var settings = getDefaultsSettingsFromScriptTag();
 if (settings && (settings.apiKey || settings.serverUrl)) {
@@ -2619,14 +2605,12 @@ defaults.requestInfoCollector = new DefaultRequestInfoCollector();
 defaults.submissionAdapter = new DefaultSubmissionAdapter();
 TraceKit.report.subscribe(processUnhandledException);
 TraceKit.extendToAsynchronousCallbacks();
-if (typeof $ !== 'undefined' && $(document)) {
-    $(document).ajaxError(processJQueryAjaxError);
-}
 Error.stackTraceLimit = Infinity;
 
 return exports;
 
 }));
+
 
 
 //# sourceMappingURL=exceptionless.js.map

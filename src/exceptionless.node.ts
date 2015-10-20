@@ -95,7 +95,7 @@ process.on(SIGINT, function() {
   if (getListenerCount(process, SIGINT) <= 1) {
     process.exit(128 + SIGINT_CODE);
   }
-})
+});
 
 process.on(EXIT, function(code: number) {
   /**
@@ -148,15 +148,13 @@ process.on(EXIT, function(code: number) {
   }
 
   var client = ExceptionlessClient.default;
-  var config = client.config;
   var message = getExitCodeReason(code);
 
   if (message !== null) {
     client.submitLog(EXIT, message, 'Error')
   }
 
-  config.queue.process(true);
-
+  client.config.queue.process(true);
   // Application will now exit.
 });
 

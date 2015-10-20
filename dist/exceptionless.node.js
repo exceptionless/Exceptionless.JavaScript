@@ -718,7 +718,7 @@ var Configuration = (function () {
     };
     Object.defineProperty(Configuration.prototype, "userAgent", {
         get: function () {
-            return 'exceptionless-js/1.0.1';
+            return 'exceptionless-js/1.1.0';
         },
         enumerable: true,
         configurable: true
@@ -1438,12 +1438,11 @@ process.on(EXIT, function (code) {
         return null;
     }
     var client = ExceptionlessClient.default;
-    var config = client.config;
     var message = getExitCodeReason(code);
     if (message !== null) {
         client.submitLog(EXIT, message, 'Error');
     }
-    config.queue.process(true);
+    client.config.queue.process(true);
 });
 Error.stackTraceLimit = Infinity;
 
