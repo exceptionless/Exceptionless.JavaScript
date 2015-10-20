@@ -2,7 +2,6 @@ import { IConfigurationSettings } from './configuration/IConfigurationSettings';
 import { Configuration } from './configuration/Configuration';
 import { EventBuilder } from './EventBuilder';
 import { IEvent } from './models/IEvent';
-import { IError } from './models/IError';
 import { IUserDescription } from './models/IUserDescription';
 import { EventPluginContext } from './plugins/EventPluginContext';
 import { EventPluginManager } from './plugins/EventPluginManager';
@@ -10,6 +9,13 @@ import { ContextData } from './plugins/ContextData';
 import { SubmissionResponse } from './submission/SubmissionResponse';
 
 export class ExceptionlessClient {
+  /**
+   * The default ExceptionlessClient instance.
+   * @type {ExceptionlessClient}
+   * @private
+   */
+  private static _instance:ExceptionlessClient = null;
+
   public config:Configuration;
 
   constructor();
@@ -24,7 +30,7 @@ export class ExceptionlessClient {
   }
 
   public createException(exception:Error): EventBuilder {
-    var pluginContextData = new ContextData();
+    let pluginContextData = new ContextData();
     pluginContextData.setException(exception);
     return this.createEvent(pluginContextData).setType('error');
   }
@@ -34,7 +40,7 @@ export class ExceptionlessClient {
   }
 
   public createUnhandledException(exception:Error, submissionMethod?:string): EventBuilder {
-    var builder = this.createException(exception);
+    let builder = this.createException(exception);
     builder.pluginContextData.markAsUnhandledError();
     builder.pluginContextData.setSubmissionMethod(submissionMethod);
 
@@ -57,7 +63,7 @@ export class ExceptionlessClient {
   public createLog(source:string, message:string): EventBuilder;
   public createLog(source:string, message:string, level:string): EventBuilder;
   public createLog(sourceOrMessage:string, message?:string, level?:string): EventBuilder {
-    var builder = this.createEvent().setType('log');
+    let builder = this.createEvent().setType('log');
 
     if (message && level) {
       builder = builder.setSource(sourceOrMessage).setMessage(message).setProperty('@level', level);
@@ -65,7 +71,7 @@ export class ExceptionlessClient {
       builder = builder.setSource(sourceOrMessage).setMessage(message);
     } else {
       // TODO: Look into using https://www.stevefenton.co.uk/Content/Blog/Date/201304/Blog/Obtaining-A-Class-Name-At-Runtime-In-TypeScript/
-      var caller:any = arguments.callee.caller;
+      let caller:any = arguments.callee.caller;
       builder = builder.setSource(caller && caller.name).setMessage(sourceOrMessage);
     }
 
@@ -114,7 +120,7 @@ export class ExceptionlessClient {
    * @param callback
    */
   public submitEvent(event:IEvent, pluginContextData?:ContextData, callback?:(context:EventPluginContext) => void): void {
-    function cancelled() {
+    function cancelled(context:EventPluginContext) {
       if (!!context) {
         context.cancelled = true;
       }
@@ -122,13 +128,14 @@ export class ExceptionlessClient {
       return !!callback && callback(context);
     }
 
+    let context = new EventPluginContext(this, event, pluginContextData);
     if (!event) {
-      return cancelled();
+      return cancelled(context);
     }
 
     if (!this.config.enabled) {
       this.config.log.info('Event submission is currently disabled.');
-      return cancelled();
+      return cancelled(context);
     }
 
     if (!event.data) {
@@ -139,10 +146,9 @@ export class ExceptionlessClient {
       event.tags = [];
     }
 
-    var context = new EventPluginContext(this, event, pluginContextData);
-    EventPluginManager.run(context, function (context:EventPluginContext) {
-      let ev = context.event;
-      if (!context.cancelled) {
+    EventPluginManager.run(context, function (ctx:EventPluginContext) {
+      let ev = ctx.event;
+      if (!ctx.cancelled) {
         // ensure all required data
         if (!ev.type || ev.type.length === 0) {
           ev.type = 'log';
@@ -152,16 +158,16 @@ export class ExceptionlessClient {
           ev.date = new Date();
         }
 
-        var config = context.client.config;
+        let config = ctx.client.config;
         config.queue.enqueue(ev);
 
         if (ev.reference_id && ev.reference_id.length > 0) {
-          context.log.info(`Setting last reference id '${ev.reference_id}'`);
+          ctx.log.info(`Setting last reference id '${ev.reference_id}'`);
           config.lastReferenceIdManager.setLast(ev.reference_id);
         }
       }
 
-      !!callback && callback(context);
+      !!callback && callback(ctx);
     });
   }
 
@@ -176,10 +182,10 @@ export class ExceptionlessClient {
       return !!callback && callback(new SubmissionResponse(500, 'cancelled'));
     }
 
-    var userDescription:IUserDescription = { email_address: email, description: description };
-    var response = this.config.submissionClient.postUserDescription(referenceId, userDescription, this.config, (response:SubmissionResponse) => {
+    let userDescription:IUserDescription = { email_address: email, description: description };
+    this.config.submissionClient.postUserDescription(referenceId, userDescription, this.config, (response:SubmissionResponse) => {
       if (!response.success) {
-        this.config.log.error(`Failed to submit user email and description for event '${referenceId}': ${response.statusCode} ${response.message}`)
+        this.config.log.error(`Failed to submit user email and description for event '${referenceId}': ${response.statusCode} ${response.message}`);
       }
 
       !!callback && callback(response);
@@ -197,17 +203,9 @@ export class ExceptionlessClient {
   /**
    * The default ExceptionlessClient instance.
    * @type {ExceptionlessClient}
-   * @private
-   */
-  private static _instance:ExceptionlessClient = null;
-
-
-  /**
-   * The default ExceptionlessClient instance.
-   * @type {ExceptionlessClient}
    */
   public static get default() {
-    if(ExceptionlessClient._instance === null) {
+    if (ExceptionlessClient._instance === null) {
       ExceptionlessClient._instance = new ExceptionlessClient(null);
     }
 
