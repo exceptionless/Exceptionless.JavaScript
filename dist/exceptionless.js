@@ -2497,7 +2497,7 @@ var DefaultSubmissionAdapter = (function () {
                     var headerPair = headerPairs[index];
                     var separator = headerPair.indexOf('\u003a\u0020');
                     if (separator > 0) {
-                        headers[headerPair.substring(0, separator)] = headerPair.substring(separator + 2).toLowerCase();
+                        headers[headerPair.substring(0, separator).toLowerCase()] = headerPair.substring(separator + 2);
                     }
                 }
                 return headers;

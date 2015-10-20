@@ -22,7 +22,7 @@ export class DefaultSubmissionAdapter implements ISubmissionAdapter {
           // if the header value has the string ": " in it.
           let separator = headerPair.indexOf('\u003a\u0020');
           if (separator > 0) {
-            headers[headerPair.substring(0, separator)] = headerPair.substring(separator + 2).toLowerCase();
+            headers[headerPair.substring(0, separator).toLowerCase()] = headerPair.substring(separator + 2);
           }
         }
 

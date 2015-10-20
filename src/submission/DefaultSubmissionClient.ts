@@ -68,7 +68,7 @@ export class DefaultSubmissionClient implements ISubmissionClient {
 
   private createSubmissionCallback(config:Configuration, callback:(response:SubmissionResponse) => void) {
     return (status, message, data?, headers?) => {
-      let settingsVersion: number = headers && parseInt(headers[this.configurationVersionHeader], 10);
+      let settingsVersion:number = headers && parseInt(headers[this.configurationVersionHeader], 10);
       SettingsManager.checkVersion(settingsVersion, config);
 
       callback(new SubmissionResponse(status, message));
