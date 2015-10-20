@@ -1182,12 +1182,6 @@ if (!exports) {
 var SettingsManager = (function () {
     function SettingsManager() {
     }
-    SettingsManager.changed = function (config) {
-        var handlers = this._handlers;
-        for (var index = 0; index < handlers.length; index++) {
-            handlers[index](config);
-        }
-    };
     SettingsManager.onChanged = function (handler) {
         !!handler && this._handlers.push(handler);
     };
@@ -1196,12 +1190,9 @@ var SettingsManager = (function () {
         config.settings = Utils.merge(config.settings, this.getSavedServerSettings(config));
         this.changed(config);
     };
-    SettingsManager.getSavedServerSettings = function (config) {
-        return config.storage.get(this._configPath) || {};
-    };
     SettingsManager.checkVersion = function (version, config) {
         if (version) {
-            var savedConfigVersion = parseInt(config.storage.get(this._configPath + "-version"));
+            var savedConfigVersion = parseInt(config.storage.get(this._configPath + "-version"), 10);
             if (isNaN(savedConfigVersion) || version > savedConfigVersion) {
                 config.log.info("Updating settings from v" + (!isNaN(savedConfigVersion) ? savedConfigVersion : 0) + " to v" + version);
                 this.updateSettings(config);
@@ -1232,6 +1223,15 @@ var SettingsManager = (function () {
             config.log.info('Updated settings');
             _this.changed(config);
         });
+    };
+    SettingsManager.changed = function (config) {
+        var handlers = this._handlers;
+        for (var index = 0; index < handlers.length; index++) {
+            handlers[index](config);
+        }
+    };
+    SettingsManager.getSavedServerSettings = function (config) {
+        return config.storage.get(this._configPath) || {};
     };
     SettingsManager._configPath = 'ex-server-settings.json';
     SettingsManager._handlers = [];
@@ -1398,7 +1398,7 @@ var DefaultEventQueue = (function () {
         this._processingQueue = true;
         try {
             var events = config.storage.getList('ex-q', config.submissionBatchSize);
-            if (!events || events.length == 0) {
+            if (!events || events.length === 0) {
                 this._processingQueue = false;
                 return;
             }
@@ -1413,6 +1413,37 @@ var DefaultEventQueue = (function () {
             log.error("Error processing queue: " + ex);
             this.suspendProcessing();
             this._processingQueue = false;
+        }
+    };
+    DefaultEventQueue.prototype.suspendProcessing = function (durationInMinutes, discardFutureQueuedItems, clearQueue) {
+        var config = this._config;
+        if (!durationInMinutes || durationInMinutes <= 0) {
+            durationInMinutes = 5;
+        }
+        config.log.info("Suspending processing for " + durationInMinutes + " minutes.");
+        this._suspendProcessingUntil = new Date(new Date().getTime() + (durationInMinutes * 60000));
+        if (discardFutureQueuedItems) {
+            this._discardQueuedItemsUntil = new Date(new Date().getTime() + (durationInMinutes * 60000));
+        }
+        if (clearQueue) {
+            this.removeEvents(config.storage.getList('ex-q'));
+        }
+    };
+    DefaultEventQueue.prototype.areQueuedItemsDiscarded = function () {
+        return this._discardQueuedItemsUntil && this._discardQueuedItemsUntil > new Date();
+    };
+    DefaultEventQueue.prototype.ensureQueueTimer = function () {
+        var _this = this;
+        if (!this._queueTimer) {
+            this._queueTimer = setInterval(function () { return _this.onProcessQueue(); }, 10000);
+        }
+    };
+    DefaultEventQueue.prototype.isQueueProcessingSuspended = function () {
+        return this._suspendProcessingUntil && this._suspendProcessingUntil > new Date();
+    };
+    DefaultEventQueue.prototype.onProcessQueue = function () {
+        if (!this.isQueueProcessingSuspended() && !this._processingQueue) {
+            this.process();
         }
     };
     DefaultEventQueue.prototype.processSubmissionResponse = function (response, events) {
@@ -1463,41 +1494,10 @@ var DefaultEventQueue = (function () {
             this.suspendProcessing();
         }
     };
-    DefaultEventQueue.prototype.ensureQueueTimer = function () {
-        var _this = this;
-        if (!this._queueTimer) {
-            this._queueTimer = setInterval(function () { return _this.onProcessQueue(); }, 10000);
-        }
-    };
-    DefaultEventQueue.prototype.onProcessQueue = function () {
-        if (!this.isQueueProcessingSuspended() && !this._processingQueue) {
-            this.process();
-        }
-    };
-    DefaultEventQueue.prototype.suspendProcessing = function (durationInMinutes, discardFutureQueuedItems, clearQueue) {
-        var config = this._config;
-        if (!durationInMinutes || durationInMinutes <= 0) {
-            durationInMinutes = 5;
-        }
-        config.log.info("Suspending processing for " + durationInMinutes + " minutes.");
-        this._suspendProcessingUntil = new Date(new Date().getTime() + (durationInMinutes * 60000));
-        if (discardFutureQueuedItems) {
-            this._discardQueuedItemsUntil = new Date(new Date().getTime() + (durationInMinutes * 60000));
-        }
-        if (clearQueue) {
-            this.removeEvents(config.storage.getList('ex-q'));
-        }
-    };
     DefaultEventQueue.prototype.removeEvents = function (events) {
         for (var index = 0; index < (events || []).length; index++) {
             this._config.storage.remove(events[index].path);
         }
-    };
-    DefaultEventQueue.prototype.isQueueProcessingSuspended = function () {
-        return this._suspendProcessingUntil && this._suspendProcessingUntil > new Date();
-    };
-    DefaultEventQueue.prototype.areQueuedItemsDiscarded = function () {
-        return this._discardQueuedItemsUntil && this._discardQueuedItemsUntil > new Date();
     };
     return DefaultEventQueue;
 })();
@@ -1600,7 +1600,7 @@ var DefaultSubmissionClient = (function () {
     DefaultSubmissionClient.prototype.createSubmissionCallback = function (config, callback) {
         var _this = this;
         return function (status, message, data, headers) {
-            var settingsVersion = headers && parseInt(headers[_this.configurationVersionHeader]);
+            var settingsVersion = headers && parseInt(headers[_this.configurationVersionHeader], 10);
             SettingsManager.checkVersion(settingsVersion, config);
             callback(new SubmissionResponse(status, message));
         };
@@ -1718,19 +1718,22 @@ var Utils = (function () {
             if (endsWithWildcard) {
                 pattern = pattern.substring(0, pattern.length - 1);
             }
-            if (startsWithWildcard && endsWithWildcard)
+            if (startsWithWildcard && endsWithWildcard) {
                 return value.indexOf(pattern) !== -1;
-            if (startsWithWildcard)
+            }
+            if (startsWithWildcard) {
                 return value.lastIndexOf(pattern) === (value.length - pattern.length);
-            if (endsWithWildcard)
+            }
+            if (endsWithWildcard) {
                 return value.indexOf(pattern) === 0;
+            }
             return value === pattern;
         }
-        function stringifyImpl(data, exclusions) {
+        function stringifyImpl(obj, excludedKeys) {
             var cache = [];
-            return JSON.stringify(data, function (key, value) {
-                for (var index = 0; index < (exclusions || []).length; index++) {
-                    if (checkForMatch(exclusions[index], key)) {
+            return JSON.stringify(obj, function (key, value) {
+                for (var index = 0; index < (excludedKeys || []).length; index++) {
+                    if (checkForMatch(excludedKeys[index], key)) {
                         return;
                     }
                 }
@@ -1762,9 +1765,9 @@ var Configuration = (function () {
         this.enabled = true;
         this.lastReferenceIdManager = new DefaultLastReferenceIdManager();
         this.settings = {};
+        this._plugins = [];
         this._serverUrl = 'https://collector.exceptionless.io';
         this._dataExclusions = [];
-        this._plugins = [];
         function inject(fn) {
             return typeof fn === 'function' ? fn(this) : fn;
         }
@@ -1924,7 +1927,7 @@ var Configuration = (function () {
 exports.Configuration = Configuration;
 var EventBuilder = (function () {
     function EventBuilder(event, client, pluginContextData) {
-        this._validIdentifierErrorMessage = "must contain between 8 and 100 alphanumeric or '-' characters.";
+        this._validIdentifierErrorMessage = 'must contain between 8 and 100 alphanumeric or \'-\' characters.';
         this.target = event;
         this.client = client;
         this.pluginContextData = pluginContextData || new ContextData();
@@ -1962,10 +1965,12 @@ var EventBuilder = (function () {
         return this;
     };
     EventBuilder.prototype.setGeo = function (latitude, longitude) {
-        if (latitude < -90.0 || latitude > 90.0)
+        if (latitude < -90.0 || latitude > 90.0) {
             throw new Error('Must be a valid latitude value between -90.0 and 90.0.');
-        if (longitude < -180.0 || longitude > 180.0)
+        }
+        if (longitude < -180.0 || longitude > 180.0) {
             throw new Error('Must be a valid longitude value between -180.0 and 180.0.');
+        }
         this.target.geo = latitude + "," + longitude;
         return this;
     };
@@ -2169,18 +2174,19 @@ var ExceptionlessClient = (function () {
         return new EventBuilder({ date: new Date() }, this, pluginContextData);
     };
     ExceptionlessClient.prototype.submitEvent = function (event, pluginContextData, callback) {
-        function cancelled() {
+        function cancelled(context) {
             if (!!context) {
                 context.cancelled = true;
             }
             return !!callback && callback(context);
         }
+        var context = new EventPluginContext(this, event, pluginContextData);
         if (!event) {
-            return cancelled();
+            return cancelled(context);
         }
         if (!this.config.enabled) {
             this.config.log.info('Event submission is currently disabled.');
-            return cancelled();
+            return cancelled(context);
         }
         if (!event.data) {
             event.data = {};
@@ -2188,24 +2194,23 @@ var ExceptionlessClient = (function () {
         if (!event.tags || !event.tags.length) {
             event.tags = [];
         }
-        var context = new EventPluginContext(this, event, pluginContextData);
-        EventPluginManager.run(context, function (context) {
-            var ev = context.event;
-            if (!context.cancelled) {
+        EventPluginManager.run(context, function (ctx) {
+            var ev = ctx.event;
+            if (!ctx.cancelled) {
                 if (!ev.type || ev.type.length === 0) {
                     ev.type = 'log';
                 }
                 if (!ev.date) {
                     ev.date = new Date();
                 }
-                var config = context.client.config;
+                var config = ctx.client.config;
                 config.queue.enqueue(ev);
                 if (ev.reference_id && ev.reference_id.length > 0) {
-                    context.log.info("Setting last reference id '" + ev.reference_id + "'");
+                    ctx.log.info("Setting last reference id '" + ev.reference_id + "'");
                     config.lastReferenceIdManager.setLast(ev.reference_id);
                 }
             }
-            !!callback && callback(context);
+            !!callback && callback(ctx);
         });
     };
     ExceptionlessClient.prototype.updateUserEmailAndDescription = function (referenceId, email, description, callback) {
@@ -2214,7 +2219,7 @@ var ExceptionlessClient = (function () {
             return !!callback && callback(new SubmissionResponse(500, 'cancelled'));
         }
         var userDescription = { email_address: email, description: description };
-        var response = this.config.submissionClient.postUserDescription(referenceId, userDescription, this.config, function (response) {
+        this.config.submissionClient.postUserDescription(referenceId, userDescription, this.config, function (response) {
             if (!response.success) {
                 _this.config.log.error("Failed to submit user email and description for event '" + referenceId + "': " + response.statusCode + " " + response.message);
             }
@@ -2388,7 +2393,7 @@ var DefaultErrorParser = (function () {
             }
             return result;
         }
-        function getStackFrames(context, stackFrames) {
+        function getStackFrames(stackFrames) {
             var ANONYMOUS = '<anonymous>';
             var frames = [];
             for (var index = 0; index < stackFrames.length; index++) {
@@ -2413,7 +2418,7 @@ var DefaultErrorParser = (function () {
         return {
             type: stackTrace.name,
             message: stackTrace.message || exception.message,
-            stack_trace: getStackFrames(context, stackTrace.stack || [])
+            stack_trace: getStackFrames(stackTrace.stack || [])
         };
     };
     return DefaultErrorParser;
@@ -2462,7 +2467,7 @@ var DefaultRequestInfoCollector = (function () {
             user_agent: navigator.userAgent,
             is_secure: location.protocol === 'https:',
             host: location.hostname,
-            port: location.port && location.port !== '' ? parseInt(location.port) : 80,
+            port: location.port && location.port !== '' ? parseInt(location.port, 10) : 80,
             path: location.pathname,
             cookies: Utils.getCookies(document.cookie),
             query_string: Utils.parseQueryString(location.search.substring(1))
@@ -2536,7 +2541,7 @@ var DefaultSubmissionAdapter = (function () {
                     xhr.setRequestHeader('Content-Type', 'application/json');
                 }
             }
-            else if (typeof XDomainRequest != 'undefined') {
+            else if (typeof XDomainRequest !== 'undefined') {
                 useSetTimeout = true;
                 xhr = new XDomainRequest();
                 xhr.open(method, location.protocol === 'http:' ? url.replace('https:', 'http:') : url);

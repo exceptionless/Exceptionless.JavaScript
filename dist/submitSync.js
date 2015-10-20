@@ -18,7 +18,7 @@ var NodeSubmissionAdapter = (function () {
             headers: {},
             hostname: parsedHost.hostname,
             method: request.method,
-            port: parsedHost.port && parseInt(parsedHost.port),
+            port: parsedHost.port && parseInt(parsedHost.port, 10),
             path: request.path
         };
         options.headers['User-Agent'] = request.userAgent;
@@ -62,7 +62,6 @@ var NodeSubmissionAdapter = (function () {
 })();
 exports.NodeSubmissionAdapter = NodeSubmissionAdapter;
 var string_decoder_1 = require('string_decoder');
-;
 var decoder = new string_decoder_1.StringDecoder('utf8');
 var strings = [];
 var jsonStream = new stream.Writable();
@@ -70,8 +69,8 @@ jsonStream._write = function (chunk, encoding, next) {
     strings.push(decoder.write(chunk));
     next();
 };
-jsonStream.on("finish", function () {
-    var json = strings.join("");
+jsonStream.on('finish', function () {
+    var json = strings.join('');
     var request = JSON.parse(json);
     var adapter = new NodeSubmissionAdapter();
     adapter.sendRequest(request, function (status, message, data, headers) {
