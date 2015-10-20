@@ -6,6 +6,7 @@ declare var XDomainRequest: { new (); create(); };
 
 export class DefaultSubmissionAdapter implements ISubmissionAdapter {
   public sendRequest(request: SubmissionRequest, callback: SubmissionCallback, isAppExiting?:boolean) {
+    // TODO: Handle sending events when app is exiting with send beacon.
     const TIMEOUT: string = 'timeout';  // optimization for minifier.
     const LOADED: string = 'loaded';  // optimization for minifier.
     const WITH_CREDENTIALS: string = 'withCredentials';  // optimization for minifier.
