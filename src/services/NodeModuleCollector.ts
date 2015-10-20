@@ -14,16 +14,18 @@ export class NodeModuleCollector implements IModuleCollector {
   public getModules(context:EventPluginContext): IModule[] {
     this.initialize();
 
-    if (!require.main) return [];
+    if (!require.main) {
+      return [];
+    }
 
-    var modulePath = path.dirname(require.main.filename) + '/node_modules/';
-    var pathLength = modulePath.length;
+    let modulePath = path.dirname(require.main.filename) + '/node_modules/';
+    let pathLength = modulePath.length;
 
-    var loadedKeys = Object.keys(require.cache);
-    var loadedModules = {};
+    let loadedKeys = Object.keys(require.cache);
+    let loadedModules = {};
 
     loadedKeys.forEach(key => {
-      var id = key.substr(pathLength);
+      let id = key.substr(pathLength);
       console.log(id);
       id = id.substr(0, id.indexOf('/'));
       loadedModules[id] = true;
@@ -35,28 +37,36 @@ export class NodeModuleCollector implements IModuleCollector {
   }
 
   private initialize() {
-    if (this.initialized) return;
+    if (this.initialized) {
+      return;
+    }
+
     this.initialized = true;
 
-    var output = child.spawnSync('npm', ['ls', '--depth=0', '--json']).stdout;
+    let output = child.spawnSync('npm', ['ls', '--depth=0', '--json']).stdout;
 
-    if (!output) return;
+    if (!output) {
+      return;
+    }
 
-    var json;
+    let json;
     try {
      json = JSON.parse(output.toString());
+    } catch (e) {
+      return;
     }
-    catch (e) { return; }
 
-    var items = json.dependencies;
-    if (!items) return;
+    let items = json.dependencies;
+    if (!items) {
+      return;
+    }
 
-    var id = 0;
+    let id = 0;
     this.installedModules = {};
 
     Object.keys(items).forEach(key => {
-      var item = items[key];
-      var theModule = <IModule> {
+      let item = items[key];
+      let theModule = <IModule> {
         module_id: id++,
         name: key,
         version: item.version

@@ -1297,8 +1297,9 @@ var NodeModuleCollector = (function () {
     NodeModuleCollector.prototype.getModules = function (context) {
         var _this = this;
         this.initialize();
-        if (!require.main)
+        if (!require.main) {
             return [];
+        }
         var modulePath = path.dirname(require.main.filename) + '/node_modules/';
         var pathLength = modulePath.length;
         var loadedKeys = Object.keys(require.cache);
@@ -1315,12 +1316,14 @@ var NodeModuleCollector = (function () {
     };
     NodeModuleCollector.prototype.initialize = function () {
         var _this = this;
-        if (this.initialized)
+        if (this.initialized) {
             return;
+        }
         this.initialized = true;
         var output = child.spawnSync('npm', ['ls', '--depth=0', '--json']).stdout;
-        if (!output)
+        if (!output) {
             return;
+        }
         var json;
         try {
             json = JSON.parse(output.toString());
@@ -1329,8 +1332,9 @@ var NodeModuleCollector = (function () {
             return;
         }
         var items = json.dependencies;
-        if (!items)
+        if (!items) {
             return;
+        }
         var id = 0;
         this.installedModules = {};
         Object.keys(items).forEach(function (key) {
