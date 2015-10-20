@@ -2610,6 +2610,9 @@ defaults.requestInfoCollector = new DefaultRequestInfoCollector();
 defaults.submissionAdapter = new DefaultSubmissionAdapter();
 TraceKit.report.subscribe(processUnhandledException);
 TraceKit.extendToAsynchronousCallbacks();
+window && window.addEventListener && window.addEventListener('beforeunload', function () {
+    ExceptionlessClient.default.config.queue.process(true);
+});
 Error.stackTraceLimit = Infinity;
 
 return exports;
