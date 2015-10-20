@@ -1,9 +1,8 @@
-import { IEvent } from './models/IEvent';
 import { Utils } from './Utils';
 
 describe('Utils', () => {
   it('should add range', () => {
-    var target:string[];
+    let target:string[];
     expect(Utils.addRange(target)).toEqual([]);
     expect(target).toBeUndefined();
 
@@ -16,7 +15,7 @@ describe('Utils', () => {
   });
 
   it('should stringify circular reference', () => {
-    var afoo:any = {a: 'foo'};
+    let afoo:any = {a: 'foo'};
     afoo.b = afoo;
 
     expect(Utils.stringify(afoo)).toBe('{"a":"foo"}');
@@ -24,7 +23,7 @@ describe('Utils', () => {
   });
 
   describe('stringify', () => {
-    var user:any = {
+    let user:any = {
       id:1,
       name: 'Blake',
       password: '123456',
@@ -61,36 +60,36 @@ describe('Utils', () => {
   });
 
   it('should stringify array', () => {
-    var error = {
-      "type": "error",
-      "data": {
-        "@error": {
-          "type": "Error",
-          "message": "string error message",
-          "stack_trace": [
+    let error = {
+      'type': 'error',
+      'data': {
+        '@error': {
+          'type': 'Error',
+          'message': 'string error message',
+          'stack_trace': [
             {
-              "name": "throwStringErrorImpl",
-              "parameters": [],
-              "file_name": "http://localhost/index.js",
-              "line_number": 22,
-              "column": 9
+              'name': 'throwStringErrorImpl',
+              'parameters': [],
+              'file_name': 'http://localhost/index.js',
+              'line_number': 22,
+              'column': 9
             },
             {
-              "name": "throwStringError",
-              "parameters": [],
-              "file_name": "http://localhost/index.js",
-              "line_number": 10,
-              "column": 10
+              'name': 'throwStringError',
+              'parameters': [],
+              'file_name': 'http://localhost/index.js',
+              'line_number': 10,
+              'column': 10
             }, {
-              "name": "HTMLButtonElement.onclick",
-              "parameters": [],
-              "file_name": "http://localhost/",
-              "line_number": 22,
-              "column": 10
+              'name': 'HTMLButtonElement.onclick',
+              'parameters': [],
+              'file_name': 'http://localhost/',
+              'line_number': 22,
+              'column': 10
             }]
-        }, "@submission_method": "onerror"
+        }, '@submission_method': 'onerror'
       },
-      "tags": []
+      'tags': []
     };
 
     expect(Utils.stringify(error)).toBe(JSON.stringify(error));

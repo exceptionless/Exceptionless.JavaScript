@@ -5,6 +5,7 @@ var karma = require('gulp-karma');
 var package = require('./package.json');
 var replace = require('gulp-replace');
 var sourcemaps = require('gulp-sourcemaps');
+var tslint = require('gulp-tslint');
 var tsProject = require('tsproject');
 var uglify = require('gulp-uglify');
 var umd = require('gulp-wrap-umd');
@@ -88,7 +89,13 @@ gulp.task('watch', ['build'], function() {
   gulp.watch('src/**/*.ts', ['build']);
 });
 
-gulp.task('build', ['clean', 'exceptionless', 'exceptionless.node']);
+gulp.task('lint', function() {
+  return gulp.src(['src/**/*.ts', '!src/typings/**/*.ts'])
+    .pipe(tslint())
+    .pipe(tslint.report('verbose'));
+});
+
+gulp.task('build', ['clean', 'lint', 'exceptionless', 'exceptionless.node']);
 
 gulp.task('typescript.test', function() {
   return tsProject.src('src/tsconfig.test.json').pipe(gulp.dest('dist/temp'));

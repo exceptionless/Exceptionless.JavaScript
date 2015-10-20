@@ -6,7 +6,7 @@ export class ContextData {
   }
 
   public get hasException(): boolean {
-    return !!this['@@_Exception']
+    return !!this['@@_Exception'];
   }
 
   public getException(): Error {

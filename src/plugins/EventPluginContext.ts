@@ -1,7 +1,6 @@
 import { ContextData } from './ContextData';
 import { ExceptionlessClient } from '../ExceptionlessClient';
 import { IEvent } from '../models/IEvent';
-import { IEventPlugin } from './IEventPlugin';
 import { ILog } from '../logging/ILog';
 
 export class EventPluginContext {

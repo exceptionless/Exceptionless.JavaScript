@@ -6,7 +6,7 @@ export class SubmissionMethodPlugin implements IEventPlugin {
   public name:string = 'SubmissionMethodPlugin';
 
   public run(context:EventPluginContext, next?:() => void): void {
-    var submissionMethod:string = context.contextData.getSubmissionMethod();
+    let submissionMethod:string = context.contextData.getSubmissionMethod();
     if (!!submissionMethod) {
       context.event.data['@submission_method'] = submissionMethod;
     }

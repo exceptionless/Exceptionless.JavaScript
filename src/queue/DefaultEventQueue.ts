@@ -46,7 +46,7 @@ export class DefaultEventQueue implements IEventQueue {
   }
 
   public enqueue(event:IEvent): void {
-    var config:Configuration = this._config; // Optimization for minifier.
+    let config:Configuration = this._config; // Optimization for minifier.
     this.ensureQueueTimer();
 
     if (this.areQueuedItemsDiscarded()) {
@@ -54,15 +54,15 @@ export class DefaultEventQueue implements IEventQueue {
       return;
     }
 
-    var key = `ex-q-${new Date().toJSON()}-${Utils.randomNumber()}`;
+    let key = `ex-q-${new Date().toJSON()}-${Utils.randomNumber()}`;
     config.log.info(`Enqueuing event: ${key} type=${event.type} ${!!event.reference_id ? 'refid=' + event.reference_id : ''}`);
     config.storage.save(key, event);
   }
 
   public process(isAppExiting?:boolean): void {
     function getEvents(events:{ path:string, value:IEvent }[]):IEvent[] {
-      var items:IEvent[] = [];
-      for (var index = 0; index < events.length; index++) {
+      let items:IEvent[] = [];
+      for (let index = 0; index < events.length; index++) {
         items.push(events[index].value);
       }
 
@@ -70,8 +70,8 @@ export class DefaultEventQueue implements IEventQueue {
     }
 
     const queueNotProcessed:string = 'The queue will not be processed.'; // optimization for minifier.
-    var config:Configuration = this._config; // Optimization for minifier.
-    var log:ILog = config.log; // Optimization for minifier.
+    let config:Configuration = this._config; // Optimization for minifier.
+    let log:ILog = config.log; // Optimization for minifier.
 
     this.ensureQueueTimer();
 
@@ -93,8 +93,8 @@ export class DefaultEventQueue implements IEventQueue {
     this._processingQueue = true;
 
     try {
-      var events = config.storage.getList('ex-q', config.submissionBatchSize);
-      if (!events || events.length == 0) {
+      let events = config.storage.getList('ex-q', config.submissionBatchSize);
+      if (!events || events.length === 0) {
         this._processingQueue = false;
         return;
       }
@@ -112,10 +112,50 @@ export class DefaultEventQueue implements IEventQueue {
     }
   }
 
+  public suspendProcessing(durationInMinutes?:number, discardFutureQueuedItems?:boolean, clearQueue?:boolean): void {
+    let config:Configuration = this._config; // Optimization for minifier.
+
+    if (!durationInMinutes || durationInMinutes <= 0) {
+      durationInMinutes = 5;
+    }
+
+    config.log.info(`Suspending processing for ${durationInMinutes} minutes.`);
+    this._suspendProcessingUntil = new Date(new Date().getTime() + (durationInMinutes * 60000));
+
+    if (discardFutureQueuedItems) {
+      this._discardQueuedItemsUntil = new Date(new Date().getTime() + (durationInMinutes * 60000));
+    }
+
+    if (clearQueue) {
+      // Account is over the limit and we want to ensure that the sample size being sent in will contain newer errors.
+      this.removeEvents(config.storage.getList('ex-q'));
+    }
+  }
+
+  private areQueuedItemsDiscarded(): boolean {
+    return this._discardQueuedItemsUntil && this._discardQueuedItemsUntil > new Date();
+  }
+
+  private ensureQueueTimer(): void {
+    if (!this._queueTimer) {
+      this._queueTimer = setInterval(() => this.onProcessQueue(), 10000);
+    }
+  }
+
+  private isQueueProcessingSuspended(): boolean {
+    return this._suspendProcessingUntil && this._suspendProcessingUntil > new Date();
+  }
+
+  private onProcessQueue(): void {
+    if (!this.isQueueProcessingSuspended() && !this._processingQueue) {
+      this.process();
+    }
+  }
+
   private processSubmissionResponse(response:SubmissionResponse, events:{ path:string, value:IEvent }[]): void {
     const noSubmission:string = 'The event will not be submitted.'; // Optimization for minifier.
-    var config:Configuration = this._config; // Optimization for minifier.
-    var log:ILog = config.log; // Optimization for minifier.
+    let config:Configuration = this._config; // Optimization for minifier.
+    let log:ILog = config.log; // Optimization for minifier.
 
     if (response.success) {
       log.info(`Sent ${events.length} events.`);
@@ -154,7 +194,7 @@ export class DefaultEventQueue implements IEventQueue {
     }
 
     if (response.requestEntityTooLarge) {
-      var message = 'Event submission discarded for being too large.';
+      let message = 'Event submission discarded for being too large.';
       if (config.submissionBatchSize > 1) {
         log.error(`${message} Retrying with smaller batch size.`);
         config.submissionBatchSize = Math.max(1, Math.round(config.submissionBatchSize / 1.5));
@@ -172,49 +212,9 @@ export class DefaultEventQueue implements IEventQueue {
     }
   }
 
-  private ensureQueueTimer(): void {
-    if (!this._queueTimer) {
-      this._queueTimer = setInterval(() => this.onProcessQueue(), 10000);
-    }
-  }
-
-  private onProcessQueue(): void {
-    if (!this.isQueueProcessingSuspended() && !this._processingQueue) {
-      this.process();
-    }
-  }
-
-  public suspendProcessing(durationInMinutes?:number, discardFutureQueuedItems?:boolean, clearQueue?:boolean): void {
-    var config:Configuration = this._config; // Optimization for minifier.
-
-    if (!durationInMinutes || durationInMinutes <= 0) {
-      durationInMinutes = 5;
-    }
-
-    config.log.info(`Suspending processing for ${durationInMinutes} minutes.`);
-    this._suspendProcessingUntil = new Date(new Date().getTime() + (durationInMinutes * 60000));
-
-    if (discardFutureQueuedItems) {
-      this._discardQueuedItemsUntil = new Date(new Date().getTime() + (durationInMinutes * 60000));
-    }
-
-    if (clearQueue) {
-      // Account is over the limit and we want to ensure that the sample size being sent in will contain newer errors.
-      this.removeEvents(config.storage.getList('ex-q'));
-    }
-  }
-
   private removeEvents(events:{ path:string, value:IEvent }[]) {
-    for (var index = 0; index < (events || []).length; index++) {
+    for (let index = 0; index < (events || []).length; index++) {
       this._config.storage.remove(events[index].path);
     }
-  }
-
-  private isQueueProcessingSuspended(): boolean {
-    return this._suspendProcessingUntil && this._suspendProcessingUntil > new Date();
-  }
-
-  private areQueuedItemsDiscarded(): boolean {
-    return this._discardQueuedItemsUntil && this._discardQueuedItemsUntil > new Date();
   }
 }

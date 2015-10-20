@@ -1,4 +1,3 @@
-import { Configuration } from './configuration/Configuration';
 import { ExceptionlessClient } from './ExceptionlessClient';
 import { IEvent } from './models/IEvent';
 import { IUserInfo } from './models/IUserInfo';
@@ -7,11 +6,11 @@ import { EventPluginContext } from './plugins/EventPluginContext';
 import { Utils } from './Utils';
 
 export class EventBuilder {
-  private _validIdentifierErrorMessage:string = "must contain between 8 and 100 alphanumeric or '-' characters."; // optimization for minifier.
-
   public target:IEvent;
   public client:ExceptionlessClient;
   public pluginContextData:ContextData;
+
+  private _validIdentifierErrorMessage:string = 'must contain between 8 and 100 alphanumeric or \'-\' characters.'; // optimization for minifier.
 
   constructor(event:IEvent, client:ExceptionlessClient, pluginContextData?:ContextData) {
     this.target = event;
@@ -62,10 +61,13 @@ export class EventBuilder {
   }
 
   public setGeo(latitude: number, longitude: number): EventBuilder {
-    if (latitude < -90.0 || latitude > 90.0)
+    if (latitude < -90.0 || latitude > 90.0) {
       throw new Error('Must be a valid latitude value between -90.0 and 90.0.');
-    if (longitude < -180.0 || longitude > 180.0)
+    }
+
+    if (longitude < -180.0 || longitude > 180.0) {
       throw new Error('Must be a valid longitude value between -180.0 and 180.0.');
+    }
 
     this.target.geo = `${latitude},${longitude}`;
     return this;
@@ -75,7 +77,7 @@ export class EventBuilder {
   public setUserIdentity(identity:string): EventBuilder;
   public setUserIdentity(identity:string, name:string): EventBuilder;
   public setUserIdentity(userInfoOrIdentity:IUserInfo|string, name?:string): EventBuilder {
-    var userInfo = typeof userInfoOrIdentity !== 'string' ? userInfoOrIdentity : { identity: userInfoOrIdentity, name: name };
+    let userInfo = typeof userInfoOrIdentity !== 'string' ? userInfoOrIdentity : { identity: userInfoOrIdentity, name: name };
     if (!userInfo || (!userInfo.identity && !userInfo.name)) {
       return this;
     }
@@ -140,10 +142,10 @@ export class EventBuilder {
     }
 
     for (var index = 0; index < value.length; index++) {
-      var code = value.charCodeAt(index);
-      var isDigit = (code >= 48) && (code <= 57);
-      var isLetter = ((code >= 65) && (code <= 90)) || ((code >= 97) && (code <= 122));
-      var isMinus = code === 45;
+      let code = value.charCodeAt(index);
+      let isDigit = (code >= 48) && (code <= 57);
+      let isLetter = ((code >= 65) && (code <= 90)) || ((code >= 97) && (code <= 122));
+      let isMinus = code === 45;
 
       if (!(isDigit || isLetter) && !isMinus) {
         return false;

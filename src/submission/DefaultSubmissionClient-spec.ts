@@ -4,11 +4,8 @@ import { IUserDescription } from '../models/IUserDescription';
 import { ISubmissionClient } from './ISubmissionClient';
 import { ISubmissionAdapter } from './ISubmissionAdapter';
 import { DefaultSubmissionClient } from './DefaultSubmissionClient';
-import { SettingsResponse } from './SettingsResponse';
 import { SubmissionCallback } from './SubmissionCallback';
 import { SubmissionRequest } from './SubmissionRequest';
-import { SubmissionResponse } from './SubmissionResponse';
-
 
 class TestAdapter implements ISubmissionAdapter {
   private request;
@@ -45,9 +42,9 @@ class TestAdapter implements ISubmissionAdapter {
     }
   }
 
-  public done(){
+  public done() {
     if (!this.request) {
-      fail("sendRequest hasn't been called.");
+      fail('sendRequest hasn\'t been called.');
       return;
     }
 
@@ -57,15 +54,13 @@ class TestAdapter implements ISubmissionAdapter {
 }
 
 describe('DefaultSubmissionClient', () => {
+  let adapter:TestAdapter;
+  let config:Configuration;
+  let submissionClient: ISubmissionClient;
 
-  var adapter:TestAdapter;
-  var config:Configuration;
-  var submissionClient: ISubmissionClient;
-
-  beforeEach(()=>{
-
-    var apiKey = 'LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw';
-    var serverUrl = 'http://localhost:50000'
+  beforeEach(() => {
+    let apiKey = 'LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw';
+    let serverUrl = 'http://localhost:50000';
 
     submissionClient = new DefaultSubmissionClient();
 
@@ -83,7 +78,7 @@ describe('DefaultSubmissionClient', () => {
   });
 
   it('should submit events', (done) => {
-    var events = [{ type: 'log', message: 'From js client', reference_id: '123454321' }];
+    let events = [{ type: 'log', message: 'From js client', reference_id: '123454321' }];
 
     adapter.withCheck(r => {
       expect(r.data).toBe(JSON.stringify(events));
@@ -97,7 +92,7 @@ describe('DefaultSubmissionClient', () => {
   });
 
   it('should submit invalid object data', (done) => {
-    var events:IEvent[] = [{ type: 'log', message: 'From js client', reference_id: '123454321', data: {
+    let events:IEvent[] = [{ type: 'log', message: 'From js client', reference_id: '123454321', data: {
       name: 'blake',
       age: function() { throw new Error('Test'); }
     }}];
@@ -114,7 +109,7 @@ describe('DefaultSubmissionClient', () => {
   });
 
   it('should submit user description', (done) => {
-    var description = {
+    let description:IUserDescription = {
       email_address: 'norply@exceptionless.io',
       description: 'unit test'
     };
@@ -122,7 +117,7 @@ describe('DefaultSubmissionClient', () => {
     adapter.withCheck(r => {
       expect(r.data).toBe(JSON.stringify(description));
       expect(r.method).toBe('POST');
-      expect(r.path).toBe('/api/v2/events/by-ref/123454321/user-description')
+      expect(r.path).toBe('/api/v2/events/by-ref/123454321/user-description');
     });
 
     submissionClient.postUserDescription('123454321', description, config, () => done());

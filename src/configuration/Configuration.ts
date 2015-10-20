@@ -25,6 +25,13 @@ import { Utils } from '../Utils';
 
 export class Configuration implements IConfigurationSettings {
   /**
+   * The default configuration settings that are applied to new configuration instances.
+   * @type {IConfigurationSettings}
+   * @private
+   */
+  private static _defaultSettings:IConfigurationSettings = null;
+
+  /**
    * A default list of tags that will automatically be added to every
    * report submitted to the server.
    *
@@ -71,6 +78,13 @@ export class Configuration implements IConfigurationSettings {
   public storage:IStorage<Object>;
 
   public queue:IEventQueue;
+
+  /**
+   * The list of plugins that will be used in this configuration.
+   * @type {Array}
+   * @private
+   */
+  private _plugins:IEventPlugin[] = [];
 
   constructor(configSettings?:IConfigurationSettings) {
     function inject(fn:any) {
@@ -173,7 +187,7 @@ export class Configuration implements IConfigurationSettings {
    * @returns {string[]}
    */
   public get dataExclusions():string[] {
-    var exclusions:string = this.settings['@@DataExclusions'];
+    let exclusions:string = this.settings['@@DataExclusions'];
     return this._dataExclusions.concat(exclusions && exclusions.split(',') || []);
   }
 
@@ -189,13 +203,6 @@ export class Configuration implements IConfigurationSettings {
   public addDataExclusions(...exclusions:string[]) {
     this._dataExclusions = Utils.addRange<string>(this._dataExclusions, ...exclusions);
   }
-
-  /**
-   * The list of plugins that will be used in this configuration.
-   * @type {Array}
-   * @private
-   */
-  private _plugins:IEventPlugin[] = [];
 
   /**
    * The list of plugins that will be used in this configuration.
@@ -221,7 +228,7 @@ export class Configuration implements IConfigurationSettings {
    */
   public addPlugin(name:string, priority:number, pluginAction:(context:EventPluginContext, next?:() => void) => void): void;
   public addPlugin(pluginOrName:IEventPlugin|string, priority?:number, pluginAction?:(context:EventPluginContext, next?:() => void) => void): void {
-    var plugin:IEventPlugin = !!pluginAction ? { name: <string>pluginOrName, priority: priority, run: pluginAction } : <IEventPlugin>pluginOrName;
+    let plugin:IEventPlugin = !!pluginAction ? { name: <string>pluginOrName, priority: priority, run: pluginAction } : <IEventPlugin>pluginOrName;
     if (!plugin || !plugin.run) {
       this.log.error('Add plugin failed: Run method not defined');
       return;
@@ -235,9 +242,9 @@ export class Configuration implements IConfigurationSettings {
       plugin.priority = 0;
     }
 
-    var pluginExists:boolean = false;
-    var plugins = this._plugins; // optimization for minifier.
-    for (var index = 0; index < plugins.length; index++) {
+    let pluginExists:boolean = false;
+    let plugins = this._plugins; // optimization for minifier.
+    for (let index = 0; index < plugins.length; index++) {
       if (plugins[index].name === plugin.name) {
         pluginExists = true;
         break;
@@ -261,14 +268,14 @@ export class Configuration implements IConfigurationSettings {
    */
   public removePlugin(name:string): void;
   public removePlugin(pluginOrName:IEventPlugin|string): void {
-    var name:string = typeof pluginOrName === 'string' ? pluginOrName : pluginOrName.name;
+    let name:string = typeof pluginOrName === 'string' ? pluginOrName : pluginOrName.name;
     if (!name) {
       this.log.error('Remove plugin failed: Plugin name not defined');
       return;
     }
 
-    var plugins = this._plugins; // optimization for minifier.
-    for (var index = 0; index < plugins.length; index++) {
+    let plugins = this._plugins; // optimization for minifier.
+    for (let index = 0; index < plugins.length; index++) {
       if (plugins[index].name === name) {
         plugins.splice(index, 1);
         break;
@@ -291,9 +298,9 @@ export class Configuration implements IConfigurationSettings {
   public setUserIdentity(identity:string, name:string): void;
   public setUserIdentity(userInfoOrIdentity:IUserInfo|string, name?:string): void {
     const USER_KEY:string = '@user'; // optimization for minifier.
-    var userInfo:IUserInfo = typeof userInfoOrIdentity !== 'string' ? userInfoOrIdentity : { identity: userInfoOrIdentity, name: name };
+    let userInfo:IUserInfo = typeof userInfoOrIdentity !== 'string' ? userInfoOrIdentity : { identity: userInfoOrIdentity, name: name };
 
-    var shouldRemove:boolean = !userInfo || (!userInfo.identity && !userInfo.name);
+    let shouldRemove:boolean = !userInfo || (!userInfo.identity && !userInfo.name);
     if (shouldRemove) {
       delete this.defaultData[USER_KEY];
     } else {
@@ -322,13 +329,6 @@ export class Configuration implements IConfigurationSettings {
   public useDebugLogger(): void {
     this.log = new ConsoleLog();
   }
-
-  /**
-   * The default configuration settings that are applied to new configuration instances.
-   * @type {IConfigurationSettings}
-   * @private
-   */
-  private static _defaultSettings:IConfigurationSettings = null;
 
   /**
    * The default configuration settings that are applied to new configuration instances.

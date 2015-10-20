@@ -17,13 +17,6 @@ export class SettingsManager {
    */
   private static _handlers:{ (config:Configuration):void }[] = [];
 
-  private static changed(config:Configuration) {
-    var handlers = this._handlers; // optimization for minifier.
-    for (var index = 0; index < handlers.length; index++) {
-      handlers[index](config);
-    }
-  }
-
   public static onChanged(handler:(config:Configuration) => void) {
     !!handler && this._handlers.push(handler);
   }
@@ -34,13 +27,9 @@ export class SettingsManager {
     this.changed(config);
   }
 
-  private static getSavedServerSettings(config:Configuration):Object {
-    return config.storage.get(this._configPath) || {};
-  }
-
   public static checkVersion(version:number, config:Configuration):void {
     if (version) {
-      var savedConfigVersion = parseInt(<string>config.storage.get(`${this._configPath}-version`));
+      let savedConfigVersion = parseInt(<string>config.storage.get(`${this._configPath}-version`), 10);
       if (isNaN(savedConfigVersion) || version > savedConfigVersion) {
         config.log.info(`Updating settings from v${(!isNaN(savedConfigVersion) ? savedConfigVersion : 0)} to v${version}`);
         this.updateSettings(config);
@@ -63,8 +52,8 @@ export class SettingsManager {
 
       // TODO: Store snapshot of settings after reading from config and attributes and use that to revert to defaults.
       // Remove any existing server settings that are not in the new server settings.
-      var savedServerSettings = SettingsManager.getSavedServerSettings(config);
-      for (var key in savedServerSettings) {
+      let savedServerSettings = SettingsManager.getSavedServerSettings(config);
+      for (let key in savedServerSettings) {
         if (response.settings[key]) {
           continue;
         }
@@ -72,12 +61,23 @@ export class SettingsManager {
         delete config.settings[key];
       }
 
-      var path = SettingsManager._configPath; // optimization for minifier.
+      let path = SettingsManager._configPath; // optimization for minifier.
       config.storage.save(`${path}-version`, response.settingsVersion);
       config.storage.save(path, response.settings);
 
       config.log.info('Updated settings');
       this.changed(config);
     });
+  }
+
+  private static changed(config:Configuration) {
+    let handlers = this._handlers; // optimization for minifier.
+    for (let index = 0; index < handlers.length; index++) {
+      handlers[index](config);
+    }
+  }
+
+  private static getSavedServerSettings(config:Configuration):Object {
+    return config.storage.get(this._configPath) || {};
   }
 }

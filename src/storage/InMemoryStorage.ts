@@ -1,4 +1,3 @@
-import { IEvent } from '../models/IEvent';
 import { IStorage } from './IStorage';
 import { IStorageItem } from './IStorageItem';
 
@@ -24,19 +23,19 @@ export class InMemoryStorage<T> implements IStorage<T> {
   }
 
   public get(path:string):T {
-    var item:IStorageItem<T> = path ? this.getList(`^${path}$`, 1)[0] : null;
+    let item:IStorageItem<T> = path ? this.getList(`^${path}$`, 1)[0] : null;
     return item ? item.value : null;
   }
 
   public getList(searchPattern?:string, limit?:number):IStorageItem<T>[] {
-    var items = this._items; // Optimization for minifier
+    let items = this._items; // Optimization for minifier
     if (!searchPattern) {
       return items.slice(0, limit);
     }
 
-    var regex = new RegExp(searchPattern);
-    var results:IStorageItem<T>[] = [];
-    for (var index = 0; index < items.length; index++) {
+    let regex = new RegExp(searchPattern);
+    let results:IStorageItem<T>[] = [];
+    for (let index = 0; index < items.length; index++) {
       if (regex.test(items[index].path)) {
         results.push(items[index]);
 
@@ -51,7 +50,7 @@ export class InMemoryStorage<T> implements IStorage<T> {
 
   public remove(path:string):void {
     if (path) {
-      var item = this.getList(`^${path}$`, 1)[0];
+      let item = this.getList(`^${path}$`, 1)[0];
       if (item) {
         this._items.splice(this._items.indexOf(item), 1);
       }

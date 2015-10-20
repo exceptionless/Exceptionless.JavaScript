@@ -1,5 +1,4 @@
 import { Configuration } from './Configuration';
-import { EventPluginContext } from '../plugins/EventPluginContext';
 import { SettingsManager } from './SettingsManager';
 
 describe('SettingsManager', () => {
@@ -8,8 +7,8 @@ describe('SettingsManager', () => {
       expect(configuration.settings).toBeDefined();
       done();
     });
-    
-    var config = new Configuration('LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw');
+
+    let config = new Configuration('LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw');
     SettingsManager.applySavedServerSettings(config);
   }, 250);
 });

@@ -6,16 +6,16 @@ export class ConfigurationDefaultsPlugin implements IEventPlugin {
   public name:string = 'ConfigurationDefaultsPlugin';
 
   public run(context:EventPluginContext, next?:() => void): void {
-    var defaultTags:string[] = context.client.config.defaultTags || [];
-    for (var index = 0; index < defaultTags.length; index++) {
-      var tag = defaultTags[index];
+    let defaultTags:string[] = context.client.config.defaultTags || [];
+    for (let index = 0; index < defaultTags.length; index++) {
+      let tag = defaultTags[index];
       if (!!tag && context.event.tags.indexOf(tag) < 0) {
-        context.event.tags.push(tag)
+        context.event.tags.push(tag);
       }
     }
 
-    var defaultData:Object = context.client.config.defaultData || {};
-    for (var key in defaultData) {
+    let defaultData:Object = context.client.config.defaultData || {};
+    for (let key in defaultData) {
       if (!!defaultData[key]) {
         context.event.data[key] = defaultData[key];
       }

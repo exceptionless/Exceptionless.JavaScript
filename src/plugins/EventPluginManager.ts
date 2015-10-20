@@ -10,7 +10,7 @@ import { SubmissionMethodPlugin } from './default/SubmissionMethodPlugin';
 
 export class EventPluginManager {
   public static run(context:EventPluginContext, callback:(context?:EventPluginContext) => void): void {
-    var wrap = function (plugin:IEventPlugin, next?:() => void): () => void {
+    let wrap = function (plugin:IEventPlugin, next?:() => void): () => void {
       return () => {
         try {
           if (!context.cancelled) {
@@ -27,13 +27,13 @@ export class EventPluginManager {
       };
     };
 
-    var plugins:IEventPlugin[] = context.client.config.plugins; // optimization for minifier.
-    var wrappedPlugins:{ (): void }[] = [];
+    let plugins:IEventPlugin[] = context.client.config.plugins; // optimization for minifier.
+    let wrappedPlugins:{ (): void }[] = [];
     if (!!callback) {
       wrappedPlugins[plugins.length] = wrap({ name: 'cb', priority: 9007199254740992, run: callback }, null);
     }
 
-    for (var index = plugins.length - 1; index > -1; index--) {
+    for (let index = plugins.length - 1; index > -1; index--) {
       wrappedPlugins[index] = wrap(plugins[index], !!callback || (index < plugins.length - 1) ? wrappedPlugins[index + 1] : null);
     }
 
