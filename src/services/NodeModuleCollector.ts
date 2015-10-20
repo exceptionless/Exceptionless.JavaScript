@@ -26,7 +26,6 @@ export class NodeModuleCollector implements IModuleCollector {
 
     loadedKeys.forEach(key => {
       let id = key.substr(pathLength);
-      console.log(id);
       id = id.substr(0, id.indexOf('/'));
       loadedModules[id] = true;
     });

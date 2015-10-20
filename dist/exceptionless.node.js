@@ -1306,7 +1306,6 @@ var NodeModuleCollector = (function () {
         var loadedModules = {};
         loadedKeys.forEach(function (key) {
             var id = key.substr(pathLength);
-            console.log(id);
             id = id.substr(0, id.indexOf('/'));
             loadedModules[id] = true;
         });
