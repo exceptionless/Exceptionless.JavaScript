@@ -15,6 +15,10 @@ export class DefaultSubmissionAdapter implements ISubmissionAdapter {
     let useSetTimeout: boolean = false;
     function complete(mode: string, xhr: XMLHttpRequest) {
       function parseResponseHeaders(headerStr) {
+        function trim(value) {
+          return value.replace(/^[\s\uFEFF\xA0]+|[\s\uFEFF\xA0]+$/g, '');
+        }
+
         let headers = {};
         let headerPairs = (headerStr || '').split('\u000d\u000a');
         for (let index: number = 0; index < headerPairs.length; index++) {
@@ -23,7 +27,7 @@ export class DefaultSubmissionAdapter implements ISubmissionAdapter {
           // if the header value has the string ": " in it.
           let separator = headerPair.indexOf('\u003a\u0020');
           if (separator > 0) {
-            headers[headerPair.substring(0, separator).toLowerCase()] = headerPair.substring(separator + 2);
+            headers[trim(headerPair.substring(0, separator).toLowerCase())] = headerPair.substring(separator + 2);
           }
         }
 
