@@ -1900,7 +1900,7 @@ var Configuration = (function () {
     };
     Object.defineProperty(Configuration.prototype, "userAgent", {
         get: function () {
-            return 'exceptionless-js/1.1.0';
+            return 'exceptionless-js/1.1.1';
         },
         enumerable: true,
         configurable: true
@@ -2491,13 +2491,16 @@ var DefaultSubmissionAdapter = (function () {
         var useSetTimeout = false;
         function complete(mode, xhr) {
             function parseResponseHeaders(headerStr) {
+                function trim(value) {
+                    return value.replace(/^[\s\uFEFF\xA0]+|[\s\uFEFF\xA0]+$/g, '');
+                }
                 var headers = {};
                 var headerPairs = (headerStr || '').split('\u000d\u000a');
                 for (var index = 0; index < headerPairs.length; index++) {
                     var headerPair = headerPairs[index];
                     var separator = headerPair.indexOf('\u003a\u0020');
                     if (separator > 0) {
-                        headers[headerPair.substring(0, separator).toLowerCase()] = headerPair.substring(separator + 2);
+                        headers[trim(headerPair.substring(0, separator).toLowerCase())] = headerPair.substring(separator + 2);
                     }
                 }
                 return headers;
