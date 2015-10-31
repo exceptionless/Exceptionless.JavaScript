@@ -2271,9 +2271,26 @@ var ErrorPlugin = (function () {
     function ErrorPlugin() {
         this.priority = 30;
         this.name = 'ErrorPlugin';
+        this.ignoredProperties = [
+            'arguments',
+            'column',
+            'columnNumber',
+            'description',
+            'fileName',
+            'message',
+            'name',
+            'number',
+            'line',
+            'lineNumber',
+            'opera#sourceloc',
+            'sourceURL',
+            'stack',
+            'stacktrace'
+        ];
     }
     ErrorPlugin.prototype.run = function (context, next) {
         var ERROR_KEY = '@error';
+        var EXTRA_PROPERTIES_KEY = '@ext';
         var exception = context.contextData.getException();
         if (!!exception) {
             context.event.type = 'error';
@@ -2284,11 +2301,34 @@ var ErrorPlugin = (function () {
                 }
                 var result = parser.parse(context, exception);
                 if (!!result) {
+                    var additionalData = this.getAdditionalData(exception);
+                    if (!!additionalData) {
+                        if (!result.data) {
+                            result.data = {};
+                        }
+                        result.data[EXTRA_PROPERTIES_KEY] = additionalData;
+                    }
                     context.event.data[ERROR_KEY] = result;
                 }
             }
         }
         next && next();
+    };
+    ErrorPlugin.prototype.getAdditionalData = function (exception) {
+        var _this = this;
+        var keys = Object.keys(exception)
+            .filter(function (key) { return _this.ignoredProperties.indexOf(key) < 0; });
+        if (keys.length === 0) {
+            return null;
+        }
+        var additionalData = {};
+        keys.forEach(function (key) {
+            var value = exception[key];
+            if (typeof value !== 'function') {
+                additionalData[key] = value;
+            }
+        });
+        return additionalData;
     };
     return ErrorPlugin;
 })();

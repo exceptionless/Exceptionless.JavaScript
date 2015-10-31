@@ -334,7 +334,9 @@ export declare class ConfigurationDefaultsPlugin implements IEventPlugin {
 export declare class ErrorPlugin implements IEventPlugin {
     priority: number;
     name: string;
+    ignoredProperties: string[];
     run(context: EventPluginContext, next?: () => void): void;
+    private getAdditionalData(exception);
 }
 export declare class ModuleInfoPlugin implements IEventPlugin {
     priority: number;
