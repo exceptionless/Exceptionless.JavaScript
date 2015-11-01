@@ -16,8 +16,10 @@ export class ErrorPlugin implements IEventPlugin {
     'line',
     'lineNumber',
     'opera#sourceloc',
+    'sourceId',
     'sourceURL',
     'stack',
+    'stackArray',
     'stacktrace'
   ];
 
@@ -54,22 +56,19 @@ export class ErrorPlugin implements IEventPlugin {
   }
 
   private getAdditionalData(exception: Error): { [key: string]: any } {
-    let keys = Object.keys(exception)
-      .filter(key => this.ignoredProperties.indexOf(key) < 0);
-
-    if (keys.length === 0) {
-      return null;
-    }
-
     let additionalData = {};
-
-    keys.forEach(key => {
+    for (var key in exception) {
+      if (this.ignoredProperties.indexOf(key) >= 0) {
+        continue;
+      }
       let value = exception[key];
       if (typeof value !== 'function') {
         additionalData[key] = value;
       }
-    });
+    }
 
-    return additionalData;
+    return Object.getOwnPropertyNames(additionalData).length
+      ? additionalData
+      : null;
   }
 }

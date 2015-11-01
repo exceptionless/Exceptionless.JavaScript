@@ -2283,8 +2283,10 @@ var ErrorPlugin = (function () {
             'line',
             'lineNumber',
             'opera#sourceloc',
+            'sourceId',
             'sourceURL',
             'stack',
+            'stackArray',
             'stacktrace'
         ];
     }
@@ -2315,20 +2317,19 @@ var ErrorPlugin = (function () {
         next && next();
     };
     ErrorPlugin.prototype.getAdditionalData = function (exception) {
-        var _this = this;
-        var keys = Object.keys(exception)
-            .filter(function (key) { return _this.ignoredProperties.indexOf(key) < 0; });
-        if (keys.length === 0) {
-            return null;
-        }
         var additionalData = {};
-        keys.forEach(function (key) {
+        for (var key in exception) {
+            if (this.ignoredProperties.indexOf(key) >= 0) {
+                continue;
+            }
             var value = exception[key];
             if (typeof value !== 'function') {
                 additionalData[key] = value;
             }
-        });
-        return additionalData;
+        }
+        return Object.getOwnPropertyNames(additionalData).length
+            ? additionalData
+            : null;
     };
     return ErrorPlugin;
 })();

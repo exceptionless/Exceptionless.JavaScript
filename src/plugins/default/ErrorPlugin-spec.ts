@@ -1,10 +1,25 @@
 import { ContextData } from '../ContextData';
 import { EventPluginContext } from '../EventPluginContext';
 import { IEvent } from '../../models/IEvent';
+import { IError } from '../../models/IError';
 import { IErrorParser } from '../../services/IErrorParser';
 
 import { ErrorPlugin } from './ErrorPlugin';
 import { CapturedExceptions } from './ErrorPlugin-spec-exceptions';
+
+
+function BaseTestError() {
+  this.name = 'NotImplementedError';
+  this.someProperty = 'Test';
+};
+
+BaseTestError.prototype = new Error();
+
+function DerivedTestError() {
+  this.someOtherProperty = 'Test2';
+}
+
+DerivedTestError.prototype = new BaseTestError();
 
 describe('ErrorPlugin', () => {
 
@@ -34,38 +49,68 @@ describe('ErrorPlugin', () => {
     context = new EventPluginContext(client, event, contextData);
   });
 
-  describe('additional properties', () => {
+  function processError(error) {
+    let exception = throwAndCatch(error);
+    contextData.setException(exception);
+    target.run(context);
+  }
+
+  describe('additional data', () => {
 
     describeForCapturedExceptions((exception) => {
-      beforeEach(() => {
-        contextData.setException(exception);
-      });
 
       it('should ignore default error properties', () => {
+        contextData.setException(exception);
         target.run(context);
-        let error = event.data['@error'];
-        expect(error).toBeDefined();
-        expect(error.data && error.data['@ext']).toBeFalsy();
+        let additionalData = getAdditionalData(event);
+        expect(additionalData).toBeNull();
       });
+
+    });
+
+    it('should add custom properties to additional data', () => {
+      let error = {
+        someProperty: 'Test'
+      };
+      processError(error);
+      let additionalData = getAdditionalData(event);
+      expect(additionalData).not.toBeNull();
+      expect(additionalData.someProperty).toBe('Test');
     });
 
     it('should support custom exception types', () => {
-      function NotImplementedError() {
-        this.name = 'NotImplementedError';
-        this.someProperty = 'Test';
-      }
+      processError(new BaseTestError());
+      let additionalData = getAdditionalData(event);
+      expect(additionalData).not.toBeNull();
+      expect(additionalData.someProperty).toBe('Test');
+    });
 
-      NotImplementedError.prototype = Error.prototype;
-      contextData.setException(new NotImplementedError());
+    it('should support inherited properties', () => {
+      processError(new DerivedTestError());
+      let additionalData = getAdditionalData(event);
+      expect(additionalData).not.toBeNull();
+      expect(additionalData.someProperty).toBe('Test');
+      expect(additionalData.someOtherProperty).toBe('Test2');
+    });
+
+    it('shouldn\'t set empty additional data', () => {
+      processError({});
+      let additionalData = getAdditionalData(event);
+      expect(additionalData).toBeNull();
+    });
+
+    it('should ignore functions', () => {
+      let exception: any = new Error('Error with function');
+      exception.someFunction = () => { };
+      contextData.setException(exception);
 
       target.run(context);
 
-      let error = event.data['@error'];
-      expect(error.data['@ext'].someProperty).toBe('Test');
+      let additionalData = getAdditionalData(event);
+      expect(additionalData).toBeNull();
     });
   });
 });
-
 
 function describeForCapturedExceptions(specDefinitions: (exception: any) => void) {
   let keys = Object.getOwnPropertyNames(CapturedExceptions);
@@ -73,4 +118,27 @@ function describeForCapturedExceptions(specDefinitions: (exception: any) => void
     let exception = CapturedExceptions[key];
     describe(key, () => { specDefinitions(exception); });
   });
+}
+
+function getError(event: IEvent) {
+  if (event && event.data && event.data['@error']) {
+    return event.data['@error'];
+  }
+  return null;
+}
+
+function getAdditionalData(event: IEvent) {
+  let error = getError(event);
+  if (error && error.data && error.data['@ext']) {
+    return error.data['@ext'];
+  }
+  return null;
+}
+
+function throwAndCatch(error: any): Error {
+  try {
+    throw error;
+  } catch (exception) {
+    return exception;
+  }
 }
