@@ -2271,9 +2271,28 @@ var ErrorPlugin = (function () {
     function ErrorPlugin() {
         this.priority = 30;
         this.name = 'ErrorPlugin';
+        this.ignoredProperties = [
+            'arguments',
+            'column',
+            'columnNumber',
+            'description',
+            'fileName',
+            'message',
+            'name',
+            'number',
+            'line',
+            'lineNumber',
+            'opera#sourceloc',
+            'sourceId',
+            'sourceURL',
+            'stack',
+            'stackArray',
+            'stacktrace'
+        ];
     }
     ErrorPlugin.prototype.run = function (context, next) {
         var ERROR_KEY = '@error';
+        var EXTRA_PROPERTIES_KEY = '@ext';
         var exception = context.contextData.getException();
         if (!!exception) {
             context.event.type = 'error';
@@ -2284,11 +2303,33 @@ var ErrorPlugin = (function () {
                 }
                 var result = parser.parse(context, exception);
                 if (!!result) {
+                    var additionalData = this.getAdditionalData(exception);
+                    if (!!additionalData) {
+                        if (!result.data) {
+                            result.data = {};
+                        }
+                        result.data[EXTRA_PROPERTIES_KEY] = additionalData;
+                    }
                     context.event.data[ERROR_KEY] = result;
                 }
             }
         }
         next && next();
+    };
+    ErrorPlugin.prototype.getAdditionalData = function (exception) {
+        var additionalData = {};
+        for (var key in exception) {
+            if (this.ignoredProperties.indexOf(key) >= 0) {
+                continue;
+            }
+            var value = exception[key];
+            if (typeof value !== 'function') {
+                additionalData[key] = value;
+            }
+        }
+        return Object.getOwnPropertyNames(additionalData).length
+            ? additionalData
+            : null;
     };
     return ErrorPlugin;
 })();

@@ -1092,9 +1092,28 @@ var ErrorPlugin = (function () {
     function ErrorPlugin() {
         this.priority = 30;
         this.name = 'ErrorPlugin';
+        this.ignoredProperties = [
+            'arguments',
+            'column',
+            'columnNumber',
+            'description',
+            'fileName',
+            'message',
+            'name',
+            'number',
+            'line',
+            'lineNumber',
+            'opera#sourceloc',
+            'sourceId',
+            'sourceURL',
+            'stack',
+            'stackArray',
+            'stacktrace'
+        ];
     }
     ErrorPlugin.prototype.run = function (context, next) {
         var ERROR_KEY = '@error';
+        var EXTRA_PROPERTIES_KEY = '@ext';
         var exception = context.contextData.getException();
         if (!!exception) {
             context.event.type = 'error';
@@ -1105,11 +1124,33 @@ var ErrorPlugin = (function () {
                 }
                 var result = parser.parse(context, exception);
                 if (!!result) {
+                    var additionalData = this.getAdditionalData(exception);
+                    if (!!additionalData) {
+                        if (!result.data) {
+                            result.data = {};
+                        }
+                        result.data[EXTRA_PROPERTIES_KEY] = additionalData;
+                    }
                     context.event.data[ERROR_KEY] = result;
                 }
             }
         }
         next && next();
+    };
+    ErrorPlugin.prototype.getAdditionalData = function (exception) {
+        var additionalData = {};
+        for (var key in exception) {
+            if (this.ignoredProperties.indexOf(key) >= 0) {
+                continue;
+            }
+            var value = exception[key];
+            if (typeof value !== 'function') {
+                additionalData[key] = value;
+            }
+        }
+        return Object.getOwnPropertyNames(additionalData).length
+            ? additionalData
+            : null;
     };
     return ErrorPlugin;
 })();
@@ -1204,6 +1245,7 @@ var SettingsResponse = (function () {
 exports.SettingsResponse = SettingsResponse;
 var os = require('os');
 var nodestacktrace = require('stack-trace');
+var path = require('path');
 var https = require('https');
 var url = require('url');
 var NodeEnvironmentInfoCollector = (function () {
@@ -1288,6 +1330,66 @@ var NodeErrorParser = (function () {
     return NodeErrorParser;
 })();
 exports.NodeErrorParser = NodeErrorParser;
+var NodeModuleCollector = (function () {
+    function NodeModuleCollector() {
+        this.initialized = false;
+        this.installedModules = {};
+    }
+    NodeModuleCollector.prototype.getModules = function (context) {
+        var _this = this;
+        this.initialize();
+        if (!require.main) {
+            return [];
+        }
+        var modulePath = path.dirname(require.main.filename) + '/node_modules/';
+        var pathLength = modulePath.length;
+        var loadedKeys = Object.keys(require.cache);
+        var loadedModules = {};
+        loadedKeys.forEach(function (key) {
+            var id = key.substr(pathLength);
+            id = id.substr(0, id.indexOf('/'));
+            loadedModules[id] = true;
+        });
+        return Object.keys(loadedModules)
+            .map(function (key) { return _this.installedModules[key]; })
+            .filter(function (m) { return m !== undefined; });
+    };
+    NodeModuleCollector.prototype.initialize = function () {
+        var _this = this;
+        if (this.initialized) {
+            return;
+        }
+        this.initialized = true;
+        var output = child.spawnSync('npm', ['ls', '--depth=0', '--json']).stdout;
+        if (!output) {
+            return;
+        }
+        var json;
+        try {
+            json = JSON.parse(output.toString());
+        }
+        catch (e) {
+            return;
+        }
+        var items = json.dependencies;
+        if (!items) {
+            return;
+        }
+        var id = 0;
+        this.installedModules = {};
+        Object.keys(items).forEach(function (key) {
+            var item = items[key];
+            var theModule = {
+                module_id: id++,
+                name: key,
+                version: item.version
+            };
+            _this.installedModules[key] = theModule;
+        });
+    };
+    return NodeModuleCollector;
+})();
+exports.NodeModuleCollector = NodeModuleCollector;
 var NodeRequestInfoCollector = (function () {
     function NodeRequestInfoCollector() {
     }
@@ -1383,6 +1485,7 @@ var SIGINT_CODE = 2;
 var defaults = Configuration.defaults;
 defaults.environmentInfoCollector = new NodeEnvironmentInfoCollector();
 defaults.errorParser = new NodeErrorParser();
+defaults.moduleCollector = new NodeModuleCollector();
 defaults.requestInfoCollector = new NodeRequestInfoCollector();
 defaults.submissionAdapter = new NodeSubmissionAdapter();
 function getListenerCount(emitter, event) {
