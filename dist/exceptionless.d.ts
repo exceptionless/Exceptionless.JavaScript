@@ -326,6 +326,37 @@ export interface IEnvironmentInfo {
     runtime_version?: string;
     data?: any;
 }
+export interface IParameter {
+    data?: any;
+    generic_arguments?: string[];
+    name?: string;
+    type?: string;
+    type_namespace?: string;
+}
+export interface IMethod {
+    data?: any;
+    generic_arguments?: string[];
+    parameters?: IParameter[];
+    is_signature_target?: boolean;
+    declaring_namespace?: string;
+    declaring_type?: string;
+    name?: string;
+    module_id?: number;
+}
+export interface IStackFrame extends IMethod {
+    file_name?: string;
+    line_number?: number;
+    column?: number;
+}
+export interface IInnerError {
+    message?: string;
+    type?: string;
+    code?: string;
+    data?: any;
+    inner?: IInnerError;
+    stack_trace?: IStackFrame[];
+    target_method?: IMethod;
+}
 export declare class ConfigurationDefaultsPlugin implements IEventPlugin {
     priority: number;
     name: string;
@@ -358,36 +389,13 @@ export declare class SubmissionMethodPlugin implements IEventPlugin {
     name: string;
     run(context: EventPluginContext, next?: () => void): void;
 }
-export interface IParameter {
-    data?: any;
-    generic_arguments?: string[];
-    name?: string;
-    type?: string;
-    type_namespace?: string;
-}
-export interface IMethod {
-    data?: any;
-    generic_arguments?: string[];
-    parameters?: IParameter[];
-    is_signature_target?: boolean;
-    declaring_namespace?: string;
-    declaring_type?: string;
-    name?: string;
-    module_id?: number;
-}
-export interface IStackFrame extends IMethod {
-    file_name?: string;
-    line_number?: number;
-    column?: number;
-}
-export interface IInnerError {
-    message?: string;
-    type?: string;
-    code?: string;
-    data?: any;
-    inner?: IInnerError;
-    stack_trace?: IStackFrame[];
-    target_method?: IMethod;
+export declare class DuplicateCheckerPlugin implements IEventPlugin {
+    priority: number;
+    name: string;
+    private recentlyProcessedErrors;
+    run(context: EventPluginContext, next?: () => void): void;
+    private getNow();
+    private checkDuplicate(error, log);
 }
 export interface IError extends IInnerError {
     modules?: IModule[];
