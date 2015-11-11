@@ -3,7 +3,7 @@ import { EventPluginContext } from '../EventPluginContext';
 import { IModule } from '../../models/IModule';
 
 export class ModuleInfoPlugin implements IEventPlugin {
-  public priority:number = 40;
+  public priority:number = 50;
   public name:string = 'ModuleInfoPlugin';
 
   public run(context:EventPluginContext, next?:() => void): void {

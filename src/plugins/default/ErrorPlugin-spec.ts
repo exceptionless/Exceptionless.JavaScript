@@ -6,7 +6,7 @@ import { IErrorParser } from '../../services/IErrorParser';
 
 import { ErrorPlugin } from './ErrorPlugin';
 import { CapturedExceptions } from './ErrorPlugin-spec-exceptions';
-
+import { createFixture } from './EventPluginTestFixture';
 
 function BaseTestError() {
   this.name = 'NotImplementedError';
@@ -31,22 +31,11 @@ describe('ErrorPlugin', () => {
   let event: IEvent;
 
   beforeEach(() => {
-    errorParser = {
-      parse: (c: EventPluginContext, exception: Error) => ({
-        type: exception.name,
-        message: exception.message
-      })
-    };
-    client = {
-      config: {
-        errorParser
-      }
-    };
-    event = {
-      data: {}
-    };
-    contextData = new ContextData();
-    context = new EventPluginContext(client, event, contextData);
+    ({
+      contextData,
+      context,
+      client,
+      event} = createFixture());
   });
 
   function processError(error) {
