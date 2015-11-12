@@ -32,6 +32,7 @@
     "es6-shim": "0.33.13",
     "gulp": "3.9.0",
     "gulp-concat": "2.6.0",
+    "gulp-exec": "^2.1.2",
     "gulp-replace": "0.5.4",
     "gulp-sourcemaps": "1.6.0",
     "gulp-tslint": "3.6.0",
@@ -47,7 +48,8 @@
     "rimraf": "2.4.3",
     "tracekit": "0.3.1",
     "tsproject": "1.0.5",
-    "typescript": "1.6.2"
+    "typescript": "1.6.2",
+    "typescript-formatter": "^1.1.0"
   },
   "dependencies": {
     "stack-trace": "0.0.9"

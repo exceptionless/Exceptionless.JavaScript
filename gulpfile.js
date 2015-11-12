@@ -9,6 +9,7 @@ var tslint = require('gulp-tslint');
 var tsProject = require('tsproject');
 var uglify = require('gulp-uglify');
 var umd = require('gulp-wrap-umd');
+var exec = require('gulp-exec');
 
 gulp.task('clean', function () {
   del.sync(['dist'], { force: true });
@@ -118,6 +119,12 @@ gulp.task('test', ['exceptionless.test.umd'], function(done) {
   new Server({
     configFile: __dirname + '/karma.conf.js'
   }, done).start();
+});
+
+gulp.task('format', function() {
+  return gulp.src(['src/**/*.ts', '!src/typings/**/*.ts'])
+    .pipe(exec('node_modules/typescript-formatter/bin/tsfmt -r <%= file.path %>'))
+    .pipe(exec.reporter());
 });
 
 gulp.task('default', ['watch', 'build', 'test']);
