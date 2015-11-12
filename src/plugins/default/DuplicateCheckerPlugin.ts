@@ -1,5 +1,4 @@
 import { IInnerError } from '../../models/IInnerError';
-import { IStackFrame } from '../../models/IStackFrame';
 import { ILog } from '../../logging/ILog';
 import { IEventPlugin } from '../IEventPlugin';
 import { EventPluginContext } from '../EventPluginContext';

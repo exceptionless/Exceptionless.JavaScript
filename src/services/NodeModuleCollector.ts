@@ -1,7 +1,6 @@
 import { IModule } from '../models/IModule';
 import { IModuleCollector } from './IModuleCollector';
 import { EventPluginContext } from '../plugins/EventPluginContext';
-import { Utils } from '../Utils';
 
 import child = require('child_process');
 import path = require('path');

@@ -1,9 +1,7 @@
 import { ContextData } from '../ContextData';
 import { EventPluginContext } from '../EventPluginContext';
 import { IEvent } from '../../models/IEvent';
-import { IError } from '../../models/IError';
 import { IErrorParser } from '../../services/IErrorParser';
-import { IStackFrame } from '../../models/IStackFrame';
 
 // TODO: This should use the real object instances and inject the error parser.
 export function createFixture() {
