@@ -100,6 +100,7 @@ TraceKit.wrap = function traceKitWrapper(func) {
  */
 TraceKit.report = (function reportModuleWrapper() {
     var handlers = [],
+        lastArgs = null,
         lastException = null,
         lastExceptionStack = null;
 
@@ -164,33 +165,28 @@ TraceKit.report = (function reportModuleWrapper() {
     function traceKitWindowOnError(message, url, lineNo, columnNo, errorObj) {
         var stack = null;
 
-        if (errorObj) {
-          stack = TraceKit.computeStackTrace(errorObj);
-        }
-        else
-        {
-            if (lastExceptionStack) {
-                TraceKit.computeStackTrace.augmentStackTraceWithInitialElement(lastExceptionStack, url, lineNo, message);
-                stack = lastExceptionStack;
-                lastExceptionStack = null;
-                lastException = null;
-            } else {
-                var location = {
-                    'url': url,
-                    'line': lineNo,
-                    'column': columnNo
-                };
-                location.func = TraceKit.computeStackTrace.guessFunctionName(location.url, location.line);
-                location.context = TraceKit.computeStackTrace.gatherContext(location.url, location.line);
-                stack = {
-                    'mode': 'onerror',
-                    'message': message,
-                    'stack': [location]
-                };
-            }
-        }
+        if (lastExceptionStack) {
+            TraceKit.computeStackTrace.augmentStackTraceWithInitialElement(lastExceptionStack, url, lineNo, message);
+    	    processLastException();
+	    } else if (errorObj) {
+            stack = TraceKit.computeStackTrace(errorObj);
+            notifyHandlers(stack, true);
+        } else {
+            var location = {
+              'url': url,
+              'line': lineNo,
+              'column': columnNo
+            };
+            location.func = TraceKit.computeStackTrace.guessFunctionName(location.url, location.line);
+            location.context = TraceKit.computeStackTrace.gatherContext(location.url, location.line);
+            stack = {
+              'mode': 'onerror',
+              'message': message,
+              'stack': [location]
+            };
 
-        notifyHandlers(stack, 'from window.onerror');
+            notifyHandlers(stack, true);
+        }
 
         if (_oldOnerrorHandler) {
             return _oldOnerrorHandler.apply(this, arguments);
@@ -199,8 +195,7 @@ TraceKit.report = (function reportModuleWrapper() {
         return false;
     }
 
-    function installGlobalHandler ()
-    {
+    function installGlobalHandler () {
         if (_onErrorHandlerInstalled === true) {
             return;
         }
@@ -209,26 +204,31 @@ TraceKit.report = (function reportModuleWrapper() {
         _onErrorHandlerInstalled = true;
     }
 
+    function processLastException() {
+        var _lastExceptionStack = lastExceptionStack,
+            _lastArgs = lastArgs;
+        lastArgs = null;
+        lastExceptionStack = null;
+        lastException = null;
+        notifyHandlers.apply(null, [_lastExceptionStack, false].concat(_lastArgs));
+    }
     /**
      * Reports an unhandled Error to TraceKit.
      * @param {Error} ex
      */
     function report(ex) {
-        var args = _slice.call(arguments, 1);
         if (lastExceptionStack) {
             if (lastException === ex) {
                 return; // already caught by an inner catch block, ignore
             } else {
-                var s = lastExceptionStack;
-                lastExceptionStack = null;
-                lastException = null;
-                notifyHandlers.apply(null, [s, null].concat(args));
+              processLastException();
             }
         }
 
         var stack = TraceKit.computeStackTrace(ex);
         lastExceptionStack = stack;
         lastException = ex;
+        lastArgs = _slice.call(arguments, 1);
 
         // If the stack trace is incomplete, wait for 2 seconds for
         // slow slow IE to see if onerror occurs or not before reporting
@@ -236,9 +236,7 @@ TraceKit.report = (function reportModuleWrapper() {
         // stack trace
         window.setTimeout(function () {
             if (lastException === ex) {
-                lastExceptionStack = null;
-                lastException = null;
-                notifyHandlers.apply(null, [stack, null].concat(args));
+                processLastException();
             }
         }, (stack.incomplete ? 2000 : 0));
 
@@ -364,7 +362,6 @@ TraceKit.computeStackTrace = (function computeStackTraceWrapper() {
             // URL needs to be able to fetched within the acceptable domain.  Otherwise,
             // cross-domain errors will be triggered.
             var source = '';
-
             var domain = '';
             try { domain = document.domain; } catch (e) {}
             if (url.indexOf(domain) !== -1) {
@@ -529,6 +526,10 @@ TraceKit.computeStackTrace = (function computeStackTraceWrapper() {
      * the url, line, and column number of the defined function.
      */
     function findSourceByFunctionBody(func) {
+        if (_isUndefined(document)) {
+            return;
+        }
+
         var urls = [window.location.href],
             scripts = document.getElementsByTagName('script'),
             body,
@@ -636,9 +637,9 @@ TraceKit.computeStackTrace = (function computeStackTraceWrapper() {
             return null;
         }
 
-        var chrome = /^\s*at (.*?) ?\(((?:file|https?|chrome-extension|native|eval).*?)(?::(\d+))?(?::(\d+))?\)?\s*$/i,
-            gecko = /^\s*(.*?)(?:\((.*?)\))?@?((?:file|https?|chrome|\[).*?)(?::(\d+))?(?::(\d+))?\s*$/i,
-            winjs = /^\s*at (?:((?:\[object object\])?.+) )?\(?((?:ms-appx|http|https):.*?):(\d+)(?::(\d+))?\)?\s*$/i,
+        var chrome = /^\s*at (.*?) ?\(((?:file|https?|blob|chrome-extension|native|eval).*?)(?::(\d+))?(?::(\d+))?\)?\s*$/i,
+            gecko = /^\s*(.*?)(?:\((.*?)\))?@?((?:file|https?|blob|chrome|\[).*?)(?::(\d+))?(?::(\d+))?\s*$/i,
+            winjs = /^\s*at (?:((?:\[object object\])?.+) )?\(?((?:ms-appx|https?|blob):.*?):(\d+)(?::(\d+))?\)?\s*$/i,
             lines = ex.stack.split('\n'),
             stack = [],
             parts,
@@ -655,7 +656,7 @@ TraceKit.computeStackTrace = (function computeStackTraceWrapper() {
                     'line': parts[3] ? +parts[3] : null,
                     'column': parts[4] ? +parts[4] : null
                 };
-            } else if ((parts = winjs.exec(lines[i]))) {
+            } else if ( parts = winjs.exec(lines[i]) ) {
                 element = {
                     'url': parts[2],
                     'func': parts[1] || UNKNOWN_FUNCTION,
@@ -808,8 +809,8 @@ TraceKit.computeStackTrace = (function computeStackTraceWrapper() {
             return null;
         }
 
-        var lineRE1 = /^\s*Line (\d+) of linked script ((?:file|https?)\S+)(?:: in function (\S+))?\s*$/i,
-            lineRE2 = /^\s*Line (\d+) of inline#(\d+) script in ((?:file|https?)\S+)(?:: in function (\S+))?\s*$/i,
+        var lineRE1 = /^\s*Line (\d+) of linked script ((?:file|https?|blob)\S+)(?:: in function (\S+))?\s*$/i,
+            lineRE2 = /^\s*Line (\d+) of inline#(\d+) script in ((?:file|https?|blob)\S+)(?:: in function (\S+))?\s*$/i,
             lineRE3 = /^\s*Line (\d+) of function script\s*$/i,
             stack = [],
             scripts = document.getElementsByTagName('script'),
@@ -1901,7 +1902,7 @@ var Configuration = (function () {
     };
     Object.defineProperty(Configuration.prototype, "userAgent", {
         get: function () {
-            return 'exceptionless-js/1.1.1';
+            return 'exceptionless-js/1.2.0';
         },
         enumerable: true,
         configurable: true
