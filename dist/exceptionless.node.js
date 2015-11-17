@@ -153,6 +153,7 @@ var EventPluginManager = (function () {
     EventPluginManager.addDefaultPlugins = function (config) {
         config.addPlugin(new ConfigurationDefaultsPlugin());
         config.addPlugin(new ErrorPlugin());
+        config.addPlugin(new DuplicateCheckerPlugin());
         config.addPlugin(new ModuleInfoPlugin());
         config.addPlugin(new RequestInfoPlugin());
         config.addPlugin(new EnvironmentInfoPlugin());
@@ -1157,7 +1158,7 @@ var ErrorPlugin = (function () {
 exports.ErrorPlugin = ErrorPlugin;
 var ModuleInfoPlugin = (function () {
     function ModuleInfoPlugin() {
-        this.priority = 40;
+        this.priority = 50;
         this.name = 'ModuleInfoPlugin';
     }
     ModuleInfoPlugin.prototype.run = function (context, next) {
@@ -1176,7 +1177,7 @@ var ModuleInfoPlugin = (function () {
 exports.ModuleInfoPlugin = ModuleInfoPlugin;
 var RequestInfoPlugin = (function () {
     function RequestInfoPlugin() {
-        this.priority = 60;
+        this.priority = 70;
         this.name = 'RequestInfoPlugin';
     }
     RequestInfoPlugin.prototype.run = function (context, next) {
@@ -1195,7 +1196,7 @@ var RequestInfoPlugin = (function () {
 exports.RequestInfoPlugin = RequestInfoPlugin;
 var EnvironmentInfoPlugin = (function () {
     function EnvironmentInfoPlugin() {
-        this.priority = 70;
+        this.priority = 80;
         this.name = 'EnvironmentInfoPlugin';
     }
     EnvironmentInfoPlugin.prototype.run = function (context, next) {
@@ -1227,6 +1228,68 @@ var SubmissionMethodPlugin = (function () {
     return SubmissionMethodPlugin;
 })();
 exports.SubmissionMethodPlugin = SubmissionMethodPlugin;
+var ERROR_KEY = '@error';
+var WINDOW_MILLISECONDS = 2000;
+var MAX_QUEUE_LENGTH = 10;
+var DuplicateCheckerPlugin = (function () {
+    function DuplicateCheckerPlugin() {
+        this.priority = 40;
+        this.name = 'DuplicateCheckerPlugin';
+        this.recentlyProcessedErrors = [];
+    }
+    DuplicateCheckerPlugin.prototype.run = function (context, next) {
+        if (context.event.type === 'error') {
+            var error = context.event.data[ERROR_KEY];
+            var isDuplicate = this.checkDuplicate(error, context.log);
+            if (isDuplicate) {
+                context.cancelled = true;
+                return;
+            }
+        }
+        next && next();
+    };
+    DuplicateCheckerPlugin.prototype.getNow = function () {
+        return Date.now();
+    };
+    DuplicateCheckerPlugin.prototype.checkDuplicate = function (error, log) {
+        var now = this.getNow();
+        var repeatWindow = now - WINDOW_MILLISECONDS;
+        var hashCode;
+        while (error) {
+            hashCode = getHashCodeForError(error);
+            if (hashCode && this.recentlyProcessedErrors.some(function (h) {
+                return h.hash === hashCode && h.timestamp >= repeatWindow;
+            })) {
+                log.info("Ignoring duplicate error event: hash=" + hashCode);
+                return true;
+            }
+            this.recentlyProcessedErrors.push({ hash: hashCode, timestamp: now });
+            while (this.recentlyProcessedErrors.length > MAX_QUEUE_LENGTH) {
+                this.recentlyProcessedErrors.shift();
+            }
+            error = error.inner;
+        }
+        return false;
+    };
+    return DuplicateCheckerPlugin;
+})();
+exports.DuplicateCheckerPlugin = DuplicateCheckerPlugin;
+function getHashCodeForError(error) {
+    if (!error.stack_trace) {
+        return null;
+    }
+    var stack = JSON.stringify(error.stack_trace);
+    return getHashCode(stack);
+}
+function getHashCode(s) {
+    var hash = 0, length = s.length, char;
+    for (var i = 0; i < length; i++) {
+        char = s.charCodeAt(i);
+        hash = ((hash << 5) - hash) + char;
+        hash |= 0;
+    }
+    return hash;
+}
 var SettingsResponse = (function () {
     function SettingsResponse(success, settings, settingsVersion, exception, message) {
         if (settingsVersion === void 0) { settingsVersion = -1; }
