@@ -149,7 +149,8 @@ export class Utils {
       }
 
       if (startsWithWildcard) {
-        return input.lastIndexOf(pattern) === (input.length - pattern.length);
+        let lastIndexOf = input.lastIndexOf(pattern);
+        return lastIndexOf !== -1 && lastIndexOf === (input.length - pattern.length);
       }
 
       if (endsWithWildcard) {
