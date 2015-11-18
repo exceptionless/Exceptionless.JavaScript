@@ -1,9 +1,9 @@
 var concat = require('gulp-concat');
 var del = require('del');
 var gulp = require('gulp');
-var karma = require('gulp-karma');
 var package = require('./package.json');
 var replace = require('gulp-replace');
+var Server = require('karma').Server;
 var sourcemaps = require('gulp-sourcemaps');
 var tslint = require('gulp-tslint');
 var tsProject = require('tsproject');
@@ -114,16 +114,10 @@ gulp.task('exceptionless.test.umd', ['typescript.test'], function() {
     .pipe(gulp.dest('dist/temp'));
 });
 
-gulp.task('test', ['exceptionless.test.umd'], function() {
-  return gulp.src(['dist/temp/exceptionless-spec.js'])
-    .pipe(karma({
-      configFile: 'karma.conf.js',
-      action: 'run'
-    }))
-    .on('error', function(err) {
-     console.log('karma tests failed: ' + err);
-     throw err;
-    });
+gulp.task('test', ['exceptionless.test.umd'], function(done) {
+  new Server({
+    configFile: __dirname + '/karma.conf.js'
+  }, done).start();
 });
 
 gulp.task('default', ['watch', 'build', 'test']);

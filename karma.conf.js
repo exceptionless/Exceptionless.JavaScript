@@ -8,7 +8,8 @@ module.exports = function (config) {
     frameworks: ['jasmine'],
     files: [
       '../node_modules/es5-shim/es5-shim.js',
-      '../node_modules/es6-shim/es6-shim.js'
+      '../node_modules/es6-shim/es6-shim.js',
+      '../dist/temp/exceptionless-spec.js'
     ],
     exclude: [],
     reporters: ['progress'],
