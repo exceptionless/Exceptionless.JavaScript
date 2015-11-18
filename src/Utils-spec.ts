@@ -14,14 +14,6 @@ describe('Utils', () => {
     expect(target).toEqual(['3', '1', '2']);
   });
 
-  it('should stringify circular reference', () => {
-    let afoo:any = {a: 'foo'};
-    afoo.b = afoo;
-
-    expect(Utils.stringify(afoo)).toBe('{"a":"foo"}');
-    expect(Utils.stringify([{one: afoo, two: afoo}])).toBe('[{"one":{"a":"foo"}}]');
-  });
-
   describe('stringify', () => {
     let user:any = {
       id:1,
@@ -35,6 +27,51 @@ describe('Utils', () => {
         Password: '123456'
       }
     };
+
+    it('array', () => {
+      let error = {
+        'type': 'error',
+        'data': {
+          '@error': {
+            'type': 'Error',
+            'message': 'string error message',
+            'stack_trace': [
+              {
+                'name': 'throwStringErrorImpl',
+                'parameters': [],
+                'file_name': 'http://localhost/index.js',
+                'line_number': 22,
+                'column': 9
+              },
+              {
+                'name': 'throwStringError',
+                'parameters': [],
+                'file_name': 'http://localhost/index.js',
+                'line_number': 10,
+                'column': 10
+              }, {
+                'name': 'HTMLButtonElement.onclick',
+                'parameters': [],
+                'file_name': 'http://localhost/',
+                'line_number': 22,
+                'column': 10
+              }]
+          }, '@submission_method': 'onerror'
+        },
+        'tags': []
+      };
+
+      expect(Utils.stringify(error)).toBe(JSON.stringify(error));
+      expect(Utils.stringify([error, error])).toBe(JSON.stringify([error, error]));
+    });
+
+    it('circular reference', () => {
+      let afoo:any = {a: 'foo'};
+      afoo.b = afoo;
+
+      expect(Utils.stringify(afoo)).toBe('{"a":"foo"}');
+      expect(Utils.stringify([{one: afoo, two: afoo}])).toBe('[{"one":{"a":"foo"}}]');
+    });
 
     it('should behave like JSON.stringify', () => {
       expect(Utils.stringify(user)).toBe(JSON.stringify(user));
@@ -56,44 +93,12 @@ describe('Utils', () => {
       it('*password*', () => {
         expect(Utils.stringify(user, ['*password*'])).toBe('{"id":1,"name":"Blake","customValue":"Password","value":{}}');
       });
+
+      it('*Address', () => {
+        let event = {"type":"usage","source":"about" };
+        expect(Utils.stringify(event, ['*Address'])).toBe(JSON.stringify(event));
+      });
     });
-  });
-
-  it('should stringify array', () => {
-    let error = {
-      'type': 'error',
-      'data': {
-        '@error': {
-          'type': 'Error',
-          'message': 'string error message',
-          'stack_trace': [
-            {
-              'name': 'throwStringErrorImpl',
-              'parameters': [],
-              'file_name': 'http://localhost/index.js',
-              'line_number': 22,
-              'column': 9
-            },
-            {
-              'name': 'throwStringError',
-              'parameters': [],
-              'file_name': 'http://localhost/index.js',
-              'line_number': 10,
-              'column': 10
-            }, {
-              'name': 'HTMLButtonElement.onclick',
-              'parameters': [],
-              'file_name': 'http://localhost/',
-              'line_number': 22,
-              'column': 10
-            }]
-        }, '@submission_method': 'onerror'
-      },
-      'tags': []
-    };
-
-    expect(Utils.stringify(error)).toBe(JSON.stringify(error));
-    expect(Utils.stringify([error, error])).toBe(JSON.stringify([error, error]));
   });
 
   it('should parse version from url', () => {
