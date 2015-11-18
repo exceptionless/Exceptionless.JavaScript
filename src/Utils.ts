@@ -43,7 +43,7 @@ export class Utils {
       }
     }
 
-    return result;
+    return !Utils.isEmpty(result) ? result : null;
   }
 
   public static guid(): string {
@@ -104,7 +104,7 @@ export class Utils {
       }
     }
 
-    return result;
+    return !Utils.isEmpty(result) ? result : null;
   }
 
   public static randomNumber(): number {
@@ -158,6 +158,10 @@ export class Utils {
 
       return input === pattern;
     });
+  }
+
+  public static isEmpty(input:Object) {
+    return input === null || (typeof(input) === 'object' && Object.keys(input).length === 0);
   }
 
   /**

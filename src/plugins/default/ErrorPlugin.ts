@@ -41,7 +41,7 @@ export class ErrorPlugin implements IEventPlugin {
         let result = parser.parse(context, exception);
         if (!!result) {
           let additionalData = JSON.parse(Utils.stringify(exception, config.dataExclusions.concat(this.ignoredProperties)));
-          if (!!additionalData) {
+          if (!Utils.isEmpty(additionalData)) {
             if (!result.data) {
               result.data = {};
             }

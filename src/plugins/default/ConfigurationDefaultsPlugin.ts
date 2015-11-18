@@ -19,7 +19,10 @@ export class ConfigurationDefaultsPlugin implements IEventPlugin {
     let defaultData:Object = config.defaultData || {};
     for (let key in defaultData) {
       if (!!defaultData[key]) {
-        context.event.data[key] = JSON.parse(Utils.stringify(defaultData[key], config.dataExclusions));
+        let result = JSON.parse(Utils.stringify(defaultData[key], config.dataExclusions));
+        if (!Utils.isEmpty(result)) {
+          context.event.data[key] = result;
+        }
       }
     }
 

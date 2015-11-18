@@ -116,7 +116,11 @@ export class EventBuilder {
       this.target.data = {};
     }
 
-    this.target.data[name] = JSON.parse(Utils.stringify(value, this.client.config.dataExclusions.concat(excludedPropertyNames || []), maxDepth));
+    let result = JSON.parse(Utils.stringify(value, this.client.config.dataExclusions.concat(excludedPropertyNames || []), maxDepth));
+    if (!Utils.isEmpty(result)) {
+      this.target.data[name] = result;
+    }
+
     return this;
   }
 
