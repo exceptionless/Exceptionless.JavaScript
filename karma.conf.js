@@ -4,7 +4,7 @@ module.exports = function (config) {
   config.set({
     basePath: 'src',
     browserNoActivityTimeout: 100000,
-    browsers: ['PhantomJS'],
+    browsers: ['Chrome'],
     frameworks: ['jasmine'],
     files: [
       '../node_modules/es5-shim/es5-shim.js',
