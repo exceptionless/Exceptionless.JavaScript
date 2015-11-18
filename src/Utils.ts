@@ -17,9 +17,9 @@ export class Utils {
     return target;
   }
 
-  public static getHashCode(source:string): string {
+  public static getHashCode(source:string): number {
     if (!source || source.length === 0) {
-      return null;
+      return 0;
     }
 
     let hash:number = 0;
@@ -29,7 +29,7 @@ export class Utils {
       hash |= 0;
     }
 
-    return hash.toString();
+    return hash;
   }
 
   public static getCookies(cookies:string): Object {
@@ -107,7 +107,13 @@ export class Utils {
     return Math.floor(Math.random() * 9007199254740992);
   }
 
-  public static stringify(data:any, exclusions?:string[]): string {
+  /**
+   * Stringifys an object with optional exclusions and max depth.
+   * @param data The data object to add.
+   * @param exclusions Any property names that should be excluded.
+   * @param maxDepth The max depth of the object to include.
+   */
+  public static stringify(data:any, exclusions?:string[], maxDepth?:number): string {
     function checkForMatch(pattern:string, value:string): boolean {
       if (!pattern || !value || typeof value !== 'string') {
         return false;

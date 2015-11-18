@@ -176,6 +176,7 @@ export class ExceptionlessClient {
    * @param referenceId The reference id of the event to update.
    * @param email The user's email address to set on the event.
    * @param description The user's description of the event.
+   * @param callback The submission response.
    */
   public updateUserEmailAndDescription(referenceId:string, email:string, description:string, callback?:(response:SubmissionResponse) => void) {
     if (!referenceId || !email || !description || !this.config.enabled) {

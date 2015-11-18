@@ -10,7 +10,7 @@ export class DefaultModuleCollector implements IModuleCollector {
     }
 
     let modules:IModule[] = [];
-    let scripts = document.getElementsByTagName('script');
+    let scripts:NodeListOf<HTMLScriptElement> = document.getElementsByTagName('script');
     if (scripts && scripts.length > 0) {
       for (let index = 0; index < scripts.length; index++) {
         if (scripts[index].src) {
@@ -23,7 +23,7 @@ export class DefaultModuleCollector implements IModuleCollector {
           modules.push({
             module_id: index,
             name: 'Script Tag',
-            version: Utils.getHashCode(scripts[index].innerHTML)
+            version: Utils.getHashCode(scripts[index].innerHTML).toString()
           });
         }
       }

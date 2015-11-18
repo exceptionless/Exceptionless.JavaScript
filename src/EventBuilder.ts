@@ -99,7 +99,15 @@ export class EventBuilder {
     return this;
   }
 
-  public setProperty(name:string, value:any): EventBuilder {
+  /**
+   * Adds the object to extended data. Uses @excludedPropertyNames
+   * to exclude data from being included in the event.
+   * @param name The data object to add.
+   * @param value The name of the object to add.
+   * @param maxDepth The max depth of the object to include.
+   * @param excludedPropertyNames Any property names that should be excluded.
+   */
+  public setProperty(name:string, value:any, maxDepth?:number, excludedPropertyNames?:string[]): EventBuilder {
     if (!name || (value === undefined || value == null)) {
       return this;
     }
@@ -108,7 +116,7 @@ export class EventBuilder {
       this.target.data = {};
     }
 
-    this.target.data[name] = value;
+    this.target.data[name] = JSON.parse(Utils.stringify(value, this.client.config.dataExclusions.concat(excludedPropertyNames || []), maxDepth));
     return this;
   }
 

@@ -95,7 +95,7 @@ describe('Utils', () => {
       });
 
       it('*Address', () => {
-        let event = {"type":"usage","source":"about" };
+        let event = { type:'usage', source:'about' };
         expect(Utils.stringify(event, ['*Address'])).toBe(JSON.stringify(event));
       });
     });

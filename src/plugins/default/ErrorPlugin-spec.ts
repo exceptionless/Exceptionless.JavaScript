@@ -11,7 +11,7 @@ import { createFixture } from './EventPluginTestFixture';
 function BaseTestError() {
   this.name = 'NotImplementedError';
   this.someProperty = 'Test';
-};
+}
 
 BaseTestError.prototype = new Error();
 
@@ -22,7 +22,6 @@ function DerivedTestError() {
 DerivedTestError.prototype = new BaseTestError();
 
 describe('ErrorPlugin', () => {
-
   let target = new ErrorPlugin();
   let contextData: ContextData;
   let context: EventPluginContext;
@@ -45,9 +44,7 @@ describe('ErrorPlugin', () => {
   }
 
   describe('additional data', () => {
-
     describeForCapturedExceptions((exception) => {
-
       it('should ignore default error properties', () => {
         contextData.setException(exception);
         target.run(context);
