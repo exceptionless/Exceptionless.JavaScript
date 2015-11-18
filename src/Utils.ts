@@ -32,13 +32,15 @@ export class Utils {
     return hash;
   }
 
-  public static getCookies(cookies:string): Object {
+  public static getCookies(cookies:string, exclusions?:string[]): Object {
     let result:Object = {};
 
     let parts:string[] = (cookies || '').split('; ');
     for (let index = 0; index < parts.length; index++) {
       let cookie:string[] = parts[index].split('=');
-      result[cookie[0]] = cookie[1];
+      if (!Utils.isMatch(cookie[0], exclusions)) {
+        result[cookie[0]] = cookie[1];
+      }
     }
 
     return result;
@@ -84,7 +86,7 @@ export class Utils {
     return null;
   }
 
-  public static parseQueryString(query:string) {
+  public static parseQueryString(query:string, exclusions?:string[]) {
     if (!query || query.length === 0) {
       return null;
     }
@@ -97,7 +99,9 @@ export class Utils {
     let result:Object = {};
     for (let index = 0; index < pairs.length; index++) {
       let pair = pairs[index].split('=');
-      result[decodeURIComponent(pair[0])] = decodeURIComponent(pair[1]);
+      if (!Utils.isMatch(pair[0], exclusions)) {
+        result[decodeURIComponent(pair[0])] = decodeURIComponent(pair[1]);
+      }
     }
 
     return result;
@@ -108,20 +112,23 @@ export class Utils {
   }
 
   /**
-   * Stringifys an object with optional exclusions and max depth.
-   * @param data The data object to add.
-   * @param exclusions Any property names that should be excluded.
-   * @param maxDepth The max depth of the object to include.
+   * Checks to see if a value matches a pattern.
+   * @param input the value to check against the @pattern.
+   * @param pattern The pattern to check, supports wild cards (*).
    */
-  public static stringify(data:any, exclusions?:string[], maxDepth?:number): string {
-    function checkForMatch(pattern:string, value:string): boolean {
-      if (!pattern || !value || typeof value !== 'string') {
+  public static isMatch(input:string, patterns:string[]):boolean {
+    if (!input || typeof input !== 'string') {
+      return false;
+    }
+
+    let trim = /^[\s\uFEFF\xA0]+|[\s\uFEFF\xA0]+$/g;
+    return (patterns || []).some(pattern => {
+      if (!pattern) {
         return false;
       }
 
-      let trim = /^[\s\uFEFF\xA0]+|[\s\uFEFF\xA0]+$/g;
       pattern = pattern.toLowerCase().replace(trim, '');
-      value = value.toLowerCase().replace(trim, '');
+      input = input.toLowerCase().replace(trim, '');
 
       if (pattern.length <= 0) {
         return false;
@@ -138,27 +145,33 @@ export class Utils {
       }
 
       if (startsWithWildcard && endsWithWildcard) {
-        return value.indexOf(pattern) !== -1;
+        return input.indexOf(pattern) !== -1;
       }
 
       if (startsWithWildcard) {
-        return value.lastIndexOf(pattern) === (value.length - pattern.length);
+        return input.lastIndexOf(pattern) === (input.length - pattern.length);
       }
 
       if (endsWithWildcard) {
-        return value.indexOf(pattern) === 0;
+        return input.indexOf(pattern) === 0;
       }
 
-      return value === pattern;
-    }
+      return input === pattern;
+    });
+  }
 
+  /**
+   * Stringifys an object with optional exclusions and max depth.
+   * @param data The data object to add.
+   * @param exclusions Any property names that should be excluded.
+   * @param maxDepth The max depth of the object to include.
+   */
+  public static stringify(data:any, exclusions?:string[], maxDepth?:number): string {
     function stringifyImpl(obj:any, excludedKeys:string[]): string {
       let cache:string[] = [];
       return JSON.stringify(obj, function(key:string, value:any) {
-        for (let index = 0; index < (excludedKeys || []).length; index++) {
-          if (checkForMatch(excludedKeys[index], key)) {
-            return;
-          }
+        if (Utils.isMatch(key, excludedKeys)) {
+          return;
         }
 
         if (typeof value === 'object' && !!value) {
@@ -177,12 +190,12 @@ export class Utils {
     if (({}).toString.call(data) === '[object Array]') {
       let result = [];
       for (let index = 0; index < data.length; index++) {
-        result[index] = JSON.parse(stringifyImpl(data[index], exclusions || []));
+        result[index] = JSON.parse(stringifyImpl(data[index], exclusions));
       }
 
       return JSON.stringify(result);
     }
 
-    return stringifyImpl(data, exclusions || []);
+    return stringifyImpl(data, exclusions);
   }
 }

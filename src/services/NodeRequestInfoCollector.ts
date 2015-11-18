@@ -10,8 +10,10 @@ export class NodeRequestInfoCollector implements IRequestInfoCollector {
       return null;
     }
 
-    let request = context.contextData[REQUEST_KEY];
+    let exclusions = context.client.config.dataExclusions;
+
     // TODO: include referrer
+    let request = context.contextData[REQUEST_KEY];
     let requestInfo:IRequestInfo = {
       client_ip_address: request.ip,
       user_agent: request.headers['user-agent'],
@@ -19,9 +21,9 @@ export class NodeRequestInfoCollector implements IRequestInfoCollector {
       http_method: request.method,
       host: request.hostname || request.host,
       path: request.path,
-      post_data: request.body,
-      cookies: Utils.getCookies((request || {}).headers.cookie),
-      query_string: request.params
+      post_data: JSON.parse(Utils.stringify(request.body, exclusions)),
+      cookies: Utils.getCookies((request || {}).headers.cookie, exclusions),
+      query_string: JSON.parse(Utils.stringify(request.params, exclusions))
     };
 
     let host = request.headers.host;

@@ -9,6 +9,7 @@ export class DefaultRequestInfoCollector implements IRequestInfoCollector {
       return null;
     }
 
+    let exclusions = context.client.config.dataExclusions;
     let requestInfo:IRequestInfo = {
       user_agent: navigator.userAgent,
       is_secure: location.protocol === 'https:',
@@ -16,8 +17,8 @@ export class DefaultRequestInfoCollector implements IRequestInfoCollector {
       port: location.port && location.port !== '' ? parseInt(location.port, 10) : 80,
       path: location.pathname,
       // client_ip_address: 'TODO',
-      cookies: Utils.getCookies(document.cookie),
-      query_string: Utils.parseQueryString(location.search.substring(1))
+      cookies: Utils.getCookies(document.cookie, exclusions),
+      query_string: Utils.parseQueryString(location.search.substring(1), exclusions)
     };
 
     if (document.referrer && document.referrer !== '') {
