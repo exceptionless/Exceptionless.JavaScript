@@ -376,14 +376,14 @@ var DefaultSubmissionClient = (function () {
         this.configurationVersionHeader = 'x-exceptionless-configversion';
     }
     DefaultSubmissionClient.prototype.postEvents = function (events, config, callback, isAppExiting) {
-        var data = Utils.stringify(events, config.dataExclusions);
+        var data = JSON.stringify(events);
         var request = this.createRequest(config, 'POST', '/api/v2/events', data);
         var cb = this.createSubmissionCallback(config, callback);
         return config.submissionAdapter.sendRequest(request, cb, isAppExiting);
     };
     DefaultSubmissionClient.prototype.postUserDescription = function (referenceId, description, config, callback) {
         var path = "/api/v2/events/by-ref/" + encodeURIComponent(referenceId) + "/user-description";
-        var data = Utils.stringify(description, config.dataExclusions);
+        var data = JSON.stringify(description);
         var request = this.createRequest(config, 'POST', path, data);
         var cb = this.createSubmissionCallback(config, callback);
         return config.submissionAdapter.sendRequest(request, cb);
@@ -453,7 +453,7 @@ var Utils = (function () {
     };
     Utils.getHashCode = function (source) {
         if (!source || source.length === 0) {
-            return null;
+            return 0;
         }
         var hash = 0;
         for (var index = 0; index < source.length; index++) {
@@ -461,16 +461,18 @@ var Utils = (function () {
             hash = ((hash << 5) - hash) + character;
             hash |= 0;
         }
-        return hash.toString();
+        return hash;
     };
-    Utils.getCookies = function (cookies) {
+    Utils.getCookies = function (cookies, exclusions) {
         var result = {};
         var parts = (cookies || '').split('; ');
         for (var index = 0; index < parts.length; index++) {
             var cookie = parts[index].split('=');
-            result[cookie[0]] = cookie[1];
+            if (!Utils.isMatch(cookie[0], exclusions)) {
+                result[cookie[0]] = cookie[1];
+            }
         }
-        return result;
+        return !Utils.isEmpty(result) ? result : null;
     };
     Utils.guid = function () {
         function s4() {
@@ -503,7 +505,7 @@ var Utils = (function () {
         }
         return null;
     };
-    Utils.parseQueryString = function (query) {
+    Utils.parseQueryString = function (query, exclusions) {
         if (!query || query.length === 0) {
             return null;
         }
@@ -514,21 +516,26 @@ var Utils = (function () {
         var result = {};
         for (var index = 0; index < pairs.length; index++) {
             var pair = pairs[index].split('=');
-            result[decodeURIComponent(pair[0])] = decodeURIComponent(pair[1]);
+            if (!Utils.isMatch(pair[0], exclusions)) {
+                result[decodeURIComponent(pair[0])] = decodeURIComponent(pair[1]);
+            }
         }
-        return result;
+        return !Utils.isEmpty(result) ? result : null;
     };
     Utils.randomNumber = function () {
         return Math.floor(Math.random() * 9007199254740992);
     };
-    Utils.stringify = function (data, exclusions) {
-        function checkForMatch(pattern, value) {
-            if (!pattern || !value || typeof value !== 'string') {
+    Utils.isMatch = function (input, patterns) {
+        if (!input || typeof input !== 'string') {
+            return false;
+        }
+        var trim = /^[\s\uFEFF\xA0]+|[\s\uFEFF\xA0]+$/g;
+        return (patterns || []).some(function (pattern) {
+            if (!pattern) {
                 return false;
             }
-            var trim = /^[\s\uFEFF\xA0]+|[\s\uFEFF\xA0]+$/g;
             pattern = pattern.toLowerCase().replace(trim, '');
-            value = value.toLowerCase().replace(trim, '');
+            input = input.toLowerCase().replace(trim, '');
             if (pattern.length <= 0) {
                 return false;
             }
@@ -541,23 +548,27 @@ var Utils = (function () {
                 pattern = pattern.substring(0, pattern.length - 1);
             }
             if (startsWithWildcard && endsWithWildcard) {
-                return value.indexOf(pattern) !== -1;
+                return input.indexOf(pattern) !== -1;
             }
             if (startsWithWildcard) {
-                return value.lastIndexOf(pattern) === (value.length - pattern.length);
+                var lastIndexOf = input.lastIndexOf(pattern);
+                return lastIndexOf !== -1 && lastIndexOf === (input.length - pattern.length);
             }
             if (endsWithWildcard) {
-                return value.indexOf(pattern) === 0;
+                return input.indexOf(pattern) === 0;
             }
-            return value === pattern;
-        }
+            return input === pattern;
+        });
+    };
+    Utils.isEmpty = function (input) {
+        return input === null || (typeof (input) === 'object' && Object.keys(input).length === 0);
+    };
+    Utils.stringify = function (data, exclusions, maxDepth) {
         function stringifyImpl(obj, excludedKeys) {
             var cache = [];
             return JSON.stringify(obj, function (key, value) {
-                for (var index = 0; index < (excludedKeys || []).length; index++) {
-                    if (checkForMatch(excludedKeys[index], key)) {
-                        return;
-                    }
+                if (Utils.isMatch(key, excludedKeys)) {
+                    return;
                 }
                 if (typeof value === 'object' && !!value) {
                     if (cache.indexOf(value) !== -1) {
@@ -571,11 +582,11 @@ var Utils = (function () {
         if (({}).toString.call(data) === '[object Array]') {
             var result = [];
             for (var index = 0; index < data.length; index++) {
-                result[index] = JSON.parse(stringifyImpl(data[index], exclusions || []));
+                result[index] = JSON.parse(stringifyImpl(data[index], exclusions));
             }
             return JSON.stringify(result);
         }
-        return stringifyImpl(data, exclusions || []);
+        return stringifyImpl(data, exclusions);
     };
     return Utils;
 })();
@@ -818,14 +829,17 @@ var EventBuilder = (function () {
         this.target.tags = Utils.addRange.apply(Utils, [this.target.tags].concat(tags));
         return this;
     };
-    EventBuilder.prototype.setProperty = function (name, value) {
+    EventBuilder.prototype.setProperty = function (name, value, maxDepth, excludedPropertyNames) {
         if (!name || (value === undefined || value == null)) {
             return this;
         }
         if (!this.target.data) {
             this.target.data = {};
         }
-        this.target.data[name] = value;
+        var result = JSON.parse(Utils.stringify(value, this.client.config.dataExclusions.concat(excludedPropertyNames || []), maxDepth));
+        if (!Utils.isEmpty(result)) {
+            this.target.data[name] = result;
+        }
         return this;
     };
     EventBuilder.prototype.markAsCritical = function (critical) {
@@ -1071,17 +1085,21 @@ var ConfigurationDefaultsPlugin = (function () {
         this.name = 'ConfigurationDefaultsPlugin';
     }
     ConfigurationDefaultsPlugin.prototype.run = function (context, next) {
-        var defaultTags = context.client.config.defaultTags || [];
+        var config = context.client.config;
+        var defaultTags = config.defaultTags || [];
         for (var index = 0; index < defaultTags.length; index++) {
             var tag = defaultTags[index];
             if (!!tag && context.event.tags.indexOf(tag) < 0) {
                 context.event.tags.push(tag);
             }
         }
-        var defaultData = context.client.config.defaultData || {};
+        var defaultData = config.defaultData || {};
         for (var key in defaultData) {
             if (!!defaultData[key]) {
-                context.event.data[key] = defaultData[key];
+                var result = JSON.parse(Utils.stringify(defaultData[key], config.dataExclusions));
+                if (!Utils.isEmpty(result)) {
+                    context.event.data[key] = result;
+                }
             }
         }
         next && next();
@@ -1093,7 +1111,10 @@ var ErrorPlugin = (function () {
     function ErrorPlugin() {
         this.priority = 30;
         this.name = 'ErrorPlugin';
-        this.ignoredProperties = [
+    }
+    ErrorPlugin.prototype.run = function (context, next) {
+        var ERROR_KEY = '@error';
+        var ignoredProperties = [
             'arguments',
             'column',
             'columnNumber',
@@ -1111,47 +1132,29 @@ var ErrorPlugin = (function () {
             'stackArray',
             'stacktrace'
         ];
-    }
-    ErrorPlugin.prototype.run = function (context, next) {
-        var ERROR_KEY = '@error';
-        var EXTRA_PROPERTIES_KEY = '@ext';
         var exception = context.contextData.getException();
         if (!!exception) {
             context.event.type = 'error';
             if (!context.event.data[ERROR_KEY]) {
-                var parser = context.client.config.errorParser;
+                var config = context.client.config;
+                var parser = config.errorParser;
                 if (!parser) {
                     throw new Error('No error parser was defined.');
                 }
                 var result = parser.parse(context, exception);
                 if (!!result) {
-                    var additionalData = this.getAdditionalData(exception);
-                    if (!!additionalData) {
+                    var additionalData = JSON.parse(Utils.stringify(exception, config.dataExclusions.concat(ignoredProperties)));
+                    if (!Utils.isEmpty(additionalData)) {
                         if (!result.data) {
                             result.data = {};
                         }
-                        result.data[EXTRA_PROPERTIES_KEY] = additionalData;
+                        result.data['@ext'] = additionalData;
                     }
                     context.event.data[ERROR_KEY] = result;
                 }
             }
         }
         next && next();
-    };
-    ErrorPlugin.prototype.getAdditionalData = function (exception) {
-        var additionalData = {};
-        for (var key in exception) {
-            if (this.ignoredProperties.indexOf(key) >= 0) {
-                continue;
-            }
-            var value = exception[key];
-            if (typeof value !== 'function') {
-                additionalData[key] = value;
-            }
-        }
-        return Object.getOwnPropertyNames(additionalData).length
-            ? additionalData
-            : null;
     };
     return ErrorPlugin;
 })();
@@ -1252,6 +1255,12 @@ var DuplicateCheckerPlugin = (function () {
         return Date.now();
     };
     DuplicateCheckerPlugin.prototype.checkDuplicate = function (error, log) {
+        function getHashCodeForError(err) {
+            if (!err.stack_trace) {
+                return null;
+            }
+            return Utils.getHashCode(JSON.stringify(err.stack_trace));
+        }
         var now = this.getNow();
         var repeatWindow = now - WINDOW_MILLISECONDS;
         var hashCode;
@@ -1274,22 +1283,6 @@ var DuplicateCheckerPlugin = (function () {
     return DuplicateCheckerPlugin;
 })();
 exports.DuplicateCheckerPlugin = DuplicateCheckerPlugin;
-function getHashCodeForError(error) {
-    if (!error.stack_trace) {
-        return null;
-    }
-    var stack = JSON.stringify(error.stack_trace);
-    return getHashCode(stack);
-}
-function getHashCode(s) {
-    var hash = 0, length = s.length, char;
-    for (var i = 0; i < length; i++) {
-        char = s.charCodeAt(i);
-        hash = ((hash << 5) - hash) + char;
-        hash |= 0;
-    }
-    return hash;
-}
 var SettingsResponse = (function () {
     function SettingsResponse(success, settings, settingsVersion, exception, message) {
         if (settingsVersion === void 0) { settingsVersion = -1; }
@@ -1461,6 +1454,7 @@ var NodeRequestInfoCollector = (function () {
         if (!context.contextData[REQUEST_KEY]) {
             return null;
         }
+        var exclusions = context.client.config.dataExclusions;
         var request = context.contextData[REQUEST_KEY];
         var requestInfo = {
             client_ip_address: request.ip,
@@ -1469,9 +1463,9 @@ var NodeRequestInfoCollector = (function () {
             http_method: request.method,
             host: request.hostname || request.host,
             path: request.path,
-            post_data: request.body,
-            cookies: Utils.getCookies((request || {}).headers.cookie),
-            query_string: request.params
+            post_data: JSON.parse(Utils.stringify(request.body, exclusions)),
+            cookies: Utils.getCookies((request || {}).headers.cookie, exclusions),
+            query_string: JSON.parse(Utils.stringify(request.params, exclusions))
         };
         var host = request.headers.host;
         var port = host && parseInt(host.slice(host.indexOf(':') + 1), 10);

@@ -156,14 +156,16 @@ export declare class DefaultSubmissionClient implements ISubmissionClient {
 }
 export declare class Utils {
     static addRange<T>(target: T[], ...values: T[]): T[];
-    static getHashCode(source: string): string;
-    static getCookies(cookies: string): Object;
+    static getHashCode(source: string): number;
+    static getCookies(cookies: string, exclusions?: string[]): Object;
     static guid(): string;
     static merge(defaultValues: Object, values: Object): Object;
     static parseVersion(source: string): string;
-    static parseQueryString(query: string): Object;
+    static parseQueryString(query: string, exclusions?: string[]): Object;
     static randomNumber(): number;
-    static stringify(data: any, exclusions?: string[]): string;
+    static isMatch(input: string, patterns: string[]): boolean;
+    static isEmpty(input: Object): boolean;
+    static stringify(data: any, exclusions?: string[], maxDepth?: number): string;
 }
 export declare class Configuration implements IConfigurationSettings {
     private static _defaultSettings;
@@ -223,7 +225,7 @@ export declare class EventBuilder {
     setUserIdentity(identity: string, name: string): EventBuilder;
     setValue(value: number): EventBuilder;
     addTags(...tags: string[]): EventBuilder;
-    setProperty(name: string, value: any): EventBuilder;
+    setProperty(name: string, value: any, maxDepth?: number, excludedPropertyNames?: string[]): EventBuilder;
     markAsCritical(critical: boolean): EventBuilder;
     addRequestInfo(request: Object): EventBuilder;
     submit(callback?: (context: EventPluginContext) => void): void;
@@ -365,9 +367,7 @@ export declare class ConfigurationDefaultsPlugin implements IEventPlugin {
 export declare class ErrorPlugin implements IEventPlugin {
     priority: number;
     name: string;
-    ignoredProperties: string[];
     run(context: EventPluginContext, next?: () => void): void;
-    private getAdditionalData(exception);
 }
 export declare class ModuleInfoPlugin implements IEventPlugin {
     priority: number;
