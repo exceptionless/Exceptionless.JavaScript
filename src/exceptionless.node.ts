@@ -18,7 +18,7 @@ defaults.moduleCollector = new NodeModuleCollector();
 defaults.requestInfoCollector = new NodeRequestInfoCollector();
 defaults.submissionAdapter = new NodeSubmissionAdapter();
 
-function getListenerCount(emitter, event:string): number {
+function getListenerCount(emitter, event: string): number {
   if (emitter.listenerCount) {
     return emitter.listenerCount(event);
   }

@@ -3,9 +3,9 @@ import { IEvent } from '../models/IEvent';
 
 describe('DefaultEventQueue', () => {
   function getConfiguration(): Configuration {
-    let config:Configuration = new Configuration({
-      apiKey:'LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw',
-      serverUrl:'http://localhost:50000'
+    let config: Configuration = new Configuration({
+      apiKey: 'LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw',
+      serverUrl: 'http://localhost:50000'
     });
 
     expect(config.storage.getList().length).toBe(0);
@@ -13,15 +13,15 @@ describe('DefaultEventQueue', () => {
   }
 
   it('should enqueue event', () => {
-    let config:Configuration = getConfiguration();
-    let event:IEvent = { type: 'log', reference_id: '123454321' };
+    let config: Configuration = getConfiguration();
+    let event: IEvent = { type: 'log', reference_id: '123454321' };
     config.queue.enqueue(event);
     expect(config.storage.getList().length).toBe(1);
   });
 
   it('should process queue', () => {
-    let config:Configuration = getConfiguration();
-    let event:IEvent = { type: 'log', reference_id: '123454321' };
+    let config: Configuration = getConfiguration();
+    let event: IEvent = { type: 'log', reference_id: '123454321' };
     config.queue.enqueue(event);
     expect(config.storage.getList().length).toBe(1);
     config.queue.process();
@@ -34,19 +34,19 @@ describe('DefaultEventQueue', () => {
   });
 
   it('should discard event submission', () => {
-    let config:Configuration = getConfiguration();
+    let config: Configuration = getConfiguration();
     config.queue.suspendProcessing(1, true);
 
-    let event:IEvent = { type: 'log', reference_id: '123454321' };
+    let event: IEvent = { type: 'log', reference_id: '123454321' };
     config.queue.enqueue(event);
     expect(config.storage.getList().length).toBe(0);
   });
 
   it('should suspend processing', (done) => {
-    let config:Configuration = getConfiguration();
+    let config: Configuration = getConfiguration();
     config.queue.suspendProcessing(.0001);
 
-    let event:IEvent = { type: 'log', reference_id: '123454321' };
+    let event: IEvent = { type: 'log', reference_id: '123454321' };
     config.queue.enqueue(event);
     expect(config.storage.getList().length).toBe(1);
 

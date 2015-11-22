@@ -6,19 +6,19 @@ import { EventPluginContext } from './plugins/EventPluginContext';
 import { Utils } from './Utils';
 
 export class EventBuilder {
-  public target:IEvent;
-  public client:ExceptionlessClient;
-  public pluginContextData:ContextData;
+  public target: IEvent;
+  public client: ExceptionlessClient;
+  public pluginContextData: ContextData;
 
-  private _validIdentifierErrorMessage:string = 'must contain between 8 and 100 alphanumeric or \'-\' characters.'; // optimization for minifier.
+  private _validIdentifierErrorMessage: string = 'must contain between 8 and 100 alphanumeric or \'-\' characters.'; // optimization for minifier.
 
-  constructor(event:IEvent, client:ExceptionlessClient, pluginContextData?:ContextData) {
+  constructor(event: IEvent, client: ExceptionlessClient, pluginContextData?: ContextData) {
     this.target = event;
     this.client = client;
     this.pluginContextData = pluginContextData || new ContextData();
   }
 
-  public setType(type:string): EventBuilder {
+  public setType(type: string): EventBuilder {
     if (!!type) {
       this.target.type = type;
     }
@@ -26,7 +26,7 @@ export class EventBuilder {
     return this;
   }
 
-  public setSource(source:string): EventBuilder {
+  public setSource(source: string): EventBuilder {
     if (!!source) {
       this.target.source = source;
     }
@@ -34,7 +34,7 @@ export class EventBuilder {
     return this;
   }
 
-  public setSessionId(sessionId:string): EventBuilder {
+  public setSessionId(sessionId: string): EventBuilder {
     if (!this.isValidIdentifier(sessionId)) {
       throw new Error(`SessionId ${this._validIdentifierErrorMessage}`);
     }
@@ -43,7 +43,7 @@ export class EventBuilder {
     return this;
   }
 
-  public setReferenceId(referenceId:string): EventBuilder {
+  public setReferenceId(referenceId: string): EventBuilder {
     if (!this.isValidIdentifier(referenceId)) {
       throw new Error(`ReferenceId ${this._validIdentifierErrorMessage}`);
     }
@@ -52,7 +52,7 @@ export class EventBuilder {
     return this;
   }
 
-  public setMessage(message:string): EventBuilder {
+  public setMessage(message: string): EventBuilder {
     if (!!message) {
       this.target.message = message;
     }
@@ -73,10 +73,10 @@ export class EventBuilder {
     return this;
   }
 
-  public setUserIdentity(userInfo:IUserInfo): EventBuilder;
-  public setUserIdentity(identity:string): EventBuilder;
-  public setUserIdentity(identity:string, name:string): EventBuilder;
-  public setUserIdentity(userInfoOrIdentity:IUserInfo|string, name?:string): EventBuilder {
+  public setUserIdentity(userInfo: IUserInfo): EventBuilder;
+  public setUserIdentity(identity: string): EventBuilder;
+  public setUserIdentity(identity: string, name: string): EventBuilder;
+  public setUserIdentity(userInfoOrIdentity: IUserInfo | string, name?: string): EventBuilder {
     let userInfo = typeof userInfoOrIdentity !== 'string' ? userInfoOrIdentity : { identity: userInfoOrIdentity, name: name };
     if (!userInfo || (!userInfo.identity && !userInfo.name)) {
       return this;
@@ -86,7 +86,7 @@ export class EventBuilder {
     return this;
   }
 
-  public setValue(value:number): EventBuilder {
+  public setValue(value: number): EventBuilder {
     if (!!value) {
       this.target.value = value;
     }
@@ -94,7 +94,7 @@ export class EventBuilder {
     return this;
   }
 
-  public addTags(...tags:string[]): EventBuilder {
+  public addTags(...tags: string[]): EventBuilder {
     this.target.tags = Utils.addRange<string>(this.target.tags, ...tags);
     return this;
   }
@@ -107,7 +107,7 @@ export class EventBuilder {
    * @param maxDepth The max depth of the object to include.
    * @param excludedPropertyNames Any property names that should be excluded.
    */
-  public setProperty(name:string, value:any, maxDepth?:number, excludedPropertyNames?:string[]): EventBuilder {
+  public setProperty(name: string, value: any, maxDepth?: number, excludedPropertyNames?: string[]): EventBuilder {
     if (!name || (value === undefined || value == null)) {
       return this;
     }
@@ -124,7 +124,7 @@ export class EventBuilder {
     return this;
   }
 
-  public markAsCritical(critical:boolean): EventBuilder {
+  public markAsCritical(critical: boolean): EventBuilder {
     if (critical) {
       this.addTags('Critical');
     }
@@ -132,7 +132,7 @@ export class EventBuilder {
     return this;
   }
 
-  public addRequestInfo(request:Object): EventBuilder {
+  public addRequestInfo(request: Object): EventBuilder {
     if (!!request) {
       this.pluginContextData['@request'] = request;
     }
@@ -140,11 +140,11 @@ export class EventBuilder {
     return this;
   }
 
-  public submit(callback?:(context:EventPluginContext) => void): void {
+  public submit(callback?: (context: EventPluginContext) => void): void {
     this.client.submitEvent(this.target, this.pluginContextData, callback);
   }
 
-  private isValidIdentifier(value:string): boolean {
+  private isValidIdentifier(value: string): boolean {
     if (!value) {
       return true;
     }

@@ -31,7 +31,8 @@ describe('ErrorPlugin', () => {
       contextData,
       context,
       client,
-      event} = createFixture());
+      event
+    } = createFixture());
   });
 
   function processError(error) {

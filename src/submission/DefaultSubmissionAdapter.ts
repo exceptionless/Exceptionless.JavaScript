@@ -5,7 +5,7 @@ import { SubmissionRequest } from './SubmissionRequest';
 declare var XDomainRequest: { new (); create(); };
 
 export class DefaultSubmissionAdapter implements ISubmissionAdapter {
-  public sendRequest(request: SubmissionRequest, callback: SubmissionCallback, isAppExiting?:boolean) {
+  public sendRequest(request: SubmissionRequest, callback: SubmissionCallback, isAppExiting?: boolean) {
     // TODO: Handle sending events when app is exiting with send beacon.
     const TIMEOUT: string = 'timeout';  // optimization for minifier.
     const LOADED: string = 'loaded';  // optimization for minifier.
@@ -65,7 +65,7 @@ export class DefaultSubmissionAdapter implements ISubmissionAdapter {
       callback(status || 500, message || '', responseText, parseResponseHeaders(xhr.getAllResponseHeaders && xhr.getAllResponseHeaders()));
     }
 
-    function createRequest(userAgent:string, method: string, url: string): XMLHttpRequest {
+    function createRequest(userAgent: string, method: string, url: string): XMLHttpRequest {
       let xhr: any = new XMLHttpRequest();
       if (WITH_CREDENTIALS in xhr) {
         xhr.open(method, url, true);
@@ -106,7 +106,7 @@ export class DefaultSubmissionAdapter implements ISubmissionAdapter {
       };
     }
 
-    xhr.onprogress = () => {};
+    xhr.onprogress = () => { };
     xhr.ontimeout = () => complete(TIMEOUT, xhr);
     xhr.onerror = () => complete('error', xhr);
     xhr.onload = () => complete(LOADED, xhr);

@@ -4,8 +4,8 @@ import { EventPluginContext } from '../plugins/EventPluginContext';
 import { Utils } from '../Utils';
 
 export class NodeRequestInfoCollector implements IRequestInfoCollector {
-  getRequestInfo(context:EventPluginContext):IRequestInfo {
-    const REQUEST_KEY:string = '@request'; // optimization for minifier.
+  getRequestInfo(context: EventPluginContext): IRequestInfo {
+    const REQUEST_KEY: string = '@request'; // optimization for minifier.
     if (!context.contextData[REQUEST_KEY]) {
       return null;
     }
@@ -14,7 +14,7 @@ export class NodeRequestInfoCollector implements IRequestInfoCollector {
 
     // TODO: include referrer
     let request = context.contextData[REQUEST_KEY];
-    let requestInfo:IRequestInfo = {
+    let requestInfo: IRequestInfo = {
       client_ip_address: request.ip,
       user_agent: request.headers['user-agent'],
       is_secure: request.secure,
@@ -27,7 +27,7 @@ export class NodeRequestInfoCollector implements IRequestInfoCollector {
     };
 
     let host = request.headers.host;
-    let port:number = host && parseInt(host.slice(host.indexOf(':') + 1), 10);
+    let port: number = host && parseInt(host.slice(host.indexOf(':') + 1), 10);
     if (port > 0) {
       requestInfo.port = port;
     }

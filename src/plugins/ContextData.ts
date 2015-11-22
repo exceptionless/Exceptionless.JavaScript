@@ -1,5 +1,5 @@
 export class ContextData {
-  public setException(exception:Error): void {
+  public setException(exception: Error): void {
     if (exception) {
       this['@@_Exception'] = exception;
     }
@@ -21,7 +21,7 @@ export class ContextData {
     return !!this['@@_IsUnhandledError'];
   }
 
-  public setSubmissionMethod(method:string): void {
+  public setSubmissionMethod(method: string): void {
     if (method) {
       this['@@_SubmissionMethod'] = method;
     }

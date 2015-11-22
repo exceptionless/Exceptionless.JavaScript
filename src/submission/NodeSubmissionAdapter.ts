@@ -8,7 +8,7 @@ import url = require('url');
 import child = require('child_process');
 
 export class NodeSubmissionAdapter implements ISubmissionAdapter {
-  public sendRequest(request:SubmissionRequest, callback:SubmissionCallback, isAppExiting?:boolean) {
+  public sendRequest(request: SubmissionRequest, callback: SubmissionCallback, isAppExiting?: boolean) {
     if (isAppExiting) {
       this.sendRequestSync(request, callback);
       return;
@@ -49,9 +49,9 @@ export class NodeSubmissionAdapter implements ISubmissionAdapter {
   private complete(response: http.IncomingMessage, responseBody: string, responseHeaders: Object, callback: SubmissionCallback): void {
     let message: string;
     if (response.statusCode === 0) {
-    message = 'Unable to connect to server.';
+      message = 'Unable to connect to server.';
     } else if (response.statusCode < 200 || response.statusCode > 299) {
-    message = response.statusMessage || (<any>response).message;
+      message = response.statusMessage || (<any>response).message;
     }
 
     callback(response.statusCode || 500, message, responseBody, responseHeaders);

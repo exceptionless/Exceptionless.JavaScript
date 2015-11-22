@@ -10,17 +10,17 @@ import { ISubmissionAdapter } from '../submission/ISubmissionAdapter';
 import { ISubmissionClient } from '../submission/ISubmissionClient';
 
 export interface IConfigurationSettings {
-  apiKey?:string;
-  serverUrl?:string;
-  environmentInfoCollector?:IEnvironmentInfoCollector;
-  errorParser?:IErrorParser;
-  lastReferenceIdManager?:ILastReferenceIdManager;
-  log?:ILog;
-  moduleCollector?:IModuleCollector;
-  requestInfoCollector?:IRequestInfoCollector;
-  submissionBatchSize?:number;
-  submissionClient?:ISubmissionClient;
-  submissionAdapter?:ISubmissionAdapter;
-  storage?:IStorage<any>;
-  queue?:IEventQueue;
+  apiKey?: string;
+  serverUrl?: string;
+  environmentInfoCollector?: IEnvironmentInfoCollector;
+  errorParser?: IErrorParser;
+  lastReferenceIdManager?: ILastReferenceIdManager;
+  log?: ILog;
+  moduleCollector?: IModuleCollector;
+  requestInfoCollector?: IRequestInfoCollector;
+  submissionBatchSize?: number;
+  submissionClient?: ISubmissionClient;
+  submissionAdapter?: ISubmissionAdapter;
+  storage?: IStorage<any>;
+  queue?: IEventQueue;
 }

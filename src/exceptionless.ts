@@ -21,7 +21,7 @@ function getDefaultsSettingsFromScriptTag(): IConfigurationSettings {
   return null;
 }
 
-function processUnhandledException(stackTrace:TraceKit.StackTrace, options?:any): void {
+function processUnhandledException(stackTrace: TraceKit.StackTrace, options?: any): void {
   let builder = ExceptionlessClient.default.createUnhandledException(new Error(stackTrace.message || (options || {}).status || 'Script error'), 'onerror');
   builder.pluginContextData['@@_TraceKit.StackTrace'] = stackTrace;
   builder.submit();

@@ -20,7 +20,7 @@ export function createFixture() {
   };
   client = {
     config: {
-      dataExclusions:[],
+      dataExclusions: [],
       errorParser,
       log: {
         info: () => { }

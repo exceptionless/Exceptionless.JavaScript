@@ -1,5 +1,5 @@
 export interface IUserInfo {
-  identity?:string;
-  name?:string;
-  data?:any;
+  identity?: string;
+  name?: string;
+  data?: any;
 }

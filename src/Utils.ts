@@ -1,5 +1,5 @@
 export class Utils {
-  public static addRange<T>(target:T[], ...values:T[]) {
+  public static addRange<T>(target: T[], ...values: T[]) {
     if (!target) {
       target = [];
     }
@@ -17,27 +17,27 @@ export class Utils {
     return target;
   }
 
-  public static getHashCode(source:string): number {
+  public static getHashCode(source: string): number {
     if (!source || source.length === 0) {
       return 0;
     }
 
-    let hash:number = 0;
+    let hash: number = 0;
     for (let index = 0; index < source.length; index++) {
-      let character   = source.charCodeAt(index);
-      hash  = ((hash << 5) - hash) + character;
+      let character = source.charCodeAt(index);
+      hash = ((hash << 5) - hash) + character;
       hash |= 0;
     }
 
     return hash;
   }
 
-  public static getCookies(cookies:string, exclusions?:string[]): Object {
-    let result:Object = {};
+  public static getCookies(cookies: string, exclusions?: string[]): Object {
+    let result: Object = {};
 
-    let parts:string[] = (cookies || '').split('; ');
+    let parts: string[] = (cookies || '').split('; ');
     for (let index = 0; index < parts.length; index++) {
-      let cookie:string[] = parts[index].split('=');
+      let cookie: string[] = parts[index].split('=');
       if (!Utils.isMatch(cookie[0], exclusions)) {
         result[cookie[0]] = cookie[1];
       }
@@ -54,8 +54,8 @@ export class Utils {
     return s4() + s4() + '-' + s4() + '-' + s4() + '-' + s4() + '-' + s4() + s4() + s4();
   }
 
-  public static merge(defaultValues:Object, values:Object) {
-    let result:Object = {};
+  public static merge(defaultValues: Object, values: Object) {
+    let result: Object = {};
 
     for (let key in defaultValues || {}) {
       if (!!defaultValues[key]) {
@@ -72,7 +72,7 @@ export class Utils {
     return result;
   }
 
-  public static parseVersion(source:string): string {
+  public static parseVersion(source: string): string {
     if (!source) {
       return null;
     }
@@ -86,17 +86,17 @@ export class Utils {
     return null;
   }
 
-  public static parseQueryString(query:string, exclusions?:string[]) {
+  public static parseQueryString(query: string, exclusions?: string[]) {
     if (!query || query.length === 0) {
       return null;
     }
 
-    let pairs:string[] = query.split('&');
+    let pairs: string[] = query.split('&');
     if (pairs.length === 0) {
       return null;
     }
 
-    let result:Object = {};
+    let result: Object = {};
     for (let index = 0; index < pairs.length; index++) {
       let pair = pairs[index].split('=');
       if (!Utils.isMatch(pair[0], exclusions)) {
@@ -116,7 +116,7 @@ export class Utils {
    * @param input the value to check against the @pattern.
    * @param pattern The pattern to check, supports wild cards (*).
    */
-  public static isMatch(input:string, patterns:string[]):boolean {
+  public static isMatch(input: string, patterns: string[]): boolean {
     if (!input || typeof input !== 'string') {
       return false;
     }
@@ -134,12 +134,12 @@ export class Utils {
         return false;
       }
 
-      let startsWithWildcard:boolean = pattern[0] === '*';
+      let startsWithWildcard: boolean = pattern[0] === '*';
       if (startsWithWildcard) {
         pattern = pattern.slice(1);
       }
 
-      let endsWithWildcard:boolean = pattern[pattern.length - 1] === '*';
+      let endsWithWildcard: boolean = pattern[pattern.length - 1] === '*';
       if (endsWithWildcard) {
         pattern = pattern.substring(0, pattern.length - 1);
       }
@@ -161,8 +161,8 @@ export class Utils {
     });
   }
 
-  public static isEmpty(input:Object) {
-    return input === null || (typeof(input) === 'object' && Object.keys(input).length === 0);
+  public static isEmpty(input: Object) {
+    return input === null || (typeof (input) === 'object' && Object.keys(input).length === 0);
   }
 
   /**
@@ -171,10 +171,10 @@ export class Utils {
    * @param exclusions Any property names that should be excluded.
    * @param maxDepth The max depth of the object to include.
    */
-  public static stringify(data:any, exclusions?:string[], maxDepth?:number): string {
-    function stringifyImpl(obj:any, excludedKeys:string[]): string {
-      let cache:string[] = [];
-      return JSON.stringify(obj, function(key:string, value:any) {
+  public static stringify(data: any, exclusions?: string[], maxDepth?: number): string {
+    function stringifyImpl(obj: any, excludedKeys: string[]): string {
+      let cache: string[] = [];
+      return JSON.stringify(obj, function(key: string, value: any) {
         if (Utils.isMatch(key, excludedKeys)) {
           return;
         }

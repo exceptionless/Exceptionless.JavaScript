@@ -6,7 +6,7 @@ export class DefaultLastReferenceIdManager implements ILastReferenceIdManager {
    * @type {string}
    * @private
    */
-  private _lastReferenceId:string = null;
+  private _lastReferenceId: string = null;
 
   /**
    * Gets the last event's reference id that was submitted to the server.
@@ -19,7 +19,7 @@ export class DefaultLastReferenceIdManager implements ILastReferenceIdManager {
   /**
    * Clears the last event's reference id.
    */
-  clearLast():void {
+  clearLast(): void {
     this._lastReferenceId = null;
   }
 
@@ -27,7 +27,7 @@ export class DefaultLastReferenceIdManager implements ILastReferenceIdManager {
    * Sets the last event's reference id.
    * @param eventId
    */
-  setLast(eventId:string):void {
+  setLast(eventId: string): void {
     this._lastReferenceId = eventId;
   }
 }

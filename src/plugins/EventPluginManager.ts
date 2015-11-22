@@ -10,8 +10,8 @@ import { SubmissionMethodPlugin } from './default/SubmissionMethodPlugin';
 import { DuplicateCheckerPlugin } from './default/DuplicateCheckerPlugin';
 
 export class EventPluginManager {
-  public static run(context:EventPluginContext, callback:(context?:EventPluginContext) => void): void {
-    let wrap = function (plugin:IEventPlugin, next?:() => void): () => void {
+  public static run(context: EventPluginContext, callback: (context?: EventPluginContext) => void): void {
+    let wrap = function(plugin: IEventPlugin, next?: () => void): () => void {
       return () => {
         try {
           if (!context.cancelled) {
@@ -28,8 +28,8 @@ export class EventPluginManager {
       };
     };
 
-    let plugins:IEventPlugin[] = context.client.config.plugins; // optimization for minifier.
-    let wrappedPlugins:{ (): void }[] = [];
+    let plugins: IEventPlugin[] = context.client.config.plugins; // optimization for minifier.
+    let wrappedPlugins: { (): void }[] = [];
     if (!!callback) {
       wrappedPlugins[plugins.length] = wrap({ name: 'cb', priority: 9007199254740992, run: callback }, null);
     }
@@ -41,7 +41,7 @@ export class EventPluginManager {
     wrappedPlugins[0]();
   }
 
-  public static addDefaultPlugins(config:Configuration): void {
+  public static addDefaultPlugins(config: Configuration): void {
     config.addPlugin(new ConfigurationDefaultsPlugin());
     config.addPlugin(new ErrorPlugin());
     config.addPlugin(new DuplicateCheckerPlugin());

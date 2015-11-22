@@ -8,42 +8,42 @@ export class SettingsManager {
    * @type {string}
    * @private
    */
-  private static _configPath:string = 'ex-server-settings.json';
+  private static _configPath: string = 'ex-server-settings.json';
 
   /**
    * A list of handlers that will be fired when the settings change.
    * @type {Array}
    * @private
    */
-  private static _handlers:{ (config:Configuration):void }[] = [];
+  private static _handlers: { (config: Configuration): void }[] = [];
 
-  public static onChanged(handler:(config:Configuration) => void) {
+  public static onChanged(handler: (config: Configuration) => void) {
     !!handler && this._handlers.push(handler);
   }
 
-  public static applySavedServerSettings(config:Configuration):void {
+  public static applySavedServerSettings(config: Configuration): void {
     config.log.info('Applying saved settings.');
     config.settings = Utils.merge(config.settings, this.getSavedServerSettings(config));
     this.changed(config);
   }
 
-  public static checkVersion(version:number, config:Configuration):void {
+  public static checkVersion(version: number, config: Configuration): void {
     if (version) {
       let savedConfigVersion = parseInt(<string>config.storage.get(`${this._configPath}-version`), 10);
       if (isNaN(savedConfigVersion) || version > savedConfigVersion) {
-        config.log.info(`Updating settings from v${(!isNaN(savedConfigVersion) ? savedConfigVersion : 0)} to v${version}`);
+        config.log.info(`Updating settings from v${(!isNaN(savedConfigVersion) ? savedConfigVersion : 0) } to v${version}`);
         this.updateSettings(config);
       }
     }
   }
 
-  public static updateSettings(config:Configuration):void {
+  public static updateSettings(config: Configuration): void {
     if (!config.isValid) {
       config.log.error('Unable to update settings: ApiKey is not set.');
       return;
     }
 
-    config.submissionClient.getSettings(config, (response:SettingsResponse) => {
+    config.submissionClient.getSettings(config, (response: SettingsResponse) => {
       if (!response || !response.success || !response.settings) {
         return;
       }
@@ -70,14 +70,14 @@ export class SettingsManager {
     });
   }
 
-  private static changed(config:Configuration) {
+  private static changed(config: Configuration) {
     let handlers = this._handlers; // optimization for minifier.
     for (let index = 0; index < handlers.length; index++) {
       handlers[index](config);
     }
   }
 
-  private static getSavedServerSettings(config:Configuration):Object {
+  private static getSavedServerSettings(config: Configuration): Object {
     return config.storage.get(this._configPath) || {};
   }
 }

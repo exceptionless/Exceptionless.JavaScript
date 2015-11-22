@@ -31,7 +31,7 @@ export class DuplicateCheckerPlugin implements IEventPlugin {
     return Date.now();
   }
 
-  private checkDuplicate (error: IInnerError, log: ILog): boolean {
+  private checkDuplicate(error: IInnerError, log: ILog): boolean {
     function getHashCodeForError(err: IInnerError): number {
       if (!err.stack_trace) {
         return null;

@@ -9,8 +9,8 @@ import { SubmissionRequest } from './SubmissionRequest';
 
 class TestAdapter implements ISubmissionAdapter {
   private request;
-  private checks: { (request: SubmissionRequest):void }[] = [];
-  private callback:SubmissionCallback;
+  private checks: { (request: SubmissionRequest): void }[] = [];
+  private callback: SubmissionCallback;
   private status = 202;
   private message = null;
   private data;
@@ -20,7 +20,7 @@ class TestAdapter implements ISubmissionAdapter {
     this.checks.push(check);
   }
 
-  public withResponse(status:number, message:string, data?:string, headers?:any) {
+  public withResponse(status: number, message: string, data?: string, headers?: any) {
     this.status = status;
     this.message = message;
     this.data = data;
@@ -33,7 +33,7 @@ class TestAdapter implements ISubmissionAdapter {
     return this;
   }
 
-  public sendRequest(request:SubmissionRequest, callback:SubmissionCallback, isAppExiting?:boolean) {
+  public sendRequest(request: SubmissionRequest, callback: SubmissionCallback, isAppExiting?: boolean) {
     this.request = request;
     this.callback = callback;
 
@@ -54,8 +54,8 @@ class TestAdapter implements ISubmissionAdapter {
 }
 
 describe('DefaultSubmissionClient', () => {
-  let adapter:TestAdapter;
-  let config:Configuration;
+  let adapter: TestAdapter;
+  let config: Configuration;
   let submissionClient: ISubmissionClient;
 
   beforeEach(() => {
@@ -92,10 +92,12 @@ describe('DefaultSubmissionClient', () => {
   });
 
   it('should submit invalid object data', (done) => {
-    let events:IEvent[] = [{ type: 'log', message: 'From js client', reference_id: '123454321', data: {
-      name: 'blake',
-      age: function() { throw new Error('Test'); }
-    }}];
+    let events: IEvent[] = [{
+      type: 'log', message: 'From js client', reference_id: '123454321', data: {
+        name: 'blake',
+        age: function() { throw new Error('Test'); }
+      }
+    }];
 
     adapter.withCheck(r => {
       expect(r.data).toBe(JSON.stringify(events));
@@ -109,7 +111,7 @@ describe('DefaultSubmissionClient', () => {
   });
 
   it('should submit user description', (done) => {
-    let description:IUserDescription = {
+    let description: IUserDescription = {
       email_address: 'norply@exceptionless.io',
       description: 'unit test'
     };

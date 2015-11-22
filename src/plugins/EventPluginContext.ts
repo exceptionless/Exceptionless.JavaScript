@@ -4,12 +4,12 @@ import { IEvent } from '../models/IEvent';
 import { ILog } from '../logging/ILog';
 
 export class EventPluginContext {
-  public cancelled:boolean;
-  public client:ExceptionlessClient;
-  public event:IEvent;
-  public contextData:ContextData;
+  public cancelled: boolean;
+  public client: ExceptionlessClient;
+  public event: IEvent;
+  public contextData: ContextData;
 
-  constructor(client:ExceptionlessClient, event:IEvent, contextData?:ContextData) {
+  constructor(client: ExceptionlessClient, event: IEvent, contextData?: ContextData) {
     this.client = client;
     this.event = event;
     this.contextData = contextData ? contextData : new ContextData();

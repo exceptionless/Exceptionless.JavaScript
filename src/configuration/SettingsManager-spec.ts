@@ -3,7 +3,7 @@ import { SettingsManager } from './SettingsManager';
 
 describe('SettingsManager', () => {
   it('should call changed handler', (done) => {
-    SettingsManager.onChanged((configuration:Configuration) => {
+    SettingsManager.onChanged((configuration: Configuration) => {
       expect(configuration.settings).toBeDefined();
       done();
     });

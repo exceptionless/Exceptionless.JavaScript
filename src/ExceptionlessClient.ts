@@ -14,14 +14,14 @@ export class ExceptionlessClient {
    * @type {ExceptionlessClient}
    * @private
    */
-  private static _instance:ExceptionlessClient = null;
+  private static _instance: ExceptionlessClient = null;
 
-  public config:Configuration;
+  public config: Configuration;
 
   constructor();
-  constructor(settings:IConfigurationSettings);
-  constructor(apiKey:string, serverUrl?:string);
-  constructor(settingsOrApiKey?:IConfigurationSettings|string, serverUrl?:string) {
+  constructor(settings: IConfigurationSettings);
+  constructor(apiKey: string, serverUrl?: string);
+  constructor(settingsOrApiKey?: IConfigurationSettings | string, serverUrl?: string) {
     if (typeof settingsOrApiKey !== 'object') {
       this.config = new Configuration(settingsOrApiKey);
     } else {
@@ -29,17 +29,17 @@ export class ExceptionlessClient {
     }
   }
 
-  public createException(exception:Error): EventBuilder {
+  public createException(exception: Error): EventBuilder {
     let pluginContextData = new ContextData();
     pluginContextData.setException(exception);
     return this.createEvent(pluginContextData).setType('error');
   }
 
-  public submitException(exception:Error, callback?:(context:EventPluginContext) => void): void {
+  public submitException(exception: Error, callback?: (context: EventPluginContext) => void): void {
     this.createException(exception).submit(callback);
   }
 
-  public createUnhandledException(exception:Error, submissionMethod?:string): EventBuilder {
+  public createUnhandledException(exception: Error, submissionMethod?: string): EventBuilder {
     let builder = this.createException(exception);
     builder.pluginContextData.markAsUnhandledError();
     builder.pluginContextData.setSubmissionMethod(submissionMethod);
@@ -47,22 +47,22 @@ export class ExceptionlessClient {
     return builder;
   }
 
-  public submitUnhandledException(exception:Error, submissionMethod?:string, callback?:(context:EventPluginContext) => void) {
+  public submitUnhandledException(exception: Error, submissionMethod?: string, callback?: (context: EventPluginContext) => void) {
     this.createUnhandledException(exception, submissionMethod).submit(callback);
   }
 
-  public createFeatureUsage(feature:string): EventBuilder {
+  public createFeatureUsage(feature: string): EventBuilder {
     return this.createEvent().setType('usage').setSource(feature);
   }
 
-  public submitFeatureUsage(feature:string, callback?:(context:EventPluginContext) => void): void {
+  public submitFeatureUsage(feature: string, callback?: (context: EventPluginContext) => void): void {
     this.createFeatureUsage(feature).submit(callback);
   }
 
-  public createLog(message:string): EventBuilder;
-  public createLog(source:string, message:string): EventBuilder;
-  public createLog(source:string, message:string, level:string): EventBuilder;
-  public createLog(sourceOrMessage:string, message?:string, level?:string): EventBuilder {
+  public createLog(message: string): EventBuilder;
+  public createLog(source: string, message: string): EventBuilder;
+  public createLog(source: string, message: string, level: string): EventBuilder;
+  public createLog(sourceOrMessage: string, message?: string, level?: string): EventBuilder {
     let builder = this.createEvent().setType('log');
 
     if (message && level) {
@@ -71,45 +71,45 @@ export class ExceptionlessClient {
       builder = builder.setSource(sourceOrMessage).setMessage(message);
     } else {
       // TODO: Look into using https://www.stevefenton.co.uk/Content/Blog/Date/201304/Blog/Obtaining-A-Class-Name-At-Runtime-In-TypeScript/
-      let caller:any = arguments.callee.caller;
+      let caller: any = arguments.callee.caller;
       builder = builder.setSource(caller && caller.name).setMessage(sourceOrMessage);
     }
 
     return builder;
   }
 
-  public submitLog(message:string): void;
-  public submitLog(source:string, message:string): void;
-  public submitLog(source:string, message:string, level:string, callback?:(context:EventPluginContext) => void): void;
-  public submitLog(sourceOrMessage:string, message?:string, level?:string, callback?:(context:EventPluginContext) => void): void {
+  public submitLog(message: string): void;
+  public submitLog(source: string, message: string): void;
+  public submitLog(source: string, message: string, level: string, callback?: (context: EventPluginContext) => void): void;
+  public submitLog(sourceOrMessage: string, message?: string, level?: string, callback?: (context: EventPluginContext) => void): void {
     this.createLog(sourceOrMessage, message, level).submit(callback);
   }
 
-  public createNotFound(resource:string): EventBuilder {
+  public createNotFound(resource: string): EventBuilder {
     return this.createEvent().setType('404').setSource(resource);
   }
 
-  public submitNotFound(resource:string, callback?:(context:EventPluginContext) => void): void {
+  public submitNotFound(resource: string, callback?: (context: EventPluginContext) => void): void {
     this.createNotFound(resource).submit(callback);
   }
 
-  public createSessionStart(sessionId:string): EventBuilder {
+  public createSessionStart(sessionId: string): EventBuilder {
     return this.createEvent().setType('start').setSessionId(sessionId);
   }
 
-  public submitSessionStart(sessionId:string, callback?:(context:EventPluginContext) => void): void {
+  public submitSessionStart(sessionId: string, callback?: (context: EventPluginContext) => void): void {
     this.createSessionStart(sessionId).submit(callback);
   }
 
-  public createSessionEnd(sessionId:string): EventBuilder {
+  public createSessionEnd(sessionId: string): EventBuilder {
     return this.createEvent().setType('end').setSessionId(sessionId);
   }
 
-  public submitSessionEnd(sessionId:string, callback?:(context:EventPluginContext) => void): void {
+  public submitSessionEnd(sessionId: string, callback?: (context: EventPluginContext) => void): void {
     this.createSessionEnd(sessionId).submit(callback);
   }
 
-  public createEvent(pluginContextData?:ContextData): EventBuilder {
+  public createEvent(pluginContextData?: ContextData): EventBuilder {
     return new EventBuilder({ date: new Date() }, this, pluginContextData);
   }
 
@@ -119,8 +119,8 @@ export class ExceptionlessClient {
    * @param pluginContextData Any contextual data objects to be used by Exceptionless plugins to gather default information for inclusion in the report information.
    * @param callback
    */
-  public submitEvent(event:IEvent, pluginContextData?:ContextData, callback?:(context:EventPluginContext) => void): void {
-    function cancelled(context:EventPluginContext) {
+  public submitEvent(event: IEvent, pluginContextData?: ContextData, callback?: (context: EventPluginContext) => void): void {
+    function cancelled(context: EventPluginContext) {
       if (!!context) {
         context.cancelled = true;
       }
@@ -146,7 +146,7 @@ export class ExceptionlessClient {
       event.tags = [];
     }
 
-    EventPluginManager.run(context, function (ctx:EventPluginContext) {
+    EventPluginManager.run(context, function(ctx: EventPluginContext) {
       let ev = ctx.event;
       if (!ctx.cancelled) {
         // ensure all required data
@@ -178,13 +178,13 @@ export class ExceptionlessClient {
    * @param description The user's description of the event.
    * @param callback The submission response.
    */
-  public updateUserEmailAndDescription(referenceId:string, email:string, description:string, callback?:(response:SubmissionResponse) => void) {
+  public updateUserEmailAndDescription(referenceId: string, email: string, description: string, callback?: (response: SubmissionResponse) => void) {
     if (!referenceId || !email || !description || !this.config.enabled) {
       return !!callback && callback(new SubmissionResponse(500, 'cancelled'));
     }
 
-    let userDescription:IUserDescription = { email_address: email, description: description };
-    this.config.submissionClient.postUserDescription(referenceId, userDescription, this.config, (response:SubmissionResponse) => {
+    let userDescription: IUserDescription = { email_address: email, description: description };
+    this.config.submissionClient.postUserDescription(referenceId, userDescription, this.config, (response: SubmissionResponse) => {
       if (!response.success) {
         this.config.log.error(`Failed to submit user email and description for event '${referenceId}': ${response.statusCode} ${response.message}`);
       }
