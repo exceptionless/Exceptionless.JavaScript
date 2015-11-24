@@ -74,8 +74,56 @@ describe('Utils', () => {
       expect(Utils.stringify([{ one: afoo, two: afoo }])).to.equal('[{"one":{"a":"foo"}}]');
     });
 
-    it('should behave like JSON.stringify', () => {
-      expect(Utils.stringify(user)).to.equal(JSON.stringify(user));
+    it.skip('deep circular reference', () => {
+      let a:any = {};
+      let b:any = {};
+      let c:any = { d: 'test' };
+
+      a.b = b;
+      b.c = c;
+      c.a = a;
+
+      let expected = '{"b":{"c":{"d":"test"}}}';
+
+      let actual = Utils.stringify(a);
+      expect(actual).to.equal(expected);
+    });
+
+    describe('should behave like JSON.stringify', () => {
+      [new Date(), 1, true, null, undefined, function() { }, user].forEach(value => {
+        it('for ' + typeof (value), () => {
+          expect(Utils.stringify(value)).to.equal(JSON.stringify(value));
+        });
+      });
+    });
+
+    it.skip('should respect maxDepth', () => {
+      let deepObject = {
+        a: {
+          b: {
+            c: {
+              d: {}
+            }
+          }
+        }
+      };
+
+      expect(deepObject).to.equal('TODO');
+    });
+
+    it('should serialize inherited properties', () => {
+      let Foo = function() { this.a = 'a'; };
+      let Bar = function() { this.b = 'b'; };
+      Bar.prototype = new Foo();
+      let bar = new Bar();
+
+      let expected = {
+        a: 'a',
+        b: 'b'
+      };
+
+      let result = JSON.parse(Utils.stringify(bar));
+      expect(result).to.eql(expected);
     });
 
     describe('with exclude pattern', () => {

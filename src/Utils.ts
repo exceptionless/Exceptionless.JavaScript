@@ -192,6 +192,21 @@ export class Utils {
       });
     }
 
+    if (({}).toString.call(data) === '[object Object]') {
+      let flattened = {};
+      /* tslint:disable:forin */
+      for (let prop in data) {
+        let value = data[prop];
+        if (value === data) {
+          continue;
+        }
+        flattened[prop] = data[prop];
+      }
+      /* tslint:enable:forin */
+
+      return stringifyImpl(flattened, exclusions);
+    }
+
     if (({}).toString.call(data) === '[object Array]') {
       let result = [];
       for (let index = 0; index < data.length; index++) {
