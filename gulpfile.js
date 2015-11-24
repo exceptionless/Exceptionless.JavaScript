@@ -1,32 +1,28 @@
-var concat = require('gulp-concat');
-var del = require('del');
+var pkg = require('./package.json');
 var gulp = require('gulp');
-var package = require('./package.json');
 var replace = require('gulp-replace');
-var Server = require('karma').Server;
 var sourcemaps = require('gulp-sourcemaps');
-var tslint = require('gulp-tslint');
 var tsProject = require('tsproject');
-var uglify = require('gulp-uglify');
-var umd = require('gulp-wrap-umd');
 
 gulp.task('clean', function () {
+  var del = require('del');
   del.sync(['dist'], { force: true });
 });
 
-gulp.task('typescript', function() {
+gulp.task('typescript', function () {
   return tsProject.src('src/tsconfig.json').pipe(gulp.dest('dist/temp'));
 });
 
-gulp.task('typescript.integrations', ['typescript'], function() {
+gulp.task('typescript.integrations', ['typescript'], function () {
   return tsProject.src('src/integrations/tsconfig.json').pipe(gulp.dest('dist/temp'));
 });
 
-gulp.task('typescript.node', function() {
+gulp.task('typescript.node', function () {
   return tsProject.src('src/tsconfig.node.json').pipe(gulp.dest('dist/temp'));
 });
 
-gulp.task('exceptionless.umd', ['typescript', 'typescript.integrations'], function() {
+gulp.task('exceptionless.umd', ['typescript', 'typescript.integrations'], function () {
+  var umd = require('gulp-wrap-umd');
   return gulp.src('dist/temp/src/exceptionless.js')
     .pipe(sourcemaps.init({ loadMaps: true }))
     .pipe(umd({
@@ -39,7 +35,10 @@ gulp.task('exceptionless.umd', ['typescript', 'typescript.integrations'], functi
     .pipe(gulp.dest('dist/temp'));
 });
 
-gulp.task('exceptionless', ['exceptionless.umd'], function() {
+gulp.task('exceptionless', ['exceptionless.umd'], function () {
+  var uglify = require('gulp-uglify');
+  var concat = require('gulp-concat');
+
   gulp.src('dist/temp/src/exceptionless.d.ts')
     .pipe(gulp.dest('dist'));
 
@@ -58,20 +57,20 @@ gulp.task('exceptionless', ['exceptionless.umd'], function() {
   gulp.src(files)
     .pipe(sourcemaps.init({ loadMaps: true }))
     .pipe(concat('exceptionless.js'))
-    .pipe(replace('exceptionless-js/1.0.0.0', 'exceptionless-js/' + package.version))
+    .pipe(replace('exceptionless-js/1.0.0.0', 'exceptionless-js/' + pkg.version))
     .pipe(sourcemaps.write('.'))
     .pipe(gulp.dest('dist'));
 
   return gulp.src(files)
     .pipe(sourcemaps.init({ loadMaps: true }))
     .pipe(concat('exceptionless.min.js'))
-    .pipe(replace('exceptionless-js/1.0.0.0', 'exceptionless-js/' + package.version))
-    .pipe(uglify({ output: { beautify: false }}))
+    .pipe(replace('exceptionless-js/1.0.0.0', 'exceptionless-js/' + pkg.version))
+    .pipe(uglify({ output: { beautify: false } }))
     .pipe(sourcemaps.write('.'))
     .pipe(gulp.dest('dist'))
 });
 
-gulp.task('exceptionless.node', ['typescript.node'], function() {
+gulp.task('exceptionless.node', ['typescript.node'], function () {
 
   var files = [
     'dist/temp/src/exceptionless.node.js',
@@ -80,16 +79,17 @@ gulp.task('exceptionless.node', ['typescript.node'], function() {
 
   gulp.src(files)
     .pipe(sourcemaps.init({ loadMaps: true }))
-    .pipe(replace('exceptionless-js/1.0.0.0', 'exceptionless-js/' + package.version))
+    .pipe(replace('exceptionless-js/1.0.0.0', 'exceptionless-js/' + pkg.version))
     .pipe(sourcemaps.write('.'))
     .pipe(gulp.dest('dist'));
 });
 
-gulp.task('watch', ['build'], function() {
+gulp.task('watch', ['build'], function () {
   gulp.watch('src/**/*.ts', ['build']);
 });
 
-gulp.task('lint', function() {
+gulp.task('lint', function () {
+  var tslint = require('gulp-tslint');
   return gulp.src(['src/**/*.ts', '!src/typings/**/*.ts'])
     .pipe(tslint())
     .pipe(tslint.report('verbose'));
@@ -97,11 +97,12 @@ gulp.task('lint', function() {
 
 gulp.task('build', ['clean', 'lint', 'exceptionless', 'exceptionless.node']);
 
-gulp.task('typescript.test', function() {
+gulp.task('typescript.test', function () {
   return tsProject.src('src/tsconfig.test.json').pipe(gulp.dest('dist/temp'));
 });
 
-gulp.task('exceptionless.test.umd', ['typescript.test'], function() {
+gulp.task('exceptionless.test.umd', ['typescript.test'], function () {
+  var umd = require('gulp-wrap-umd');
   return gulp.src('dist/temp/src/exceptionless-spec.js')
     .pipe(sourcemaps.init({ loadMaps: true }))
     .pipe(umd({
@@ -115,9 +116,17 @@ gulp.task('exceptionless.test.umd', ['typescript.test'], function() {
 });
 
 gulp.task('test', ['exceptionless.test.umd'], function(done) {
+  var Server = require('karma').Server;
   new Server({
     configFile: __dirname + '/karma.conf.js'
   }, done).start();
+});
+
+gulp.task('format', function () {
+  var exec = require('gulp-exec');
+  return gulp.src(['src/**/*.ts', '!src/typings/**/*.ts'])
+    .pipe(exec('node_modules/typescript-formatter/bin/tsfmt -r <%= file.path %>'))
+    .pipe(exec.reporter());
 });
 
 gulp.task('default', ['watch', 'build', 'test']);

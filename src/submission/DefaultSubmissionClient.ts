@@ -8,12 +8,12 @@ import { SettingsResponse } from './SettingsResponse';
 import { SubmissionRequest } from './SubmissionRequest';
 import { SubmissionResponse } from './SubmissionResponse';
 
-declare var XDomainRequest:{ new (); create(); };
+declare var XDomainRequest: { new (); create(); };
 
 export class DefaultSubmissionClient implements ISubmissionClient {
-  public configurationVersionHeader:string = 'x-exceptionless-configversion';
+  public configurationVersionHeader: string = 'x-exceptionless-configversion';
 
-  public postEvents(events:IEvent[], config:Configuration, callback:(response:SubmissionResponse) => void, isAppExiting?:boolean):void {
+  public postEvents(events: IEvent[], config: Configuration, callback: (response: SubmissionResponse) => void, isAppExiting?: boolean): void {
     let data = JSON.stringify(events);
     let request = this.createRequest(config, 'POST', '/api/v2/events', data);
     let cb = this.createSubmissionCallback(config, callback);
@@ -21,8 +21,8 @@ export class DefaultSubmissionClient implements ISubmissionClient {
     return config.submissionAdapter.sendRequest(request, cb, isAppExiting);
   }
 
-  public postUserDescription(referenceId:string, description:IUserDescription, config:Configuration, callback:(response:SubmissionResponse) => void):void {
-    let path = `/api/v2/events/by-ref/${encodeURIComponent(referenceId)}/user-description`;
+  public postUserDescription(referenceId: string, description: IUserDescription, config: Configuration, callback: (response: SubmissionResponse) => void): void {
+    let path = `/api/v2/events/by-ref/${encodeURIComponent(referenceId) }/user-description`;
     let data = JSON.stringify(description);
     let request = this.createRequest(config, 'POST', path, data);
     let cb = this.createSubmissionCallback(config, callback);
@@ -30,14 +30,14 @@ export class DefaultSubmissionClient implements ISubmissionClient {
     return config.submissionAdapter.sendRequest(request, cb);
   }
 
-  public getSettings(config:Configuration, callback:(response:SettingsResponse) => void):void {
+  public getSettings(config: Configuration, callback: (response: SettingsResponse) => void): void {
     let request = this.createRequest(config, 'GET', '/api/v2/projects/config');
     let cb = (status, message, data?, headers?) => {
       if (status !== 200) {
         return callback(new SettingsResponse(false, null, -1, null, message));
       }
 
-      let settings:IClientConfiguration;
+      let settings: IClientConfiguration;
       try {
         settings = JSON.parse(data);
       } catch (e) {
@@ -65,9 +65,9 @@ export class DefaultSubmissionClient implements ISubmissionClient {
     };
   }
 
-  private createSubmissionCallback(config:Configuration, callback:(response:SubmissionResponse) => void) {
+  private createSubmissionCallback(config: Configuration, callback: (response: SubmissionResponse) => void) {
     return (status, message, data?, headers?) => {
-      let settingsVersion:number = headers && parseInt(headers[this.configurationVersionHeader], 10);
+      let settingsVersion: number = headers && parseInt(headers[this.configurationVersionHeader], 10);
       SettingsManager.checkVersion(settingsVersion, config);
 
       callback(new SubmissionResponse(status, message));

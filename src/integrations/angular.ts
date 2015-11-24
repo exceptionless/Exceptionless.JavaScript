@@ -4,7 +4,7 @@ declare var exceptionless;
 
 angular.module('exceptionless', [])
   .constant('$ExceptionlessClient', exceptionless.ExceptionlessClient.default)
-  .factory('exceptionlessHttpInterceptor', ['$q', '$ExceptionlessClient', function ($q, $ExceptionlessClient) {
+  .factory('exceptionlessHttpInterceptor', ['$q', '$ExceptionlessClient', function($q, $ExceptionlessClient) {
     return {
       responseError: function responseError(rejection) {
         if (rejection.status === 404) {
@@ -19,18 +19,18 @@ angular.module('exceptionless', [])
       }
     };
   }])
-  .config(['$httpProvider', '$provide', '$ExceptionlessClient', function ($httpProvider, $provide, $ExceptionlessClient) {
+  .config(['$httpProvider', '$provide', '$ExceptionlessClient', function($httpProvider, $provide, $ExceptionlessClient) {
     $httpProvider.interceptors.push('exceptionlessHttpInterceptor');
-    $provide.decorator('$exceptionHandler', ['$delegate', function ($delegate) {
-      return function (exception, cause) {
+    $provide.decorator('$exceptionHandler', ['$delegate', function($delegate) {
+      return function(exception, cause) {
         $delegate(exception, cause);
         $ExceptionlessClient.createUnhandledException(exception, '$exceptionHandler').setMessage(cause).submit();
       };
     }]);
-    $provide.decorator('$log', ['$delegate', function ($delegate) {
+    $provide.decorator('$log', ['$delegate', function($delegate) {
       function decorateRegularCall(property, logLevel) {
         let previousFn = $delegate[property];
-        return $delegate[property] = function () {
+        return $delegate[property] = function() {
           previousFn.apply(null, arguments);
           if (arguments[0] && arguments[0].length > 0) {
             $ExceptionlessClient.submitLog(null, arguments[0], logLevel);

@@ -5,12 +5,12 @@ import { EventPluginContext } from '../plugins/EventPluginContext';
 import os = require('os');
 
 export class NodeEnvironmentInfoCollector implements IEnvironmentInfoCollector {
-  public getEnvironmentInfo(context:EventPluginContext): IEnvironmentInfo {
-    function getIpAddresses():string {
-      let ips:string[] = [];
+  public getEnvironmentInfo(context: EventPluginContext): IEnvironmentInfo {
+    function getIpAddresses(): string {
+      let ips: string[] = [];
       let interfaces = os.networkInterfaces();
       Object.keys(interfaces).forEach((name) => {
-        interfaces[name].forEach((iface:any) => {
+        interfaces[name].forEach((iface: any) => {
           if ('IPv4' === iface.family && !iface.internal) {
             ips.push(iface.address);
           }

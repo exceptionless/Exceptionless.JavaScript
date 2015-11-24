@@ -1,8 +1,6 @@
 import { ContextData } from '../ContextData';
 import { EventPluginContext } from '../EventPluginContext';
 import { IEvent } from '../../models/IEvent';
-import { IError } from '../../models/IError';
-import { IErrorParser } from '../../services/IErrorParser';
 
 import { ErrorPlugin } from './ErrorPlugin';
 import { CapturedExceptions } from './ErrorPlugin-spec-exceptions';
@@ -25,7 +23,6 @@ describe('ErrorPlugin', () => {
   let target = new ErrorPlugin();
   let contextData: ContextData;
   let context: EventPluginContext;
-  let errorParser: IErrorParser;
   let client: any;
   let event: IEvent;
 
@@ -34,7 +31,8 @@ describe('ErrorPlugin', () => {
       contextData,
       context,
       client,
-      event} = createFixture());
+      event
+    } = createFixture());
   });
 
   function processError(error) {

@@ -1,5 +1,5 @@
 export interface IStorageItem<T> {
-  created:number;
-  path:string;
-  value:T;
+  created: number;
+  path: string;
+  value: T;
 }

@@ -1,5 +1,4 @@
 import { IInnerError } from '../../models/IInnerError';
-import { IStackFrame } from '../../models/IStackFrame';
 import { ILog } from '../../logging/ILog';
 import { IEventPlugin } from '../IEventPlugin';
 import { EventPluginContext } from '../EventPluginContext';
@@ -32,7 +31,7 @@ export class DuplicateCheckerPlugin implements IEventPlugin {
     return Date.now();
   }
 
-  private checkDuplicate (error: IInnerError, log: ILog): boolean {
+  private checkDuplicate(error: IInnerError, log: ILog): boolean {
     function getHashCodeForError(err: IInnerError): number {
       if (!err.stack_trace) {
         return null;

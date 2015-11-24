@@ -11,42 +11,42 @@ export class DefaultEventQueue implements IEventQueue {
    * @type {Configuration}
    * @private
    */
-  private _config:Configuration;
+  private _config: Configuration;
 
   /**
    * Suspends processing until the specified time.
    * @type {Date}
    * @private
    */
-  private _suspendProcessingUntil:Date;
+  private _suspendProcessingUntil: Date;
 
   /**
    * Discards queued items until the specified time.
    * @type {Date}
    * @private
    */
-  private _discardQueuedItemsUntil:Date;
+  private _discardQueuedItemsUntil: Date;
 
   /**
    * Returns true if the queue is processing.
    * @type {boolean}
    * @private
    */
-  private _processingQueue:boolean = false;
+  private _processingQueue: boolean = false;
 
   /**
    * Processes the queue every xx seconds.
    * @type {Timer}
    * @private
    */
-  private _queueTimer:any;
+  private _queueTimer: any;
 
-  constructor(config:Configuration) {
+  constructor(config: Configuration) {
     this._config = config;
   }
 
-  public enqueue(event:IEvent): void {
-    let config:Configuration = this._config; // Optimization for minifier.
+  public enqueue(event: IEvent): void {
+    let config: Configuration = this._config; // Optimization for minifier.
     this.ensureQueueTimer();
 
     if (this.areQueuedItemsDiscarded()) {
@@ -54,14 +54,14 @@ export class DefaultEventQueue implements IEventQueue {
       return;
     }
 
-    let key = `ex-q-${new Date().toJSON()}-${Utils.randomNumber()}`;
+    let key = `ex-q-${new Date().toJSON() }-${Utils.randomNumber() }`;
     config.log.info(`Enqueuing event: ${key} type=${event.type} ${!!event.reference_id ? 'refid=' + event.reference_id : ''}`);
     config.storage.save(key, event);
   }
 
-  public process(isAppExiting?:boolean): void {
-    function getEvents(events:{ path:string, value:IEvent }[]):IEvent[] {
-      let items:IEvent[] = [];
+  public process(isAppExiting?: boolean): void {
+    function getEvents(events: { path: string, value: IEvent }[]): IEvent[] {
+      let items: IEvent[] = [];
       for (let index = 0; index < events.length; index++) {
         items.push(events[index].value);
       }
@@ -69,9 +69,9 @@ export class DefaultEventQueue implements IEventQueue {
       return items;
     }
 
-    const queueNotProcessed:string = 'The queue will not be processed.'; // optimization for minifier.
-    let config:Configuration = this._config; // Optimization for minifier.
-    let log:ILog = config.log; // Optimization for minifier.
+    const queueNotProcessed: string = 'The queue will not be processed.'; // optimization for minifier.
+    let config: Configuration = this._config; // Optimization for minifier.
+    let log: ILog = config.log; // Optimization for minifier.
 
     this.ensureQueueTimer();
 
@@ -100,7 +100,7 @@ export class DefaultEventQueue implements IEventQueue {
       }
 
       log.info(`Sending ${events.length} events to ${config.serverUrl}.`);
-      config.submissionClient.postEvents(getEvents(events), config, (response:SubmissionResponse) => {
+      config.submissionClient.postEvents(getEvents(events), config, (response: SubmissionResponse) => {
         this.processSubmissionResponse(response, events);
         log.info('Finished processing queue.');
         this._processingQueue = false;
@@ -112,8 +112,8 @@ export class DefaultEventQueue implements IEventQueue {
     }
   }
 
-  public suspendProcessing(durationInMinutes?:number, discardFutureQueuedItems?:boolean, clearQueue?:boolean): void {
-    let config:Configuration = this._config; // Optimization for minifier.
+  public suspendProcessing(durationInMinutes?: number, discardFutureQueuedItems?: boolean, clearQueue?: boolean): void {
+    let config: Configuration = this._config; // Optimization for minifier.
 
     if (!durationInMinutes || durationInMinutes <= 0) {
       durationInMinutes = 5;
@@ -152,10 +152,10 @@ export class DefaultEventQueue implements IEventQueue {
     }
   }
 
-  private processSubmissionResponse(response:SubmissionResponse, events:{ path:string, value:IEvent }[]): void {
-    const noSubmission:string = 'The event will not be submitted.'; // Optimization for minifier.
-    let config:Configuration = this._config; // Optimization for minifier.
-    let log:ILog = config.log; // Optimization for minifier.
+  private processSubmissionResponse(response: SubmissionResponse, events: { path: string, value: IEvent }[]): void {
+    const noSubmission: string = 'The event will not be submitted.'; // Optimization for minifier.
+    let config: Configuration = this._config; // Optimization for minifier.
+    let log: ILog = config.log; // Optimization for minifier.
 
     if (response.success) {
       log.info(`Sent ${events.length} events.`);
@@ -212,7 +212,7 @@ export class DefaultEventQueue implements IEventQueue {
     }
   }
 
-  private removeEvents(events:{ path:string, value:IEvent }[]) {
+  private removeEvents(events: { path: string, value: IEvent }[]) {
     for (let index = 0; index < (events || []).length; index++) {
       this._config.storage.remove(events[index].path);
     }

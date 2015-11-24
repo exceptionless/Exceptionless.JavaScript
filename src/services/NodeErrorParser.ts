@@ -6,9 +6,9 @@ import { EventPluginContext } from '../plugins/EventPluginContext';
 import nodestacktrace = require('stack-trace');
 
 export class NodeErrorParser implements IErrorParser {
-  public parse(context:EventPluginContext, exception:Error): IError {
-    function getStackFrames(stackFrames:any[]): IStackFrame[] {
-      let frames:IStackFrame[] = [];
+  public parse(context: EventPluginContext, exception: Error): IError {
+    function getStackFrames(stackFrames: any[]): IStackFrame[] {
+      let frames: IStackFrame[] = [];
 
       for (let index = 0; index < stackFrames.length; index++) {
         let frame = stackFrames[index];

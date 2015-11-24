@@ -1,17 +1,16 @@
 import { IModule } from '../models/IModule';
 import { IModuleCollector } from './IModuleCollector';
 import { EventPluginContext } from '../plugins/EventPluginContext';
-import { Utils } from '../Utils';
 
 import child = require('child_process');
 import path = require('path');
 
 export class NodeModuleCollector implements IModuleCollector {
 
-  private initialized:boolean = false;
-  private installedModules:{[id:string]: IModule} = {};
+  private initialized: boolean = false;
+  private installedModules: { [id: string]: IModule } = {};
 
-  public getModules(context:EventPluginContext): IModule[] {
+  public getModules(context: EventPluginContext): IModule[] {
     this.initialize();
 
     if (!require.main) {
@@ -50,7 +49,7 @@ export class NodeModuleCollector implements IModuleCollector {
 
     let json;
     try {
-     json = JSON.parse(output.toString());
+      json = JSON.parse(output.toString());
     } catch (e) {
       return;
     }
@@ -65,7 +64,7 @@ export class NodeModuleCollector implements IModuleCollector {
 
     Object.keys(items).forEach(key => {
       let item = items[key];
-      let theModule = <IModule> {
+      let theModule = <IModule>{
         module_id: id++,
         name: key,
         version: item.version

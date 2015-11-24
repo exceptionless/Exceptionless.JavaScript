@@ -2,7 +2,7 @@ import { Utils } from './Utils';
 
 describe('Utils', () => {
   it('should add range', () => {
-    let target:string[];
+    let target: string[];
     expect(Utils.addRange(target)).toEqual([]);
     expect(target).toBeUndefined();
 
@@ -15,8 +15,8 @@ describe('Utils', () => {
   });
 
   describe('stringify', () => {
-    let user:any = {
-      id:1,
+    let user: any = {
+      id: 1,
       name: 'Blake',
       password: '123456',
       passwordResetToken: 'a reset token',
@@ -66,11 +66,11 @@ describe('Utils', () => {
     });
 
     it('circular reference', () => {
-      let afoo:any = {a: 'foo'};
+      let afoo: any = { a: 'foo' };
       afoo.b = afoo;
 
       expect(Utils.stringify(afoo)).toBe('{"a":"foo"}');
-      expect(Utils.stringify([{one: afoo, two: afoo}])).toBe('[{"one":{"a":"foo"}}]');
+      expect(Utils.stringify([{ one: afoo, two: afoo }])).toBe('[{"one":{"a":"foo"}}]');
     });
 
     it('should behave like JSON.stringify', () => {
@@ -95,7 +95,7 @@ describe('Utils', () => {
       });
 
       it('*Address', () => {
-        let event = { type:'usage', source:'about' };
+        let event = { type: 'usage', source: 'about' };
         expect(Utils.stringify(event, ['*Address'])).toBe(JSON.stringify(event));
       });
     });
