@@ -1,5 +1,6 @@
 import { Configuration } from '../configuration/Configuration';
 import { IEvent } from '../models/IEvent';
+import { expect } from 'chai';
 
 describe('DefaultEventQueue', () => {
   function getConfiguration(): Configuration {
@@ -8,7 +9,7 @@ describe('DefaultEventQueue', () => {
       serverUrl: 'http://localhost:50000'
     });
 
-    expect(config.storage.getList().length).toBe(0);
+    expect(config.storage.getList().length).to.equal(0);
     return config;
   }
 
@@ -16,20 +17,20 @@ describe('DefaultEventQueue', () => {
     let config: Configuration = getConfiguration();
     let event: IEvent = { type: 'log', reference_id: '123454321' };
     config.queue.enqueue(event);
-    expect(config.storage.getList().length).toBe(1);
+    expect(config.storage.getList().length).to.equal(1);
   });
 
   it('should process queue', () => {
     let config: Configuration = getConfiguration();
     let event: IEvent = { type: 'log', reference_id: '123454321' };
     config.queue.enqueue(event);
-    expect(config.storage.getList().length).toBe(1);
+    expect(config.storage.getList().length).to.equal(1);
     config.queue.process();
 
     if (!(<any>config.queue)._suspendProcessingUntil) {
-      expect(config.storage.getList().length).toBe(0);
+      expect(config.storage.getList().length).to.equal(0);
     } else {
-      expect(config.storage.getList().length).toBe(1);
+      expect(config.storage.getList().length).to.equal(1);
     }
   });
 
@@ -39,7 +40,7 @@ describe('DefaultEventQueue', () => {
 
     let event: IEvent = { type: 'log', reference_id: '123454321' };
     config.queue.enqueue(event);
-    expect(config.storage.getList().length).toBe(0);
+    expect(config.storage.getList().length).to.equal(0);
   });
 
   it('should suspend processing', (done) => {
@@ -48,16 +49,16 @@ describe('DefaultEventQueue', () => {
 
     let event: IEvent = { type: 'log', reference_id: '123454321' };
     config.queue.enqueue(event);
-    expect(config.storage.getList().length).toBe(1);
+    expect(config.storage.getList().length).to.equal(1);
 
     setTimeout(() => {
       if (!(<any>config.queue)._suspendProcessingUntil) {
-        expect(config.storage.getList().length).toBe(0);
+        expect(config.storage.getList().length).to.equal(0);
       } else {
-        expect(config.storage.getList().length).toBe(1);
+        expect(config.storage.getList().length).to.equal(1);
       }
 
       done();
-    }, 10000);
-  }, 21000);
+    });
+  });
 });

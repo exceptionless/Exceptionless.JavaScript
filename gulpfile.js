@@ -116,10 +116,14 @@ gulp.task('exceptionless.test.umd', ['typescript.test'], function () {
 });
 
 gulp.task('test', ['exceptionless.test.umd'], function(done) {
-  var Server = require('karma').Server;
-  new Server({
-    configFile: __dirname + '/karma.conf.js'
-  }, done).start();
+  var mocha = require('gulp-mocha');
+  return gulp.src('dist/temp/exceptionless-spec.js', { read: false })
+    .pipe(mocha({
+      require: ['source-map-support/register']
+    }))
+    .once('end', function () {
+      process.exit();
+    });
 });
 
 gulp.task('format', function () {

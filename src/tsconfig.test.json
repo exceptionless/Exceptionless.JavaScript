@@ -9,7 +9,8 @@
   "bundles": {
     "exceptionless-spec": {
       "files": [
-        "typings/jasmine/jasmine.d.ts",
+        "typings/mocha/mocha.d.ts",
+        "typings/chai/chai.d.ts",
         "typings/node/node.d.ts",
         "typings/stack-trace/stack-trace.d.ts",
         "typings/tracekit/tracekit.d.ts",

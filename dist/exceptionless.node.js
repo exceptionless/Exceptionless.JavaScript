@@ -579,6 +579,17 @@ var Utils = (function () {
                 return value;
             });
         }
+        if (({}).toString.call(data) === '[object Object]') {
+            var flattened = {};
+            for (var prop in data) {
+                var value = data[prop];
+                if (value === data) {
+                    continue;
+                }
+                flattened[prop] = data[prop];
+            }
+            return stringifyImpl(flattened, exclusions);
+        }
         if (({}).toString.call(data) === '[object Array]') {
             var result = [];
             for (var index = 0; index < data.length; index++) {

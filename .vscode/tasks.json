@@ -1,0 +1,64 @@
+{
+  "version": "0.1.0",
+  "command": "gulp",
+  "isShellCommand": true,
+  "args": [
+    "--no-color"
+  ],
+  "tasks": [
+    {
+      "taskName": "build",
+      "args": [],
+      "isBuildCommand": true,
+      "problemMatcher": {
+        // The problem is owned by the cpp language service.
+        "owner": "typescript",
+        // The file name for reported problems is relative to the opened folder.
+        "fileLocation": [
+          "relative",
+          "${workspaceRoot}/src"
+        ],
+        // The actual pattern to match problems in the output.
+        "pattern": {
+          // The regular expression. Example to match: helloWorld.c:5:3: warning: implicit declaration of function ‘prinft’ [-Wimplicit-function-declaration]
+          "regexp": "\\[\\d\\d:\\d\\d:\\d\\d\\] \\[gulp-tslint\\] error \\([^)]+\\) ([^\\[]+)\\[(\\d+), (\\d+)\\]: (.+)$",
+          // The first match group matches the file name which is relative.
+          "file": 1,
+          // The second match group matches the line on which the problem occurred.
+          "line": 2,
+          // The third match group matches the column at which the problem occurred.
+          "column": 3,
+          // The fifth match group matches the message.
+          "message": 4
+        }
+      }
+    },
+    {
+      "taskName": "test",
+      "args": [],
+      "isBuildCommand": true,
+      "problemMatcher": {
+        // The problem is owned by the cpp language service.
+        "owner": "typescript",
+        // The file name for reported problems is relative to the opened folder.
+        "fileLocation": [
+          "relative",
+          "${workspaceRoot}/src"
+        ],
+        // The actual pattern to match problems in the output.
+        "pattern": {
+          // The regular expression. Example to match: helloWorld.c:5:3: warning: implicit declaration of function ‘prinft’ [-Wimplicit-function-declaration]
+          "regexp": "\\[\\d\\d:\\d\\d:\\d\\d\\] \\[gulp-tslint\\] error \\([^)]+\\) ([^\\[]+)\\[(\\d+), (\\d+)\\]: (.+)$",
+          // The first match group matches the file name which is relative.
+          "file": 1,
+          // The second match group matches the line on which the problem occurred.
+          "line": 2,
+          // The third match group matches the column at which the problem occurred.
+          "column": 3,
+          // The fifth match group matches the message.
+          "message": 4
+        }
+      }
+    }
+  ]
+}
