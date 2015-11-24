@@ -1,0 +1,38 @@
+{
+  "version": "0.1.0",
+  "configurations": [
+    {
+      "name": "Launch",
+      "request": "launch",
+      "type": "node",
+      "program": "dist/exceptionless.node.js",
+      "runtimeArgs": [
+        "--nolazy"
+      ],
+      "sourceMaps": true,
+      "outDir": "dist"
+    },
+    {
+      "name": "Test",
+      "request": "launch",
+      "type": "node",
+      "program": "node_modules/.bin/_mocha",
+      "args": [
+        "dist/temp/exceptionless-spec.js"
+      ],
+      "runtimeArgs": [
+        "--nolazy"
+      ],
+      "sourceMaps": true,
+      "outDir": "dist"
+    },
+    {
+      "name": "Attach",
+      "request": "attach",
+      "type": "node",
+      "port": 5858,
+      "sourceMaps": true,
+      "outDir": "dist"
+    }
+  ]
+}
