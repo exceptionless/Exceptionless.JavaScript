@@ -5,6 +5,7 @@ import { IEvent } from '../../models/IEvent';
 import { ErrorPlugin } from './ErrorPlugin';
 import { CapturedExceptions } from './ErrorPlugin-spec-exceptions';
 import { createFixture } from './EventPluginTestFixture';
+import { expect } from 'chai';
 
 function BaseTestError() {
   this.name = 'NotImplementedError';
@@ -47,7 +48,7 @@ describe('ErrorPlugin', () => {
         contextData.setException(exception);
         target.run(context);
         let additionalData = getAdditionalData(event);
-        expect(additionalData).toBeNull();
+        expect(additionalData).to.be.null;
       });
 
     });
@@ -58,29 +59,29 @@ describe('ErrorPlugin', () => {
       };
       processError(error);
       let additionalData = getAdditionalData(event);
-      expect(additionalData).not.toBeNull();
-      expect(additionalData.someProperty).toBe('Test');
+      expect(additionalData).not.to.be.null;
+      expect(additionalData.someProperty).to.equal('Test');
     });
 
     it('should support custom exception types', () => {
       processError(new BaseTestError());
       let additionalData = getAdditionalData(event);
-      expect(additionalData).not.toBeNull();
-      expect(additionalData.someProperty).toBe('Test');
+      expect(additionalData).not.to.be.null;
+      expect(additionalData.someProperty).to.equal('Test');
     });
 
     it('should support inherited properties', () => {
       processError(new DerivedTestError());
       let additionalData = getAdditionalData(event);
-      expect(additionalData).not.toBeNull();
-      expect(additionalData.someProperty).toBe('Test');
-      expect(additionalData.someOtherProperty).toBe('Test2');
+      expect(additionalData).not.to.be.null;
+      expect(additionalData.someProperty).to.equal('Test');
+      expect(additionalData.someOtherProperty).to.equal('Test2');
     });
 
     it('shouldn\'t set empty additional data', () => {
       processError({});
       let additionalData = getAdditionalData(event);
-      expect(additionalData).toBeNull();
+      expect(additionalData).to.be.null;
     });
 
     it('should ignore functions', () => {
@@ -91,7 +92,7 @@ describe('ErrorPlugin', () => {
       target.run(context);
 
       let additionalData = getAdditionalData(event);
-      expect(additionalData).toBeNull();
+      expect(additionalData).to.be.null;
     });
   });
 });

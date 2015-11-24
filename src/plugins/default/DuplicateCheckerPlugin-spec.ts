@@ -3,6 +3,7 @@ import { EventPluginContext } from '../EventPluginContext';
 import { DuplicateCheckerPlugin } from './DuplicateCheckerPlugin';
 import { ErrorPlugin } from './ErrorPlugin';
 import { createFixture } from './EventPluginTestFixture';
+import { expect } from 'chai';
 
 describe('DuplicateCheckerPlugin', () => {
 
@@ -38,14 +39,14 @@ describe('DuplicateCheckerPlugin', () => {
     }]);
     run(exception);
     let contextOfSecondRun = run(exception);
-    expect(contextOfSecondRun.cancelled).toBeTruthy();
+    expect(contextOfSecondRun.cancelled).to.be.true;
   });
 
   it('shouldn\'t ignore error without stack', () => {
     let exception = createException();
     run(exception);
     let contextOfSecondRun = run(exception);
-    expect(contextOfSecondRun.cancelled).toBeFalsy();
+    expect(contextOfSecondRun.cancelled).not.to.be.true;
   });
 
   it('shouldn\'t ignore different stack within window', () => {
@@ -57,7 +58,7 @@ describe('DuplicateCheckerPlugin', () => {
       name: 'methodB'
     }]);
     let contextOfSecondRun = run(exception2);
-    expect(contextOfSecondRun.cancelled).toBeFalsy();
+    expect(contextOfSecondRun.cancelled).not.to.be.true;
   });
 
   it('shouldn\'t ignore duplicate after window', () => {
@@ -68,7 +69,7 @@ describe('DuplicateCheckerPlugin', () => {
 
     now = 3000;
     let contextOfSecondRun = run(exception);
-    expect(contextOfSecondRun.cancelled).toBeFalsy();
+    expect(contextOfSecondRun.cancelled).not.to.be.true;
   });
 });
 

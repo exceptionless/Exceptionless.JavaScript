@@ -6,6 +6,7 @@ import { ISubmissionAdapter } from './ISubmissionAdapter';
 import { DefaultSubmissionClient } from './DefaultSubmissionClient';
 import { SubmissionCallback } from './SubmissionCallback';
 import { SubmissionRequest } from './SubmissionRequest';
+import { expect } from 'chai';
 
 class TestAdapter implements ISubmissionAdapter {
   private request;
@@ -44,7 +45,7 @@ class TestAdapter implements ISubmissionAdapter {
 
   public done() {
     if (!this.request) {
-      fail('sendRequest hasn\'t been called.');
+      expect.fail('sendRequest hasn\'t been called.');
       return;
     }
 
@@ -70,8 +71,8 @@ describe('DefaultSubmissionClient', () => {
     });
 
     adapter = new TestAdapter(r => {
-      expect(r.apiKey).toBe(apiKey);
-      expect(r.serverUrl).toBe(serverUrl);
+      expect(r.apiKey).to.equal(apiKey);
+      expect(r.serverUrl).to.equal(serverUrl);
     });
 
     config.submissionAdapter = adapter;
@@ -81,9 +82,9 @@ describe('DefaultSubmissionClient', () => {
     let events = [{ type: 'log', message: 'From js client', reference_id: '123454321' }];
 
     adapter.withCheck(r => {
-      expect(r.data).toBe(JSON.stringify(events));
-      expect(r.method).toBe('POST');
-      expect(r.path).toBe('/api/v2/events');
+      expect(r.data).to.equal(JSON.stringify(events));
+      expect(r.method).to.equal('POST');
+      expect(r.path).to.equal('/api/v2/events');
     });
 
     submissionClient.postEvents(events, config, () => done());
@@ -100,9 +101,9 @@ describe('DefaultSubmissionClient', () => {
     }];
 
     adapter.withCheck(r => {
-      expect(r.data).toBe(JSON.stringify(events));
-      expect(r.method).toBe('POST');
-      expect(r.path).toBe('/api/v2/events');
+      expect(r.data).to.equal(JSON.stringify(events));
+      expect(r.method).to.equal('POST');
+      expect(r.path).to.equal('/api/v2/events');
     });
 
     submissionClient.postEvents(events, config, () => done());
@@ -117,9 +118,9 @@ describe('DefaultSubmissionClient', () => {
     };
 
     adapter.withCheck(r => {
-      expect(r.data).toBe(JSON.stringify(description));
-      expect(r.method).toBe('POST');
-      expect(r.path).toBe('/api/v2/events/by-ref/123454321/user-description');
+      expect(r.data).to.equal(JSON.stringify(description));
+      expect(r.method).to.equal('POST');
+      expect(r.path).to.equal('/api/v2/events/by-ref/123454321/user-description');
     });
 
     submissionClient.postUserDescription('123454321', description, config, () => done());
@@ -132,10 +133,10 @@ describe('DefaultSubmissionClient', () => {
     adapter.withResponse(200, null, JSON.stringify({ version: 1 }));
 
     submissionClient.getSettings(config, response => {
-      expect(response.success).toBe(true);
-      expect(response.message).toBe(null);
-      expect(response.settings).not.toBe(null);
-      expect(response.settingsVersion).toBeGreaterThan(-1);
+      expect(response.success).to.be.true;
+      expect(response.message).to.be.null;
+      expect(response.settings).not.to.be.null;
+      expect(response.settingsVersion).to.be.greaterThan(-1);
 
       done();
     });

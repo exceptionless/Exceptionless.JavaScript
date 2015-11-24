@@ -5,9 +5,6 @@
   "path": "src/typings",
   "bundle": "src/typings/tsd.d.ts",
   "installed": {
-    "jasmine/jasmine.d.ts": {
-      "commit": "68548c2daab053869f323d475419c693478bbb73"
-    },
     "node/node.d.ts": {
       "commit": "68548c2daab053869f323d475419c693478bbb73"
     },
@@ -19,6 +16,15 @@
     },
     "stack-trace/stack-trace.d.ts": {
       "commit": "68548c2daab053869f323d475419c693478bbb73"
+    },
+    "mocha/mocha.d.ts": {
+      "commit": "fa04c80f4a889613b96cb4f283848c61a9f64233"
+    },
+    "assertion-error/assertion-error.d.ts": {
+      "commit": "fa04c80f4a889613b96cb4f283848c61a9f64233"
+    },
+    "chai/chai.d.ts": {
+      "commit": "fa04c80f4a889613b96cb4f283848c61a9f64233"
     }
   }
 }
