@@ -3,10 +3,8 @@ function getNonexistentData() {
 }
 
 function sendEvents(numberToSends, eventType) {
-  eventType = eventType || getRandomInt(0, 1);
-
   for (var index = 0; index < numberToSends; index++) {
-    switch (eventType) {
+    switch (eventType || getRandomInt(0, 1)) {
       case 0: {
         exceptionless.ExceptionlessClient.default.submitLog('sendEvents', 'This is a test message', 'info');
         break;

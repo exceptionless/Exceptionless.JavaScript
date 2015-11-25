@@ -75,9 +75,9 @@ describe('Utils', () => {
     });
 
     it.skip('deep circular reference', () => {
-      let a:any = {};
-      let b:any = {};
-      let c:any = { d: 'test' };
+      let a: any = {};
+      let b: any = {};
+      let c: any = { d: 'test' };
 
       a.b = b;
       b.c = c;

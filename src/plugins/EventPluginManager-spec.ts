@@ -23,7 +23,7 @@ describe('EventPluginManager', () => {
         if (next) {
           next();
         }
-      }, 100);
+      }, 25);
     });
 
     client.config.addPlugin('2', 2, (ctx: EventPluginContext, next?: () => void) => {
@@ -117,7 +117,7 @@ describe('EventPluginManager', () => {
         if (next) {
           next();
         }
-      }, 500);
+      }, 25);
     });
 
     client.config.addPlugin('2', 2, () => {
@@ -141,7 +141,7 @@ describe('EventPluginManager', () => {
     }
 
     client.config.addPlugin('1', 1, (ctx: EventPluginContext, next?: () => void) => {
-      setTimeout(done, 100);
+      setTimeout(done, 25);
     });
 
     client.config.addPlugin('2', 2, () => {
