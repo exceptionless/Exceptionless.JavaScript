@@ -1348,12 +1348,13 @@ var HeartbeatPlugin = (function () {
         this.name = 'HeartbeatPlugin';
     }
     HeartbeatPlugin.prototype.run = function (context, next) {
-        function clearHeartbeatInterval() {
-            if (this._heartbeatIntervalId) {
-                clearInterval(this._heartbeatIntervalId);
-                this._heartbeatIntervalId = 0;
+        var _this = this;
+        var clearHeartbeatInterval = function () {
+            if (_this._heartbeatIntervalId) {
+                clearInterval(_this._heartbeatIntervalId);
+                _this._heartbeatIntervalId = 0;
             }
-        }
+        };
         var type = context.event.type;
         if (type !== 'heartbeat') {
             if (type === 'sessionend') {
@@ -1365,14 +1366,11 @@ var HeartbeatPlugin = (function () {
                     var submitHeartbeatFn = function () { return context.client.submitSessionHeartbeat(user.identity, user.name); };
                     if (!this._heartbeatIntervalId) {
                         this._lastUser = user;
-                        this._heartbeatIntervalId = setInterval(submitHeartbeatFn, 30000);
                     }
                     else {
                         clearHeartbeatInterval();
-                        if (this._lastUser.identity !== user.identity) {
-                            this._heartbeatIntervalId = setInterval(submitHeartbeatFn, 30000);
-                        }
                     }
+                    this._heartbeatIntervalId = setInterval(submitHeartbeatFn, 30000);
                 }
             }
         }
@@ -1826,7 +1824,6 @@ var Configuration = (function () {
         this.defaultTags = [];
         this.defaultData = {};
         this.enabled = true;
-        this.enableSessions = true;
         this.lastReferenceIdManager = new DefaultLastReferenceIdManager();
         this.settings = {};
         this._plugins = [];
@@ -2243,7 +2240,7 @@ var ExceptionlessClient = (function () {
         return this.createEvent().setType('heartbeat').setUserIdentity(userIdentity, userDisplayName);
     };
     ExceptionlessClient.prototype.submitSessionHeartbeat = function (userIdentity, userDisplayName, callback) {
-        this.createSessionEnd(userIdentity, userDisplayName).submit(callback);
+        this.createSessionHeartbeat(userIdentity, userDisplayName).submit(callback);
     };
     ExceptionlessClient.prototype.createEvent = function (pluginContextData) {
         return new EventBuilder({ date: new Date() }, this, pluginContextData);
@@ -2765,6 +2762,7 @@ if (settings && (settings.apiKey || settings.serverUrl)) {
     defaults.apiKey = settings.apiKey;
     defaults.serverUrl = settings.serverUrl;
 }
+defaults.enableSessions = true;
 defaults.errorParser = new DefaultErrorParser();
 defaults.moduleCollector = new DefaultModuleCollector();
 defaults.requestInfoCollector = new DefaultRequestInfoCollector();

@@ -56,8 +56,6 @@ export class Configuration implements IConfigurationSettings {
    */
   public enabled: boolean = true;
 
-  public enableSessions: boolean = true;
-
   public environmentInfoCollector: IEnvironmentInfoCollector;
   public errorParser: IErrorParser;
   public lastReferenceIdManager: ILastReferenceIdManager = new DefaultLastReferenceIdManager();

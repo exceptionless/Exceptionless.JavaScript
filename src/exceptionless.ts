@@ -51,6 +51,7 @@ if (settings && (settings.apiKey || settings.serverUrl)) {
   defaults.serverUrl = settings.serverUrl;
 }
 
+defaults.enableSessions = true;
 defaults.errorParser = new DefaultErrorParser();
 defaults.moduleCollector = new DefaultModuleCollector();
 defaults.requestInfoCollector = new DefaultRequestInfoCollector();

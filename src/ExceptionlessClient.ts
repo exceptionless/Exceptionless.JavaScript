@@ -114,7 +114,7 @@ export class ExceptionlessClient {
   }
 
   public submitSessionHeartbeat(userIdentity?:string, userDisplayName?:string, callback?: (context: EventPluginContext) => void): void {
-    this.createSessionEnd(userIdentity, userDisplayName).submit(callback);
+    this.createSessionHeartbeat(userIdentity, userDisplayName).submit(callback);
   }
 
   public createEvent(pluginContextData?: ContextData): EventBuilder {

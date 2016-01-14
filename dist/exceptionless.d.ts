@@ -179,7 +179,6 @@ export declare class Configuration implements IConfigurationSettings {
     defaultTags: string[];
     defaultData: Object;
     enabled: boolean;
-    enableSessions: boolean;
     environmentInfoCollector: IEnvironmentInfoCollector;
     errorParser: IErrorParser;
     lastReferenceIdManager: ILastReferenceIdManager;
