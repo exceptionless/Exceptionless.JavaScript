@@ -153,7 +153,7 @@ export class EventBuilder {
       return false;
     }
 
-    for (var index = 0; index < value.length; index++) {
+    for (let index = 0; index < value.length; index++) {
       let code = value.charCodeAt(index);
       let isDigit = (code >= 48) && (code <= 57);
       let isLetter = ((code >= 65) && (code <= 90)) || ((code >= 97) && (code <= 122));

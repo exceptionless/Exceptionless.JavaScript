@@ -6,25 +6,25 @@
   "bundle": "src/typings/tsd.d.ts",
   "installed": {
     "node/node.d.ts": {
-      "commit": "68548c2daab053869f323d475419c693478bbb73"
+      "commit": "d1f6bde13f2209be42e86c3686761e8bfcbb50a5"
     },
     "angularjs/angular.d.ts": {
-      "commit": "68548c2daab053869f323d475419c693478bbb73"
+      "commit": "d1f6bde13f2209be42e86c3686761e8bfcbb50a5"
     },
     "jquery/jquery.d.ts": {
-      "commit": "68548c2daab053869f323d475419c693478bbb73"
+      "commit": "d1f6bde13f2209be42e86c3686761e8bfcbb50a5"
     },
     "stack-trace/stack-trace.d.ts": {
-      "commit": "68548c2daab053869f323d475419c693478bbb73"
+      "commit": "d1f6bde13f2209be42e86c3686761e8bfcbb50a5"
     },
     "mocha/mocha.d.ts": {
-      "commit": "fa04c80f4a889613b96cb4f283848c61a9f64233"
+      "commit": "d1f6bde13f2209be42e86c3686761e8bfcbb50a5"
     },
     "assertion-error/assertion-error.d.ts": {
-      "commit": "fa04c80f4a889613b96cb4f283848c61a9f64233"
+      "commit": "d1f6bde13f2209be42e86c3686761e8bfcbb50a5"
     },
     "chai/chai.d.ts": {
-      "commit": "fa04c80f4a889613b96cb4f283848c61a9f64233"
+      "commit": "d1f6bde13f2209be42e86c3686761e8bfcbb50a5"
     }
   }
 }

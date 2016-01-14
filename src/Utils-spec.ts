@@ -21,8 +21,8 @@ describe('Utils', () => {
       name: 'Blake',
       password: '123456',
       passwordResetToken: 'a reset token',
-      myPasswordValue: '123456',
       myPassword: '123456',
+      myPasswordValue: '123456',
       customValue: 'Password',
       value: {
         Password: '123456'
