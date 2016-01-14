@@ -16,8 +16,6 @@ import { IEnvironmentInfoCollector } from '../services/IEnvironmentInfoCollector
 import { IErrorParser } from '../services/IErrorParser';
 import { IModuleCollector } from '../services/IModuleCollector';
 import { IRequestInfoCollector } from '../services/IRequestInfoCollector';
-import { ISessionManager } from '../services/ISessionManager';
-import { DefaultSessionManager } from '../services/DefaultSessionManager';
 import { IStorage } from '../storage/IStorage';
 import { InMemoryStorage } from '../storage/InMemoryStorage';
 import { ISubmissionAdapter } from '../submission/ISubmissionAdapter';
@@ -59,11 +57,10 @@ export class Configuration implements IConfigurationSettings {
 
   public environmentInfoCollector: IEnvironmentInfoCollector;
   public errorParser: IErrorParser;
-  public lastReferenceIdManager: ILastReferenceIdManager;
+  public lastReferenceIdManager: ILastReferenceIdManager = new DefaultLastReferenceIdManager();
   public log: ILog;
   public moduleCollector: IModuleCollector;
   public requestInfoCollector: IRequestInfoCollector;
-  public sessionManager: ISessionManager;
 
   /**
    * Maximum number of events that should be sent to the server together in a batch. (Defaults to 50)
@@ -101,7 +98,6 @@ export class Configuration implements IConfigurationSettings {
     this.serverUrl = configSettings.serverUrl;
 
     this.environmentInfoCollector = inject(configSettings.environmentInfoCollector);
-    this.sessionManager = inject(configSettings.sessionManager) || new DefaultSessionManager();
     this.errorParser = inject(configSettings.errorParser);
     this.lastReferenceIdManager = inject(configSettings.lastReferenceIdManager) || new DefaultLastReferenceIdManager();
     this.moduleCollector = inject(configSettings.moduleCollector);

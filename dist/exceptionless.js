@@ -1504,34 +1504,6 @@ var DefaultEventQueue = (function () {
     return DefaultEventQueue;
 })();
 exports.DefaultEventQueue = DefaultEventQueue;
-var DefaultSessionManager = (function () {
-    function DefaultSessionManager() {
-        this.sessionMap = {};
-    }
-    DefaultSessionManager.prototype.getSessionId = function (identity) {
-        if (this.sessionMap.hasOwnProperty(identity)) {
-            return this.sessionMap[identity];
-        }
-        return null;
-    };
-    DefaultSessionManager.prototype.startSession = function (identity) {
-        var sessionId = Utils.guid();
-        this.sessionMap[identity] = sessionId;
-        return sessionId;
-    };
-    DefaultSessionManager.prototype.endSession = function (sessionId) {
-        var identities = Object.keys(this.sessionMap);
-        for (var i = 0; i < identities.length; i++) {
-            var identity = identities[i];
-            if (this.sessionMap[identity] === sessionId) {
-                delete this.sessionMap[identity];
-                return;
-            }
-        }
-    };
-    return DefaultSessionManager;
-})();
-exports.DefaultSessionManager = DefaultSessionManager;
 var InMemoryStorage = (function () {
     function InMemoryStorage(maxItems) {
         this._items = [];
@@ -1815,6 +1787,7 @@ var Configuration = (function () {
         this.defaultTags = [];
         this.defaultData = {};
         this.enabled = true;
+        this.lastReferenceIdManager = new DefaultLastReferenceIdManager();
         this.settings = {};
         this._plugins = [];
         this._serverUrl = 'https://collector.exceptionless.io';
@@ -1827,7 +1800,6 @@ var Configuration = (function () {
         this.apiKey = configSettings.apiKey;
         this.serverUrl = configSettings.serverUrl;
         this.environmentInfoCollector = inject(configSettings.environmentInfoCollector);
-        this.sessionManager = inject(configSettings.sessionManager) || new DefaultSessionManager();
         this.errorParser = inject(configSettings.errorParser);
         this.lastReferenceIdManager = inject(configSettings.lastReferenceIdManager) || new DefaultLastReferenceIdManager();
         this.moduleCollector = inject(configSettings.moduleCollector);

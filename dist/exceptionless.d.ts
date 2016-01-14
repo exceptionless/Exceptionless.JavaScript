@@ -28,11 +28,6 @@ export interface IEventQueue {
 export interface IEnvironmentInfoCollector {
     getEnvironmentInfo(context: EventPluginContext): IEnvironmentInfo;
 }
-export interface ISessionManager {
-    getSessionId(identity: string): string;
-    startSession(identity: string): string;
-    endSession(sessionId: string): void;
-}
 export interface IErrorParser {
     parse(context: EventPluginContext, exception: Error): IError;
 }
@@ -60,7 +55,6 @@ export interface IConfigurationSettings {
     apiKey?: string;
     serverUrl?: string;
     environmentInfoCollector?: IEnvironmentInfoCollector;
-    sessionManager?: ISessionManager;
     errorParser?: IErrorParser;
     lastReferenceIdManager?: ILastReferenceIdManager;
     log?: ILog;
@@ -143,12 +137,6 @@ export declare class DefaultEventQueue implements IEventQueue {
     private processSubmissionResponse(response, events);
     private removeEvents(events);
 }
-export declare class DefaultSessionManager implements ISessionManager {
-    private sessionMap;
-    getSessionId(identity: string): string;
-    startSession(identity: string): string;
-    endSession(sessionId: string): void;
-}
 export declare class InMemoryStorage<T> implements IStorage<T> {
     private _items;
     private _maxItems;
@@ -190,7 +178,6 @@ export declare class Configuration implements IConfigurationSettings {
     log: ILog;
     moduleCollector: IModuleCollector;
     requestInfoCollector: IRequestInfoCollector;
-    sessionManager: ISessionManager;
     submissionBatchSize: number;
     submissionAdapter: ISubmissionAdapter;
     submissionClient: ISubmissionClient;
