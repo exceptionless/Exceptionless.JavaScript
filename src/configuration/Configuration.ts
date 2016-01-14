@@ -9,6 +9,7 @@ import { IUserInfo } from '../models/IUserInfo';
 import { IEventPlugin } from '../plugins/IEventPlugin';
 import { EventPluginContext } from '../plugins/EventPluginContext';
 import { EventPluginManager } from '../plugins/EventPluginManager';
+import { HeartbeatPlugin } from '../plugins/default/HeartbeatPlugin';
 import { ReferenceIdPlugin } from '../plugins/default/ReferenceIdPlugin';
 import { IEventQueue } from '../queue/IEventQueue';
 import { DefaultEventQueue } from '../queue/DefaultEventQueue';
@@ -316,6 +317,15 @@ export class Configuration implements IConfigurationSettings {
    */
   public get userAgent(): string {
     return 'exceptionless-js/1.0.0.0';
+  }
+
+  /**
+   * Automatically send a heartbeat to keep the session alive.
+   */
+  public useSessions(sendHeartbeats:boolean = true): void {
+    if (sendHeartbeats) {
+      this.addPlugin(new HeartbeatPlugin());
+    }
   }
 
   /**

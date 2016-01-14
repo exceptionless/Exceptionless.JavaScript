@@ -162,6 +162,45 @@ var EventPluginManager = (function () {
     return EventPluginManager;
 })();
 exports.EventPluginManager = EventPluginManager;
+var HeartbeatPlugin = (function () {
+    function HeartbeatPlugin() {
+        this.priority = 100;
+        this.name = 'HeartbeatPlugin';
+    }
+    HeartbeatPlugin.prototype.run = function (context, next) {
+        function clearHeartbeatInterval() {
+            if (this._heartbeatIntervalId) {
+                clearInterval(this._heartbeatIntervalId);
+                this._heartbeatIntervalId = 0;
+            }
+        }
+        var type = context.event.type;
+        if (type !== 'heartbeat') {
+            if (type === 'sessionend') {
+                clearHeartbeatInterval();
+            }
+            else {
+                var user = context.event.data['@user'];
+                if (user && user.identity) {
+                    var submitHeartbeatFn = function () { return context.client.submitSessionHeartbeat(user.identity, user.name); };
+                    if (!this._heartbeatIntervalId) {
+                        this._lastUser = user;
+                        this._heartbeatIntervalId = setInterval(submitHeartbeatFn, 30000);
+                    }
+                    else {
+                        clearHeartbeatInterval();
+                        if (this._lastUser.identity !== user.identity) {
+                            this._heartbeatIntervalId = setInterval(submitHeartbeatFn, 30000);
+                        }
+                    }
+                }
+            }
+        }
+        next && next();
+    };
+    return HeartbeatPlugin;
+})();
+exports.HeartbeatPlugin = HeartbeatPlugin;
 var ReferenceIdPlugin = (function () {
     function ReferenceIdPlugin() {
         this.priority = 20;
@@ -749,6 +788,12 @@ var Configuration = (function () {
         enumerable: true,
         configurable: true
     });
+    Configuration.prototype.useSessions = function (sendHeartbeats) {
+        if (sendHeartbeats === void 0) { sendHeartbeats = true; }
+        if (sendHeartbeats) {
+            this.addPlugin(new HeartbeatPlugin());
+        }
+    };
     Configuration.prototype.useReferenceIds = function () {
         this.addPlugin(new ReferenceIdPlugin());
     };

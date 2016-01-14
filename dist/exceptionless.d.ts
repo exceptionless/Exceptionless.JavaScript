@@ -114,6 +114,13 @@ export declare class EventPluginManager {
     static run(context: EventPluginContext, callback: (context?: EventPluginContext) => void): void;
     static addDefaultPlugins(config: Configuration): void;
 }
+export declare class HeartbeatPlugin implements IEventPlugin {
+    priority: number;
+    name: string;
+    private _heartbeatIntervalId;
+    private _lastUser;
+    run(context: EventPluginContext, next?: () => void): void;
+}
 export declare class ReferenceIdPlugin implements IEventPlugin {
     priority: number;
     name: string;
@@ -203,6 +210,7 @@ export declare class Configuration implements IConfigurationSettings {
     setUserIdentity(identity: string): void;
     setUserIdentity(identity: string, name: string): void;
     userAgent: string;
+    useSessions(sendHeartbeats?: boolean): void;
     useReferenceIds(): void;
     useDebugLogger(): void;
     static defaults: IConfigurationSettings;
