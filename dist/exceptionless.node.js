@@ -646,6 +646,7 @@ var Configuration = (function () {
         this.defaultTags = [];
         this.defaultData = {};
         this.enabled = true;
+        this.enableSessions = true;
         this.lastReferenceIdManager = new DefaultLastReferenceIdManager();
         this.settings = {};
         this._plugins = [];
@@ -670,6 +671,9 @@ var Configuration = (function () {
         this.queue = inject(configSettings.queue) || new DefaultEventQueue(this);
         SettingsManager.applySavedServerSettings(this);
         EventPluginManager.addDefaultPlugins(this);
+        if (configSettings.enableSessions) {
+            this.useSessions();
+        }
     }
     Object.defineProperty(Configuration.prototype, "apiKey", {
         get: function () {
@@ -1595,6 +1599,7 @@ var UNCAUGHT_EXCEPTION = 'uncaughtException';
 var SIGINT = 'SIGINT';
 var SIGINT_CODE = 2;
 var defaults = Configuration.defaults;
+defaults.enableSessions = false;
 defaults.environmentInfoCollector = new NodeEnvironmentInfoCollector();
 defaults.errorParser = new NodeErrorParser();
 defaults.moduleCollector = new NodeModuleCollector();

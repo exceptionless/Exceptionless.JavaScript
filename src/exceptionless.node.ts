@@ -12,6 +12,7 @@ const SIGINT: string = 'SIGINT';
 const SIGINT_CODE: number = 2;
 
 let defaults = Configuration.defaults;
+defaults.enableSessions = false;
 defaults.environmentInfoCollector = new NodeEnvironmentInfoCollector();
 defaults.errorParser = new NodeErrorParser();
 defaults.moduleCollector = new NodeModuleCollector();

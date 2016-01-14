@@ -53,6 +53,7 @@ export interface ISubmissionClient {
 export interface IConfigurationSettings {
     apiKey?: string;
     serverUrl?: string;
+    enableSessions?: boolean;
     environmentInfoCollector?: IEnvironmentInfoCollector;
     errorParser?: IErrorParser;
     lastReferenceIdManager?: ILastReferenceIdManager;
@@ -178,6 +179,7 @@ export declare class Configuration implements IConfigurationSettings {
     defaultTags: string[];
     defaultData: Object;
     enabled: boolean;
+    enableSessions: boolean;
     environmentInfoCollector: IEnvironmentInfoCollector;
     errorParser: IErrorParser;
     lastReferenceIdManager: ILastReferenceIdManager;
