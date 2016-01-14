@@ -93,28 +93,28 @@ export class ExceptionlessClient {
     this.createNotFound(resource).submit(callback);
   }
 
-  public createSessionStart(sessionId: string): EventBuilder {
-    return this.createEvent().setType('session').setSessionId(sessionId);
+  public createSessionStart(userIdentity?:string, userDisplayName?:string): EventBuilder {
+    return this.createEvent().setType('session').setUserIdentity(userIdentity, userDisplayName);
   }
 
-  public submitSessionStart(sessionId: string, callback?: (context: EventPluginContext) => void): void {
-    this.createSessionStart(sessionId).submit(callback);
+  public submitSessionStart(userIdentity?:string, userDisplayName?:string, callback?: (context: EventPluginContext) => void): void {
+    this.createSessionStart(userIdentity, userDisplayName).submit(callback);
   }
 
-  public createSessionEnd(sessionId: string): EventBuilder {
-    return this.createEvent().setType('sessionend').setSessionId(sessionId);
+  public createSessionEnd(userIdentity?:string, userDisplayName?:string): EventBuilder {
+    return this.createEvent().setType('sessionend').setUserIdentity(userIdentity, userDisplayName);
   }
 
-  public submitSessionEnd(sessionId: string, callback?: (context: EventPluginContext) => void): void {
-    this.createSessionEnd(sessionId).submit(callback);
+  public submitSessionEnd(userIdentity?:string, userDisplayName?:string, callback?: (context: EventPluginContext) => void): void {
+    this.createSessionEnd(userIdentity, userDisplayName).submit(callback);
   }
 
-  public createSessionHeartbeat(sessionId: string): EventBuilder {
-    return this.createEvent().setType('heartbeat').setSessionId(sessionId);
+  public createSessionHeartbeat(userIdentity?:string, userDisplayName?:string): EventBuilder {
+    return this.createEvent().setType('heartbeat').setUserIdentity(userIdentity, userDisplayName);
   }
 
-  public submitSessionHeartbeat(sessionId: string, callback?: (context: EventPluginContext) => void): void {
-    this.createSessionEnd(sessionId).submit(callback);
+  public submitSessionHeartbeat(userIdentity?:string, userDisplayName?:string, callback?: (context: EventPluginContext) => void): void {
+    this.createSessionEnd(userIdentity, userDisplayName).submit(callback);
   }
 
   public createEvent(pluginContextData?: ContextData): EventBuilder {

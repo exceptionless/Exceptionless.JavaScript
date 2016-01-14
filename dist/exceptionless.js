@@ -1968,13 +1968,6 @@ var EventBuilder = (function () {
         }
         return this;
     };
-    EventBuilder.prototype.setSessionId = function (sessionId) {
-        if (!this.isValidIdentifier(sessionId)) {
-            throw new Error("SessionId " + this._validIdentifierErrorMessage);
-        }
-        this.target.session_id = sessionId;
-        return this;
-    };
     EventBuilder.prototype.setReferenceId = function (referenceId) {
         if (!this.isValidIdentifier(referenceId)) {
             throw new Error("ReferenceId " + this._validIdentifierErrorMessage);
@@ -2185,17 +2178,23 @@ var ExceptionlessClient = (function () {
     ExceptionlessClient.prototype.submitNotFound = function (resource, callback) {
         this.createNotFound(resource).submit(callback);
     };
-    ExceptionlessClient.prototype.createSessionStart = function (sessionId) {
-        return this.createEvent().setType('start').setSessionId(sessionId);
+    ExceptionlessClient.prototype.createSessionStart = function (userIdentity, userDisplayName) {
+        return this.createEvent().setType('session').setUserIdentity(userIdentity, userDisplayName);
     };
-    ExceptionlessClient.prototype.submitSessionStart = function (sessionId, callback) {
-        this.createSessionStart(sessionId).submit(callback);
+    ExceptionlessClient.prototype.submitSessionStart = function (userIdentity, userDisplayName, callback) {
+        this.createSessionStart(userIdentity, userDisplayName).submit(callback);
     };
-    ExceptionlessClient.prototype.createSessionEnd = function (sessionId) {
-        return this.createEvent().setType('end').setSessionId(sessionId);
+    ExceptionlessClient.prototype.createSessionEnd = function (userIdentity, userDisplayName) {
+        return this.createEvent().setType('sessionend').setUserIdentity(userIdentity, userDisplayName);
     };
-    ExceptionlessClient.prototype.submitSessionEnd = function (sessionId, callback) {
-        this.createSessionEnd(sessionId).submit(callback);
+    ExceptionlessClient.prototype.submitSessionEnd = function (userIdentity, userDisplayName, callback) {
+        this.createSessionEnd(userIdentity, userDisplayName).submit(callback);
+    };
+    ExceptionlessClient.prototype.createSessionHeartbeat = function (userIdentity, userDisplayName) {
+        return this.createEvent().setType('heartbeat').setUserIdentity(userIdentity, userDisplayName);
+    };
+    ExceptionlessClient.prototype.submitSessionHeartbeat = function (userIdentity, userDisplayName, callback) {
+        this.createSessionEnd(userIdentity, userDisplayName).submit(callback);
     };
     ExceptionlessClient.prototype.createEvent = function (pluginContextData) {
         return new EventBuilder({ date: new Date() }, this, pluginContextData);

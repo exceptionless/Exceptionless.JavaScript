@@ -8,7 +8,6 @@ export interface IEvent {
     value?: number;
     data?: any;
     reference_id?: string;
-    session_id?: string;
 }
 export interface ILastReferenceIdManager {
     getLast(): string;
@@ -216,7 +215,6 @@ export declare class EventBuilder {
     constructor(event: IEvent, client: ExceptionlessClient, pluginContextData?: ContextData);
     setType(type: string): EventBuilder;
     setSource(source: string): EventBuilder;
-    setSessionId(sessionId: string): EventBuilder;
     setReferenceId(referenceId: string): EventBuilder;
     setMessage(message: string): EventBuilder;
     setGeo(latitude: number, longitude: number): EventBuilder;
@@ -277,10 +275,12 @@ export declare class ExceptionlessClient {
     submitLog(source: string, message: string, level: string, callback?: (context: EventPluginContext) => void): void;
     createNotFound(resource: string): EventBuilder;
     submitNotFound(resource: string, callback?: (context: EventPluginContext) => void): void;
-    createSessionStart(sessionId: string): EventBuilder;
-    submitSessionStart(sessionId: string, callback?: (context: EventPluginContext) => void): void;
-    createSessionEnd(sessionId: string): EventBuilder;
-    submitSessionEnd(sessionId: string, callback?: (context: EventPluginContext) => void): void;
+    createSessionStart(userIdentity?: string, userDisplayName?: string): EventBuilder;
+    submitSessionStart(userIdentity?: string, userDisplayName?: string, callback?: (context: EventPluginContext) => void): void;
+    createSessionEnd(userIdentity?: string, userDisplayName?: string): EventBuilder;
+    submitSessionEnd(userIdentity?: string, userDisplayName?: string, callback?: (context: EventPluginContext) => void): void;
+    createSessionHeartbeat(userIdentity?: string, userDisplayName?: string): EventBuilder;
+    submitSessionHeartbeat(userIdentity?: string, userDisplayName?: string, callback?: (context: EventPluginContext) => void): void;
     createEvent(pluginContextData?: ContextData): EventBuilder;
     submitEvent(event: IEvent, pluginContextData?: ContextData, callback?: (context: EventPluginContext) => void): void;
     updateUserEmailAndDescription(referenceId: string, email: string, description: string, callback?: (response: SubmissionResponse) => void): void;

@@ -34,15 +34,6 @@ export class EventBuilder {
     return this;
   }
 
-  public setSessionId(sessionId: string): EventBuilder {
-    if (!this.isValidIdentifier(sessionId)) {
-      throw new Error(`SessionId ${this._validIdentifierErrorMessage}`);
-    }
-
-    this.target.session_id = sessionId;
-    return this;
-  }
-
   public setReferenceId(referenceId: string): EventBuilder {
     if (!this.isValidIdentifier(referenceId)) {
       throw new Error(`ReferenceId ${this._validIdentifierErrorMessage}`);
