@@ -1519,9 +1519,9 @@ var NodeRequestInfoCollector = (function () {
             http_method: request.method,
             host: request.hostname || request.host,
             path: request.path,
-            post_data: JSON.parse(Utils.stringify(request.body, exclusions)),
-            cookies: Utils.getCookies((request || {}).headers.cookie, exclusions),
-            query_string: JSON.parse(Utils.stringify(request.params, exclusions))
+            post_data: JSON.parse(Utils.stringify(request.body || {}, exclusions)),
+            cookies: Utils.getCookies(request.headers.cookie, exclusions),
+            query_string: JSON.parse(Utils.stringify(request.params || {}, exclusions))
         };
         var host = request.headers.host;
         var port = host && parseInt(host.slice(host.indexOf(':') + 1), 10);
