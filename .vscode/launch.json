@@ -16,6 +16,17 @@
       "outDir": "dist"
     },
     {
+      "name": "Express",
+      "request": "launch",
+      "type": "node",
+      "program": "example/express/app.js",
+      "runtimeArgs": [
+        "--nolazy"
+      ],
+      "sourceMaps": true,
+      "outDir": "dist"
+    },
+    {
       "name": "Attach",
       "request": "attach",
       "type": "node",
