@@ -21,6 +21,6 @@ export interface IConfigurationSettings {
   submissionBatchSize?: number;
   submissionClient?: ISubmissionClient;
   submissionAdapter?: ISubmissionAdapter;
-  storage?: IStorage<any>;
+  storage?: IStorage;
   queue?: IEventQueue;
 }

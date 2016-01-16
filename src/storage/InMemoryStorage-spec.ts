@@ -5,7 +5,7 @@ import { expect } from 'chai';
 
 describe('InMemoryStorage', () => {
   it('should save events', () => {
-    let storage = new InMemoryStorage<IEvent>();
+    let storage = new InMemoryStorage();
     let key = 'ex-q-';
     let event1: IEvent = { type: 'log', reference_id: key + '123454321' };
     let event2: IEvent = { type: 'log', reference_id: key + '098765432' };
@@ -20,7 +20,7 @@ describe('InMemoryStorage', () => {
   });
 
   it('should save once', () => {
-    let storage = new InMemoryStorage<number>();
+    let storage = new InMemoryStorage();
     storage.save('one', 1);
     expect(storage.getList().length).to.equal(1);
     storage.save('one', 1);
@@ -28,7 +28,7 @@ describe('InMemoryStorage', () => {
   });
 
   it('should get by key', () => {
-    let storage = new InMemoryStorage<any>();
+    let storage = new InMemoryStorage();
     storage.save('ex-server-settings.json-version', 1);
     storage.save('ex-server-settings.json', { exist: true });
     expect(storage.getList().length).to.equal(2);
@@ -37,7 +37,7 @@ describe('InMemoryStorage', () => {
   });
 
   it('should get saved events', () => {
-    let storage = new InMemoryStorage<IEvent>();
+    let storage = new InMemoryStorage();
     let key = 'ex-q-';
     let event1: IEvent = { type: 'log', reference_id: key + '11' };
     let event2: IEvent = { type: 'log', reference_id: key + '12' };
@@ -81,7 +81,7 @@ describe('InMemoryStorage', () => {
   });
 
   it('should clear all events', () => {
-    let storage = new InMemoryStorage<IEvent>();
+    let storage = new InMemoryStorage();
     let key = 'ex-q-';
     let event1: IEvent = { type: 'log', reference_id: key + '11' };
     let event2: IEvent = { type: 'log', reference_id: key + '12' };
@@ -111,7 +111,7 @@ describe('InMemoryStorage', () => {
   });
 
   it('should get with limit', () => {
-    let storage = new InMemoryStorage<IEvent>(250);
+    let storage = new InMemoryStorage(250);
     for (let index: number = 0; index < 260; index++) {
       storage.save('ex-q-' + index, { type: 'log', reference_id: index.toString() });
     }
@@ -127,7 +127,7 @@ describe('InMemoryStorage', () => {
     }
 
     const DATE: Date = new Date();
-    let storage = new InMemoryStorage<IEvent>();
+    let storage = new InMemoryStorage();
     for (let index: number = 0; index < 10; index++) {
       storage.save('ex-q-' + index, {
         date: getDate(DATE, index),
@@ -139,7 +139,7 @@ describe('InMemoryStorage', () => {
     }
 
     let offset: number = 0;
-    let events: IStorageItem<IEvent>[] = storage.getList('ex-q-', 2);
+    let events: IStorageItem[] = storage.getList('ex-q-', 2);
     while (events && events.length > 0) {
       expect(2).to.equal(events.length);
       for (let ei = 0; ei < 2; ei++) {
@@ -152,12 +152,12 @@ describe('InMemoryStorage', () => {
   });
 
   it('should respect max items limit', () => {
-    let storage = new InMemoryStorage<IEvent>(5);
+    let storage = new InMemoryStorage(5);
     for (let index: number = 0; index < 5; index++) {
       storage.save('ex-q-' + index, { type: 'log', reference_id: index.toString() });
     }
 
-    let events: IStorageItem<IEvent>[] = storage.getList();
+    let events: IStorageItem[] = storage.getList();
     expect(events.length).to.equal(5);
     expect(events[0].path).to.equal('ex-q-0');
     storage.save('ex-q-6', { type: 'log', reference_id: '6' });

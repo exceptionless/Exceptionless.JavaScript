@@ -1,15 +1,15 @@
 import { IStorage } from './IStorage';
 import { IStorageItem } from './IStorageItem';
 
-export class InMemoryStorage<T> implements IStorage<T> {
-  private _items: IStorageItem<T>[] = [];
+export class InMemoryStorage implements IStorage {
+  private _items: IStorageItem[] = [];
   private _maxItems: number;
 
   constructor(maxItems?: number) {
     this._maxItems = maxItems > 0 ? maxItems : 250;
   }
 
-  public save(path: string, value: T): boolean {
+  public save(path: string, value: any): boolean {
     if (!path || !value) {
       return false;
     }
@@ -22,19 +22,19 @@ export class InMemoryStorage<T> implements IStorage<T> {
     return true;
   }
 
-  public get(path: string): T {
-    let item: IStorageItem<T> = path ? this.getList(`^${path}$`, 1)[0] : null;
+  public get(path: string): any {
+    let item: IStorageItem = path ? this.getList(`^${path}$`, 1)[0] : null;
     return item ? item.value : null;
   }
 
-  public getList(searchPattern?: string, limit?: number): IStorageItem<T>[] {
+  public getList(searchPattern?: string, limit?: number): IStorageItem[] {
     let items = this._items; // Optimization for minifier
     if (!searchPattern) {
       return items.slice(0, limit);
     }
 
     let regex = new RegExp(searchPattern);
-    let results: IStorageItem<T>[] = [];
+    let results: IStorageItem[] = [];
     for (let index = 0; index < items.length; index++) {
       if (regex.test(items[index].path)) {
         results.push(items[index]);

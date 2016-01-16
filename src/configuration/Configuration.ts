@@ -76,7 +76,7 @@ export class Configuration implements IConfigurationSettings {
    */
   public settings: Object = {};
 
-  public storage: IStorage<Object>;
+  public storage: IStorage;
 
   public queue: IEventQueue;
 
@@ -106,7 +106,7 @@ export class Configuration implements IConfigurationSettings {
     this.submissionBatchSize = inject(configSettings.submissionBatchSize) || 50;
     this.submissionAdapter = inject(configSettings.submissionAdapter);
     this.submissionClient = inject(configSettings.submissionClient) || new DefaultSubmissionClient();
-    this.storage = inject(configSettings.storage) || new InMemoryStorage<any>();
+    this.storage = inject(configSettings.storage) || new InMemoryStorage();
     this.queue = inject(configSettings.queue) || new DefaultEventQueue(this);
 
     SettingsManager.applySavedServerSettings(this);
