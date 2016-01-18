@@ -43,6 +43,24 @@ export class EventBuilder {
     return this;
   }
 
+  /**
+   * Allows you to reference a parent event by its ReferenceId property. This allows you to have parent and child relationships.
+   * @param name Reference name
+   * @param id The reference id that points to a specific event
+     */
+  public setEventReference(name: string, id: string): EventBuilder {
+    if (!name) {
+      throw new Error('Invalid name');
+    }
+
+    if (!id ||!this.isValidIdentifier(id)) {
+      throw new Error(`Id ${this._validIdentifierErrorMessage}`);
+    }
+
+    this.setProperty('@ref:' + name, id);
+    return this;
+  }
+
   public setMessage(message: string): EventBuilder {
     if (!!message) {
       this.target.message = message;
