@@ -162,6 +162,43 @@ var EventPluginManager = (function () {
     return EventPluginManager;
 })();
 exports.EventPluginManager = EventPluginManager;
+var HeartbeatPlugin = (function () {
+    function HeartbeatPlugin() {
+        this.priority = 100;
+        this.name = 'HeartbeatPlugin';
+    }
+    HeartbeatPlugin.prototype.run = function (context, next) {
+        var _this = this;
+        var clearHeartbeatInterval = function () {
+            if (_this._heartbeatIntervalId) {
+                clearInterval(_this._heartbeatIntervalId);
+                _this._heartbeatIntervalId = 0;
+            }
+        };
+        var type = context.event.type;
+        if (type !== 'heartbeat') {
+            if (type === 'sessionend') {
+                clearHeartbeatInterval();
+            }
+            else {
+                var user = context.event.data['@user'];
+                if (user && user.identity) {
+                    var submitHeartbeatFn = function () { return context.client.createSessionHeartbeat().setUserIdentity(user).submit(); };
+                    if (!this._heartbeatIntervalId) {
+                        this._lastUser = user;
+                    }
+                    else {
+                        clearHeartbeatInterval();
+                    }
+                    this._heartbeatIntervalId = setInterval(submitHeartbeatFn, 30000);
+                }
+            }
+        }
+        next && next();
+    };
+    return HeartbeatPlugin;
+})();
+exports.HeartbeatPlugin = HeartbeatPlugin;
 var ReferenceIdPlugin = (function () {
     function ReferenceIdPlugin() {
         this.priority = 20;
@@ -631,6 +668,9 @@ var Configuration = (function () {
         this.queue = inject(configSettings.queue) || new DefaultEventQueue(this);
         SettingsManager.applySavedServerSettings(this);
         EventPluginManager.addDefaultPlugins(this);
+        if (configSettings.enableSessions) {
+            this.useSessions();
+        }
     }
     Object.defineProperty(Configuration.prototype, "apiKey", {
         get: function () {
@@ -744,11 +784,17 @@ var Configuration = (function () {
     };
     Object.defineProperty(Configuration.prototype, "userAgent", {
         get: function () {
-            return 'exceptionless-js/1.2.0';
+            return 'exceptionless-js/1.3.0';
         },
         enumerable: true,
         configurable: true
     });
+    Configuration.prototype.useSessions = function (sendHeartbeats) {
+        if (sendHeartbeats === void 0) { sendHeartbeats = true; }
+        if (sendHeartbeats) {
+            this.addPlugin(new HeartbeatPlugin());
+        }
+    };
     Configuration.prototype.useReferenceIds = function () {
         this.addPlugin(new ReferenceIdPlugin());
     };
@@ -788,18 +834,21 @@ var EventBuilder = (function () {
         }
         return this;
     };
-    EventBuilder.prototype.setSessionId = function (sessionId) {
-        if (!this.isValidIdentifier(sessionId)) {
-            throw new Error("SessionId " + this._validIdentifierErrorMessage);
-        }
-        this.target.session_id = sessionId;
-        return this;
-    };
     EventBuilder.prototype.setReferenceId = function (referenceId) {
         if (!this.isValidIdentifier(referenceId)) {
             throw new Error("ReferenceId " + this._validIdentifierErrorMessage);
         }
         this.target.reference_id = referenceId;
+        return this;
+    };
+    EventBuilder.prototype.setEventReference = function (name, id) {
+        if (!name) {
+            throw new Error('Invalid name');
+        }
+        if (!id || !this.isValidIdentifier(id)) {
+            throw new Error("Id " + this._validIdentifierErrorMessage);
+        }
+        this.setProperty('@ref:' + name, id);
         return this;
     };
     EventBuilder.prototype.setMessage = function (message) {
@@ -1005,17 +1054,23 @@ var ExceptionlessClient = (function () {
     ExceptionlessClient.prototype.submitNotFound = function (resource, callback) {
         this.createNotFound(resource).submit(callback);
     };
-    ExceptionlessClient.prototype.createSessionStart = function (sessionId) {
-        return this.createEvent().setType('start').setSessionId(sessionId);
+    ExceptionlessClient.prototype.createSessionStart = function () {
+        return this.createEvent().setType('session');
     };
-    ExceptionlessClient.prototype.submitSessionStart = function (sessionId, callback) {
-        this.createSessionStart(sessionId).submit(callback);
+    ExceptionlessClient.prototype.submitSessionStart = function (callback) {
+        this.createSessionStart().submit(callback);
     };
-    ExceptionlessClient.prototype.createSessionEnd = function (sessionId) {
-        return this.createEvent().setType('end').setSessionId(sessionId);
+    ExceptionlessClient.prototype.createSessionEnd = function () {
+        return this.createEvent().setType('sessionend');
     };
-    ExceptionlessClient.prototype.submitSessionEnd = function (sessionId, callback) {
-        this.createSessionEnd(sessionId).submit(callback);
+    ExceptionlessClient.prototype.submitSessionEnd = function (callback) {
+        this.createSessionEnd().submit(callback);
+    };
+    ExceptionlessClient.prototype.createSessionHeartbeat = function () {
+        return this.createEvent().setType('heartbeat');
+    };
+    ExceptionlessClient.prototype.submitSessionHeartbeat = function (callback) {
+        this.createSessionHeartbeat().submit(callback);
     };
     ExceptionlessClient.prototype.createEvent = function (pluginContextData) {
         return new EventBuilder({ date: new Date() }, this, pluginContextData);
@@ -1474,9 +1529,9 @@ var NodeRequestInfoCollector = (function () {
             http_method: request.method,
             host: request.hostname || request.host,
             path: request.path,
-            post_data: JSON.parse(Utils.stringify(request.body, exclusions)),
-            cookies: Utils.getCookies((request || {}).headers.cookie, exclusions),
-            query_string: JSON.parse(Utils.stringify(request.params, exclusions))
+            post_data: JSON.parse(Utils.stringify(request.body || {}, exclusions)),
+            cookies: Utils.getCookies(request.headers.cookie, exclusions),
+            query_string: JSON.parse(Utils.stringify(request.params || {}, exclusions))
         };
         var host = request.headers.host;
         var port = host && parseInt(host.slice(host.indexOf(':') + 1), 10);

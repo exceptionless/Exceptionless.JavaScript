@@ -93,20 +93,28 @@ export class ExceptionlessClient {
     this.createNotFound(resource).submit(callback);
   }
 
-  public createSessionStart(sessionId: string): EventBuilder {
-    return this.createEvent().setType('start').setSessionId(sessionId);
+  public createSessionStart(): EventBuilder {
+    return this.createEvent().setType('session');
   }
 
-  public submitSessionStart(sessionId: string, callback?: (context: EventPluginContext) => void): void {
-    this.createSessionStart(sessionId).submit(callback);
+  public submitSessionStart(callback?: (context: EventPluginContext) => void): void {
+    this.createSessionStart().submit(callback);
   }
 
-  public createSessionEnd(sessionId: string): EventBuilder {
-    return this.createEvent().setType('end').setSessionId(sessionId);
+  public createSessionEnd(): EventBuilder {
+    return this.createEvent().setType('sessionend');
   }
 
-  public submitSessionEnd(sessionId: string, callback?: (context: EventPluginContext) => void): void {
-    this.createSessionEnd(sessionId).submit(callback);
+  public submitSessionEnd(callback?: (context: EventPluginContext) => void): void {
+    this.createSessionEnd().submit(callback);
+  }
+
+  public createSessionHeartbeat(): EventBuilder {
+    return this.createEvent().setType('heartbeat');
+  }
+
+  public submitSessionHeartbeat(callback?: (context: EventPluginContext) => void): void {
+    this.createSessionHeartbeat().submit(callback);
   }
 
   public createEvent(pluginContextData?: ContextData): EventBuilder {

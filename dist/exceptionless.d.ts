@@ -8,7 +8,6 @@ export interface IEvent {
     value?: number;
     data?: any;
     reference_id?: string;
-    session_id?: string;
 }
 export interface ILastReferenceIdManager {
     getLast(): string;
@@ -54,6 +53,7 @@ export interface ISubmissionClient {
 export interface IConfigurationSettings {
     apiKey?: string;
     serverUrl?: string;
+    enableSessions?: boolean;
     environmentInfoCollector?: IEnvironmentInfoCollector;
     errorParser?: IErrorParser;
     lastReferenceIdManager?: ILastReferenceIdManager;
@@ -114,6 +114,13 @@ export declare class EventPluginContext {
 export declare class EventPluginManager {
     static run(context: EventPluginContext, callback: (context?: EventPluginContext) => void): void;
     static addDefaultPlugins(config: Configuration): void;
+}
+export declare class HeartbeatPlugin implements IEventPlugin {
+    priority: number;
+    name: string;
+    private _heartbeatIntervalId;
+    private _lastUser;
+    run(context: EventPluginContext, next?: () => void): void;
 }
 export declare class ReferenceIdPlugin implements IEventPlugin {
     priority: number;
@@ -204,6 +211,7 @@ export declare class Configuration implements IConfigurationSettings {
     setUserIdentity(identity: string): void;
     setUserIdentity(identity: string, name: string): void;
     userAgent: string;
+    useSessions(sendHeartbeats?: boolean): void;
     useReferenceIds(): void;
     useDebugLogger(): void;
     static defaults: IConfigurationSettings;
@@ -216,8 +224,8 @@ export declare class EventBuilder {
     constructor(event: IEvent, client: ExceptionlessClient, pluginContextData?: ContextData);
     setType(type: string): EventBuilder;
     setSource(source: string): EventBuilder;
-    setSessionId(sessionId: string): EventBuilder;
     setReferenceId(referenceId: string): EventBuilder;
+    setEventReference(name: string, id: string): EventBuilder;
     setMessage(message: string): EventBuilder;
     setGeo(latitude: number, longitude: number): EventBuilder;
     setUserIdentity(userInfo: IUserInfo): EventBuilder;
@@ -277,10 +285,12 @@ export declare class ExceptionlessClient {
     submitLog(source: string, message: string, level: string, callback?: (context: EventPluginContext) => void): void;
     createNotFound(resource: string): EventBuilder;
     submitNotFound(resource: string, callback?: (context: EventPluginContext) => void): void;
-    createSessionStart(sessionId: string): EventBuilder;
-    submitSessionStart(sessionId: string, callback?: (context: EventPluginContext) => void): void;
-    createSessionEnd(sessionId: string): EventBuilder;
-    submitSessionEnd(sessionId: string, callback?: (context: EventPluginContext) => void): void;
+    createSessionStart(): EventBuilder;
+    submitSessionStart(callback?: (context: EventPluginContext) => void): void;
+    createSessionEnd(): EventBuilder;
+    submitSessionEnd(callback?: (context: EventPluginContext) => void): void;
+    createSessionHeartbeat(): EventBuilder;
+    submitSessionHeartbeat(callback?: (context: EventPluginContext) => void): void;
     createEvent(pluginContextData?: ContextData): EventBuilder;
     submitEvent(event: IEvent, pluginContextData?: ContextData, callback?: (context: EventPluginContext) => void): void;
     updateUserEmailAndDescription(referenceId: string, email: string, description: string, callback?: (response: SubmissionResponse) => void): void;

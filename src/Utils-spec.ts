@@ -21,8 +21,8 @@ describe('Utils', () => {
       name: 'Blake',
       password: '123456',
       passwordResetToken: 'a reset token',
-      myPasswordValue: '123456',
       myPassword: '123456',
+      myPasswordValue: '123456',
       customValue: 'Password',
       value: {
         Password: '123456'
@@ -128,7 +128,7 @@ describe('Utils', () => {
 
     describe('with exclude pattern', () => {
       it('pAssword', () => {
-        expect(Utils.stringify(user, ['pAssword'])).to.equal('{"id":1,"name":"Blake","passwordResetToken":"a reset token","myPasswordValue":"123456","myPassword":"123456","customValue":"Password","value":{}}');
+        expect(Utils.stringify(user, ['pAssword'])).to.equal('{"id":1,"name":"Blake","passwordResetToken":"a reset token","myPassword":"123456","myPasswordValue":"123456","customValue":"Password","value":{}}');
       });
 
       it('*password', () => {
@@ -136,7 +136,7 @@ describe('Utils', () => {
       });
 
       it('password*', () => {
-        expect(Utils.stringify(user, ['password*'])).to.equal('{"id":1,"name":"Blake","myPasswordValue":"123456","myPassword":"123456","customValue":"Password","value":{}}');
+        expect(Utils.stringify(user, ['password*'])).to.equal('{"id":1,"name":"Blake","myPassword":"123456","myPasswordValue":"123456","customValue":"Password","value":{}}');
       });
 
       it('*password*', () => {

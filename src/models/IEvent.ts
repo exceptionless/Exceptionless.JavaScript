@@ -8,5 +8,4 @@ export interface IEvent {
   value?: number;
   data?: any;
   reference_id?: string;
-  session_id?: string;
 }

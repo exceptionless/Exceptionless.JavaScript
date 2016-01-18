@@ -34,21 +34,30 @@ export class EventBuilder {
     return this;
   }
 
-  public setSessionId(sessionId: string): EventBuilder {
-    if (!this.isValidIdentifier(sessionId)) {
-      throw new Error(`SessionId ${this._validIdentifierErrorMessage}`);
-    }
-
-    this.target.session_id = sessionId;
-    return this;
-  }
-
   public setReferenceId(referenceId: string): EventBuilder {
     if (!this.isValidIdentifier(referenceId)) {
       throw new Error(`ReferenceId ${this._validIdentifierErrorMessage}`);
     }
 
     this.target.reference_id = referenceId;
+    return this;
+  }
+
+  /**
+   * Allows you to reference a parent event by its ReferenceId property. This allows you to have parent and child relationships.
+   * @param name Reference name
+   * @param id The reference id that points to a specific event
+     */
+  public setEventReference(name: string, id: string): EventBuilder {
+    if (!name) {
+      throw new Error('Invalid name');
+    }
+
+    if (!id || !this.isValidIdentifier(id)) {
+      throw new Error(`Id ${this._validIdentifierErrorMessage}`);
+    }
+
+    this.setProperty('@ref:' + name, id);
     return this;
   }
 
@@ -153,7 +162,7 @@ export class EventBuilder {
       return false;
     }
 
-    for (var index = 0; index < value.length; index++) {
+    for (let index = 0; index < value.length; index++) {
       let code = value.charCodeAt(index);
       let isDigit = (code >= 48) && (code <= 57);
       let isLetter = ((code >= 65) && (code <= 90)) || ((code >= 97) && (code <= 122));
