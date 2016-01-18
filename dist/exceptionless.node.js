@@ -183,7 +183,7 @@ var HeartbeatPlugin = (function () {
             else {
                 var user = context.event.data['@user'];
                 if (user && user.identity) {
-                    var submitHeartbeatFn = function () { return context.client.submitSessionHeartbeat(user.identity, user.name); };
+                    var submitHeartbeatFn = function () { return context.client.createSessionHeartbeat().setUserIdentity(user).submit(); };
                     if (!this._heartbeatIntervalId) {
                         this._lastUser = user;
                     }
@@ -841,6 +841,16 @@ var EventBuilder = (function () {
         this.target.reference_id = referenceId;
         return this;
     };
+    EventBuilder.prototype.setEventReference = function (name, id) {
+        if (!name) {
+            throw new Error('Invalid name');
+        }
+        if (!id || !this.isValidIdentifier(id)) {
+            throw new Error("Id " + this._validIdentifierErrorMessage);
+        }
+        this.setProperty('@ref:' + name, id);
+        return this;
+    };
     EventBuilder.prototype.setMessage = function (message) {
         if (!!message) {
             this.target.message = message;
@@ -1044,23 +1054,23 @@ var ExceptionlessClient = (function () {
     ExceptionlessClient.prototype.submitNotFound = function (resource, callback) {
         this.createNotFound(resource).submit(callback);
     };
-    ExceptionlessClient.prototype.createSessionStart = function (userIdentity, userDisplayName) {
-        return this.createEvent().setType('session').setUserIdentity(userIdentity, userDisplayName);
+    ExceptionlessClient.prototype.createSessionStart = function () {
+        return this.createEvent().setType('session');
     };
-    ExceptionlessClient.prototype.submitSessionStart = function (userIdentity, userDisplayName, callback) {
-        this.createSessionStart(userIdentity, userDisplayName).submit(callback);
+    ExceptionlessClient.prototype.submitSessionStart = function (callback) {
+        this.createSessionStart().submit(callback);
     };
-    ExceptionlessClient.prototype.createSessionEnd = function (userIdentity, userDisplayName) {
-        return this.createEvent().setType('sessionend').setUserIdentity(userIdentity, userDisplayName);
+    ExceptionlessClient.prototype.createSessionEnd = function () {
+        return this.createEvent().setType('sessionend');
     };
-    ExceptionlessClient.prototype.submitSessionEnd = function (userIdentity, userDisplayName, callback) {
-        this.createSessionEnd(userIdentity, userDisplayName).submit(callback);
+    ExceptionlessClient.prototype.submitSessionEnd = function (callback) {
+        this.createSessionEnd().submit(callback);
     };
-    ExceptionlessClient.prototype.createSessionHeartbeat = function (userIdentity, userDisplayName) {
-        return this.createEvent().setType('heartbeat').setUserIdentity(userIdentity, userDisplayName);
+    ExceptionlessClient.prototype.createSessionHeartbeat = function () {
+        return this.createEvent().setType('heartbeat');
     };
-    ExceptionlessClient.prototype.submitSessionHeartbeat = function (userIdentity, userDisplayName, callback) {
-        this.createSessionHeartbeat(userIdentity, userDisplayName).submit(callback);
+    ExceptionlessClient.prototype.submitSessionHeartbeat = function (callback) {
+        this.createSessionHeartbeat().submit(callback);
     };
     ExceptionlessClient.prototype.createEvent = function (pluginContextData) {
         return new EventBuilder({ date: new Date() }, this, pluginContextData);

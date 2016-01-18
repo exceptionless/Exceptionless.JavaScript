@@ -24,7 +24,7 @@ export class HeartbeatPlugin implements IEventPlugin {
       } else {
         let user: IUserInfo = context.event.data['@user'];
         if (user && user.identity) {
-          let submitHeartbeatFn = () => context.client.submitSessionHeartbeat(user.identity, user.name);
+          let submitHeartbeatFn = () => context.client.createSessionHeartbeat().setUserIdentity(user).submit();
 
           if (!this._heartbeatIntervalId) {
             this._lastUser = user;

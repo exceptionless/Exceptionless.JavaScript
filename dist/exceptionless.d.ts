@@ -225,6 +225,7 @@ export declare class EventBuilder {
     setType(type: string): EventBuilder;
     setSource(source: string): EventBuilder;
     setReferenceId(referenceId: string): EventBuilder;
+    setEventReference(name: string, id: string): EventBuilder;
     setMessage(message: string): EventBuilder;
     setGeo(latitude: number, longitude: number): EventBuilder;
     setUserIdentity(userInfo: IUserInfo): EventBuilder;
@@ -284,12 +285,12 @@ export declare class ExceptionlessClient {
     submitLog(source: string, message: string, level: string, callback?: (context: EventPluginContext) => void): void;
     createNotFound(resource: string): EventBuilder;
     submitNotFound(resource: string, callback?: (context: EventPluginContext) => void): void;
-    createSessionStart(userIdentity?: string, userDisplayName?: string): EventBuilder;
-    submitSessionStart(userIdentity?: string, userDisplayName?: string, callback?: (context: EventPluginContext) => void): void;
-    createSessionEnd(userIdentity?: string, userDisplayName?: string): EventBuilder;
-    submitSessionEnd(userIdentity?: string, userDisplayName?: string, callback?: (context: EventPluginContext) => void): void;
-    createSessionHeartbeat(userIdentity?: string, userDisplayName?: string): EventBuilder;
-    submitSessionHeartbeat(userIdentity?: string, userDisplayName?: string, callback?: (context: EventPluginContext) => void): void;
+    createSessionStart(): EventBuilder;
+    submitSessionStart(callback?: (context: EventPluginContext) => void): void;
+    createSessionEnd(): EventBuilder;
+    submitSessionEnd(callback?: (context: EventPluginContext) => void): void;
+    createSessionHeartbeat(): EventBuilder;
+    submitSessionHeartbeat(callback?: (context: EventPluginContext) => void): void;
     createEvent(pluginContextData?: ContextData): EventBuilder;
     submitEvent(event: IEvent, pluginContextData?: ContextData, callback?: (context: EventPluginContext) => void): void;
     updateUserEmailAndDescription(referenceId: string, email: string, description: string, callback?: (response: SubmissionResponse) => void): void;

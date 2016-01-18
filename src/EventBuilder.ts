@@ -53,7 +53,7 @@ export class EventBuilder {
       throw new Error('Invalid name');
     }
 
-    if (!id ||!this.isValidIdentifier(id)) {
+    if (!id || !this.isValidIdentifier(id)) {
       throw new Error(`Id ${this._validIdentifierErrorMessage}`);
     }
 
