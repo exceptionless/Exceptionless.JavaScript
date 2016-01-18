@@ -1,15 +1,15 @@
 # Exceptionless.JavaScript
-[![Build status](https://img.shields.io/appveyor/ci/Exceptionless/exceptionless-javascript.svg)](https://ci.appveyor.com/project/Exceptionless/exceptionless-javascript) [![Gitter](https://img.shields.io/badge/gitter-join_chat-brightgreen.svg)](https://gitter.im/exceptionless/Discuss) 
+[![Build status](https://img.shields.io/appveyor/ci/Exceptionless/exceptionless-javascript.svg)](https://ci.appveyor.com/project/Exceptionless/exceptionless-javascript) [![Gitter](https://img.shields.io/badge/gitter-join_chat-brightgreen.svg)](https://gitter.im/exceptionless/Discuss)
 [![NPM version](https://img.shields.io/npm/v/exceptionless.svg)](https://www.npmjs.org/package/exceptionless)
 [![Bower version](https://img.shields.io/bower/v/exceptionless.svg)](http://bower.io/search/?q=exceptionless)
-[![Donate](https://img.shields.io/badge/donorbox-donate-blue.svg)](https://donorbox.org/exceptionless) 
+[![Donate](https://img.shields.io/badge/donorbox-donate-blue.svg)](https://donorbox.org/exceptionless)
 
 The definition of the word exceptionless is: to be without exception. Exceptionless.js provides real-time error reporting for your JavaScript applications in the browser or in Node.js. It organizes the gathered information into simple actionable data that will help your app become exceptionless!
 
 ## Show me the code! ##
 
 ```html
-<script src="https://cdn.rawgit.com/exceptionless/Exceptionless.JavaScript/v1.2.0/dist/exceptionless.min.js"></script>
+<script src="https://cdn.rawgit.com/exceptionless/Exceptionless.JavaScript/v1.3.0/dist/exceptionless.min.js"></script>
 <script>
   var client = exceptionless.ExceptionlessClient.default;
   client.config.apiKey = 'API_KEY_HERE';
@@ -48,7 +48,7 @@ Use one of the following methods to install Exceptionless.js into your browser a
   Add the following script to your page:
 
   ```html
-  <script src="https://cdn.rawgit.com/exceptionless/Exceptionless.JavaScript/v1.2.0/dist/exceptionless.min.js"></script>
+  <script src="https://cdn.rawgit.com/exceptionless/Exceptionless.JavaScript/v1.3.0/dist/exceptionless.min.js"></script>
   ```
 
 - **Bower:**
