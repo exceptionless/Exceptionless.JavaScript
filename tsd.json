@@ -6,7 +6,7 @@
   "bundle": "src/typings/tsd.d.ts",
   "installed": {
     "node/node.d.ts": {
-      "commit": "d1f6bde13f2209be42e86c3686761e8bfcbb50a5"
+      "commit": "70bf7e2bfeb0d5b1b651ef3219bcc65c8eec117e"
     },
     "angularjs/angular.d.ts": {
       "commit": "d1f6bde13f2209be42e86c3686761e8bfcbb50a5"
@@ -25,6 +25,9 @@
     },
     "chai/chai.d.ts": {
       "commit": "d1f6bde13f2209be42e86c3686761e8bfcbb50a5"
+    },
+    "mock-fs/mock-fs.d.ts": {
+      "commit": "70bf7e2bfeb0d5b1b651ef3219bcc65c8eec117e"
     }
   }
 }
