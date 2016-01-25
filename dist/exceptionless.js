@@ -1848,9 +1848,6 @@ var Configuration = (function () {
         this.queue = inject(configSettings.queue) || new DefaultEventQueue(this);
         SettingsManager.applySavedServerSettings(this);
         EventPluginManager.addDefaultPlugins(this);
-        if (configSettings.enableSessions) {
-            this.useSessions();
-        }
     }
     Object.defineProperty(Configuration.prototype, "apiKey", {
         get: function () {
@@ -1964,7 +1961,7 @@ var Configuration = (function () {
     };
     Object.defineProperty(Configuration.prototype, "userAgent", {
         get: function () {
-            return 'exceptionless-js/1.3.0';
+            return 'exceptionless-js/1.3.1';
         },
         enumerable: true,
         configurable: true
@@ -2772,7 +2769,6 @@ if (settings && (settings.apiKey || settings.serverUrl)) {
     defaults.apiKey = settings.apiKey;
     defaults.serverUrl = settings.serverUrl;
 }
-defaults.enableSessions = true;
 defaults.errorParser = new DefaultErrorParser();
 defaults.moduleCollector = new DefaultModuleCollector();
 defaults.requestInfoCollector = new DefaultRequestInfoCollector();

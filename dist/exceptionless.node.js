@@ -668,9 +668,6 @@ var Configuration = (function () {
         this.queue = inject(configSettings.queue) || new DefaultEventQueue(this);
         SettingsManager.applySavedServerSettings(this);
         EventPluginManager.addDefaultPlugins(this);
-        if (configSettings.enableSessions) {
-            this.useSessions();
-        }
     }
     Object.defineProperty(Configuration.prototype, "apiKey", {
         get: function () {
@@ -784,7 +781,7 @@ var Configuration = (function () {
     };
     Object.defineProperty(Configuration.prototype, "userAgent", {
         get: function () {
-            return 'exceptionless-js/1.3.0';
+            return 'exceptionless-js/1.3.1';
         },
         enumerable: true,
         configurable: true

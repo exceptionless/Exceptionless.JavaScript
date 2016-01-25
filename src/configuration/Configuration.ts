@@ -110,11 +110,7 @@ export class Configuration implements IConfigurationSettings {
     this.queue = inject(configSettings.queue) || new DefaultEventQueue(this);
 
     SettingsManager.applySavedServerSettings(this);
-
     EventPluginManager.addDefaultPlugins(this);
-    if (configSettings.enableSessions) {
-      this.useSessions();
-    }
   }
 
   /**

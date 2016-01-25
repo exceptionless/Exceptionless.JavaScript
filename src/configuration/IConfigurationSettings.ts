@@ -12,7 +12,6 @@ import { ISubmissionClient } from '../submission/ISubmissionClient';
 export interface IConfigurationSettings {
   apiKey?: string;
   serverUrl?: string;
-  enableSessions?:boolean;
   environmentInfoCollector?: IEnvironmentInfoCollector;
   errorParser?: IErrorParser;
   lastReferenceIdManager?: ILastReferenceIdManager;
