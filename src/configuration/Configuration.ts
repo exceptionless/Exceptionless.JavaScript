@@ -322,7 +322,7 @@ export class Configuration implements IConfigurationSettings {
   /**
    * Automatically send a heartbeat to keep the session alive.
    */
-  public useSessions(sendHeartbeats:boolean = true): void {
+  public useSessions(sendHeartbeats: boolean = true): void {
     if (sendHeartbeats) {
       this.addPlugin(new HeartbeatPlugin());
     }

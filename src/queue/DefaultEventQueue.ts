@@ -54,7 +54,7 @@ export class DefaultEventQueue implements IEventQueue {
       return;
     }
 
-    let key = `ex-q-${new Date().toJSON() }-${Utils.randomNumber() }`;
+    let key = `ex-q-${new Date().toJSON()}-${Utils.randomNumber()}`;
     config.log.info(`Enqueuing event: ${key} type=${event.type} ${!!event.reference_id ? 'refid=' + event.reference_id : ''}`);
     config.storage.save(key, event);
   }

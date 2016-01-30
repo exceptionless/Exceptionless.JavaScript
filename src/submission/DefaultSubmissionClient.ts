@@ -22,7 +22,7 @@ export class DefaultSubmissionClient implements ISubmissionClient {
   }
 
   public postUserDescription(referenceId: string, description: IUserDescription, config: Configuration, callback: (response: SubmissionResponse) => void): void {
-    let path = `/api/v2/events/by-ref/${encodeURIComponent(referenceId) }/user-description`;
+    let path = `/api/v2/events/by-ref/${encodeURIComponent(referenceId)}/user-description`;
     let data = JSON.stringify(description);
     let request = this.createRequest(config, 'POST', path, data);
     let cb = this.createSubmissionCallback(config, callback);

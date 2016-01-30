@@ -31,7 +31,7 @@ export class SettingsManager {
     if (version) {
       let savedConfigVersion = parseInt(<string>config.storage.get(`${this._configPath}-version`), 10);
       if (isNaN(savedConfigVersion) || version > savedConfigVersion) {
-        config.log.info(`Updating settings from v${(!isNaN(savedConfigVersion) ? savedConfigVersion : 0) } to v${version}`);
+        config.log.info(`Updating settings from v${(!isNaN(savedConfigVersion) ? savedConfigVersion : 0)} to v${version}`);
         this.updateSettings(config);
       }
     }
