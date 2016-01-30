@@ -21,7 +21,7 @@ export class NodeFileStorage implements IStorage {
     this.maxItems = maxItems;
     this.fs = fs ? fs : Fs;
 
-    mkdirParent(this.directory);
+    this.mkdir(this.directory);
     this.index = this.createIndex(this.directory);
     this.timestamp = this.index.length > 0
       ? this.index[this.index.length - 1].timestamp
@@ -135,6 +135,22 @@ export class NodeFileStorage implements IStorage {
         };
       }).sort((a, b) => a.timestamp - b.timestamp);
   }
+
+  private mkdir(path) {
+    let dirs = path.split(Path.sep);
+    let root = '';
+
+    while (dirs.length > 0) {
+      let dir = dirs.shift();
+      if (dir === '') {
+        root = Path.sep;
+      }
+      if (!this.fs.existsSync(root + dir)) {
+        this.fs.mkdirSync(root + dir);
+      }
+      root += dir + Path.sep;
+    }
+  };
 }
 
 function parseDate(key, value) {
@@ -148,13 +164,3 @@ function parseDate(key, value) {
   return value;
 };
 
-function mkdirParent(dirPath) {
-  try {
-    this.fs.mkdirSync(dirPath);
-  } catch (e) {
-    if (e.errno === 34) {
-      mkdirParent(Path.dirname(dirPath));
-      mkdirParent(dirPath);
-    }
-  }
-}
