@@ -335,6 +335,10 @@ export class Configuration implements IConfigurationSettings {
     this.addPlugin(new ReferenceIdPlugin());
   }
 
+  public useLocalStorage(): void {
+    throw 'Must be overridden.';
+  }
+
   // TODO: Support a min log level.
   public useDebugLogger(): void {
     this.log = new ConsoleLog();
