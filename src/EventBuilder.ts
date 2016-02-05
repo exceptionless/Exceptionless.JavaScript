@@ -47,6 +47,7 @@ export class EventBuilder {
    * Allows you to reference a parent event by its ReferenceId property. This allows you to have parent and child relationships.
    * @param name Reference name
    * @param id The reference id that points to a specific event
+   * @returns {EventBuilder}
      */
   public setEventReference(name: string, id: string): EventBuilder {
     if (!name) {
@@ -92,6 +93,34 @@ export class EventBuilder {
     }
 
     this.setProperty('@user', userInfo);
+    return this;
+  }
+
+  /**
+   * Sets the user's description of the event.
+   *
+   * @param emailAddress The email address
+   * @param description The user's description of the event.
+   * @returns {EventBuilder}
+     */
+  public setUserDescription(emailAddress: string, description: string): EventBuilder {
+    if (emailAddress && description) {
+      this.setProperty('@user_description', { email_address: emailAddress, description: description });
+    }
+
+    return this;
+  }
+
+  /**
+   * Changes default stacking behavior by setting the stacking key.
+   * @param manualStackingKey The manual stacking key.
+   * @returns {EventBuilder}
+     */
+  public setManualStackingKey(manualStackingKey: string): EventBuilder {
+    if (manualStackingKey) {
+      this.setProperty('@manual_stacking_key', manualStackingKey);
+    }
+
     return this;
   }
 

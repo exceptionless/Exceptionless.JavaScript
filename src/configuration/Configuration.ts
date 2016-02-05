@@ -179,6 +179,13 @@ export class Configuration implements IConfigurationSettings {
   private _dataExclusions: string[] = [];
 
   /**
+   * A list of user agent patterns.
+   * @type {Array}
+   * @private
+   */
+  private _userAgentBotPatterns: string[] = [];
+
+  /**
    *  A list of exclusion patterns that will automatically remove any data that
    *  matches them from any data submitted to the server.
    *
@@ -203,6 +210,29 @@ export class Configuration implements IConfigurationSettings {
    */
   public addDataExclusions(...exclusions: string[]) {
     this._dataExclusions = Utils.addRange<string>(this._dataExclusions, ...exclusions);
+  }
+
+  /**
+   * A list of user agent patterns that will cause any event with a matching user agent to not be submitted.
+   *
+   * For example, entering *Bot* will cause any events that contains a user agent of Bot will not be submitted.
+   *
+   * @returns {string[]}
+   */
+  public get userAgentBotPatterns(): string[] {
+    let patterns: string = this.settings['@@UserAgentBotPatterns'];
+    return this._userAgentBotPatterns.concat(patterns && patterns.split(',') || []);
+  }
+
+  /**
+   * Add items to the list of user agent patterns that will cause any event with a matching user agent to not be submitted.
+   *
+   * For example, entering *Bot* will cause any events that contains a user agent of Bot will not be submitted.
+   *
+   * @param userAgentBotPatterns
+   */
+  public addUserAgentBotPatterns(...userAgentBotPatterns: string[]) {
+    this._userAgentBotPatterns = Utils.addRange<string>(this._userAgentBotPatterns, ...userAgentBotPatterns);
   }
 
   /**

@@ -26,9 +26,9 @@
     "url": "git://github.com/exceptionless/Exceptionless.JavaScript.git"
   },
   "devDependencies": {
-    "chai": "3.4.1",
+    "chai": "3.5.0",
     "del": "2.2.0",
-    "es5-shim": "4.5.0",
+    "es5-shim": "4.5.2",
     "es6-shim": "0.34.2",
     "gulp": "3.9.0",
     "gulp-concat": "2.6.0",
@@ -42,9 +42,9 @@
     "rimraf": "2.5.1",
     "source-map-support": "0.4.0",
     "mock-fs": "3.6.0",
-    "tracekit": "0.3.1",
+    "tracekit": "0.3.2",
     "tslint": "3.3.0",
-    "tsproject": "1.2.0-rc.4",
+    "tsproject": "1.2.0-rc.8",
     "typescript": "1.7.5",
     "typescript-formatter": "1.2.0"
   },

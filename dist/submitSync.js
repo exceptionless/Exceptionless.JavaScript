@@ -3,6 +3,7 @@ var child = require("child_process");
 var http = require("http");
 var https = require('https');
 var url = require('url');
+var string_decoder_1 = require('string_decoder');
 var NodeSubmissionAdapter = (function () {
     function NodeSubmissionAdapter() {
     }
@@ -61,7 +62,6 @@ var NodeSubmissionAdapter = (function () {
     return NodeSubmissionAdapter;
 })();
 exports.NodeSubmissionAdapter = NodeSubmissionAdapter;
-var string_decoder_1 = require('string_decoder');
 var decoder = new string_decoder_1.StringDecoder('utf8');
 var strings = [];
 var jsonStream = new stream.Writable();

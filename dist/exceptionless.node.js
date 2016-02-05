@@ -1,5 +1,10 @@
 var child = require("child_process");
 var http = require("http");
+var os = require('os');
+var nodestacktrace = require('stack-trace');
+var path = require('path');
+var https = require('https');
+var url = require('url');
 var SettingsManager = (function () {
     function SettingsManager() {
     }
@@ -649,6 +654,7 @@ var Configuration = (function () {
         this._plugins = [];
         this._serverUrl = 'https://collector.exceptionless.io';
         this._dataExclusions = [];
+        this._userAgentBotPatterns = [];
         function inject(fn) {
             return typeof fn === 'function' ? fn(this) : fn;
         }
@@ -714,6 +720,21 @@ var Configuration = (function () {
             exclusions[_i - 0] = arguments[_i];
         }
         this._dataExclusions = Utils.addRange.apply(Utils, [this._dataExclusions].concat(exclusions));
+    };
+    Object.defineProperty(Configuration.prototype, "userAgentBotPatterns", {
+        get: function () {
+            var patterns = this.settings['@@UserAgentBotPatterns'];
+            return this._userAgentBotPatterns.concat(patterns && patterns.split(',') || []);
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Configuration.prototype.addUserAgentBotPatterns = function () {
+        var userAgentBotPatterns = [];
+        for (var _i = 0; _i < arguments.length; _i++) {
+            userAgentBotPatterns[_i - 0] = arguments[_i];
+        }
+        this._userAgentBotPatterns = Utils.addRange.apply(Utils, [this._userAgentBotPatterns].concat(userAgentBotPatterns));
     };
     Object.defineProperty(Configuration.prototype, "plugins", {
         get: function () {
@@ -870,6 +891,18 @@ var EventBuilder = (function () {
             return this;
         }
         this.setProperty('@user', userInfo);
+        return this;
+    };
+    EventBuilder.prototype.setUserDescription = function (emailAddress, description) {
+        if (emailAddress && description) {
+            this.setProperty('@user_description', { email_address: emailAddress, description: description });
+        }
+        return this;
+    };
+    EventBuilder.prototype.setManualStackingKey = function (manualStackingKey) {
+        if (manualStackingKey) {
+            this.setProperty('@manual_stacking_key', manualStackingKey);
+        }
         return this;
     };
     EventBuilder.prototype.setValue = function (value) {
@@ -1248,11 +1281,18 @@ var RequestInfoPlugin = (function () {
     }
     RequestInfoPlugin.prototype.run = function (context, next) {
         var REQUEST_KEY = '@request';
-        var collector = context.client.config.requestInfoCollector;
+        var config = context.client.config;
+        var collector = config.requestInfoCollector;
         if (!context.event.data[REQUEST_KEY] && !!collector) {
             var requestInfo = collector.getRequestInfo(context);
             if (!!requestInfo) {
-                context.event.data[REQUEST_KEY] = requestInfo;
+                if (Utils.isMatch(requestInfo.user_agent, config.userAgentBotPatterns)) {
+                    context.log.info('Cancelling event as the request user agent matches a known bot pattern');
+                    context.cancelled = true;
+                }
+                else {
+                    context.event.data[REQUEST_KEY] = requestInfo;
+                }
             }
         }
         next && next();
@@ -1362,11 +1402,6 @@ var SettingsResponse = (function () {
     return SettingsResponse;
 })();
 exports.SettingsResponse = SettingsResponse;
-var os = require('os');
-var nodestacktrace = require('stack-trace');
-var path = require('path');
-var https = require('https');
-var url = require('url');
 var NodeEnvironmentInfoCollector = (function () {
     function NodeEnvironmentInfoCollector() {
     }

@@ -364,7 +364,8 @@ TraceKit.computeStackTrace = (function computeStackTraceWrapper() {
             var source = '';
             var domain = '';
             try { domain = document.domain; } catch (e) {}
-            if (url.indexOf(domain) !== -1) {
+            var match = /(.*)\:\/\/([^\/]+)\/{0,1}([\s\S]*)/.exec(url);
+            if (match && match[2] === domain) {
                 source = loadSource(url);
             }
             sourceCache[url] = source ? source.split('\n') : [];
@@ -638,7 +639,7 @@ TraceKit.computeStackTrace = (function computeStackTraceWrapper() {
         }
 
         var chrome = /^\s*at (.*?) ?\(((?:file|https?|blob|chrome-extension|native|eval).*?)(?::(\d+))?(?::(\d+))?\)?\s*$/i,
-            gecko = /^\s*(.*?)(?:\((.*?)\))?@?((?:file|https?|blob|chrome|\[).*?)(?::(\d+))?(?::(\d+))?\s*$/i,
+            gecko = /^\s*(.*?)(?:\((.*?)\))?(?:^|@)((?:file|https?|blob|chrome|\[).*?)(?::(\d+))?(?::(\d+))?\s*$/i,
             winjs = /^\s*at (?:((?:\[object object\])?.+) )?\(?((?:ms-appx|https?|blob):.*?):(\d+)(?::(\d+))?\)?\s*$/i,
             lines = ex.stack.split('\n'),
             stack = [],
@@ -1829,6 +1830,7 @@ var Configuration = (function () {
         this._plugins = [];
         this._serverUrl = 'https://collector.exceptionless.io';
         this._dataExclusions = [];
+        this._userAgentBotPatterns = [];
         function inject(fn) {
             return typeof fn === 'function' ? fn(this) : fn;
         }
@@ -1894,6 +1896,21 @@ var Configuration = (function () {
             exclusions[_i - 0] = arguments[_i];
         }
         this._dataExclusions = Utils.addRange.apply(Utils, [this._dataExclusions].concat(exclusions));
+    };
+    Object.defineProperty(Configuration.prototype, "userAgentBotPatterns", {
+        get: function () {
+            var patterns = this.settings['@@UserAgentBotPatterns'];
+            return this._userAgentBotPatterns.concat(patterns && patterns.split(',') || []);
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Configuration.prototype.addUserAgentBotPatterns = function () {
+        var userAgentBotPatterns = [];
+        for (var _i = 0; _i < arguments.length; _i++) {
+            userAgentBotPatterns[_i - 0] = arguments[_i];
+        }
+        this._userAgentBotPatterns = Utils.addRange.apply(Utils, [this._userAgentBotPatterns].concat(userAgentBotPatterns));
     };
     Object.defineProperty(Configuration.prototype, "plugins", {
         get: function () {
@@ -2050,6 +2067,18 @@ var EventBuilder = (function () {
             return this;
         }
         this.setProperty('@user', userInfo);
+        return this;
+    };
+    EventBuilder.prototype.setUserDescription = function (emailAddress, description) {
+        if (emailAddress && description) {
+            this.setProperty('@user_description', { email_address: emailAddress, description: description });
+        }
+        return this;
+    };
+    EventBuilder.prototype.setManualStackingKey = function (manualStackingKey) {
+        if (manualStackingKey) {
+            this.setProperty('@manual_stacking_key', manualStackingKey);
+        }
         return this;
     };
     EventBuilder.prototype.setValue = function (value) {
@@ -2428,11 +2457,18 @@ var RequestInfoPlugin = (function () {
     }
     RequestInfoPlugin.prototype.run = function (context, next) {
         var REQUEST_KEY = '@request';
-        var collector = context.client.config.requestInfoCollector;
+        var config = context.client.config;
+        var collector = config.requestInfoCollector;
         if (!context.event.data[REQUEST_KEY] && !!collector) {
             var requestInfo = collector.getRequestInfo(context);
             if (!!requestInfo) {
-                context.event.data[REQUEST_KEY] = requestInfo;
+                if (Utils.isMatch(requestInfo.user_agent, config.userAgentBotPatterns)) {
+                    context.log.info('Cancelling event as the request user agent matches a known bot pattern');
+                    context.cancelled = true;
+                }
+                else {
+                    context.event.data[REQUEST_KEY] = requestInfo;
+                }
             }
         }
         next && next();
