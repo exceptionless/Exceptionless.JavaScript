@@ -198,8 +198,11 @@ export declare class Configuration implements IConfigurationSettings {
     private _serverUrl;
     serverUrl: string;
     private _dataExclusions;
+    private _userAgentBotPatterns;
     dataExclusions: string[];
     addDataExclusions(...exclusions: string[]): void;
+    userAgentBotPatterns: string[];
+    addUserAgentBotPatterns(...userAgentBotPatterns: string[]): void;
     plugins: IEventPlugin[];
     addPlugin(plugin: IEventPlugin): void;
     addPlugin(name: string, priority: number, pluginAction: (context: EventPluginContext, next?: () => void) => void): void;
