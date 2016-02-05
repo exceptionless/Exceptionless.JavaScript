@@ -893,6 +893,18 @@ var EventBuilder = (function () {
         this.setProperty('@user', userInfo);
         return this;
     };
+    EventBuilder.prototype.setUserDescription = function (emailAddress, description) {
+        if (emailAddress && description) {
+            this.setProperty('@user_description', { email_address: emailAddress, description: description });
+        }
+        return this;
+    };
+    EventBuilder.prototype.setManualStackingKey = function (manualStackingKey) {
+        if (manualStackingKey) {
+            this.setProperty('@manual_stacking_key', manualStackingKey);
+        }
+        return this;
+    };
     EventBuilder.prototype.setValue = function (value) {
         if (!!value) {
             this.target.value = value;

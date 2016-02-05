@@ -233,6 +233,8 @@ export declare class EventBuilder {
     setUserIdentity(userInfo: IUserInfo): EventBuilder;
     setUserIdentity(identity: string): EventBuilder;
     setUserIdentity(identity: string, name: string): EventBuilder;
+    setUserDescription(emailAddress: string, description: string): EventBuilder;
+    setManualStackingKey(manualStackingKey: string): EventBuilder;
     setValue(value: number): EventBuilder;
     addTags(...tags: string[]): EventBuilder;
     setProperty(name: string, value: any, maxDepth?: number, excludedPropertyNames?: string[]): EventBuilder;
