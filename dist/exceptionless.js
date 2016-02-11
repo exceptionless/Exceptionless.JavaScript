@@ -2077,7 +2077,7 @@ var EventBuilder = (function () {
     };
     EventBuilder.prototype.setManualStackingKey = function (manualStackingKey) {
         if (manualStackingKey) {
-            this.setProperty('@manual_stacking_key', manualStackingKey);
+            this.setProperty('@stack', manualStackingKey);
         }
         return this;
     };
