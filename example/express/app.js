@@ -5,6 +5,7 @@ var client = require('../../dist/exceptionless.node').ExceptionlessClient.defaul
 client.config.apiKey = 'LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw';
 client.config.serverUrl = 'http://localhost:50000';
 client.config.useDebugLogger();
+client.config.useLocalStorage();
 
 // set some default data
 client.config.defaultData['SampleUser'] = {

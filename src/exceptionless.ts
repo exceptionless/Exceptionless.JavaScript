@@ -1,5 +1,6 @@
 import { Configuration } from './configuration/Configuration';
 import { IConfigurationSettings } from './configuration/IConfigurationSettings';
+import { SettingsManager } from './configuration/SettingsManager';
 import { DefaultErrorParser } from './services/DefaultErrorParser';
 import { DefaultModuleCollector } from './services/DefaultModuleCollector';
 import { DefaultRequestInfoCollector } from './services/DefaultRequestInfoCollector';
@@ -48,6 +49,7 @@ function processJQueryAjaxError(event, xhr, settings, error:string): void {
 Configuration.prototype.useLocalStorage = function() {
   if (BrowserStorage.isAvailable()) {
     this.storage = new BrowserStorage();
+    SettingsManager.applySavedServerSettings(this);
   }
 };
 

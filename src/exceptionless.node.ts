@@ -1,4 +1,5 @@
 import { Configuration } from './configuration/Configuration';
+import { SettingsManager } from './configuration/SettingsManager';
 import { NodeEnvironmentInfoCollector } from './services/NodeEnvironmentInfoCollector';
 import { NodeErrorParser } from './services/NodeErrorParser';
 import { NodeModuleCollector } from './services/NodeModuleCollector';
@@ -21,6 +22,7 @@ defaults.submissionAdapter = new NodeSubmissionAdapter();
 
 Configuration.prototype.useLocalStorage = function() {
   this.storage = new NodeFileStorage('.exceptionless');
+  SettingsManager.applySavedServerSettings(this);
 };
 
 function getListenerCount(emitter, event: string): number {

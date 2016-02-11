@@ -1181,6 +1181,11 @@ if (!exports) {
 }
 
 
+var __extends = (this && this.__extends) || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+};
 var SettingsManager = (function () {
     function SettingsManager() {
     }
@@ -1992,6 +1997,8 @@ var Configuration = (function () {
     Configuration.prototype.useReferenceIds = function () {
         this.addPlugin(new ReferenceIdPlugin());
     };
+    Configuration.prototype.useLocalStorage = function () {
+    };
     Configuration.prototype.useDebugLogger = function () {
         this.log = new ConsoleLog();
     };
@@ -2578,6 +2585,132 @@ var SettingsResponse = (function () {
     return SettingsResponse;
 })();
 exports.SettingsResponse = SettingsResponse;
+var KeyValueStorageBase = (function () {
+    function KeyValueStorageBase(maxItems) {
+        this.maxItems = maxItems;
+    }
+    KeyValueStorageBase.prototype.save = function (path, value) {
+        if (!path || !value) {
+            return false;
+        }
+        this.ensureIndex();
+        this.remove(path);
+        var entry = { name: path, timestamp: ++this.timestamp };
+        this.index.push(entry);
+        var key = this.getKey(entry);
+        var json = JSON.stringify(value);
+        this.write(key, json);
+        return true;
+    };
+    KeyValueStorageBase.prototype.get = function (path) {
+        try {
+            this.ensureIndex();
+            var entry = this.findEntry(path);
+            if (!entry) {
+                return null;
+            }
+            var fullPath = this.getKey(entry);
+            var json = this.read(fullPath);
+            return JSON.parse(json, parseDate);
+        }
+        catch (e) {
+            return null;
+        }
+    };
+    KeyValueStorageBase.prototype.getList = function (searchPattern, limit) {
+        var _this = this;
+        this.ensureIndex();
+        var entries = this.index;
+        if (searchPattern) {
+            var regex = new RegExp(searchPattern);
+            entries = entries.filter(function (entry) { return regex.test(entry.name); });
+        }
+        if (entries.length > this.maxItems) {
+            entries = entries.slice(entries.length - this.maxItems);
+        }
+        if (entries.length > limit) {
+            entries = entries.slice(0, limit);
+        }
+        var items = entries.map(function (e) { return _this.loadEntry(e); });
+        return items;
+    };
+    KeyValueStorageBase.prototype.remove = function (path) {
+        try {
+            this.ensureIndex();
+            var entry = this.findEntry(path);
+            if (!entry) {
+                return null;
+            }
+            var key = this.getKey(entry);
+            this.delete(key);
+            this.removeEntry(entry);
+        }
+        catch (e) { }
+    };
+    KeyValueStorageBase.prototype.getKey = function (entry) {
+        return entry.name + '__' + entry.timestamp;
+    };
+    KeyValueStorageBase.prototype.getEntry = function (encodedEntry) {
+        var parts = encodedEntry.split('__');
+        return {
+            name: parts[0],
+            timestamp: parseInt(parts[1], 10)
+        };
+    };
+    KeyValueStorageBase.prototype.ensureIndex = function () {
+        if (!this.index) {
+            this.index = this.createIndex();
+            this.timestamp = this.index.length > 0
+                ? this.index[this.index.length - 1].timestamp
+                : 0;
+        }
+    };
+    KeyValueStorageBase.prototype.loadEntry = function (entry) {
+        var key = this.getKey(entry);
+        var created = this.readDate(key);
+        var json = this.read(key);
+        var value = JSON.parse(json, parseDate);
+        return {
+            created: created,
+            path: entry.name,
+            value: value
+        };
+    };
+    KeyValueStorageBase.prototype.findEntry = function (path) {
+        for (var i = this.index.length - 1; i >= 0; i--) {
+            if (this.index[i].name === path) {
+                return this.index[i];
+            }
+        }
+        return null;
+    };
+    KeyValueStorageBase.prototype.removeEntry = function (entry) {
+        var i = this.index.indexOf(entry);
+        if (i > -1) {
+            this.index.splice(i, 1);
+        }
+    };
+    KeyValueStorageBase.prototype.createIndex = function () {
+        var _this = this;
+        var keys = this.getEntries();
+        return keys
+            .map(function (key) { return _this.getEntry(key); })
+            .sort(function (a, b) { return a.timestamp - b.timestamp; });
+    };
+    return KeyValueStorageBase;
+})();
+exports.KeyValueStorageBase = KeyValueStorageBase;
+function parseDate(key, value) {
+    var dateRegx = /\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d\.\d+([+-][0-2]\d:[0-5]\d|Z)/g;
+    if (typeof value === 'string') {
+        var a = dateRegx.exec(value);
+        if (a) {
+            return new Date(value);
+        }
+    }
+    return value;
+}
+;
 var DefaultErrorParser = (function () {
     function DefaultErrorParser() {
     }
@@ -2782,6 +2915,54 @@ var DefaultSubmissionAdapter = (function () {
     return DefaultSubmissionAdapter;
 })();
 exports.DefaultSubmissionAdapter = DefaultSubmissionAdapter;
+var BrowserStorage = (function (_super) {
+    __extends(BrowserStorage, _super);
+    function BrowserStorage(prefix, maxItems, fs) {
+        if (prefix === void 0) { prefix = 'com.exceptionless.'; }
+        if (maxItems === void 0) { maxItems = 20; }
+        _super.call(this, maxItems);
+        this.prefix = prefix;
+    }
+    BrowserStorage.isAvailable = function () {
+        try {
+            var storage = window.localStorage, x = '__storage_test__';
+            storage.setItem(x, x);
+            storage.removeItem(x);
+            return true;
+        }
+        catch (e) {
+            return false;
+        }
+    };
+    BrowserStorage.prototype.write = function (key, value) {
+        window.localStorage.setItem(key, value);
+    };
+    BrowserStorage.prototype.read = function (key) {
+        return window.localStorage.getItem(key);
+    };
+    BrowserStorage.prototype.readDate = function (key) {
+        return Date.now();
+    };
+    BrowserStorage.prototype.delete = function (key) {
+        window.localStorage.removeItem(key);
+    };
+    BrowserStorage.prototype.getEntries = function () {
+        var _this = this;
+        var regex = new RegExp('^' + regExEscape(this.prefix));
+        var files = Object.keys(window.localStorage)
+            .filter(function (f) { return regex.test(f); })
+            .map(function (f) { return f.substr(_this.prefix.length); });
+        return files;
+    };
+    BrowserStorage.prototype.getKey = function (entry) {
+        return this.prefix + _super.prototype.getKey.call(this, entry);
+    };
+    return BrowserStorage;
+})(KeyValueStorageBase);
+exports.BrowserStorage = BrowserStorage;
+function regExEscape(value) {
+    return value.replace(/[\-\[\]{}()*+?.,\\\^$|#\s]/g, '\\$&');
+}
 function getDefaultsSettingsFromScriptTag() {
     if (!document || !document.getElementsByTagName) {
         return null;
@@ -2799,6 +2980,12 @@ function processUnhandledException(stackTrace, options) {
     builder.pluginContextData['@@_TraceKit.StackTrace'] = stackTrace;
     builder.submit();
 }
+Configuration.prototype.useLocalStorage = function () {
+    if (BrowserStorage.isAvailable()) {
+        this.storage = new BrowserStorage();
+        SettingsManager.applySavedServerSettings(this);
+    }
+};
 var defaults = Configuration.defaults;
 var settings = getDefaultsSettingsFromScriptTag();
 if (settings && (settings.apiKey || settings.serverUrl)) {

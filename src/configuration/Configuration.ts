@@ -366,7 +366,7 @@ export class Configuration implements IConfigurationSettings {
   }
 
   public useLocalStorage(): void {
-    throw new Error('Must be overridden.');
+    // This method will be injected via the prototype.
   }
 
   // TODO: Support a min log level.

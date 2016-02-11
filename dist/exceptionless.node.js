@@ -1,3 +1,8 @@
+var __extends = (this && this.__extends) || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+};
 var child = require("child_process");
 var http = require("http");
 var os = require('os');
@@ -5,6 +10,8 @@ var nodestacktrace = require('stack-trace');
 var path = require('path');
 var https = require('https');
 var url = require('url');
+var Fs = require('fs');
+var Path = require('path');
 var SettingsManager = (function () {
     function SettingsManager() {
     }
@@ -816,6 +823,8 @@ var Configuration = (function () {
     Configuration.prototype.useReferenceIds = function () {
         this.addPlugin(new ReferenceIdPlugin());
     };
+    Configuration.prototype.useLocalStorage = function () {
+    };
     Configuration.prototype.useDebugLogger = function () {
         this.log = new ConsoleLog();
     };
@@ -1402,6 +1411,132 @@ var SettingsResponse = (function () {
     return SettingsResponse;
 })();
 exports.SettingsResponse = SettingsResponse;
+var KeyValueStorageBase = (function () {
+    function KeyValueStorageBase(maxItems) {
+        this.maxItems = maxItems;
+    }
+    KeyValueStorageBase.prototype.save = function (path, value) {
+        if (!path || !value) {
+            return false;
+        }
+        this.ensureIndex();
+        this.remove(path);
+        var entry = { name: path, timestamp: ++this.timestamp };
+        this.index.push(entry);
+        var key = this.getKey(entry);
+        var json = JSON.stringify(value);
+        this.write(key, json);
+        return true;
+    };
+    KeyValueStorageBase.prototype.get = function (path) {
+        try {
+            this.ensureIndex();
+            var entry = this.findEntry(path);
+            if (!entry) {
+                return null;
+            }
+            var fullPath = this.getKey(entry);
+            var json = this.read(fullPath);
+            return JSON.parse(json, parseDate);
+        }
+        catch (e) {
+            return null;
+        }
+    };
+    KeyValueStorageBase.prototype.getList = function (searchPattern, limit) {
+        var _this = this;
+        this.ensureIndex();
+        var entries = this.index;
+        if (searchPattern) {
+            var regex = new RegExp(searchPattern);
+            entries = entries.filter(function (entry) { return regex.test(entry.name); });
+        }
+        if (entries.length > this.maxItems) {
+            entries = entries.slice(entries.length - this.maxItems);
+        }
+        if (entries.length > limit) {
+            entries = entries.slice(0, limit);
+        }
+        var items = entries.map(function (e) { return _this.loadEntry(e); });
+        return items;
+    };
+    KeyValueStorageBase.prototype.remove = function (path) {
+        try {
+            this.ensureIndex();
+            var entry = this.findEntry(path);
+            if (!entry) {
+                return null;
+            }
+            var key = this.getKey(entry);
+            this.delete(key);
+            this.removeEntry(entry);
+        }
+        catch (e) { }
+    };
+    KeyValueStorageBase.prototype.getKey = function (entry) {
+        return entry.name + '__' + entry.timestamp;
+    };
+    KeyValueStorageBase.prototype.getEntry = function (encodedEntry) {
+        var parts = encodedEntry.split('__');
+        return {
+            name: parts[0],
+            timestamp: parseInt(parts[1], 10)
+        };
+    };
+    KeyValueStorageBase.prototype.ensureIndex = function () {
+        if (!this.index) {
+            this.index = this.createIndex();
+            this.timestamp = this.index.length > 0
+                ? this.index[this.index.length - 1].timestamp
+                : 0;
+        }
+    };
+    KeyValueStorageBase.prototype.loadEntry = function (entry) {
+        var key = this.getKey(entry);
+        var created = this.readDate(key);
+        var json = this.read(key);
+        var value = JSON.parse(json, parseDate);
+        return {
+            created: created,
+            path: entry.name,
+            value: value
+        };
+    };
+    KeyValueStorageBase.prototype.findEntry = function (path) {
+        for (var i = this.index.length - 1; i >= 0; i--) {
+            if (this.index[i].name === path) {
+                return this.index[i];
+            }
+        }
+        return null;
+    };
+    KeyValueStorageBase.prototype.removeEntry = function (entry) {
+        var i = this.index.indexOf(entry);
+        if (i > -1) {
+            this.index.splice(i, 1);
+        }
+    };
+    KeyValueStorageBase.prototype.createIndex = function () {
+        var _this = this;
+        var keys = this.getEntries();
+        return keys
+            .map(function (key) { return _this.getEntry(key); })
+            .sort(function (a, b) { return a.timestamp - b.timestamp; });
+    };
+    return KeyValueStorageBase;
+})();
+exports.KeyValueStorageBase = KeyValueStorageBase;
+function parseDate(key, value) {
+    var dateRegx = /\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d\.\d+([+-][0-2]\d:[0-5]\d|Z)/g;
+    if (typeof value === 'string') {
+        var a = dateRegx.exec(value);
+        if (a) {
+            return new Date(value);
+        }
+    }
+    return value;
+}
+;
 var NodeEnvironmentInfoCollector = (function () {
     function NodeEnvironmentInfoCollector() {
     }
@@ -1633,6 +1768,52 @@ var NodeSubmissionAdapter = (function () {
     return NodeSubmissionAdapter;
 })();
 exports.NodeSubmissionAdapter = NodeSubmissionAdapter;
+var NodeFileStorage = (function (_super) {
+    __extends(NodeFileStorage, _super);
+    function NodeFileStorage(folder, maxItems, fs) {
+        if (maxItems === void 0) { maxItems = 20; }
+        _super.call(this, maxItems);
+        this.directory = Path.resolve(folder);
+        this.fs = fs ? fs : Fs;
+        this.mkdir(this.directory);
+    }
+    NodeFileStorage.prototype.write = function (key, value) {
+        this.fs.writeFileSync(key, value);
+    };
+    NodeFileStorage.prototype.read = function (key) {
+        return this.fs.readFileSync(key, 'utf8');
+    };
+    NodeFileStorage.prototype.readDate = function (key) {
+        return this.fs.statSync(key).birthtime.getTime();
+    };
+    NodeFileStorage.prototype.delete = function (key) {
+        this.fs.unlinkSync(key);
+    };
+    NodeFileStorage.prototype.getEntries = function () {
+        return this.fs.readdirSync(this.directory);
+    };
+    NodeFileStorage.prototype.getKey = function (entry) {
+        var filename = _super.prototype.getKey.call(this, entry);
+        return Path.join(this.directory, filename);
+    };
+    NodeFileStorage.prototype.mkdir = function (path) {
+        var dirs = path.split(Path.sep);
+        var root = '';
+        while (dirs.length > 0) {
+            var dir = dirs.shift();
+            if (dir === '') {
+                root = Path.sep;
+            }
+            if (!this.fs.existsSync(root + dir)) {
+                this.fs.mkdirSync(root + dir);
+            }
+            root += dir + Path.sep;
+        }
+    };
+    ;
+    return NodeFileStorage;
+})(KeyValueStorageBase);
+exports.NodeFileStorage = NodeFileStorage;
 var EXIT = 'exit';
 var UNCAUGHT_EXCEPTION = 'uncaughtException';
 var SIGINT = 'SIGINT';
@@ -1643,6 +1824,10 @@ defaults.errorParser = new NodeErrorParser();
 defaults.moduleCollector = new NodeModuleCollector();
 defaults.requestInfoCollector = new NodeRequestInfoCollector();
 defaults.submissionAdapter = new NodeSubmissionAdapter();
+Configuration.prototype.useLocalStorage = function () {
+    this.storage = new NodeFileStorage('.exceptionless');
+    SettingsManager.applySavedServerSettings(this);
+};
 function getListenerCount(emitter, event) {
     if (emitter.listenerCount) {
         return emitter.listenerCount(event);
