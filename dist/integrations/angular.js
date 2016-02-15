@@ -79,11 +79,14 @@ angular.module('exceptionless', [])
                 .setProperty('fromParams', fromParams)
                 .submit();
         });
-        $rootScope.$on('$stateChangeError', function (event, toState, toParams, fromState, fromParams, error) {
+        var stateChangeError = '$stateChangeError';
+        $rootScope.$on(stateChangeError, function (event, toState, toParams, fromState, fromParams, error) {
             if (!error) {
                 return;
             }
-            $ExceptionlessClient.createUnhandledException(error, '$stateChangeError')
+            var builder = error && error.status === 404 ? $ExceptionlessClient.createNotFound(error.config.url) : $ExceptionlessClient.createUnhandledException(error, stateChangeError);
+            builder.setSource(stateChangeError)
+                .setMessage(error && error.statusText)
                 .setProperty('toState', toState)
                 .setProperty('toParams', toParams)
                 .setProperty('fromState', fromState)
