@@ -1,5 +1,5 @@
 # Exceptionless.JavaScript
-[![Build status](https://img.shields.io/appveyor/ci/Exceptionless/exceptionless-javascript.svg)](https://ci.appveyor.com/project/Exceptionless/exceptionless-javascript) [![Gitter](https://img.shields.io/badge/gitter-join_chat-brightgreen.svg)](https://gitter.im/exceptionless/Discuss)
+[![Build status](https://ci.appveyor.com/api/projects/status/ahu7u4tvls56wqqu/branch/master?svg=true)](https://ci.appveyor.com/project/Exceptionless/exceptionless-javascript) [![Gitter](https://img.shields.io/badge/gitter-join_chat-brightgreen.svg)](https://gitter.im/exceptionless/Discuss)
 [![NPM version](https://img.shields.io/npm/v/exceptionless.svg)](https://www.npmjs.org/package/exceptionless)
 [![Bower version](https://img.shields.io/bower/v/exceptionless.svg)](http://bower.io/search/?q=exceptionless)
 [![Donate](https://img.shields.io/badge/donorbox-donate-blue.svg)](https://donorbox.org/exceptionless)
