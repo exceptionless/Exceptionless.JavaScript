@@ -36,11 +36,9 @@ export interface IModuleCollector {
 export interface IRequestInfoCollector {
     getRequestInfo(context: EventPluginContext): IRequestInfo;
 }
-export interface IStorage {
-    save(path: string, value: any): boolean;
-    get(path: string): any;
-    getList(searchPattern?: string, limit?: number): IStorageItem[];
-    remove(path: string): void;
+export interface IStorageProvider {
+    queue: IStorage;
+    settings: IStorage;
 }
 export interface ISubmissionAdapter {
     sendRequest(request: SubmissionRequest, callback: SubmissionCallback, isAppExiting?: boolean): void;
@@ -62,11 +60,10 @@ export interface IConfigurationSettings {
     submissionBatchSize?: number;
     submissionClient?: ISubmissionClient;
     submissionAdapter?: ISubmissionAdapter;
-    storage?: IStorage;
+    storage?: IStorageProvider;
     queue?: IEventQueue;
 }
 export declare class SettingsManager {
-    private static _configPath;
     private static _handlers;
     static onChanged(handler: (config: Configuration) => void): void;
     static applySavedServerSettings(config: Configuration): void;
@@ -143,14 +140,10 @@ export declare class DefaultEventQueue implements IEventQueue {
     private processSubmissionResponse(response, events);
     private removeEvents(events);
 }
-export declare class InMemoryStorage implements IStorage {
-    private _items;
-    private _maxItems;
-    constructor(maxItems?: number);
-    save(path: string, value: any): boolean;
-    get(path: string): any;
-    getList(searchPattern?: string, limit?: number): IStorageItem[];
-    remove(path: string): void;
+export declare class InMemoryStorageProvider implements IStorageProvider {
+    queue: IStorage;
+    settings: IStorage;
+    constructor(maxQueueItems?: number);
 }
 export declare class DefaultSubmissionClient implements ISubmissionClient {
     configurationVersionHeader: string;
@@ -188,7 +181,7 @@ export declare class Configuration implements IConfigurationSettings {
     submissionAdapter: ISubmissionAdapter;
     submissionClient: ISubmissionClient;
     settings: Object;
-    storage: IStorage;
+    storage: IStorageProvider;
     queue: IEventQueue;
     private _plugins;
     constructor(configSettings?: IConfigurationSettings);
@@ -416,9 +409,14 @@ export interface IError extends IInnerError {
     modules?: IModule[];
 }
 export interface IStorageItem {
-    created: number;
-    path: string;
+    timestamp: number;
     value: any;
+}
+export interface IStorage {
+    save(value: any): number;
+    get(limit?: number): IStorageItem[];
+    remove(timestamp: number): void;
+    clear(): void;
 }
 export interface SubmissionCallback {
     (status: number, message: string, data?: string, headers?: Object): void;
@@ -439,37 +437,49 @@ export declare class SettingsResponse {
     exception: any;
     constructor(success: boolean, settings: any, settingsVersion?: number, exception?: any, message?: string);
 }
+export declare class InMemoryStorage implements IStorage {
+    private maxItems;
+    private items;
+    private lastTimestamp;
+    constructor(maxItems: number);
+    save(value: any): number;
+    get(limit?: number): IStorageItem[];
+    remove(timestamp: number): void;
+    clear(): void;
+}
 export interface IClientConfiguration {
     settings: Object;
     version: number;
 }
 export declare abstract class KeyValueStorageBase implements IStorage {
     private maxItems;
-    private timestamp;
-    private index;
+    private items;
+    private lastTimestamp;
     constructor(maxItems: any);
-    save(path: string, value: any): boolean;
-    get(path: string): any;
-    getList(searchPattern?: string, limit?: number): IStorageItem[];
-    remove(path: string): void;
+    save(value: any, single?: boolean): number;
+    get(limit?: number): IStorageItem[];
+    remove(timestamp: number): void;
+    clear(): void;
     protected abstract write(key: string, value: string): void;
     protected abstract read(key: string): string;
-    protected abstract readDate(key: string): number;
+    protected abstract readAllKeys(): string[];
     protected abstract delete(key: string): any;
-    protected abstract getEntries(): string[];
-    protected getKey(entry: {
-        name: string;
-        timestamp: number;
-    }): string;
-    protected getEntry(encodedEntry: string): {
-        name: string;
-        timestamp: number;
-    };
+    protected abstract getKey(timestamp: number): string;
+    protected abstract getTimestamp(key: string): number;
     private ensureIndex();
-    private loadEntry(entry);
-    private findEntry(path);
-    private removeEntry(entry);
+    private safeDelete(key);
     private createIndex();
+}
+export declare class BrowserStorage extends KeyValueStorageBase {
+    private prefix;
+    static isAvailable(): boolean;
+    constructor(namespace: string, prefix?: string, maxItems?: number);
+    write(key: string, value: string): void;
+    read(key: string): any;
+    readAllKeys(): string[];
+    delete(key: string): void;
+    getKey(timestamp: any): string;
+    getTimestamp(key: any): number;
 }
 export declare class DefaultErrorParser implements IErrorParser {
     parse(context: EventPluginContext, exception: Error): IError;
@@ -483,14 +493,8 @@ export declare class DefaultRequestInfoCollector implements IRequestInfoCollecto
 export declare class DefaultSubmissionAdapter implements ISubmissionAdapter {
     sendRequest(request: SubmissionRequest, callback: SubmissionCallback, isAppExiting?: boolean): void;
 }
-export declare class BrowserStorage extends KeyValueStorageBase {
-    private prefix;
-    static isAvailable(): boolean;
-    constructor(prefix?: string, maxItems?: number, fs?: any);
-    write(key: string, value: string): void;
-    read(key: string): any;
-    readDate(key: string): number;
-    delete(key: string): void;
-    getEntries(): string[];
-    getKey(entry: any): string;
+export declare class BrowserStorageProvider implements IStorageProvider {
+    queue: IStorage;
+    settings: IStorage;
+    constructor(prefix?: string, maxQueueItems?: number);
 }

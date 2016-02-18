@@ -364,8 +364,7 @@ TraceKit.computeStackTrace = (function computeStackTraceWrapper() {
             var source = '';
             var domain = '';
             try { domain = document.domain; } catch (e) {}
-            var match = /(.*)\:\/\/([^\/]+)\/{0,1}([\s\S]*)/.exec(url);
-            if (match && match[2] === domain) {
+            if (url.indexOf(domain) !== -1) {
                 source = loadSource(url);
             }
             sourceCache[url] = source ? source.split('\n') : [];
@@ -639,7 +638,7 @@ TraceKit.computeStackTrace = (function computeStackTraceWrapper() {
         }
 
         var chrome = /^\s*at (.*?) ?\(((?:file|https?|blob|chrome-extension|native|eval).*?)(?::(\d+))?(?::(\d+))?\)?\s*$/i,
-            gecko = /^\s*(.*?)(?:\((.*?)\))?(?:^|@)((?:file|https?|blob|chrome|\[).*?)(?::(\d+))?(?::(\d+))?\s*$/i,
+            gecko = /^\s*(.*?)(?:\((.*?)\))?@?((?:file|https?|blob|chrome|\[).*?)(?::(\d+))?(?::(\d+))?\s*$/i,
             winjs = /^\s*at (?:((?:\[object object\])?.+) )?\(?((?:ms-appx|https?|blob):.*?):(\d+)(?::(\d+))?\)?\s*$/i,
             lines = ex.stack.split('\n'),
             stack = [],
@@ -1193,15 +1192,17 @@ var SettingsManager = (function () {
         !!handler && this._handlers.push(handler);
     };
     SettingsManager.applySavedServerSettings = function (config) {
+        var savedSettings = this.getSavedServerSettings(config);
         config.log.info('Applying saved settings.');
-        config.settings = Utils.merge(config.settings, this.getSavedServerSettings(config));
+        config.settings = Utils.merge(config.settings, savedSettings.settings);
         this.changed(config);
     };
     SettingsManager.checkVersion = function (version, config) {
         if (version) {
-            var savedConfigVersion = parseInt(config.storage.get(this._configPath + "-version"), 10);
-            if (isNaN(savedConfigVersion) || version > savedConfigVersion) {
-                config.log.info("Updating settings from v" + (!isNaN(savedConfigVersion) ? savedConfigVersion : 0) + " to v" + version);
+            var savedSettings = this.getSavedServerSettings(config);
+            var savedVersion = savedSettings.version;
+            if (version > savedVersion) {
+                config.log.info("Updating settings from v" + savedVersion + " to v" + version);
                 this.updateSettings(config);
             }
         }
@@ -1224,9 +1225,11 @@ var SettingsManager = (function () {
                 }
                 delete config.settings[key];
             }
-            var path = SettingsManager._configPath;
-            config.storage.save(path + "-version", response.settingsVersion);
-            config.storage.save(path, response.settings);
+            var newSettings = {
+                version: response.settingsVersion,
+                settings: response.settings
+            };
+            config.storage.settings.save(newSettings);
             config.log.info('Updated settings');
             _this.changed(config);
         });
@@ -1238,9 +1241,12 @@ var SettingsManager = (function () {
         }
     };
     SettingsManager.getSavedServerSettings = function (config) {
-        return config.storage.get(this._configPath) || {};
+        var item = config.storage.settings.get()[0];
+        if (item && item.value && item.value.version && item.value.settings) {
+            return item.value;
+        }
+        return { version: 0, settings: {} };
     };
-    SettingsManager._configPath = 'ex-server-settings.json';
     SettingsManager._handlers = [];
     return SettingsManager;
 })();
@@ -1411,19 +1417,17 @@ var DefaultEventQueue = (function () {
             config.log.info('Queue items are currently being discarded. The event will not be queued.');
             return;
         }
-        var key = "ex-q-" + new Date().toJSON() + "-" + Utils.randomNumber();
-        config.log.info("Enqueuing event: " + key + " type=" + event.type + " " + (!!event.reference_id ? 'refid=' + event.reference_id : ''));
-        config.storage.save(key, event);
+        var timestamp = config.storage.queue.save(event);
+        var logText = "type=" + event.type + " " + (!!event.reference_id ? 'refid=' + event.reference_id : '');
+        if (timestamp) {
+            config.log.info("Enqueuing event: " + timestamp + " " + logText);
+        }
+        else {
+            config.log.error("Could not enqueue event " + logText);
+        }
     };
     DefaultEventQueue.prototype.process = function (isAppExiting) {
         var _this = this;
-        function getEvents(events) {
-            var items = [];
-            for (var index = 0; index < events.length; index++) {
-                items.push(events[index].value);
-            }
-            return items;
-        }
         var queueNotProcessed = 'The queue will not be processed.';
         var config = this._config;
         var log = config.log;
@@ -1442,13 +1446,13 @@ var DefaultEventQueue = (function () {
         }
         this._processingQueue = true;
         try {
-            var events = config.storage.getList('ex-q', config.submissionBatchSize);
+            var events = config.storage.queue.get(config.submissionBatchSize);
             if (!events || events.length === 0) {
                 this._processingQueue = false;
                 return;
             }
             log.info("Sending " + events.length + " events to " + config.serverUrl + ".");
-            config.submissionClient.postEvents(getEvents(events), config, function (response) {
+            config.submissionClient.postEvents(events.map(function (e) { return e.value; }), config, function (response) {
                 _this.processSubmissionResponse(response, events);
                 log.info('Finished processing queue.');
                 _this._processingQueue = false;
@@ -1471,7 +1475,7 @@ var DefaultEventQueue = (function () {
             this._discardQueuedItemsUntil = new Date(new Date().getTime() + (durationInMinutes * 60000));
         }
         if (clearQueue) {
-            this.removeEvents(config.storage.getList('ex-q'));
+            config.storage.queue.clear();
         }
     };
     DefaultEventQueue.prototype.areQueuedItemsDiscarded = function () {
@@ -1541,59 +1545,21 @@ var DefaultEventQueue = (function () {
     };
     DefaultEventQueue.prototype.removeEvents = function (events) {
         for (var index = 0; index < (events || []).length; index++) {
-            this._config.storage.remove(events[index].path);
+            this._config.storage.queue.remove(events[index].timestamp);
         }
     };
     return DefaultEventQueue;
 })();
 exports.DefaultEventQueue = DefaultEventQueue;
-var InMemoryStorage = (function () {
-    function InMemoryStorage(maxItems) {
-        this._items = [];
-        this._maxItems = maxItems > 0 ? maxItems : 250;
+var InMemoryStorageProvider = (function () {
+    function InMemoryStorageProvider(maxQueueItems) {
+        if (maxQueueItems === void 0) { maxQueueItems = 250; }
+        this.queue = new InMemoryStorage(maxQueueItems);
+        this.settings = new InMemoryStorage(1);
     }
-    InMemoryStorage.prototype.save = function (path, value) {
-        if (!path || !value) {
-            return false;
-        }
-        this.remove(path);
-        if (this._items.push({ created: new Date().getTime(), path: path, value: value }) > this._maxItems) {
-            this._items.shift();
-        }
-        return true;
-    };
-    InMemoryStorage.prototype.get = function (path) {
-        var item = path ? this.getList("^" + path + "$", 1)[0] : null;
-        return item ? item.value : null;
-    };
-    InMemoryStorage.prototype.getList = function (searchPattern, limit) {
-        var items = this._items;
-        if (!searchPattern) {
-            return items.slice(0, limit);
-        }
-        var regex = new RegExp(searchPattern);
-        var results = [];
-        for (var index = 0; index < items.length; index++) {
-            if (regex.test(items[index].path)) {
-                results.push(items[index]);
-                if (results.length >= limit) {
-                    break;
-                }
-            }
-        }
-        return results;
-    };
-    InMemoryStorage.prototype.remove = function (path) {
-        if (path) {
-            var item = this.getList("^" + path + "$", 1)[0];
-            if (item) {
-                this._items.splice(this._items.indexOf(item), 1);
-            }
-        }
-    };
-    return InMemoryStorage;
+    return InMemoryStorageProvider;
 })();
-exports.InMemoryStorage = InMemoryStorage;
+exports.InMemoryStorageProvider = InMemoryStorageProvider;
 var DefaultSubmissionClient = (function () {
     function DefaultSubmissionClient() {
         this.configurationVersionHeader = 'x-exceptionless-configversion';
@@ -1851,7 +1817,7 @@ var Configuration = (function () {
         this.submissionBatchSize = inject(configSettings.submissionBatchSize) || 50;
         this.submissionAdapter = inject(configSettings.submissionAdapter);
         this.submissionClient = inject(configSettings.submissionClient) || new DefaultSubmissionClient();
-        this.storage = inject(configSettings.storage) || new InMemoryStorage();
+        this.storage = inject(configSettings.storage) || new InMemoryStorageProvider();
         this.queue = inject(configSettings.queue) || new DefaultEventQueue(this);
         SettingsManager.applySavedServerSettings(this);
         EventPluginManager.addDefaultPlugins(this);
@@ -2585,117 +2551,133 @@ var SettingsResponse = (function () {
     return SettingsResponse;
 })();
 exports.SettingsResponse = SettingsResponse;
-var KeyValueStorageBase = (function () {
-    function KeyValueStorageBase(maxItems) {
+var InMemoryStorage = (function () {
+    function InMemoryStorage(maxItems) {
+        this.items = [];
         this.maxItems = maxItems;
     }
-    KeyValueStorageBase.prototype.save = function (path, value) {
-        if (!path || !value) {
-            return false;
+    InMemoryStorage.prototype.save = function (value) {
+        if (!value) {
+            return null;
+        }
+        var items = this.items;
+        var timestamp = Math.max(Date.now(), this.lastTimestamp + 1);
+        var item = { timestamp: timestamp, value: value };
+        if (items.push(item) > this.maxItems) {
+            items.shift();
+        }
+        this.lastTimestamp = timestamp;
+        return item.timestamp;
+    };
+    InMemoryStorage.prototype.get = function (limit) {
+        return this.items.slice(0, limit);
+    };
+    InMemoryStorage.prototype.remove = function (timestamp) {
+        var items = this.items;
+        for (var i = 0; i < items.length; i++) {
+            if (items[i].timestamp === timestamp) {
+                items.splice(i, 1);
+                return;
+            }
+        }
+    };
+    InMemoryStorage.prototype.clear = function () {
+        this.items = [];
+    };
+    return InMemoryStorage;
+})();
+exports.InMemoryStorage = InMemoryStorage;
+var KeyValueStorageBase = (function () {
+    function KeyValueStorageBase(maxItems) {
+        this.items = [];
+        this.maxItems = maxItems;
+    }
+    KeyValueStorageBase.prototype.save = function (value, single) {
+        if (!value) {
+            return null;
         }
         this.ensureIndex();
-        this.remove(path);
-        var entry = { name: path, timestamp: ++this.timestamp };
-        this.index.push(entry);
-        var key = this.getKey(entry);
+        var items = this.items;
+        var timestamp = Math.max(Date.now(), this.lastTimestamp + 1);
+        var key = this.getKey(timestamp);
         var json = JSON.stringify(value);
-        this.write(key, json);
-        return true;
-    };
-    KeyValueStorageBase.prototype.get = function (path) {
         try {
-            this.ensureIndex();
-            var entry = this.findEntry(path);
-            if (!entry) {
-                return null;
+            this.write(key, json);
+            this.lastTimestamp = timestamp;
+            if (items.push(timestamp) > this.maxItems) {
+                this.delete(this.getKey(items.shift()));
             }
-            var fullPath = this.getKey(entry);
-            var json = this.read(fullPath);
-            return JSON.parse(json, parseDate);
         }
         catch (e) {
             return null;
         }
+        return timestamp;
     };
-    KeyValueStorageBase.prototype.getList = function (searchPattern, limit) {
+    KeyValueStorageBase.prototype.get = function (limit) {
         var _this = this;
         this.ensureIndex();
-        var entries = this.index;
-        if (searchPattern) {
-            var regex = new RegExp(searchPattern);
-            entries = entries.filter(function (entry) { return regex.test(entry.name); });
-        }
-        if (entries.length > this.maxItems) {
-            entries = entries.slice(entries.length - this.maxItems);
-        }
-        if (entries.length > limit) {
-            entries = entries.slice(0, limit);
-        }
-        var items = entries.map(function (e) { return _this.loadEntry(e); });
-        return items;
-    };
-    KeyValueStorageBase.prototype.remove = function (path) {
-        try {
-            this.ensureIndex();
-            var entry = this.findEntry(path);
-            if (!entry) {
+        return this.items.slice(0, limit)
+            .map(function (timestamp) {
+            var key = _this.getKey(timestamp);
+            try {
+                var json = _this.read(key);
+                var value = JSON.parse(json, parseDate);
+                return { timestamp: timestamp, value: value };
+            }
+            catch (error) {
+                _this.safeDelete(key);
                 return null;
             }
-            var key = this.getKey(entry);
-            this.delete(key);
-            this.removeEntry(entry);
+        })
+            .filter(function (item) { return item != null; });
+    };
+    KeyValueStorageBase.prototype.remove = function (timestamp) {
+        this.ensureIndex();
+        var items = this.items;
+        var index = items.indexOf(timestamp);
+        if (index >= 0) {
+            var key = this.getKey(timestamp);
+            this.safeDelete(key);
+            items.splice(index, 1);
         }
-        catch (e) { }
+        ;
     };
-    KeyValueStorageBase.prototype.getKey = function (entry) {
-        return entry.name + '__' + entry.timestamp;
-    };
-    KeyValueStorageBase.prototype.getEntry = function (encodedEntry) {
-        var parts = encodedEntry.split('__');
-        return {
-            name: parts[0],
-            timestamp: parseInt(parts[1], 10)
-        };
+    KeyValueStorageBase.prototype.clear = function () {
+        var _this = this;
+        this.items.forEach(function (item) { return _this.safeDelete(_this.getKey(item)); });
+        this.items = [];
     };
     KeyValueStorageBase.prototype.ensureIndex = function () {
-        if (!this.index) {
-            this.index = this.createIndex();
-            this.timestamp = this.index.length > 0
-                ? this.index[this.index.length - 1].timestamp
-                : 0;
+        if (!this.items) {
+            this.items = this.createIndex();
+            this.lastTimestamp = Math.max.apply(Math, [0].concat(this.items)) + 1;
         }
     };
-    KeyValueStorageBase.prototype.loadEntry = function (entry) {
-        var key = this.getKey(entry);
-        var created = this.readDate(key);
-        var json = this.read(key);
-        var value = JSON.parse(json, parseDate);
-        return {
-            created: created,
-            path: entry.name,
-            value: value
-        };
-    };
-    KeyValueStorageBase.prototype.findEntry = function (path) {
-        for (var i = this.index.length - 1; i >= 0; i--) {
-            if (this.index[i].name === path) {
-                return this.index[i];
-            }
+    KeyValueStorageBase.prototype.safeDelete = function (key) {
+        try {
+            this.delete(key);
         }
-        return null;
-    };
-    KeyValueStorageBase.prototype.removeEntry = function (entry) {
-        var i = this.index.indexOf(entry);
-        if (i > -1) {
-            this.index.splice(i, 1);
+        catch (error) {
         }
     };
     KeyValueStorageBase.prototype.createIndex = function () {
         var _this = this;
-        var keys = this.getEntries();
-        return keys
-            .map(function (key) { return _this.getEntry(key); })
-            .sort(function (a, b) { return a.timestamp - b.timestamp; });
+        try {
+            var keys = this.readAllKeys();
+            return keys.map(function (key) {
+                try {
+                    return _this.getTimestamp(key);
+                }
+                catch (error) {
+                    _this.safeDelete(key);
+                    return null;
+                }
+            }).filter(function (timestamp) { return timestamp != null; })
+                .sort(function (a, b) { return a - b; });
+        }
+        catch (error) {
+            return [];
+        }
     };
     return KeyValueStorageBase;
 })();
@@ -2711,6 +2693,48 @@ function parseDate(key, value) {
     return value;
 }
 ;
+var BrowserStorage = (function (_super) {
+    __extends(BrowserStorage, _super);
+    function BrowserStorage(namespace, prefix, maxItems) {
+        if (prefix === void 0) { prefix = 'com.exceptionless.'; }
+        if (maxItems === void 0) { maxItems = 20; }
+        _super.call(this, maxItems);
+        this.prefix = prefix + namespace + '-';
+    }
+    BrowserStorage.isAvailable = function () {
+        try {
+            var storage = window.localStorage, x = '__storage_test__';
+            storage.setItem(x, x);
+            storage.removeItem(x);
+            return true;
+        }
+        catch (e) {
+            return false;
+        }
+    };
+    BrowserStorage.prototype.write = function (key, value) {
+        window.localStorage.setItem(key, value);
+    };
+    BrowserStorage.prototype.read = function (key) {
+        return window.localStorage.getItem(key);
+    };
+    BrowserStorage.prototype.readAllKeys = function () {
+        var _this = this;
+        return Object.keys(window.localStorage)
+            .filter(function (key) { return key.indexOf(_this.prefix) === 0; });
+    };
+    BrowserStorage.prototype.delete = function (key) {
+        window.localStorage.removeItem(key);
+    };
+    BrowserStorage.prototype.getKey = function (timestamp) {
+        return this.prefix + timestamp;
+    };
+    BrowserStorage.prototype.getTimestamp = function (key) {
+        return parseInt(key.substr(this.prefix.length), 10);
+    };
+    return BrowserStorage;
+})(KeyValueStorageBase);
+exports.BrowserStorage = BrowserStorage;
 var DefaultErrorParser = (function () {
     function DefaultErrorParser() {
     }
@@ -2915,54 +2939,15 @@ var DefaultSubmissionAdapter = (function () {
     return DefaultSubmissionAdapter;
 })();
 exports.DefaultSubmissionAdapter = DefaultSubmissionAdapter;
-var BrowserStorage = (function (_super) {
-    __extends(BrowserStorage, _super);
-    function BrowserStorage(prefix, maxItems, fs) {
-        if (prefix === void 0) { prefix = 'com.exceptionless.'; }
-        if (maxItems === void 0) { maxItems = 20; }
-        _super.call(this, maxItems);
-        this.prefix = prefix;
+var BrowserStorageProvider = (function () {
+    function BrowserStorageProvider(prefix, maxQueueItems) {
+        if (maxQueueItems === void 0) { maxQueueItems = 250; }
+        this.queue = new BrowserStorage('q', prefix, maxQueueItems);
+        this.settings = new BrowserStorage('settings', prefix, 1);
     }
-    BrowserStorage.isAvailable = function () {
-        try {
-            var storage = window.localStorage, x = '__storage_test__';
-            storage.setItem(x, x);
-            storage.removeItem(x);
-            return true;
-        }
-        catch (e) {
-            return false;
-        }
-    };
-    BrowserStorage.prototype.write = function (key, value) {
-        window.localStorage.setItem(key, value);
-    };
-    BrowserStorage.prototype.read = function (key) {
-        return window.localStorage.getItem(key);
-    };
-    BrowserStorage.prototype.readDate = function (key) {
-        return Date.now();
-    };
-    BrowserStorage.prototype.delete = function (key) {
-        window.localStorage.removeItem(key);
-    };
-    BrowserStorage.prototype.getEntries = function () {
-        var _this = this;
-        var regex = new RegExp('^' + regExEscape(this.prefix));
-        var files = Object.keys(window.localStorage)
-            .filter(function (f) { return regex.test(f); })
-            .map(function (f) { return f.substr(_this.prefix.length); });
-        return files;
-    };
-    BrowserStorage.prototype.getKey = function (entry) {
-        return this.prefix + _super.prototype.getKey.call(this, entry);
-    };
-    return BrowserStorage;
-})(KeyValueStorageBase);
-exports.BrowserStorage = BrowserStorage;
-function regExEscape(value) {
-    return value.replace(/[\-\[\]{}()*+?.,\\\^$|#\s]/g, '\\$&');
-}
+    return BrowserStorageProvider;
+})();
+exports.BrowserStorageProvider = BrowserStorageProvider;
 function getDefaultsSettingsFromScriptTag() {
     if (!document || !document.getElementsByTagName) {
         return null;
@@ -2982,7 +2967,7 @@ function processUnhandledException(stackTrace, options) {
 }
 Configuration.prototype.useLocalStorage = function () {
     if (BrowserStorage.isAvailable()) {
-        this.storage = new BrowserStorage();
+        this.storage = new BrowserStorageProvider();
         SettingsManager.applySavedServerSettings(this);
     }
 };

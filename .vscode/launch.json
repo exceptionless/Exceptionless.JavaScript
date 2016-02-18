@@ -12,7 +12,7 @@
       "runtimeArgs": [
         "--nolazy"
       ],
-      "sourceMaps": true,
+      "sourceMaps": false,
       "outDir": "dist"
     },
     {
