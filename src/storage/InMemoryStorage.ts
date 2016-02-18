@@ -4,7 +4,7 @@ import { IStorageItem } from './IStorageItem';
 export class InMemoryStorage implements IStorage {
   private maxItems: number;
   private items: IStorageItem[] = [];
-  private lastTimestamp: number;
+  private lastTimestamp: number = 0;
 
   constructor(maxItems: number) {
     this.maxItems = maxItems;
@@ -27,7 +27,7 @@ export class InMemoryStorage implements IStorage {
     return item.timestamp;
   }
 
-  public get(limit: number = 1): IStorageItem[] {
+  public get(limit?: number): IStorageItem[] {
     return this.items.slice(0, limit);
   }
 

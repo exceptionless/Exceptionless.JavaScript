@@ -3,8 +3,8 @@ import { IStorageItem } from './IStorageItem';
 
 export abstract class KeyValueStorageBase implements IStorage {
   private maxItems: number;
-  private items: number[] = [];
-  private lastTimestamp: number;
+  private items: number[];
+  private lastTimestamp: number = 0;
 
   constructor(maxItems) {
     this.maxItems = maxItems;
@@ -35,7 +35,7 @@ export abstract class KeyValueStorageBase implements IStorage {
     return timestamp;
   }
 
-  get(limit: number = 1): IStorageItem[] {
+  get(limit?: number): IStorageItem[] {
     this.ensureIndex();
 
     return this.items.slice(0, limit)

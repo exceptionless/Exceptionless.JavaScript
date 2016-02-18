@@ -11,12 +11,12 @@ import * as mockFs from 'mock-fs';
 let mockedFs;
 
 let nodeFileStorageFactory = (maxItems?) => {
-  return new NodeFileStorage('./fileStorage', maxItems, mockedFs);
+  return new NodeFileStorage('test', './fileStorage', 'ex-', maxItems, mockedFs);
 };
 
 let nodeFileStorageInitializer = () => {
   mockedFs = mockFs.fs({
-    'fileStorage': {}
+    'fileStorage': {},
   });
 };
 
@@ -26,7 +26,7 @@ describeStorage('NodeFileStorage',
   true
 );
 
-describeStorage('InMemoryStorage', (maxItems?) => {
+describeStorage('InMemoryStorage', (maxItems = 250) => {
   return new InMemoryStorage(maxItems);
 });
 
