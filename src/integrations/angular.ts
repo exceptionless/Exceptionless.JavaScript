@@ -97,12 +97,12 @@ angular.module('exceptionless', [])
 
       let builder = error && error.status === 404 ? $ExceptionlessClient.createNotFound(error.config.url) : $ExceptionlessClient.createUnhandledException(error, stateChangeError);
       builder.setSource(stateChangeError)
-             .setMessage(error && error.statusText)
-             .setProperty('toState', toState)
-             .setProperty('toParams', toParams)
-             .setProperty('fromState', fromState)
-             .setProperty('fromParams', fromParams)
-             .submit();
+        .setMessage(error && error.statusText)
+        .setProperty('toState', toState)
+        .setProperty('toParams', toParams)
+        .setProperty('fromState', fromState)
+        .setProperty('fromParams', fromParams)
+        .submit();
     });
 
     $rootScope.$on('$destroy', function() {
