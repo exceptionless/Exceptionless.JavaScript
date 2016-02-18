@@ -2,14 +2,12 @@ import { Configuration } from './Configuration';
 import { SettingsResponse } from '../submission/SettingsResponse';
 import { Utils } from '../Utils';
 
-export class SettingsManager {
-  /**
-   * The configuration settings path.
-   * @type {string}
-   * @private
-   */
-  private static _configPath: string = 'ex-server-settings.json';
+interface ISettingsWithVersion {
+  version: number;
+  settings: { [key: string]: string };
+}
 
+export class SettingsManager {
   /**
    * A list of handlers that will be fired when the settings change.
    * @type {Array}
@@ -22,16 +20,18 @@ export class SettingsManager {
   }
 
   public static applySavedServerSettings(config: Configuration): void {
+    let savedSettings = this.getSavedServerSettings(config);
     config.log.info('Applying saved settings.');
-    config.settings = Utils.merge(config.settings, this.getSavedServerSettings(config));
+    config.settings = Utils.merge(config.settings, savedSettings.settings);
     this.changed(config);
   }
 
   public static checkVersion(version: number, config: Configuration): void {
     if (version) {
-      let savedConfigVersion = parseInt(<string>config.storage.get(`${this._configPath}-version`), 10);
-      if (isNaN(savedConfigVersion) || version > savedConfigVersion) {
-        config.log.info(`Updating settings from v${(!isNaN(savedConfigVersion) ? savedConfigVersion : 0)} to v${version}`);
+      let savedSettings = this.getSavedServerSettings(config);
+      let savedVersion = savedSettings.version;
+      if (version > savedVersion) {
+        config.log.info(`Updating settings from v${savedVersion} to v${version}`);
         this.updateSettings(config);
       }
     }
@@ -61,9 +61,12 @@ export class SettingsManager {
         delete config.settings[key];
       }
 
-      let path = SettingsManager._configPath; // optimization for minifier.
-      config.storage.save(`${path}-version`, response.settingsVersion);
-      config.storage.save(path, response.settings);
+      let newSettings = <ISettingsWithVersion>{
+        version: response.settingsVersion,
+        settings: response.settings
+      };
+
+      config.storage.settings.save(newSettings);
 
       config.log.info('Updated settings');
       this.changed(config);
@@ -77,7 +80,12 @@ export class SettingsManager {
     }
   }
 
-  private static getSavedServerSettings(config: Configuration): Object {
-    return config.storage.get(this._configPath) || {};
+  private static getSavedServerSettings(config: Configuration): ISettingsWithVersion {
+    let item = config.storage.settings.get()[0];
+    if (item && item.value && item.value.version && item.value.settings) {
+      return item.value;
+    }
+
+    return { version: 0, settings: {} };
   }
 }

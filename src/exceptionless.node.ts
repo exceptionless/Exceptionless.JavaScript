@@ -5,7 +5,7 @@ import { NodeErrorParser } from './services/NodeErrorParser';
 import { NodeModuleCollector } from './services/NodeModuleCollector';
 import { NodeRequestInfoCollector } from './services/NodeRequestInfoCollector';
 import { NodeSubmissionAdapter } from './submission/NodeSubmissionAdapter';
-import { NodeFileStorage } from './storage/NodeFileStorage';
+import { NodeFileStorageProvider } from './storage/NodeFileStorageProvider';
 import { ExceptionlessClient } from './ExceptionlessClient';
 
 const EXIT: string = 'exit';
@@ -21,7 +21,7 @@ defaults.requestInfoCollector = new NodeRequestInfoCollector();
 defaults.submissionAdapter = new NodeSubmissionAdapter();
 
 Configuration.prototype.useLocalStorage = function() {
-  this.storage = new NodeFileStorage('.exceptionless');
+  this.storage = new NodeFileStorageProvider();
   SettingsManager.applySavedServerSettings(this);
 };
 

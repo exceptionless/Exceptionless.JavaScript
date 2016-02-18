@@ -1,5 +1,4 @@
 export interface IStorageItem {
-  created: number;
-  path: string;
+  timestamp: number;
   value: any;
 }

@@ -15,10 +15,10 @@ export class BrowserStorage extends KeyValueStorageBase {
     }
   }
 
-  constructor(prefix: string = 'com.exceptionless.', maxItems: number = 20, fs?: any) {
+  constructor(namespace: string, prefix: string = 'com.exceptionless.', maxItems: number = 20) {
     super(maxItems);
 
-    this.prefix = prefix;
+    this.prefix = prefix + namespace + '-';
   }
 
   write(key: string, value: string) {
@@ -29,27 +29,20 @@ export class BrowserStorage extends KeyValueStorageBase {
     return window.localStorage.getItem(key);
   }
 
-  readDate(key: string) {
-    return Date.now();
+  readAllKeys() {
+    return Object.keys(window.localStorage)
+      .filter(key => key.indexOf(this.prefix) === 0);
   }
 
   delete(key: string) {
     window.localStorage.removeItem(key);
   }
 
-  getEntries() {
-    let regex = new RegExp('^' + regExEscape(this.prefix));
-    let files = Object.keys(window.localStorage)
-      .filter(f => regex.test(f))
-      .map(f => f.substr(this.prefix.length));
-    return files;
+  getKey(timestamp) {
+    return this.prefix + timestamp;
   }
 
-  getKey(entry) {
-    return this.prefix + super.getKey(entry);
+  getTimestamp(key) {
+    return parseInt(key.substr(this.prefix.length), 10);
   }
-}
-
-function regExEscape(value) {
-  return value.replace(/[\-\[\]{}()*+?.,\\\^$|#\s]/g, '\\$&');
 }

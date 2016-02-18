@@ -2,58 +2,46 @@ import { IStorage } from './IStorage';
 import { IStorageItem } from './IStorageItem';
 
 export class InMemoryStorage implements IStorage {
-  private _items: IStorageItem[] = [];
-  private _maxItems: number;
+  private maxItems: number;
+  private items: IStorageItem[] = [];
+  private lastTimestamp: number;
 
-  constructor(maxItems?: number) {
-    this._maxItems = maxItems > 0 ? maxItems : 250;
+  constructor(maxItems: number) {
+    this.maxItems = maxItems;
   }
 
-  public save(path: string, value: any): boolean {
-    if (!path || !value) {
-      return false;
+  public save(value: any): number {
+    if (!value) {
+      return null;
     }
 
-    this.remove(path);
-    if (this._items.push({ created: new Date().getTime(), path: path, value: value }) > this._maxItems) {
-      this._items.shift();
+    let items = this.items;
+    let timestamp = Math.max(Date.now(), this.lastTimestamp + 1);
+    let item = { timestamp, value };
+
+    if (items.push(item) > this.maxItems) {
+      items.shift();
     }
 
-    return true;
+    this.lastTimestamp = timestamp;
+    return item.timestamp;
   }
 
-  public get(path: string): any {
-    let item: IStorageItem = path ? this.getList(`^${path}$`, 1)[0] : null;
-    return item ? item.value : null;
+  public get(limit: number = 1): IStorageItem[] {
+    return this.items.slice(0, limit);
   }
 
-  public getList(searchPattern?: string, limit?: number): IStorageItem[] {
-    let items = this._items; // Optimization for minifier
-    if (!searchPattern) {
-      return items.slice(0, limit);
-    }
-
-    let regex = new RegExp(searchPattern);
-    let results: IStorageItem[] = [];
-    for (let index = 0; index < items.length; index++) {
-      if (regex.test(items[index].path)) {
-        results.push(items[index]);
-
-        if (results.length >= limit) {
-          break;
-        }
+  public remove(timestamp: number): void {
+    let items = this.items;
+    for (let i = 0; i < items.length; i++) {
+      if (items[i].timestamp === timestamp) {
+        items.splice(i, 1);
+        return;
       }
     }
-
-    return results;
   }
 
-  public remove(path: string): void {
-    if (path) {
-      let item = this.getList(`^${path}$`, 1)[0];
-      if (item) {
-        this._items.splice(this._items.indexOf(item), 1);
-      }
-    }
+  public clear(): void {
+    this.items = [];
   }
 }

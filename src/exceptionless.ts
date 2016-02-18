@@ -6,6 +6,7 @@ import { DefaultModuleCollector } from './services/DefaultModuleCollector';
 import { DefaultRequestInfoCollector } from './services/DefaultRequestInfoCollector';
 import { DefaultSubmissionAdapter } from './submission/DefaultSubmissionAdapter';
 import { BrowserStorage } from './storage/BrowserStorage';
+import { BrowserStorageProvider } from './storage/BrowserStorageProvider';
 import { ExceptionlessClient } from './ExceptionlessClient';
 import { Utils } from './Utils';
 
@@ -48,7 +49,7 @@ function processJQueryAjaxError(event, xhr, settings, error:string): void {
 
 Configuration.prototype.useLocalStorage = function() {
   if (BrowserStorage.isAvailable()) {
-    this.storage = new BrowserStorage();
+    this.storage = new BrowserStorageProvider();
     SettingsManager.applySavedServerSettings(this);
   }
 };

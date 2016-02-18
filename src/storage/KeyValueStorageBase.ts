@@ -1,154 +1,113 @@
 import { IStorage } from './IStorage';
 import { IStorageItem } from './IStorageItem';
 
-interface IndexEntry {
-  name: string;
-  timestamp: number;
-}
-
 export abstract class KeyValueStorageBase implements IStorage {
   private maxItems: number;
-  private timestamp: number;
-  private index: IndexEntry[];
+  private items: number[] = [];
+  private lastTimestamp: number;
 
   constructor(maxItems) {
     this.maxItems = maxItems;
   }
 
-  save(path: string, value: any): boolean {
-    if (!path || !value) {
-      return false;
+  save(value: any, single?: boolean): number {
+    if (!value) {
+      return null;
     }
 
     this.ensureIndex();
 
-    this.remove(path);
-    let entry = { name: path, timestamp: ++this.timestamp };
-    this.index.push(entry);
-    let key = this.getKey(entry);
+    let items = this.items;
+    let timestamp = Math.max(Date.now(), this.lastTimestamp + 1);
+    let key = this.getKey(timestamp);
     let json = JSON.stringify(value);
-    this.write(key, json);
 
-    return true;
-  }
-
-  get(path: string): any {
     try {
-
-      this.ensureIndex();
-
-      let entry = this.findEntry(path);
-      if (!entry) {
-        return null;
+      this.write(key, json);
+      this.lastTimestamp = timestamp;
+      if (items.push(timestamp) > this.maxItems) {
+        this.delete(this.getKey(items.shift()));
       }
-
-      let fullPath = this.getKey(entry);
-      let json = this.read(fullPath);
-      return JSON.parse(json, parseDate);
     } catch (e) {
       return null;
     }
+
+    return timestamp;
   }
 
-  getList(searchPattern?: string, limit?: number): IStorageItem[] {
+  get(limit: number = 1): IStorageItem[] {
     this.ensureIndex();
-    let entries = this.index;
 
-    if (searchPattern) {
-      let regex = new RegExp(searchPattern);
-      entries = entries.filter(entry => regex.test(entry.name));
-    }
-
-    if (entries.length > this.maxItems) {
-      entries = entries.slice(entries.length - this.maxItems);
-    }
-
-    if (entries.length > limit) {
-      entries = entries.slice(0, limit);
-    }
-
-    let items = entries.map(e => this.loadEntry(e));
-    return items;
+    return this.items.slice(0, limit)
+      .map(timestamp => {
+        // Read and parse item for this timestamp
+        let key = this.getKey(timestamp);
+        try {
+          let json = this.read(key);
+          let value = JSON.parse(json, parseDate);
+          return { timestamp, value };
+        } catch (error) {
+          // Something went wrong - try to delete the cause.
+          this.safeDelete(key);
+          return null;
+        }
+      })
+      .filter(item => item != null);
   }
 
-  remove(path: string): void {
-    try {
-      this.ensureIndex();
-      let entry = this.findEntry(path);
-      if (!entry) {
-        return null;
-      }
+  remove(timestamp: number): void {
+    this.ensureIndex();
 
-      let key = this.getKey(entry);
-      this.delete(key);
-      this.removeEntry(entry);
-    } catch (e) { }
+    let items = this.items;
+    let index = items.indexOf(timestamp);
+    if (index >= 0) {
+      let key = this.getKey(timestamp);
+      this.safeDelete(key);
+      items.splice(index, 1);
+    };
+  }
+
+  clear(): void {
+    this.items.forEach(item => this.safeDelete(this.getKey(item)));
+    this.items = [];
   }
 
   protected abstract write(key: string, value: string): void;
-
   protected abstract read(key: string): string;
-
-  protected abstract readDate(key: string): number;
-
+  protected abstract readAllKeys(): string[];
   protected abstract delete(key: string);
-
-  protected abstract getEntries(): string[];
-
-  protected getKey(entry: {name: string, timestamp: number}): string {
-    return entry.name + '__' + entry.timestamp;
-  }
-
-  protected getEntry(encodedEntry: string): { name: string, timestamp: number } {
-    let parts = encodedEntry.split('__');
-    return {
-      name: parts[0],
-      timestamp: parseInt(parts[1], 10)
-    };
-  }
+  protected abstract getKey(timestamp: number): string;
+  protected abstract getTimestamp(key: string): number;
 
   private ensureIndex() {
-    if (!this.index) {
-      this.index = this.createIndex();
-      this.timestamp = this.index.length > 0
-        ? this.index[this.index.length - 1].timestamp
-        : 0;
+    if (!this.items) {
+      this.items = this.createIndex();
+      this.lastTimestamp = Math.max(0, ...this.items) + 1;
     }
   }
 
-  private loadEntry(entry: IndexEntry) {
-    let key = this.getKey(entry);
-    let created = this.readDate(key);
-    let json = this.read(key);
-    let value = JSON.parse(json, parseDate);
-    return {
-      created: created,
-      path: entry.name,
-      value
-    };
-  }
-
-  private findEntry(path: string) {
-    for (let i = this.index.length - 1; i >= 0; i--) {
-      if (this.index[i].name === path) {
-        return this.index[i];
-      }
-    }
-    return null;
-  }
-
-  private removeEntry(entry: IndexEntry) {
-    let i = this.index.indexOf(entry);
-    if (i > -1) {
-      this.index.splice(i, 1);
+  private safeDelete(key: string): void {
+    try {
+      this.delete(key);
+    } catch (error) {
     }
   }
 
   private createIndex() {
-    let keys = this.getEntries();
-    return keys
-      .map(key => this.getEntry(key))
-      .sort((a, b) => a.timestamp - b.timestamp);
+    try {
+      let keys = this.readAllKeys();
+      return keys.map(key => {
+        try {
+          return this.getTimestamp(key);
+        } catch (error) {
+          this.safeDelete(key);
+          return null;
+        }
+      }).filter(timestamp => timestamp != null)
+        .sort((a, b) => a - b);
+    } catch (error) {
+      return [];
+    }
   }
 }
 

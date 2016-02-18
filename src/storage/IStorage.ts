@@ -1,8 +1,8 @@
 import { IStorageItem } from './IStorageItem';
 
 export interface IStorage {
-  save(path: string, value: any): boolean;
-  get(path: string): any;
-  getList(searchPattern?: string, limit?: number): IStorageItem[];
-  remove(path: string): void;
+  save(value: any): number;
+  get(limit?: number): IStorageItem[];
+  remove(timestamp: number): void;
+  clear(): void;
 }

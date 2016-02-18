@@ -22,26 +22,26 @@ describe('DefaultEventQueue', () => {
       serverUrl: 'http://localhost:50000'
     });
 
-    expect(result.storage.getList().length).to.equal(0);
+    expect(result.storage.queue.get().length).to.equal(0);
     return result;
   }
 
   it('should enqueue event', () => {
     let event: IEvent = { type: 'log', reference_id: '123454321' };
     config.queue.enqueue(event);
-    expect(config.storage.getList().length).to.equal(1);
+    expect(config.storage.queue.get().length).to.equal(1);
   });
 
   it('should process queue', () => {
     let event: IEvent = { type: 'log', reference_id: '123454321' };
     config.queue.enqueue(event);
-    expect(config.storage.getList().length).to.equal(1);
+    expect(config.storage.queue.get().length).to.equal(1);
     config.queue.process();
 
     if (!(<any>config.queue)._suspendProcessingUntil) {
-      expect(config.storage.getList().length).to.equal(0);
+      expect(config.storage.queue.get().length).to.equal(0);
     } else {
-      expect(config.storage.getList().length).to.equal(1);
+      expect(config.storage.queue.get().length).to.equal(1);
     }
   });
 
@@ -50,7 +50,7 @@ describe('DefaultEventQueue', () => {
 
     let event: IEvent = { type: 'log', reference_id: '123454321' };
     config.queue.enqueue(event);
-    expect(config.storage.getList().length).to.equal(0);
+    expect(config.storage.queue.get().length).to.equal(0);
   });
 
   it('should suspend processing', (done) => {
@@ -58,13 +58,13 @@ describe('DefaultEventQueue', () => {
 
     let event: IEvent = { type: 'log', reference_id: '123454321' };
     config.queue.enqueue(event);
-    expect(config.storage.getList().length).to.equal(1);
+    expect(config.storage.queue.get().length).to.equal(1);
 
     setTimeout(() => {
       if (!(<any>config.queue)._suspendProcessingUntil) {
-        expect(config.storage.getList().length).to.equal(0);
+        expect(config.storage.queue.get().length).to.equal(0);
       } else {
-        expect(config.storage.getList().length).to.equal(1);
+        expect(config.storage.queue.get().length).to.equal(1);
       }
 
       done();

@@ -5,12 +5,19 @@ import * as Path from 'path';
 
 export class NodeFileStorage extends KeyValueStorageBase {
   private directory: string;
+  private prefix: string;
   private fs: any;
 
-  constructor(folder: string, maxItems: number = 20, fs?: any) {
+  constructor(namespace: string, folder?: string, prefix: string = 'ex-', maxItems: number = 20, fs?: any) {
     super(maxItems);
 
-    this.directory = Path.resolve(folder);
+    if (!folder) {
+      folder = Path.join(Path.dirname(require.main.filename), '.exceptionless');
+    }
+    let subfolder = Path.join(folder, namespace);
+
+    this.directory = Path.resolve(subfolder);
+    this.prefix = prefix;
     this.fs = fs ? fs : Fs;
 
     this.mkdir(this.directory);
@@ -24,21 +31,23 @@ export class NodeFileStorage extends KeyValueStorageBase {
     return this.fs.readFileSync(key, 'utf8');
   }
 
-  readDate(key: string) {
-    return this.fs.statSync(key).birthtime.getTime();
+  readAllKeys() {
+    return this.fs.readdirSync(this.directory)
+      .filter(file => file.indexOf(this.prefix) === 0)
+      .map(file => Path.join(this.directory, file));
   }
 
   delete(key: string) {
     this.fs.unlinkSync(key);
   }
 
-  getEntries() {
-    return this.fs.readdirSync(this.directory);
+  getKey(timestamp) {
+    return Path.join(this.directory, `${this.prefix}${timestamp}.json`);
   }
 
-  getKey(entry) {
-    let filename = super.getKey(entry);
-    return Path.join(this.directory, filename);
+  getTimestamp(key) {
+    return parseInt(Path.basename(key, '.json')
+      .substr(this.prefix.length), 10);
   }
 
   private mkdir(path) {
@@ -57,5 +66,3 @@ export class NodeFileStorage extends KeyValueStorageBase {
     }
   };
 }
-
-
