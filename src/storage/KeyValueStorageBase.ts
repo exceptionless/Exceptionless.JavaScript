@@ -98,7 +98,12 @@ export abstract class KeyValueStorageBase implements IStorage {
       let keys = this.readAllKeys();
       return keys.map(key => {
         try {
-          return this.getTimestamp(key);
+          let timestamp = this.getTimestamp(key);
+          if (!timestamp) {
+            this.safeDelete(key);
+            return null;
+          }
+          return timestamp;
         } catch (error) {
           this.safeDelete(key);
           return null;

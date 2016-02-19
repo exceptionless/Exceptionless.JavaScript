@@ -2554,6 +2554,7 @@ exports.SettingsResponse = SettingsResponse;
 var InMemoryStorage = (function () {
     function InMemoryStorage(maxItems) {
         this.items = [];
+        this.lastTimestamp = 0;
         this.maxItems = maxItems;
     }
     InMemoryStorage.prototype.save = function (value) {
@@ -2589,7 +2590,7 @@ var InMemoryStorage = (function () {
 exports.InMemoryStorage = InMemoryStorage;
 var KeyValueStorageBase = (function () {
     function KeyValueStorageBase(maxItems) {
-        this.items = [];
+        this.lastTimestamp = 0;
         this.maxItems = maxItems;
     }
     KeyValueStorageBase.prototype.save = function (value, single) {
@@ -2666,7 +2667,12 @@ var KeyValueStorageBase = (function () {
             var keys = this.readAllKeys();
             return keys.map(function (key) {
                 try {
-                    return _this.getTimestamp(key);
+                    var timestamp = _this.getTimestamp(key);
+                    if (!timestamp) {
+                        _this.safeDelete(key);
+                        return null;
+                    }
+                    return timestamp;
                 }
                 catch (error) {
                     _this.safeDelete(key);
