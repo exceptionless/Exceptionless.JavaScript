@@ -1,9 +1,11 @@
 import { Configuration } from './configuration/Configuration';
+import { SettingsManager } from './configuration/SettingsManager';
 import { NodeEnvironmentInfoCollector } from './services/NodeEnvironmentInfoCollector';
 import { NodeErrorParser } from './services/NodeErrorParser';
 import { NodeModuleCollector } from './services/NodeModuleCollector';
 import { NodeRequestInfoCollector } from './services/NodeRequestInfoCollector';
 import { NodeSubmissionAdapter } from './submission/NodeSubmissionAdapter';
+import { NodeFileStorageProvider } from './storage/NodeFileStorageProvider';
 import { ExceptionlessClient } from './ExceptionlessClient';
 
 const EXIT: string = 'exit';
@@ -17,6 +19,11 @@ defaults.errorParser = new NodeErrorParser();
 defaults.moduleCollector = new NodeModuleCollector();
 defaults.requestInfoCollector = new NodeRequestInfoCollector();
 defaults.submissionAdapter = new NodeSubmissionAdapter();
+
+Configuration.prototype.useLocalStorage = function() {
+  this.storage = new NodeFileStorageProvider();
+  SettingsManager.applySavedServerSettings(this);
+};
 
 function getListenerCount(emitter, event: string): number {
   if (emitter.listenerCount) {

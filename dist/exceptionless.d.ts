@@ -36,11 +36,9 @@ export interface IModuleCollector {
 export interface IRequestInfoCollector {
     getRequestInfo(context: EventPluginContext): IRequestInfo;
 }
-export interface IStorage<T> {
-    save(path: string, value: T): boolean;
-    get(path: string): T;
-    getList(searchPattern?: string, limit?: number): IStorageItem<T>[];
-    remove(path: string): void;
+export interface IStorageProvider {
+    queue: IStorage;
+    settings: IStorage;
 }
 export interface ISubmissionAdapter {
     sendRequest(request: SubmissionRequest, callback: SubmissionCallback, isAppExiting?: boolean): void;
@@ -62,11 +60,10 @@ export interface IConfigurationSettings {
     submissionBatchSize?: number;
     submissionClient?: ISubmissionClient;
     submissionAdapter?: ISubmissionAdapter;
-    storage?: IStorage<any>;
+    storage?: IStorageProvider;
     queue?: IEventQueue;
 }
 export declare class SettingsManager {
-    private static _configPath;
     private static _handlers;
     static onChanged(handler: (config: Configuration) => void): void;
     static applySavedServerSettings(config: Configuration): void;
@@ -143,14 +140,10 @@ export declare class DefaultEventQueue implements IEventQueue {
     private processSubmissionResponse(response, events);
     private removeEvents(events);
 }
-export declare class InMemoryStorage<T> implements IStorage<T> {
-    private _items;
-    private _maxItems;
-    constructor(maxItems?: number);
-    save(path: string, value: T): boolean;
-    get(path: string): T;
-    getList(searchPattern?: string, limit?: number): IStorageItem<T>[];
-    remove(path: string): void;
+export declare class InMemoryStorageProvider implements IStorageProvider {
+    queue: IStorage;
+    settings: IStorage;
+    constructor(maxQueueItems?: number);
 }
 export declare class DefaultSubmissionClient implements ISubmissionClient {
     configurationVersionHeader: string;
@@ -188,7 +181,7 @@ export declare class Configuration implements IConfigurationSettings {
     submissionAdapter: ISubmissionAdapter;
     submissionClient: ISubmissionClient;
     settings: Object;
-    storage: IStorage<Object>;
+    storage: IStorageProvider;
     queue: IEventQueue;
     private _plugins;
     constructor(configSettings?: IConfigurationSettings);
@@ -215,6 +208,7 @@ export declare class Configuration implements IConfigurationSettings {
     userAgent: string;
     useSessions(sendHeartbeats?: boolean): void;
     useReferenceIds(): void;
+    useLocalStorage(): void;
     useDebugLogger(): void;
     static defaults: IConfigurationSettings;
 }
@@ -414,10 +408,15 @@ export declare class DuplicateCheckerPlugin implements IEventPlugin {
 export interface IError extends IInnerError {
     modules?: IModule[];
 }
-export interface IStorageItem<T> {
-    created: number;
-    path: string;
-    value: T;
+export interface IStorageItem {
+    timestamp: number;
+    value: any;
+}
+export interface IStorage {
+    save(value: any): number;
+    get(limit?: number): IStorageItem[];
+    remove(timestamp: number): void;
+    clear(): void;
 }
 export interface SubmissionCallback {
     (status: number, message: string, data?: string, headers?: Object): void;
@@ -438,9 +437,49 @@ export declare class SettingsResponse {
     exception: any;
     constructor(success: boolean, settings: any, settingsVersion?: number, exception?: any, message?: string);
 }
+export declare class InMemoryStorage implements IStorage {
+    private maxItems;
+    private items;
+    private lastTimestamp;
+    constructor(maxItems: number);
+    save(value: any): number;
+    get(limit?: number): IStorageItem[];
+    remove(timestamp: number): void;
+    clear(): void;
+}
 export interface IClientConfiguration {
     settings: Object;
     version: number;
+}
+export declare abstract class KeyValueStorageBase implements IStorage {
+    private maxItems;
+    private items;
+    private lastTimestamp;
+    constructor(maxItems: any);
+    save(value: any, single?: boolean): number;
+    get(limit?: number): IStorageItem[];
+    remove(timestamp: number): void;
+    clear(): void;
+    protected abstract write(key: string, value: string): void;
+    protected abstract read(key: string): string;
+    protected abstract readAllKeys(): string[];
+    protected abstract delete(key: string): any;
+    protected abstract getKey(timestamp: number): string;
+    protected abstract getTimestamp(key: string): number;
+    private ensureIndex();
+    private safeDelete(key);
+    private createIndex();
+}
+export declare class BrowserStorage extends KeyValueStorageBase {
+    private prefix;
+    static isAvailable(): boolean;
+    constructor(namespace: string, prefix?: string, maxItems?: number);
+    write(key: string, value: string): void;
+    read(key: string): any;
+    readAllKeys(): string[];
+    delete(key: string): void;
+    getKey(timestamp: any): string;
+    getTimestamp(key: any): number;
 }
 export declare class DefaultErrorParser implements IErrorParser {
     parse(context: EventPluginContext, exception: Error): IError;
@@ -453,4 +492,9 @@ export declare class DefaultRequestInfoCollector implements IRequestInfoCollecto
 }
 export declare class DefaultSubmissionAdapter implements ISubmissionAdapter {
     sendRequest(request: SubmissionRequest, callback: SubmissionCallback, isAppExiting?: boolean): void;
+}
+export declare class BrowserStorageProvider implements IStorageProvider {
+    queue: IStorage;
+    settings: IStorage;
+    constructor(prefix?: string, maxQueueItems?: number);
 }

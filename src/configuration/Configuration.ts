@@ -17,8 +17,8 @@ import { IEnvironmentInfoCollector } from '../services/IEnvironmentInfoCollector
 import { IErrorParser } from '../services/IErrorParser';
 import { IModuleCollector } from '../services/IModuleCollector';
 import { IRequestInfoCollector } from '../services/IRequestInfoCollector';
-import { IStorage } from '../storage/IStorage';
-import { InMemoryStorage } from '../storage/InMemoryStorage';
+import { IStorageProvider } from '../storage/IStorageProvider';
+import { InMemoryStorageProvider } from '../storage/InMemoryStorageProvider';
 import { ISubmissionAdapter } from '../submission/ISubmissionAdapter';
 import { ISubmissionClient } from '../submission/ISubmissionClient';
 import { DefaultSubmissionClient } from '../submission/DefaultSubmissionClient';
@@ -76,7 +76,7 @@ export class Configuration implements IConfigurationSettings {
    */
   public settings: Object = {};
 
-  public storage: IStorage<Object>;
+  public storage: IStorageProvider;
 
   public queue: IEventQueue;
 
@@ -106,7 +106,7 @@ export class Configuration implements IConfigurationSettings {
     this.submissionBatchSize = inject(configSettings.submissionBatchSize) || 50;
     this.submissionAdapter = inject(configSettings.submissionAdapter);
     this.submissionClient = inject(configSettings.submissionClient) || new DefaultSubmissionClient();
-    this.storage = inject(configSettings.storage) || new InMemoryStorage<any>();
+    this.storage = inject(configSettings.storage) || new InMemoryStorageProvider();
     this.queue = inject(configSettings.queue) || new DefaultEventQueue(this);
 
     SettingsManager.applySavedServerSettings(this);
@@ -352,7 +352,7 @@ export class Configuration implements IConfigurationSettings {
   /**
    * Automatically send a heartbeat to keep the session alive.
    */
-  public useSessions(sendHeartbeats:boolean = true): void {
+  public useSessions(sendHeartbeats: boolean = true): void {
     if (sendHeartbeats) {
       this.addPlugin(new HeartbeatPlugin());
     }
@@ -363,6 +363,10 @@ export class Configuration implements IConfigurationSettings {
    */
   public useReferenceIds(): void {
     this.addPlugin(new ReferenceIdPlugin());
+  }
+
+  public useLocalStorage(): void {
+    // This method will be injected via the prototype.
   }
 
   // TODO: Support a min log level.

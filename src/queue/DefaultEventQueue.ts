@@ -3,7 +3,7 @@ import { ILog } from '../logging/ILog';
 import { SubmissionResponse } from '../submission/SubmissionResponse';
 import { IEvent } from '../models/IEvent';
 import { IEventQueue } from '../queue/IEventQueue';
-import { Utils } from '../Utils';
+import { IStorageItem } from '../storage/IStorageItem';
 
 export class DefaultEventQueue implements IEventQueue {
   /**
@@ -54,21 +54,16 @@ export class DefaultEventQueue implements IEventQueue {
       return;
     }
 
-    let key = `ex-q-${new Date().toJSON() }-${Utils.randomNumber() }`;
-    config.log.info(`Enqueuing event: ${key} type=${event.type} ${!!event.reference_id ? 'refid=' + event.reference_id : ''}`);
-    config.storage.save(key, event);
+    let timestamp = config.storage.queue.save(event);
+    let logText = `type=${event.type} ${!!event.reference_id ? 'refid=' + event.reference_id : ''}`;
+    if (timestamp) {
+      config.log.info(`Enqueuing event: ${timestamp} ${logText}`);
+    } else {
+      config.log.error(`Could not enqueue event ${logText}`);
+    }
   }
 
   public process(isAppExiting?: boolean): void {
-    function getEvents(events: { path: string, value: IEvent }[]): IEvent[] {
-      let items: IEvent[] = [];
-      for (let index = 0; index < events.length; index++) {
-        items.push(events[index].value);
-      }
-
-      return items;
-    }
-
     const queueNotProcessed: string = 'The queue will not be processed.'; // optimization for minifier.
     let config: Configuration = this._config; // Optimization for minifier.
     let log: ILog = config.log; // Optimization for minifier.
@@ -93,14 +88,14 @@ export class DefaultEventQueue implements IEventQueue {
     this._processingQueue = true;
 
     try {
-      let events = config.storage.getList('ex-q', config.submissionBatchSize);
+      let events = config.storage.queue.get(config.submissionBatchSize);
       if (!events || events.length === 0) {
         this._processingQueue = false;
         return;
       }
 
       log.info(`Sending ${events.length} events to ${config.serverUrl}.`);
-      config.submissionClient.postEvents(getEvents(events), config, (response: SubmissionResponse) => {
+      config.submissionClient.postEvents(events.map(e => e.value), config, (response: SubmissionResponse) => {
         this.processSubmissionResponse(response, events);
         log.info('Finished processing queue.');
         this._processingQueue = false;
@@ -128,7 +123,7 @@ export class DefaultEventQueue implements IEventQueue {
 
     if (clearQueue) {
       // Account is over the limit and we want to ensure that the sample size being sent in will contain newer errors.
-      this.removeEvents(config.storage.getList('ex-q'));
+      config.storage.queue.clear();
     }
   }
 
@@ -152,7 +147,7 @@ export class DefaultEventQueue implements IEventQueue {
     }
   }
 
-  private processSubmissionResponse(response: SubmissionResponse, events: { path: string, value: IEvent }[]): void {
+  private processSubmissionResponse(response: SubmissionResponse, events: IStorageItem[]): void {
     const noSubmission: string = 'The event will not be submitted.'; // Optimization for minifier.
     let config: Configuration = this._config; // Optimization for minifier.
     let log: ILog = config.log; // Optimization for minifier.
@@ -212,9 +207,9 @@ export class DefaultEventQueue implements IEventQueue {
     }
   }
 
-  private removeEvents(events: { path: string, value: IEvent }[]) {
+  private removeEvents(events: IStorageItem[]) {
     for (let index = 0; index < (events || []).length; index++) {
-      this._config.storage.remove(events[index].path);
+      this._config.storage.queue.remove(events[index].timestamp);
     }
   }
 }
