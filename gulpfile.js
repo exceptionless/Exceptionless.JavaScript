@@ -79,7 +79,7 @@ gulp.task('exceptionless.node', ['typescript.node'], function () {
 
   gulp.src(files)
     .pipe(sourcemaps.init({ loadMaps: true }))
-    .pipe(replace('exceptionless-js/1.0.0.0', 'exceptionless-js/' + pkg.version))
+    .pipe(replace('exceptionless-js/1.0.0.0', 'exceptionless-node/' + pkg.version))
     .pipe(sourcemaps.write('.'))
     .pipe(gulp.dest('dist'));
 });
