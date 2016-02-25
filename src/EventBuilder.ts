@@ -1,6 +1,7 @@
 import { ExceptionlessClient } from './ExceptionlessClient';
 import { IEvent } from './models/IEvent';
 import { IUserInfo } from './models/IUserInfo';
+import { IManualStackingInfo } from './models/IManualStackingInfo';
 import { ContextData } from './plugins/ContextData';
 import { EventPluginContext } from './plugins/EventPluginContext';
 import { Utils } from './Utils';
@@ -112,13 +113,38 @@ export class EventBuilder {
   }
 
   /**
-   * Changes default stacking behavior by setting the stacking key.
-   * @param manualStackingKey The manual stacking key.
+   * Changes default stacking behavior by setting manual
+   * stacking information.
+   * @param signatureData A dictionary of strings to use for stacking.
+   * @param title An optional title for the stacking information.
    * @returns {EventBuilder}
      */
-  public setManualStackingKey(manualStackingKey: string): EventBuilder {
+  public setManualStackingInfo(signatureData: any, title?: string) {
+    if (signatureData) {
+      let stack = <IManualStackingInfo>{
+        signature_data: signatureData
+      };
+      if (title) {
+        stack.title = title;
+      }
+      this.setProperty('@stack', stack);
+    }
+
+    return this;
+  }
+
+  /**
+   * Changes default stacking behavior by setting the stacking key.
+   * @param manualStackingKey The manual stacking key.
+   * @param title An optional title for the stacking information.
+   * @returns {EventBuilder}
+     */
+  public setManualStackingKey(manualStackingKey: string, title?: string): EventBuilder {
     if (manualStackingKey) {
-      this.setProperty('@stack', manualStackingKey);
+      let data = {
+        'ManualStackingKey': manualStackingKey
+      };
+      this.setManualStackingInfo(data, title);
     }
 
     return this;
