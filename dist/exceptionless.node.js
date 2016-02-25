@@ -5,6 +5,13 @@ var __extends = (this && this.__extends) || function (d, b) {
 };
 var child = require("child_process");
 var http = require("http");
+var os = require('os');
+var nodestacktrace = require('stack-trace');
+var path = require('path');
+var https = require('https');
+var url = require('url');
+var Fs = require('fs');
+var Path = require('path');
 var SettingsManager = (function () {
     function SettingsManager() {
     }
@@ -868,9 +875,24 @@ var EventBuilder = (function () {
         }
         return this;
     };
-    EventBuilder.prototype.setManualStackingKey = function (manualStackingKey) {
+    EventBuilder.prototype.setManualStackingInfo = function (signatureData, title) {
+        if (signatureData) {
+            var stack = {
+                signature_data: signatureData
+            };
+            if (title) {
+                stack.title = title;
+            }
+            this.setProperty('@stack', stack);
+        }
+        return this;
+    };
+    EventBuilder.prototype.setManualStackingKey = function (manualStackingKey, title) {
         if (manualStackingKey) {
-            this.setProperty('@stack', manualStackingKey);
+            var data = {
+                'ManualStackingKey': manualStackingKey
+            };
+            this.setManualStackingInfo(data, title);
         }
         return this;
     };
@@ -1408,11 +1430,6 @@ var InMemoryStorage = (function () {
     return InMemoryStorage;
 })();
 exports.InMemoryStorage = InMemoryStorage;
-var os = require('os');
-var nodestacktrace = require('stack-trace');
-var path = require('path');
-var https = require('https');
-var url = require('url');
 var KeyValueStorageBase = (function () {
     function KeyValueStorageBase(maxItems) {
         this.lastTimestamp = 0;
@@ -1524,8 +1541,6 @@ function parseDate(key, value) {
     return value;
 }
 ;
-var Fs = require('fs');
-var Path = require('path');
 var NodeFileStorage = (function (_super) {
     __extends(NodeFileStorage, _super);
     function NodeFileStorage(namespace, folder, prefix, maxItems, fs) {

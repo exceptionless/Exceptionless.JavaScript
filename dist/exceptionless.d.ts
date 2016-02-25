@@ -228,7 +228,8 @@ export declare class EventBuilder {
     setUserIdentity(identity: string): EventBuilder;
     setUserIdentity(identity: string, name: string): EventBuilder;
     setUserDescription(emailAddress: string, description: string): EventBuilder;
-    setManualStackingKey(manualStackingKey: string): EventBuilder;
+    setManualStackingInfo(signatureData: any, title?: string): this;
+    setManualStackingKey(manualStackingKey: string, title?: string): EventBuilder;
     setValue(value: number): EventBuilder;
     addTags(...tags: string[]): EventBuilder;
     setProperty(name: string, value: any, maxDepth?: number, excludedPropertyNames?: string[]): EventBuilder;
@@ -294,6 +295,10 @@ export declare class ExceptionlessClient {
     updateUserEmailAndDescription(referenceId: string, email: string, description: string, callback?: (response: SubmissionResponse) => void): void;
     getLastReferenceId(): string;
     static default: ExceptionlessClient;
+}
+export interface IManualStackingInfo {
+    title?: string;
+    signature_data?: any;
 }
 export interface IModule {
     data?: any;

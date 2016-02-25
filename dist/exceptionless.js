@@ -364,7 +364,8 @@ TraceKit.computeStackTrace = (function computeStackTraceWrapper() {
             var source = '';
             var domain = '';
             try { domain = document.domain; } catch (e) {}
-            if (url.indexOf(domain) !== -1) {
+            var match = /(.*)\:\/\/([^\/]+)\/{0,1}([\s\S]*)/.exec(url);
+            if (match && match[2] === domain) {
                 source = loadSource(url);
             }
             sourceCache[url] = source ? source.split('\n') : [];
@@ -638,7 +639,7 @@ TraceKit.computeStackTrace = (function computeStackTraceWrapper() {
         }
 
         var chrome = /^\s*at (.*?) ?\(((?:file|https?|blob|chrome-extension|native|eval).*?)(?::(\d+))?(?::(\d+))?\)?\s*$/i,
-            gecko = /^\s*(.*?)(?:\((.*?)\))?@?((?:file|https?|blob|chrome|\[).*?)(?::(\d+))?(?::(\d+))?\s*$/i,
+            gecko = /^\s*(.*?)(?:\((.*?)\))?(?:^|@)((?:file|https?|blob|chrome|\[).*?)(?::(\d+))?(?::(\d+))?\s*$/i,
             winjs = /^\s*at (?:((?:\[object object\])?.+) )?\(?((?:ms-appx|https?|blob):.*?):(\d+)(?::(\d+))?\)?\s*$/i,
             lines = ex.stack.split('\n'),
             stack = [],
@@ -2048,9 +2049,24 @@ var EventBuilder = (function () {
         }
         return this;
     };
-    EventBuilder.prototype.setManualStackingKey = function (manualStackingKey) {
+    EventBuilder.prototype.setManualStackingInfo = function (signatureData, title) {
+        if (signatureData) {
+            var stack = {
+                signature_data: signatureData
+            };
+            if (title) {
+                stack.title = title;
+            }
+            this.setProperty('@stack', stack);
+        }
+        return this;
+    };
+    EventBuilder.prototype.setManualStackingKey = function (manualStackingKey, title) {
         if (manualStackingKey) {
-            this.setProperty('@stack', manualStackingKey);
+            var data = {
+                'ManualStackingKey': manualStackingKey
+            };
+            this.setManualStackingInfo(data, title);
         }
         return this;
     };
