@@ -7,6 +7,7 @@
   "jspm": {
     "main": "dist/exceptionless.js"
   },
+  "typings": "dist/exceptionless.d.ts",
   "scripts": {
     "prepublish": "tsd reinstall -s",
     "start": "gulp",
