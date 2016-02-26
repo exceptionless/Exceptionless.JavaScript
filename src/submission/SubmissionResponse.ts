@@ -1,13 +1,13 @@
 export class SubmissionResponse {
-  success: boolean = false;
-  badRequest: boolean = false;
-  serviceUnavailable: boolean = false;
-  paymentRequired: boolean = false;
-  unableToAuthenticate: boolean = false;
-  notFound: boolean = false;
-  requestEntityTooLarge: boolean = false;
-  statusCode: number;
-  message: string;
+  public success: boolean = false;
+  public badRequest: boolean = false;
+  public serviceUnavailable: boolean = false;
+  public paymentRequired: boolean = false;
+  public unableToAuthenticate: boolean = false;
+  public notFound: boolean = false;
+  public requestEntityTooLarge: boolean = false;
+  public statusCode: number;
+  public message: string;
 
   constructor(statusCode: number, message?: string) {
     this.statusCode = statusCode;

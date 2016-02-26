@@ -1,9 +1,9 @@
 export class SettingsResponse {
-  success: boolean = false;
-  settings: any;
-  settingsVersion: number = -1;
-  message: string;
-  exception: any;
+  public success: boolean = false;
+  public settings: any;
+  public settingsVersion: number = -1;
+  public message: string;
+  public exception: any;
 
   constructor(success: boolean, settings: any, settingsVersion: number = -1, exception: any = null, message: string = null) {
     this.success = success;

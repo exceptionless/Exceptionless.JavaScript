@@ -1,12 +1,10 @@
 import { IStorage } from './IStorage';
 import { IStorageProvider } from './IStorageProvider';
-
 import { InMemoryStorage } from './InMemoryStorage';
 
 export class InMemoryStorageProvider implements IStorageProvider {
-
-  queue: IStorage;
-  settings: IStorage;
+  public queue: IStorage;
+  public settings: IStorage;
 
   constructor(maxQueueItems: number = 250) {
     this.queue = new InMemoryStorage(maxQueueItems);

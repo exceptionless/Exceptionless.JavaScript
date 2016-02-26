@@ -10,7 +10,7 @@ export abstract class KeyValueStorageBase implements IStorage {
     this.maxItems = maxItems;
   }
 
-  save(value: any, single?: boolean): number {
+  public save(value: any, single?: boolean): number {
     if (!value) {
       return null;
     }
@@ -35,7 +35,7 @@ export abstract class KeyValueStorageBase implements IStorage {
     return timestamp;
   }
 
-  get(limit?: number): IStorageItem[] {
+  public get(limit?: number): IStorageItem[] {
     this.ensureIndex();
 
     return this.items.slice(0, limit)
@@ -55,7 +55,7 @@ export abstract class KeyValueStorageBase implements IStorage {
       .filter(item => item != null);
   }
 
-  remove(timestamp: number): void {
+  public remove(timestamp: number): void {
     this.ensureIndex();
 
     let items = this.items;
@@ -67,7 +67,7 @@ export abstract class KeyValueStorageBase implements IStorage {
     };
   }
 
-  clear(): void {
+  public clear(): void {
     this.items.forEach(item => this.safeDelete(this.getKey(item)));
     this.items = [];
   }

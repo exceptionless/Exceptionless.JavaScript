@@ -4,7 +4,7 @@ import { EventPluginContext } from '../plugins/EventPluginContext';
 import { Utils } from '../Utils';
 
 export class NodeRequestInfoCollector implements IRequestInfoCollector {
-  getRequestInfo(context: EventPluginContext): IRequestInfo {
+  public getRequestInfo(context: EventPluginContext): IRequestInfo {
     const REQUEST_KEY: string = '@request'; // optimization for minifier.
     if (!context.contextData[REQUEST_KEY]) {
       return null;

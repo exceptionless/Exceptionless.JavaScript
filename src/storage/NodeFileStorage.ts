@@ -23,29 +23,29 @@ export class NodeFileStorage extends KeyValueStorageBase {
     this.mkdir(this.directory);
   }
 
-  write(key: string, value: string) {
+  public write(key: string, value: string) {
     this.fs.writeFileSync(key, value);
   }
 
-  read(key: string) {
+  public read(key: string) {
     return this.fs.readFileSync(key, 'utf8');
   }
 
-  readAllKeys() {
+  public readAllKeys() {
     return this.fs.readdirSync(this.directory)
       .filter(file => file.indexOf(this.prefix) === 0)
       .map(file => Path.join(this.directory, file));
   }
 
-  delete(key: string) {
+  public delete(key: string) {
     this.fs.unlinkSync(key);
   }
 
-  getKey(timestamp) {
+  public getKey(timestamp) {
     return Path.join(this.directory, `${this.prefix}${timestamp}.json`);
   }
 
-  getTimestamp(key) {
+  public getTimestamp(key) {
     return parseInt(Path.basename(key, '.json')
       .substr(this.prefix.length), 10);
   }

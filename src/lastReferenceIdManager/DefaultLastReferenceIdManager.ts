@@ -12,14 +12,14 @@ export class DefaultLastReferenceIdManager implements ILastReferenceIdManager {
    * Gets the last event's reference id that was submitted to the server.
    * @returns {string}
    */
-  getLast(): string {
+  public getLast(): string {
     return this._lastReferenceId;
   }
 
   /**
    * Clears the last event's reference id.
    */
-  clearLast(): void {
+  public clearLast(): void {
     this._lastReferenceId = null;
   }
 
@@ -27,7 +27,7 @@ export class DefaultLastReferenceIdManager implements ILastReferenceIdManager {
    * Sets the last event's reference id.
    * @param eventId
    */
-  setLast(eventId: string): void {
+  public setLast(eventId: string): void {
     this._lastReferenceId = eventId;
   }
 }
