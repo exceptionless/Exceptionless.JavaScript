@@ -29,11 +29,23 @@ function throwStringError() {
   return throwStringErrorImpl('string error message');
 }
 
-function throwIndexOutOfRange(indexer) {
+function throwIndexOutOfRange(indexer, withCustomStacking) {
   try {
     getNonexistentData(indexer);
   } catch (e) {
-    exceptionless.ExceptionlessClient.default.submitException(e);
+    var client = exceptionless.ExceptionlessClient.default;
+    if (withCustomStacking) {
+      if (Math.random() < .5) {
+        client.createException(e).setManualStackingKey('MyCustomStackingKey').submit();
+      } else {
+        client.createException(e).setManualStackingInfo({
+          File: 'index.js',
+          Function: 'throwIndexOutOfRange'
+        }, 'Custom Index Out Of Range Exception').submit();
+      }
+    } else {
+      client.submitException(e);
+    }
   }
 }
 
