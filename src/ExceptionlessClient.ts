@@ -22,7 +22,7 @@ export class ExceptionlessClient {
   constructor(settings: IConfigurationSettings);
   constructor(apiKey: string, serverUrl?: string);
   constructor(settingsOrApiKey?: IConfigurationSettings | string, serverUrl?: string) {
-    if (typeof settingsOrApiKey !== 'object') {
+    if (typeof settingsOrApiKey === 'object') {
       this.config = new Configuration(settingsOrApiKey);
     } else {
       this.config = new Configuration({ apiKey: <string>settingsOrApiKey, serverUrl: serverUrl });

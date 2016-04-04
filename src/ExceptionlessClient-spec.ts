@@ -54,4 +54,21 @@ describe('ExceptionlessClient', () => {
     expect(builder.target.message).to.equal('Unit Test message');
     expect(builder.target.data).to.be.undefined;
   });
+
+  it('should allow construction via apiKey and serverUrl parameters', () => {
+    let client = new ExceptionlessClient('LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw', 'http://localhost:50000');
+
+    expect(client.config.apiKey).to.equal('LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw');
+    expect(client.config.serverUrl).to.equal('http://localhost:50000');
+  });
+
+  it('should allow construction via a configuration object', () => {
+    let client = new ExceptionlessClient({
+      apiKey: 'LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw',
+      serverUrl: 'http://localhost:50000'
+    });
+
+    expect(client.config.apiKey).to.equal('LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw');
+    expect(client.config.serverUrl).to.equal('http://localhost:50000');
+  });
 });
