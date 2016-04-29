@@ -8,13 +8,13 @@ import url = require('url');
 import child = require('child_process');
 
 export class NodeSubmissionAdapter implements ISubmissionAdapter {
-  public sendRequest(request: SubmissionRequest, callback: SubmissionCallback, isAppExiting?: boolean) {
+  public sendRequest(request: SubmissionRequest, callback?: SubmissionCallback, isAppExiting?: boolean) {
     if (isAppExiting) {
       this.sendRequestSync(request, callback);
       return;
     }
 
-    let parsedHost = url.parse(request.serverUrl);
+    let parsedHost = url.parse(request.url);
 
     let options: https.RequestOptions = {
       auth: `client:${request.apiKey}`,
@@ -22,7 +22,7 @@ export class NodeSubmissionAdapter implements ISubmissionAdapter {
       hostname: parsedHost.hostname,
       method: request.method,
       port: parsedHost.port && parseInt(parsedHost.port, 10),
-      path: request.path
+      path: request.url
     };
 
     options.headers['User-Agent'] = request.userAgent;
@@ -42,7 +42,7 @@ export class NodeSubmissionAdapter implements ISubmissionAdapter {
       response.on('end', () => this.complete(response, body, response.headers, callback));
     });
 
-    clientRequest.on('error', (error: Error) => callback(500, error.message));
+    clientRequest.on('error', (error: Error) => callback && callback(500, error.message));
     clientRequest.end(request.data);
   }
 
@@ -54,7 +54,7 @@ export class NodeSubmissionAdapter implements ISubmissionAdapter {
       message = response.statusMessage || (<any>response).message;
     }
 
-    callback(response.statusCode || 500, message, responseBody, responseHeaders);
+    callback && callback(response.statusCode || 500, message, responseBody, responseHeaders);
   }
 
   private sendRequestSync(request: SubmissionRequest, callback: SubmissionCallback): void {
@@ -68,6 +68,6 @@ export class NodeSubmissionAdapter implements ISubmissionAdapter {
     let out = res.stdout.toString();
     let result = JSON.parse(out);
 
-    callback(result.status, result.message, result.data, result.headers);
+    callback && callback(result.status, result.message, result.data, result.headers);
   }
 }

@@ -34,7 +34,7 @@ class TestAdapter implements ISubmissionAdapter {
     return this;
   }
 
-  public sendRequest(request: SubmissionRequest, callback: SubmissionCallback, isAppExiting?: boolean) {
+  public sendRequest(request: SubmissionRequest, callback?: SubmissionCallback, isAppExiting?: boolean) {
     this.request = request;
     this.callback = callback;
 
@@ -50,7 +50,7 @@ class TestAdapter implements ISubmissionAdapter {
     }
 
     this.checks.forEach(c => c(this.request));
-    this.callback(this.status, this.message, this.data, this.headers);
+    this.callback && this.callback(this.status, this.message, this.data, this.headers);
   }
 }
 
@@ -72,7 +72,6 @@ describe('DefaultSubmissionClient', () => {
 
     adapter = new TestAdapter(r => {
       expect(r.apiKey).to.equal(apiKey);
-      expect(r.serverUrl).to.equal(serverUrl);
     });
 
     config.submissionAdapter = adapter;
@@ -84,7 +83,7 @@ describe('DefaultSubmissionClient', () => {
     adapter.withCheck(r => {
       expect(r.data).to.equal(JSON.stringify(events));
       expect(r.method).to.equal('POST');
-      expect(r.path).to.equal('/api/v2/events');
+      expect(r.url).to.equal(`${config.serverUrl}/api/v2/events`);
     });
 
     submissionClient.postEvents(events, config, () => done());
@@ -103,7 +102,7 @@ describe('DefaultSubmissionClient', () => {
     adapter.withCheck(r => {
       expect(r.data).to.equal(JSON.stringify(events));
       expect(r.method).to.equal('POST');
-      expect(r.path).to.equal('/api/v2/events');
+      expect(r.url).to.equal(`${config.serverUrl}/api/v2/events`);
     });
 
     submissionClient.postEvents(events, config, () => done());
@@ -120,7 +119,7 @@ describe('DefaultSubmissionClient', () => {
     adapter.withCheck(r => {
       expect(r.data).to.equal(JSON.stringify(description));
       expect(r.method).to.equal('POST');
-      expect(r.path).to.equal('/api/v2/events/by-ref/123454321/user-description');
+      expect(r.url).to.equal(`${config.serverUrl}/api/v2/events/by-ref/123454321/user-description`);
     });
 
     submissionClient.postUserDescription('123454321', description, config, () => done());
@@ -129,7 +128,6 @@ describe('DefaultSubmissionClient', () => {
   });
 
   it('should get project settings', (done) => {
-
     adapter.withResponse(200, null, JSON.stringify({ version: 1 }));
 
     submissionClient.getSettings(config, response => {

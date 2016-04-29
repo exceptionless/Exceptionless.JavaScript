@@ -101,20 +101,16 @@ export class ExceptionlessClient {
     this.createSessionStart().submit(callback);
   }
 
-  public createSessionEnd(): EventBuilder {
-    return this.createEvent().setType('sessionend');
+  public submitSessionEnd(sessionIdOrUserId: string): void {
+    if (sessionIdOrUserId) {
+      this.config.submissionClient.sendHeartbeat(sessionIdOrUserId, true, this.config);
+    }
   }
 
-  public submitSessionEnd(callback?: (context: EventPluginContext) => void): void {
-    this.createSessionEnd().submit(callback);
-  }
-
-  public createSessionHeartbeat(): EventBuilder {
-    return this.createEvent().setType('heartbeat');
-  }
-
-  public submitSessionHeartbeat(callback?: (context: EventPluginContext) => void): void {
-    this.createSessionHeartbeat().submit(callback);
+  public submitSessionHeartbeat(sessionIdOrUserId: string): void {
+    if (sessionIdOrUserId) {
+      this.config.submissionClient.sendHeartbeat(sessionIdOrUserId, false, this.config);
+    }
   }
 
   public createEvent(pluginContextData?: ContextData): EventBuilder {

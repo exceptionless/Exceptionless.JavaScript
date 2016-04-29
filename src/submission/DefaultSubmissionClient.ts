@@ -15,14 +15,14 @@ export class DefaultSubmissionClient implements ISubmissionClient {
 
   public postEvents(events: IEvent[], config: Configuration, callback: (response: SubmissionResponse) => void, isAppExiting?: boolean): void {
     let data = JSON.stringify(events);
-    let request = this.createRequest(config, 'POST', '/api/v2/events', data);
+    let request = this.createRequest(config, 'POST',  `${config.serverUrl}/api/v2/events`, data);
     let cb = this.createSubmissionCallback(config, callback);
 
     return config.submissionAdapter.sendRequest(request, cb, isAppExiting);
   }
 
   public postUserDescription(referenceId: string, description: IUserDescription, config: Configuration, callback: (response: SubmissionResponse) => void): void {
-    let path = `/api/v2/events/by-ref/${encodeURIComponent(referenceId)}/user-description`;
+    let path = `${config.serverUrl}/api/v2/events/by-ref/${encodeURIComponent(referenceId)}/user-description`;
     let data = JSON.stringify(description);
     let request = this.createRequest(config, 'POST', path, data);
     let cb = this.createSubmissionCallback(config, callback);
@@ -31,7 +31,7 @@ export class DefaultSubmissionClient implements ISubmissionClient {
   }
 
   public getSettings(config: Configuration, callback: (response: SettingsResponse) => void): void {
-    let request = this.createRequest(config, 'GET', '/api/v2/projects/config');
+    let request = this.createRequest(config, 'GET', `${config.serverUrl}/api/v2/projects/config`);
     let cb = (status, message, data?, headers?) => {
       if (status !== 200) {
         return callback(new SettingsResponse(false, null, -1, null, message));
@@ -54,12 +54,16 @@ export class DefaultSubmissionClient implements ISubmissionClient {
     return config.submissionAdapter.sendRequest(request, cb);
   }
 
-  private createRequest(config: Configuration, method: string, path: string, data: string = null): SubmissionRequest {
+  public sendHeartbeat(sessionIdOrUserId: string, closeSession: boolean, config: Configuration): void {
+    let request = this.createRequest(config, 'GET', `${config.heartbeatServerUrl}/api/v2/events/session/heartbeat?id=${sessionIdOrUserId}&close=${closeSession}`);
+    config.submissionAdapter.sendRequest(request);
+  }
+
+  private createRequest(config: Configuration, method: string, url: string, data: string = null): SubmissionRequest {
     return {
       method,
-      path,
+      url,
       data,
-      serverUrl: config.serverUrl,
       apiKey: config.apiKey,
       userAgent: config.userAgent
     };
