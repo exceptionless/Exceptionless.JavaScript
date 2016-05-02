@@ -89,7 +89,7 @@ export class DefaultSubmissionAdapter implements ISubmissionAdapter {
       return xhr;
     }
 
-    let url = `${request.url}?access_token=${encodeURIComponent(request.apiKey)}`;
+    let url = `${request.url}${(request.url.indexOf('?') === -1 ? '?' : '&')}access_token=${encodeURIComponent(request.apiKey)}`;
     let xhr = createRequest(request.userAgent, request.method || 'POST', url);
     if (!xhr) {
       return (callback && callback(503, 'CORS not supported.'));

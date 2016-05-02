@@ -103,12 +103,14 @@ export class ExceptionlessClient {
 
   public submitSessionEnd(sessionIdOrUserId: string): void {
     if (sessionIdOrUserId) {
+      this.config.log.info(`Submitting session end: ${sessionIdOrUserId}`);
       this.config.submissionClient.sendHeartbeat(sessionIdOrUserId, true, this.config);
     }
   }
 
   public submitSessionHeartbeat(sessionIdOrUserId: string): void {
     if (sessionIdOrUserId) {
+      this.config.log.info(`Submitting session heartbeat: ${sessionIdOrUserId}`);
       this.config.submissionClient.sendHeartbeat(sessionIdOrUserId, false, this.config);
     }
   }
