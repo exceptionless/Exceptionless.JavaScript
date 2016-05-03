@@ -15,6 +15,7 @@
   client.config.useDebugLogger();
   client.config.useLocalStorage();
   client.config.setUserIdentity('12345678', 'Blake');
+  client.config.useSessions();
 
   // set some default data
   client.config.defaultData['SampleUser'] = {

@@ -9,6 +9,7 @@ import { BrowserStorage } from './storage/BrowserStorage';
 import { BrowserStorageProvider } from './storage/BrowserStorageProvider';
 import { ExceptionlessClient } from './ExceptionlessClient';
 import { Utils } from './Utils';
+import * as TraceKit from 'TraceKit';
 
 function getDefaultsSettingsFromScriptTag(): IConfigurationSettings {
   if (!document || !document.getElementsByTagName) {

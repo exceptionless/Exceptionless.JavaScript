@@ -1,3 +1,4 @@
+"use strict";
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -76,7 +77,7 @@ var SettingsManager = (function () {
     };
     SettingsManager._handlers = [];
     return SettingsManager;
-})();
+}());
 exports.SettingsManager = SettingsManager;
 var DefaultLastReferenceIdManager = (function () {
     function DefaultLastReferenceIdManager() {
@@ -92,7 +93,7 @@ var DefaultLastReferenceIdManager = (function () {
         this._lastReferenceId = eventId;
     };
     return DefaultLastReferenceIdManager;
-})();
+}());
 exports.DefaultLastReferenceIdManager = DefaultLastReferenceIdManager;
 var ConsoleLog = (function () {
     function ConsoleLog() {
@@ -112,7 +113,7 @@ var ConsoleLog = (function () {
         }
     };
     return ConsoleLog;
-})();
+}());
 exports.ConsoleLog = ConsoleLog;
 var NullLog = (function () {
     function NullLog() {
@@ -121,7 +122,7 @@ var NullLog = (function () {
     NullLog.prototype.warn = function (message) { };
     NullLog.prototype.error = function (message) { };
     return NullLog;
-})();
+}());
 exports.NullLog = NullLog;
 var EventPluginContext = (function () {
     function EventPluginContext(client, event, contextData) {
@@ -137,7 +138,7 @@ var EventPluginContext = (function () {
         configurable: true
     });
     return EventPluginContext;
-})();
+}());
 exports.EventPluginContext = EventPluginContext;
 var EventPluginManager = (function () {
     function EventPluginManager() {
@@ -179,12 +180,14 @@ var EventPluginManager = (function () {
         config.addPlugin(new SubmissionMethodPlugin());
     };
     return EventPluginManager;
-})();
+}());
 exports.EventPluginManager = EventPluginManager;
 var HeartbeatPlugin = (function () {
-    function HeartbeatPlugin() {
+    function HeartbeatPlugin(heartbeatInterval) {
+        if (heartbeatInterval === void 0) { heartbeatInterval = 30000; }
         this.priority = 100;
         this.name = 'HeartbeatPlugin';
+        this._heartbeatInterval = heartbeatInterval;
     }
     HeartbeatPlugin.prototype.run = function (context, next) {
         var _this = this;
@@ -194,29 +197,17 @@ var HeartbeatPlugin = (function () {
                 _this._heartbeatIntervalId = 0;
             }
         };
-        var type = context.event.type;
-        if (type !== 'heartbeat') {
-            if (type === 'sessionend') {
-                clearHeartbeatInterval();
-            }
-            else {
-                var user = context.event.data['@user'];
-                if (user && user.identity) {
-                    var submitHeartbeatFn = function () { return context.client.createSessionHeartbeat().setUserIdentity(user).submit(); };
-                    if (!this._heartbeatIntervalId) {
-                        this._lastUser = user;
-                    }
-                    else {
-                        clearHeartbeatInterval();
-                    }
-                    this._heartbeatIntervalId = setInterval(submitHeartbeatFn, 30000);
-                }
-            }
+        if (this._heartbeatIntervalId) {
+            clearHeartbeatInterval();
+        }
+        var user = context.event.data['@user'];
+        if (user && user.identity) {
+            this._heartbeatIntervalId = setInterval(function () { return context.client.submitSessionHeartbeat(user.identity); }, this._heartbeatInterval);
         }
         next && next();
     };
     return HeartbeatPlugin;
-})();
+}());
 exports.HeartbeatPlugin = HeartbeatPlugin;
 var ReferenceIdPlugin = (function () {
     function ReferenceIdPlugin() {
@@ -230,7 +221,7 @@ var ReferenceIdPlugin = (function () {
         next && next();
     };
     return ReferenceIdPlugin;
-})();
+}());
 exports.ReferenceIdPlugin = ReferenceIdPlugin;
 var DefaultEventQueue = (function () {
     function DefaultEventQueue(config) {
@@ -376,7 +367,7 @@ var DefaultEventQueue = (function () {
         }
     };
     return DefaultEventQueue;
-})();
+}());
 exports.DefaultEventQueue = DefaultEventQueue;
 var InMemoryStorageProvider = (function () {
     function InMemoryStorageProvider(maxQueueItems) {
@@ -385,7 +376,7 @@ var InMemoryStorageProvider = (function () {
         this.settings = new InMemoryStorage(1);
     }
     return InMemoryStorageProvider;
-})();
+}());
 exports.InMemoryStorageProvider = InMemoryStorageProvider;
 var DefaultSubmissionClient = (function () {
     function DefaultSubmissionClient() {
@@ -393,19 +384,19 @@ var DefaultSubmissionClient = (function () {
     }
     DefaultSubmissionClient.prototype.postEvents = function (events, config, callback, isAppExiting) {
         var data = JSON.stringify(events);
-        var request = this.createRequest(config, 'POST', '/api/v2/events', data);
+        var request = this.createRequest(config, 'POST', config.serverUrl + "/api/v2/events", data);
         var cb = this.createSubmissionCallback(config, callback);
         return config.submissionAdapter.sendRequest(request, cb, isAppExiting);
     };
     DefaultSubmissionClient.prototype.postUserDescription = function (referenceId, description, config, callback) {
-        var path = "/api/v2/events/by-ref/" + encodeURIComponent(referenceId) + "/user-description";
+        var path = config.serverUrl + "/api/v2/events/by-ref/" + encodeURIComponent(referenceId) + "/user-description";
         var data = JSON.stringify(description);
         var request = this.createRequest(config, 'POST', path, data);
         var cb = this.createSubmissionCallback(config, callback);
         return config.submissionAdapter.sendRequest(request, cb);
     };
     DefaultSubmissionClient.prototype.getSettings = function (config, callback) {
-        var request = this.createRequest(config, 'GET', '/api/v2/projects/config');
+        var request = this.createRequest(config, 'GET', config.serverUrl + "/api/v2/projects/config");
         var cb = function (status, message, data, headers) {
             if (status !== 200) {
                 return callback(new SettingsResponse(false, null, -1, null, message));
@@ -424,13 +415,16 @@ var DefaultSubmissionClient = (function () {
         };
         return config.submissionAdapter.sendRequest(request, cb);
     };
-    DefaultSubmissionClient.prototype.createRequest = function (config, method, path, data) {
+    DefaultSubmissionClient.prototype.sendHeartbeat = function (sessionIdOrUserId, closeSession, config) {
+        var request = this.createRequest(config, 'GET', config.heartbeatServerUrl + "/api/v2/events/session/heartbeat?id=" + sessionIdOrUserId + "&close=" + closeSession);
+        config.submissionAdapter.sendRequest(request);
+    };
+    DefaultSubmissionClient.prototype.createRequest = function (config, method, url, data) {
         if (data === void 0) { data = null; }
         return {
             method: method,
-            path: path,
+            url: url,
             data: data,
-            serverUrl: config.serverUrl,
             apiKey: config.apiKey,
             userAgent: config.userAgent
         };
@@ -444,7 +438,7 @@ var DefaultSubmissionClient = (function () {
         };
     };
     return DefaultSubmissionClient;
-})();
+}());
 exports.DefaultSubmissionClient = DefaultSubmissionClient;
 var Utils = (function () {
     function Utils() {
@@ -616,7 +610,7 @@ var Utils = (function () {
         return stringifyImpl(data, exclusions);
     };
     return Utils;
-})();
+}());
 exports.Utils = Utils;
 var Configuration = (function () {
     function Configuration(configSettings) {
@@ -627,6 +621,7 @@ var Configuration = (function () {
         this.settings = {};
         this._plugins = [];
         this._serverUrl = 'https://collector.exceptionless.io';
+        this._heartbeatServerUrl = 'https://heartbeat.exceptionless.io';
         this._dataExclusions = [];
         this._userAgentBotPatterns = [];
         function inject(fn) {
@@ -636,6 +631,7 @@ var Configuration = (function () {
         this.log = inject(configSettings.log) || new NullLog();
         this.apiKey = configSettings.apiKey;
         this.serverUrl = configSettings.serverUrl;
+        this.heartbeatServerUrl = configSettings.heartbeatServerUrl;
         this.environmentInfoCollector = inject(configSettings.environmentInfoCollector);
         this.errorParser = inject(configSettings.errorParser);
         this.lastReferenceIdManager = inject(configSettings.lastReferenceIdManager) || new DefaultLastReferenceIdManager();
@@ -674,7 +670,21 @@ var Configuration = (function () {
         set: function (value) {
             if (!!value) {
                 this._serverUrl = value;
+                this._heartbeatServerUrl = value;
                 this.log.info("serverUrl: " + this._serverUrl);
+            }
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Configuration.prototype, "heartbeatServerUrl", {
+        get: function () {
+            return this._heartbeatServerUrl;
+        },
+        set: function (value) {
+            if (!!value) {
+                this._heartbeatServerUrl = value;
+                this.log.info("heartbeatServerUrl: " + this._heartbeatServerUrl);
             }
         },
         enumerable: true,
@@ -776,15 +786,16 @@ var Configuration = (function () {
     };
     Object.defineProperty(Configuration.prototype, "userAgent", {
         get: function () {
-            return 'exceptionless-node/1.3.2';
+            return 'exceptionless-node/1.4.0';
         },
         enumerable: true,
         configurable: true
     });
-    Configuration.prototype.useSessions = function (sendHeartbeats) {
+    Configuration.prototype.useSessions = function (sendHeartbeats, heartbeatInterval) {
         if (sendHeartbeats === void 0) { sendHeartbeats = true; }
+        if (heartbeatInterval === void 0) { heartbeatInterval = 30000; }
         if (sendHeartbeats) {
-            this.addPlugin(new HeartbeatPlugin());
+            this.addPlugin(new HeartbeatPlugin(heartbeatInterval));
         }
     };
     Configuration.prototype.useReferenceIds = function () {
@@ -807,7 +818,7 @@ var Configuration = (function () {
     });
     Configuration._defaultSettings = null;
     return Configuration;
-})();
+}());
 exports.Configuration = Configuration;
 var EventBuilder = (function () {
     function EventBuilder(event, client, pluginContextData) {
@@ -957,7 +968,7 @@ var EventBuilder = (function () {
         return true;
     };
     return EventBuilder;
-})();
+}());
 exports.EventBuilder = EventBuilder;
 var ContextData = (function () {
     function ContextData() {
@@ -996,7 +1007,7 @@ var ContextData = (function () {
         return this['@@_SubmissionMethod'] || null;
     };
     return ContextData;
-})();
+}());
 exports.ContextData = ContextData;
 var SubmissionResponse = (function () {
     function SubmissionResponse(statusCode, message) {
@@ -1018,11 +1029,11 @@ var SubmissionResponse = (function () {
         this.requestEntityTooLarge = statusCode === 413;
     }
     return SubmissionResponse;
-})();
+}());
 exports.SubmissionResponse = SubmissionResponse;
 var ExceptionlessClient = (function () {
     function ExceptionlessClient(settingsOrApiKey, serverUrl) {
-        if (typeof settingsOrApiKey !== 'object') {
+        if (typeof settingsOrApiKey === 'object') {
             this.config = new Configuration(settingsOrApiKey);
         }
         else {
@@ -1081,17 +1092,17 @@ var ExceptionlessClient = (function () {
     ExceptionlessClient.prototype.submitSessionStart = function (callback) {
         this.createSessionStart().submit(callback);
     };
-    ExceptionlessClient.prototype.createSessionEnd = function () {
-        return this.createEvent().setType('sessionend');
+    ExceptionlessClient.prototype.submitSessionEnd = function (sessionIdOrUserId) {
+        if (sessionIdOrUserId) {
+            this.config.log.info("Submitting session end: " + sessionIdOrUserId);
+            this.config.submissionClient.sendHeartbeat(sessionIdOrUserId, true, this.config);
+        }
     };
-    ExceptionlessClient.prototype.submitSessionEnd = function (callback) {
-        this.createSessionEnd().submit(callback);
-    };
-    ExceptionlessClient.prototype.createSessionHeartbeat = function () {
-        return this.createEvent().setType('heartbeat');
-    };
-    ExceptionlessClient.prototype.submitSessionHeartbeat = function (callback) {
-        this.createSessionHeartbeat().submit(callback);
+    ExceptionlessClient.prototype.submitSessionHeartbeat = function (sessionIdOrUserId) {
+        if (sessionIdOrUserId) {
+            this.config.log.info("Submitting session heartbeat: " + sessionIdOrUserId);
+            this.config.submissionClient.sendHeartbeat(sessionIdOrUserId, false, this.config);
+        }
     };
     ExceptionlessClient.prototype.createEvent = function (pluginContextData) {
         return new EventBuilder({ date: new Date() }, this, pluginContextData);
@@ -1164,7 +1175,7 @@ var ExceptionlessClient = (function () {
     });
     ExceptionlessClient._instance = null;
     return ExceptionlessClient;
-})();
+}());
 exports.ExceptionlessClient = ExceptionlessClient;
 var ConfigurationDefaultsPlugin = (function () {
     function ConfigurationDefaultsPlugin() {
@@ -1192,7 +1203,7 @@ var ConfigurationDefaultsPlugin = (function () {
         next && next();
     };
     return ConfigurationDefaultsPlugin;
-})();
+}());
 exports.ConfigurationDefaultsPlugin = ConfigurationDefaultsPlugin;
 var ErrorPlugin = (function () {
     function ErrorPlugin() {
@@ -1244,7 +1255,7 @@ var ErrorPlugin = (function () {
         next && next();
     };
     return ErrorPlugin;
-})();
+}());
 exports.ErrorPlugin = ErrorPlugin;
 var ModuleInfoPlugin = (function () {
     function ModuleInfoPlugin() {
@@ -1263,7 +1274,7 @@ var ModuleInfoPlugin = (function () {
         next && next();
     };
     return ModuleInfoPlugin;
-})();
+}());
 exports.ModuleInfoPlugin = ModuleInfoPlugin;
 var RequestInfoPlugin = (function () {
     function RequestInfoPlugin() {
@@ -1289,7 +1300,7 @@ var RequestInfoPlugin = (function () {
         next && next();
     };
     return RequestInfoPlugin;
-})();
+}());
 exports.RequestInfoPlugin = RequestInfoPlugin;
 var EnvironmentInfoPlugin = (function () {
     function EnvironmentInfoPlugin() {
@@ -1308,7 +1319,7 @@ var EnvironmentInfoPlugin = (function () {
         next && next();
     };
     return EnvironmentInfoPlugin;
-})();
+}());
 exports.EnvironmentInfoPlugin = EnvironmentInfoPlugin;
 var SubmissionMethodPlugin = (function () {
     function SubmissionMethodPlugin() {
@@ -1323,7 +1334,7 @@ var SubmissionMethodPlugin = (function () {
         next && next();
     };
     return SubmissionMethodPlugin;
-})();
+}());
 exports.SubmissionMethodPlugin = SubmissionMethodPlugin;
 var ERROR_KEY = '@error';
 var WINDOW_MILLISECONDS = 2000;
@@ -1375,7 +1386,7 @@ var DuplicateCheckerPlugin = (function () {
         return false;
     };
     return DuplicateCheckerPlugin;
-})();
+}());
 exports.DuplicateCheckerPlugin = DuplicateCheckerPlugin;
 var SettingsResponse = (function () {
     function SettingsResponse(success, settings, settingsVersion, exception, message) {
@@ -1391,7 +1402,7 @@ var SettingsResponse = (function () {
         this.message = message;
     }
     return SettingsResponse;
-})();
+}());
 exports.SettingsResponse = SettingsResponse;
 var InMemoryStorage = (function () {
     function InMemoryStorage(maxItems) {
@@ -1428,7 +1439,7 @@ var InMemoryStorage = (function () {
         this.items = [];
     };
     return InMemoryStorage;
-})();
+}());
 exports.InMemoryStorage = InMemoryStorage;
 var KeyValueStorageBase = (function () {
     function KeyValueStorageBase(maxItems) {
@@ -1528,7 +1539,7 @@ var KeyValueStorageBase = (function () {
         }
     };
     return KeyValueStorageBase;
-})();
+}());
 exports.KeyValueStorageBase = KeyValueStorageBase;
 function parseDate(key, value) {
     var dateRegx = /\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d\.\d+([+-][0-2]\d:[0-5]\d|Z)/g;
@@ -1594,7 +1605,7 @@ var NodeFileStorage = (function (_super) {
     };
     ;
     return NodeFileStorage;
-})(KeyValueStorageBase);
+}(KeyValueStorageBase));
 exports.NodeFileStorage = NodeFileStorage;
 var NodeEnvironmentInfoCollector = (function () {
     function NodeEnvironmentInfoCollector() {
@@ -1642,7 +1653,7 @@ var NodeEnvironmentInfoCollector = (function () {
         return environmentInfo;
     };
     return NodeEnvironmentInfoCollector;
-})();
+}());
 exports.NodeEnvironmentInfoCollector = NodeEnvironmentInfoCollector;
 var NodeErrorParser = (function () {
     function NodeErrorParser() {
@@ -1676,7 +1687,7 @@ var NodeErrorParser = (function () {
         };
     };
     return NodeErrorParser;
-})();
+}());
 exports.NodeErrorParser = NodeErrorParser;
 var NodeModuleCollector = (function () {
     function NodeModuleCollector() {
@@ -1736,7 +1747,7 @@ var NodeModuleCollector = (function () {
         });
     };
     return NodeModuleCollector;
-})();
+}());
 exports.NodeModuleCollector = NodeModuleCollector;
 var NodeRequestInfoCollector = (function () {
     function NodeRequestInfoCollector() {
@@ -1767,7 +1778,7 @@ var NodeRequestInfoCollector = (function () {
         return requestInfo;
     };
     return NodeRequestInfoCollector;
-})();
+}());
 exports.NodeRequestInfoCollector = NodeRequestInfoCollector;
 var NodeSubmissionAdapter = (function () {
     function NodeSubmissionAdapter() {
@@ -1778,14 +1789,14 @@ var NodeSubmissionAdapter = (function () {
             this.sendRequestSync(request, callback);
             return;
         }
-        var parsedHost = url.parse(request.serverUrl);
+        var parsedHost = url.parse(request.url);
         var options = {
             auth: "client:" + request.apiKey,
             headers: {},
             hostname: parsedHost.hostname,
             method: request.method,
             port: parsedHost.port && parseInt(parsedHost.port, 10),
-            path: request.path
+            path: request.url
         };
         options.headers['User-Agent'] = request.userAgent;
         if (request.method === 'POST') {
@@ -1801,7 +1812,7 @@ var NodeSubmissionAdapter = (function () {
             response.on('data', function (chunk) { return body += chunk; });
             response.on('end', function () { return _this.complete(response, body, response.headers, callback); });
         });
-        clientRequest.on('error', function (error) { return callback(500, error.message); });
+        clientRequest.on('error', function (error) { return callback && callback(500, error.message); });
         clientRequest.end(request.data);
     };
     NodeSubmissionAdapter.prototype.complete = function (response, responseBody, responseHeaders, callback) {
@@ -1812,7 +1823,7 @@ var NodeSubmissionAdapter = (function () {
         else if (response.statusCode < 200 || response.statusCode > 299) {
             message = response.statusMessage || response.message;
         }
-        callback(response.statusCode || 500, message, responseBody, responseHeaders);
+        callback && callback(response.statusCode || 500, message, responseBody, responseHeaders);
     };
     NodeSubmissionAdapter.prototype.sendRequestSync = function (request, callback) {
         var requestJson = JSON.stringify(request);
@@ -1822,10 +1833,10 @@ var NodeSubmissionAdapter = (function () {
         });
         var out = res.stdout.toString();
         var result = JSON.parse(out);
-        callback(result.status, result.message, result.data, result.headers);
+        callback && callback(result.status, result.message, result.data, result.headers);
     };
     return NodeSubmissionAdapter;
-})();
+}());
 exports.NodeSubmissionAdapter = NodeSubmissionAdapter;
 var NodeFileStorageProvider = (function () {
     function NodeFileStorageProvider(folder, prefix, maxQueueItems) {
@@ -1834,7 +1845,7 @@ var NodeFileStorageProvider = (function () {
         this.settings = new NodeFileStorage('settings', folder, prefix, 1);
     }
     return NodeFileStorageProvider;
-})();
+}());
 exports.NodeFileStorageProvider = NodeFileStorageProvider;
 var EXIT = 'exit';
 var UNCAUGHT_EXCEPTION = 'uncaughtException';

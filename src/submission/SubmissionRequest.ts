@@ -1,8 +1,7 @@
 export interface SubmissionRequest {
-  serverUrl: string;
   apiKey: string;
   userAgent: string;
   method: string;
-  path: string;
+  url: string;
   data: string;
 }

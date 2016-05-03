@@ -41,16 +41,18 @@ export interface IStorageProvider {
     settings: IStorage;
 }
 export interface ISubmissionAdapter {
-    sendRequest(request: SubmissionRequest, callback: SubmissionCallback, isAppExiting?: boolean): void;
+    sendRequest(request: SubmissionRequest, callback?: SubmissionCallback, isAppExiting?: boolean): void;
 }
 export interface ISubmissionClient {
     postEvents(events: IEvent[], config: Configuration, callback: (response: SubmissionResponse) => void, isAppExiting?: boolean): void;
     postUserDescription(referenceId: string, description: IUserDescription, config: Configuration, callback: (response: SubmissionResponse) => void): void;
     getSettings(config: Configuration, callback: (response: SettingsResponse) => void): void;
+    sendHeartbeat(sessionIdOrUserId: string, closeSession: boolean, config: Configuration): void;
 }
 export interface IConfigurationSettings {
     apiKey?: string;
     serverUrl?: string;
+    heartbeatServerUrl?: string;
     environmentInfoCollector?: IEnvironmentInfoCollector;
     errorParser?: IErrorParser;
     lastReferenceIdManager?: ILastReferenceIdManager;
@@ -114,8 +116,9 @@ export declare class EventPluginManager {
 export declare class HeartbeatPlugin implements IEventPlugin {
     priority: number;
     name: string;
+    private _heartbeatInterval;
     private _heartbeatIntervalId;
-    private _lastUser;
+    constructor(heartbeatInterval?: number);
     run(context: EventPluginContext, next?: () => void): void;
 }
 export declare class ReferenceIdPlugin implements IEventPlugin {
@@ -150,7 +153,8 @@ export declare class DefaultSubmissionClient implements ISubmissionClient {
     postEvents(events: IEvent[], config: Configuration, callback: (response: SubmissionResponse) => void, isAppExiting?: boolean): void;
     postUserDescription(referenceId: string, description: IUserDescription, config: Configuration, callback: (response: SubmissionResponse) => void): void;
     getSettings(config: Configuration, callback: (response: SettingsResponse) => void): void;
-    private createRequest(config, method, path, data?);
+    sendHeartbeat(sessionIdOrUserId: string, closeSession: boolean, config: Configuration): void;
+    private createRequest(config, method, url, data?);
     private createSubmissionCallback(config, callback);
 }
 export declare class Utils {
@@ -190,6 +194,8 @@ export declare class Configuration implements IConfigurationSettings {
     isValid: boolean;
     private _serverUrl;
     serverUrl: string;
+    private _heartbeatServerUrl;
+    heartbeatServerUrl: string;
     private _dataExclusions;
     private _userAgentBotPatterns;
     dataExclusions: string[];
@@ -206,7 +212,7 @@ export declare class Configuration implements IConfigurationSettings {
     setUserIdentity(identity: string): void;
     setUserIdentity(identity: string, name: string): void;
     userAgent: string;
-    useSessions(sendHeartbeats?: boolean): void;
+    useSessions(sendHeartbeats?: boolean, heartbeatInterval?: number): void;
     useReferenceIds(): void;
     useLocalStorage(): void;
     useDebugLogger(): void;
@@ -286,10 +292,8 @@ export declare class ExceptionlessClient {
     submitNotFound(resource: string, callback?: (context: EventPluginContext) => void): void;
     createSessionStart(): EventBuilder;
     submitSessionStart(callback?: (context: EventPluginContext) => void): void;
-    createSessionEnd(): EventBuilder;
-    submitSessionEnd(callback?: (context: EventPluginContext) => void): void;
-    createSessionHeartbeat(): EventBuilder;
-    submitSessionHeartbeat(callback?: (context: EventPluginContext) => void): void;
+    submitSessionEnd(sessionIdOrUserId: string): void;
+    submitSessionHeartbeat(sessionIdOrUserId: string): void;
     createEvent(pluginContextData?: ContextData): EventBuilder;
     submitEvent(event: IEvent, pluginContextData?: ContextData, callback?: (context: EventPluginContext) => void): void;
     updateUserEmailAndDescription(referenceId: string, email: string, description: string, callback?: (response: SubmissionResponse) => void): void;
@@ -427,11 +431,10 @@ export interface SubmissionCallback {
     (status: number, message: string, data?: string, headers?: Object): void;
 }
 export interface SubmissionRequest {
-    serverUrl: string;
     apiKey: string;
     userAgent: string;
     method: string;
-    path: string;
+    url: string;
     data: string;
 }
 export declare class SettingsResponse {
@@ -496,7 +499,7 @@ export declare class DefaultRequestInfoCollector implements IRequestInfoCollecto
     getRequestInfo(context: EventPluginContext): IRequestInfo;
 }
 export declare class DefaultSubmissionAdapter implements ISubmissionAdapter {
-    sendRequest(request: SubmissionRequest, callback: SubmissionCallback, isAppExiting?: boolean): void;
+    sendRequest(request: SubmissionRequest, callback?: SubmissionCallback, isAppExiting?: boolean): void;
 }
 export declare class BrowserStorageProvider implements IStorageProvider {
     queue: IStorage;

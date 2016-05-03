@@ -6,8 +6,13 @@ export class HeartbeatPlugin implements IEventPlugin {
   public priority: number = 100;
   public name: string = 'HeartbeatPlugin';
 
+  private _heartbeatInterval: number;
   private _heartbeatIntervalId: any;
-  private _lastUser: IUserInfo;
+
+  constructor (heartbeatInterval: number = 30000) {
+    this._heartbeatInterval = heartbeatInterval;
+  }
+
 
   public run(context: EventPluginContext, next?: () => void): void {
     let clearHeartbeatInterval = () => {
@@ -17,24 +22,13 @@ export class HeartbeatPlugin implements IEventPlugin {
       }
     };
 
-    let type = context.event.type;
-    if (type !== 'heartbeat') {
-      if (type === 'sessionend') {
-        clearHeartbeatInterval();
-      } else {
-        let user: IUserInfo = context.event.data['@user'];
-        if (user && user.identity) {
-          let submitHeartbeatFn = () => context.client.createSessionHeartbeat().setUserIdentity(user).submit();
+    if (this._heartbeatIntervalId) {
+      clearHeartbeatInterval();
+    }
 
-          if (!this._heartbeatIntervalId) {
-            this._lastUser = user;
-          } else {
-            clearHeartbeatInterval();
-          }
-
-          this._heartbeatIntervalId = setInterval(submitHeartbeatFn, 30000);
-        }
-      }
+    let user: IUserInfo = context.event.data['@user'];
+    if (user && user.identity) {
+      this._heartbeatIntervalId = setInterval(() => context.client.submitSessionHeartbeat(user.identity), this._heartbeatInterval);
     }
 
     next && next();

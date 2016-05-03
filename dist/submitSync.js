@@ -1,3 +1,4 @@
+"use strict";
 var stream = require("stream");
 var child = require("child_process");
 var http = require("http");
@@ -13,14 +14,14 @@ var NodeSubmissionAdapter = (function () {
             this.sendRequestSync(request, callback);
             return;
         }
-        var parsedHost = url.parse(request.serverUrl);
+        var parsedHost = url.parse(request.url);
         var options = {
             auth: "client:" + request.apiKey,
             headers: {},
             hostname: parsedHost.hostname,
             method: request.method,
             port: parsedHost.port && parseInt(parsedHost.port, 10),
-            path: request.path
+            path: request.url
         };
         options.headers['User-Agent'] = request.userAgent;
         if (request.method === 'POST') {
@@ -36,7 +37,7 @@ var NodeSubmissionAdapter = (function () {
             response.on('data', function (chunk) { return body += chunk; });
             response.on('end', function () { return _this.complete(response, body, response.headers, callback); });
         });
-        clientRequest.on('error', function (error) { return callback(500, error.message); });
+        clientRequest.on('error', function (error) { return callback && callback(500, error.message); });
         clientRequest.end(request.data);
     };
     NodeSubmissionAdapter.prototype.complete = function (response, responseBody, responseHeaders, callback) {
@@ -47,7 +48,7 @@ var NodeSubmissionAdapter = (function () {
         else if (response.statusCode < 200 || response.statusCode > 299) {
             message = response.statusMessage || response.message;
         }
-        callback(response.statusCode || 500, message, responseBody, responseHeaders);
+        callback && callback(response.statusCode || 500, message, responseBody, responseHeaders);
     };
     NodeSubmissionAdapter.prototype.sendRequestSync = function (request, callback) {
         var requestJson = JSON.stringify(request);
@@ -57,10 +58,10 @@ var NodeSubmissionAdapter = (function () {
         });
         var out = res.stdout.toString();
         var result = JSON.parse(out);
-        callback(result.status, result.message, result.data, result.headers);
+        callback && callback(result.status, result.message, result.data, result.headers);
     };
     return NodeSubmissionAdapter;
-})();
+}());
 exports.NodeSubmissionAdapter = NodeSubmissionAdapter;
 var decoder = new string_decoder_1.StringDecoder('utf8');
 var strings = [];

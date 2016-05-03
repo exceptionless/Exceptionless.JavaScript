@@ -30,7 +30,8 @@ gulp.task('exceptionless.umd', ['typescript', 'typescript.integrations'], functi
       globalName: 'exceptionless',
       namespace: 'exceptionless'
     }))
-    .pipe(replace('}(this, function(require, exports, module) {', '}(this, function(require, exports, module) {\nif (!exports) {\n\tvar exports = {};\n}\n'))
+    .pipe(replace("define(factory);", "define('exceptionless', factory);"))
+    .pipe(replace('}(this, function(require, exports, module) {', '}(this, function(require, exports, module) {\nif (!require) {\n\trequire = function(name) {\n\t\treturn (typeof window !== "undefined" ? window : global)[name];\n\t}\n}\nif (!exports) {\n\tvar exports = {};\n}'))
     .pipe(sourcemaps.write('.'))
     .pipe(gulp.dest('dist/temp'));
 });
@@ -41,7 +42,6 @@ gulp.task('exceptionless', ['exceptionless.umd'], function () {
 
   gulp.src('dist/temp/src/exceptionless.d.ts')
     .pipe(gulp.dest('dist'));
-
   var integrations = [
     'dist/temp/src/integrations/angular.js'
   ];
