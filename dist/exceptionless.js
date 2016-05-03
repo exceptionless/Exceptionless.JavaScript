@@ -1268,7 +1268,7 @@ var __extends = (this && this.__extends) || function (d, b) {
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
-var TraceKit_1 = require('TraceKit');
+var TraceKit = require('TraceKit');
 var SettingsManager = (function () {
     function SettingsManager() {
     }
@@ -2880,7 +2880,7 @@ var DefaultErrorParser = (function () {
         var TRACEKIT_STACK_TRACE_KEY = '@@_TraceKit.StackTrace';
         var stackTrace = !!context.contextData[TRACEKIT_STACK_TRACE_KEY]
             ? context.contextData[TRACEKIT_STACK_TRACE_KEY]
-            : TraceKit_1.TraceKit.computeStackTrace(exception, 25);
+            : TraceKit.computeStackTrace(exception, 25);
         if (!stackTrace) {
             throw new Error('Unable to parse the exceptions stack trace.');
         }
@@ -3096,8 +3096,8 @@ defaults.errorParser = new DefaultErrorParser();
 defaults.moduleCollector = new DefaultModuleCollector();
 defaults.requestInfoCollector = new DefaultRequestInfoCollector();
 defaults.submissionAdapter = new DefaultSubmissionAdapter();
-TraceKit_1.TraceKit.report.subscribe(processUnhandledException);
-TraceKit_1.TraceKit.extendToAsynchronousCallbacks();
+TraceKit.report.subscribe(processUnhandledException);
+TraceKit.extendToAsynchronousCallbacks();
 Error.stackTraceLimit = Infinity;
 
 return exports;

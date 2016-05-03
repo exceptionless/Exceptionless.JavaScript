@@ -9,7 +9,7 @@ import { BrowserStorage } from './storage/BrowserStorage';
 import { BrowserStorageProvider } from './storage/BrowserStorageProvider';
 import { ExceptionlessClient } from './ExceptionlessClient';
 import { Utils } from './Utils';
-import { TraceKit, StackTrace } from 'TraceKit';
+import * as TraceKit from 'TraceKit';
 
 function getDefaultsSettingsFromScriptTag(): IConfigurationSettings {
   if (!document || !document.getElementsByTagName) {
@@ -25,7 +25,7 @@ function getDefaultsSettingsFromScriptTag(): IConfigurationSettings {
   return null;
 }
 
-function processUnhandledException(stackTrace: StackTrace, options?: any): void {
+function processUnhandledException(stackTrace: TraceKit.StackTrace, options?: any): void {
   let builder = ExceptionlessClient.default.createUnhandledException(new Error(stackTrace.message || (options || {}).status || 'Script error'), 'onerror');
   builder.pluginContextData['@@_TraceKit.StackTrace'] = stackTrace;
   builder.submit();
