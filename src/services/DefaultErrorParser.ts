@@ -3,7 +3,7 @@ import { IParameter } from '../models/IParameter';
 import { IErrorParser } from './IErrorParser';
 import { IStackFrame } from '../models/IStackFrame';
 import { EventPluginContext } from '../plugins/EventPluginContext';
-import * as TraceKit from 'TraceKit';
+import { TraceKit, StackFrame, StackTrace } from 'TraceKit';
 
 export class DefaultErrorParser implements IErrorParser {
   public parse(context: EventPluginContext, exception: Error): IError {
@@ -18,7 +18,7 @@ export class DefaultErrorParser implements IErrorParser {
       return result;
     }
 
-    function getStackFrames(stackFrames: TraceKit.StackFrame[]): IStackFrame[] {
+    function getStackFrames(stackFrames: StackFrame[]): IStackFrame[] {
       const ANONYMOUS: string = '<anonymous>';
       let frames: IStackFrame[] = [];
 
@@ -38,7 +38,7 @@ export class DefaultErrorParser implements IErrorParser {
 
     const TRACEKIT_STACK_TRACE_KEY: string = '@@_TraceKit.StackTrace'; // optimization for minifier.
 
-    let stackTrace: TraceKit.StackTrace = !!context.contextData[TRACEKIT_STACK_TRACE_KEY]
+    let stackTrace: StackTrace = !!context.contextData[TRACEKIT_STACK_TRACE_KEY]
       ? context.contextData[TRACEKIT_STACK_TRACE_KEY]
       : TraceKit.computeStackTrace(exception, 25);
 

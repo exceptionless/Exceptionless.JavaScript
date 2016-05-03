@@ -13,7 +13,6 @@
         "typings/chai/chai.d.ts",
         "typings/node/node.d.ts",
         "typings/stack-trace/stack-trace.d.ts",
-        "typings/tracekit/tracekit.d.ts",
 
         "**/*-spec.ts"
       ]
