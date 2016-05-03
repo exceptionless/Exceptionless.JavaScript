@@ -3,6 +3,7 @@ import { IParameter } from '../models/IParameter';
 import { IErrorParser } from './IErrorParser';
 import { IStackFrame } from '../models/IStackFrame';
 import { EventPluginContext } from '../plugins/EventPluginContext';
+import * as TraceKit from 'TraceKit';
 
 export class DefaultErrorParser implements IErrorParser {
   public parse(context: EventPluginContext, exception: Error): IError {

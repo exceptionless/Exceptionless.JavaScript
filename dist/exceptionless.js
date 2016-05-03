@@ -1,8 +1,8 @@
-/*
- TraceKit - Cross browser stack traces - github.com/csnover/TraceKit
- MIT license
-*/
-
+/**
+ * https://github.com/csnover/TraceKit
+ * @license MIT
+ * @namespace TraceKit
+ */
 (function(window, undefined) {
 if (!window) {
     return;
@@ -15,25 +15,34 @@ var _oldTraceKit = window.TraceKit;
 var _slice = [].slice;
 var UNKNOWN_FUNCTION = '?';
 
-
 /**
- * _has, a better form of hasOwnProperty
- * Example: _has(MainHostObject, property) === true/false
+ * A better form of hasOwnProperty<br/>
+ * Example: `_has(MainHostObject, property) === true/false`
  *
  * @param {Object} object to check property
  * @param {string} key to check
+ * @return {Boolean} true if the object has the key and it is not inherited
  */
 function _has(object, key) {
     return Object.prototype.hasOwnProperty.call(object, key);
 }
 
+/**
+ * Returns true if the parameter is undefined<br/>
+ * Example: `_isUndefined(val) === true/false`
+ *
+ * @param {*} what Value to check
+ * @return {Boolean} true if undefined and false otherwise
+ */
 function _isUndefined(what) {
     return typeof what === 'undefined';
 }
 
 /**
- * TraceKit.noConflict: Export TraceKit out to another variable
- * Example: var TK = TraceKit.noConflict()
+ * Export TraceKit out to another variable<br/>
+ * Example: `var TK = TraceKit.noConflict()`
+ * @return {Object} The TraceKit object
+ * @memberof TraceKit
  */
 TraceKit.noConflict = function noConflict() {
     window.TraceKit = _oldTraceKit;
@@ -41,11 +50,12 @@ TraceKit.noConflict = function noConflict() {
 };
 
 /**
- * TraceKit.wrap: Wrap any function in a TraceKit reporter
- * Example: func = TraceKit.wrap(func);
+ * Wrap any function in a TraceKit reporter<br/>
+ * Example: `func = TraceKit.wrap(func);`
  *
  * @param {Function} func Function to be wrapped
  * @return {Function} The wrapped func
+ * @memberof TraceKit
  */
 TraceKit.wrap = function traceKitWrapper(func) {
     function wrapped() {
@@ -60,23 +70,25 @@ TraceKit.wrap = function traceKitWrapper(func) {
 };
 
 /**
- * TraceKit.report: cross-browser processing of unhandled exceptions
+ * Cross-browser processing of unhandled exceptions
  *
  * Syntax:
+ * ```js
  *   TraceKit.report.subscribe(function(stackInfo) { ... })
  *   TraceKit.report.unsubscribe(function(stackInfo) { ... })
  *   TraceKit.report(exception)
  *   try { ...code... } catch(ex) { TraceKit.report(ex); }
+ * ```
  *
  * Supports:
  *   - Firefox: full stack trace with line numbers, plus column number
- *              on top frame; column number is not guaranteed
- *   - Opera:   full stack trace with line and column numbers
- *   - Chrome:  full stack trace with line and column numbers
- *   - Safari:  line and column number for the top frame only; some frames
- *              may be missing, and column number is not guaranteed
- *   - IE:      line and column number for the top frame only; some frames
- *              may be missing, and column number is not guaranteed
+ *     on top frame; column number is not guaranteed
+ *   - Opera: full stack trace with line and column numbers
+ *   - Chrome: full stack trace with line and column numbers
+ *   - Safari: line and column number for the top frame only; some frames
+ *     may be missing, and column number is not guaranteed
+ *   - IE: line and column number for the top frame only; some frames
+ *     may be missing, and column number is not guaranteed
  *
  * In theory, TraceKit should work on all of the following versions:
  *   - IE5.5+ (only 8.0 tested)
@@ -95,8 +107,11 @@ TraceKit.wrap = function traceKitWrapper(func) {
  * If the exception does not reach the top of the browser, you will only
  * get a stack trace from the point where TraceKit.report was called.
  *
- * Handlers receive a stackInfo object as described in the
+ * Handlers receive a TraceKit.StackTrace object as described in the
  * TraceKit.computeStackTrace docs.
+ *
+ * @memberof TraceKit
+ * @namespace
  */
 TraceKit.report = (function reportModuleWrapper() {
     var handlers = [],
@@ -107,6 +122,7 @@ TraceKit.report = (function reportModuleWrapper() {
     /**
      * Add a crash handler.
      * @param {Function} handler
+     * @memberof TraceKit.report
      */
     function subscribe(handler) {
         installGlobalHandler();
@@ -116,6 +132,7 @@ TraceKit.report = (function reportModuleWrapper() {
     /**
      * Remove a crash handler.
      * @param {Function} handler
+     * @memberof TraceKit.report
      */
     function unsubscribe(handler) {
         for (var i = handlers.length - 1; i >= 0; --i) {
@@ -127,7 +144,10 @@ TraceKit.report = (function reportModuleWrapper() {
 
     /**
      * Dispatch stack information to all handlers.
-     * @param {Object.<string, *>} stack
+     * @param {TraceKit.StackTrace} stack
+     * @param {boolean} isWindowError Is this a top-level window error?
+     * @memberof TraceKit.report
+     * @throws An exception if an error occurs while calling an handler.
      */
     function notifyHandlers(stack, isWindowError) {
         var exception = null;
@@ -156,11 +176,10 @@ TraceKit.report = (function reportModuleWrapper() {
      * Supported by Gecko and IE.
      * @param {string} message Error message.
      * @param {string} url URL of script that generated the exception.
-     * @param {(number|string)} lineNo The line number at which the error
-     * occurred.
-     * @param {?(number|string)} columnNo The column number at which the error
-     * occurred.
-     * @param {?Error} errorObj The actual Error object.
+     * @param {(number|string)} lineNo The line number at which the error occurred.
+     * @param {(number|string)=} columnNo The column number at which the error occurred.
+     * @param {Error=} errorObj The actual Error object.
+     * @memberof TraceKit.report
      */
     function traceKitWindowOnError(message, url, lineNo, columnNo, errorObj) {
         var stack = null;
@@ -195,6 +214,10 @@ TraceKit.report = (function reportModuleWrapper() {
         return false;
     }
 
+    /**
+     * Install a global onerror handler
+     * @memberof TraceKit.report
+     */
     function installGlobalHandler () {
         if (_onErrorHandlerInstalled === true) {
             return;
@@ -204,6 +227,10 @@ TraceKit.report = (function reportModuleWrapper() {
         _onErrorHandlerInstalled = true;
     }
 
+    /**
+     * Process the most recent exception
+     * @memberof TraceKit.report
+     */
     function processLastException() {
         var _lastExceptionStack = lastExceptionStack,
             _lastArgs = lastArgs;
@@ -212,9 +239,12 @@ TraceKit.report = (function reportModuleWrapper() {
         lastException = null;
         notifyHandlers.apply(null, [_lastExceptionStack, false].concat(_lastArgs));
     }
+
     /**
      * Reports an unhandled Error to TraceKit.
      * @param {Error} ex
+     * @memberof TraceKit.report
+     * @throws An exception if an incomplete stack trace is detected (old IE browsers).
      */
     function report(ex) {
         if (lastExceptionStack) {
@@ -249,21 +279,35 @@ TraceKit.report = (function reportModuleWrapper() {
 }());
 
 /**
+ * An object representing a single stack frame.
+ * @typedef {Object} StackFrame
+ * @property {string} url The JavaScript or HTML file URL.
+ * @property {string} func The function name, or empty for anonymous functions (if guessing did not work).
+ * @property {string[]?} args The arguments passed to the function, if known.
+ * @property {number=} line The line number, if known.
+ * @property {number=} column The column number, if known.
+ * @property {string[]} context An array of source code lines; the middle element corresponds to the correct line#.
+ * @memberof TraceKit
+ */
+
+/**
+ * An object representing a JavaScript stack trace.
+ * @typedef {Object} StackTrace
+ * @property {string} name The name of the thrown exception.
+ * @property {string} message The exception error message.
+ * @property {TraceKit.StackFrame[]} stack An array of stack frames.
+ * @property {string} mode 'stack', 'stacktrace', 'multiline', 'callers', 'onerror', or 'failed' -- method used to collect the stack trace.
+ * @memberof TraceKit
+ */
+
+/**
  * TraceKit.computeStackTrace: cross-browser stack traces in JavaScript
  *
  * Syntax:
+ *   ```js
  *   s = TraceKit.computeStackTrace.ofCaller([depth])
  *   s = TraceKit.computeStackTrace(exception) // consider using TraceKit.report instead (see below)
- * Returns:
- *   s.name              - exception name
- *   s.message           - exception message
- *   s.stack[i].url      - JavaScript or HTML file URL
- *   s.stack[i].func     - function name, or empty for anonymous functions (if guessing did not work)
- *   s.stack[i].args     - arguments passed to the function, if known
- *   s.stack[i].line     - line number, if known
- *   s.stack[i].column   - column number, if known
- *   s.stack[i].context  - an array of source code lines; the middle element corresponds to the correct line#
- *   s.mode              - 'stack', 'stacktrace', 'multiline', 'callers', 'onerror', or 'failed' -- method used to collect the stack trace
+ *   ```
  *
  * Supports:
  *   - Firefox:  full stack trace with line numbers and unreliable column
@@ -302,6 +346,7 @@ TraceKit.report = (function reportModuleWrapper() {
  * inner function that actually caused the exception).
  *
  * Tracing example:
+ *  ```js
  *     function trace(message) {
  *         var stackInfo = TraceKit.computeStackTrace.ofCaller();
  *         var data = message + "\n";
@@ -314,6 +359,9 @@ TraceKit.report = (function reportModuleWrapper() {
  *         else
  *             alert(data);
  *     }
+ * ```
+ * @memberof TraceKit
+ * @namespace
  */
 TraceKit.computeStackTrace = (function computeStackTraceWrapper() {
     var debug = false,
@@ -324,6 +372,7 @@ TraceKit.computeStackTrace = (function computeStackTraceWrapper() {
      * to look up anonymous function names.
      * @param {string} url URL of source code.
      * @return {string} Source contents.
+     * @memberof TraceKit.computeStackTrace
      */
     function loadSource(url) {
         if (!TraceKit.remoteFetching) { //Only attempt request if remoteFetching is on.
@@ -352,6 +401,7 @@ TraceKit.computeStackTrace = (function computeStackTraceWrapper() {
      * Retrieves source code from the source code cache.
      * @param {string} url URL of source code.
      * @return {Array.<string>} Source contents.
+     * @memberof TraceKit.computeStackTrace
      */
     function getSource(url) {
         if (typeof url !== 'string') {
@@ -361,10 +411,18 @@ TraceKit.computeStackTrace = (function computeStackTraceWrapper() {
         if (!_has(sourceCache, url)) {
             // URL needs to be able to fetched within the acceptable domain.  Otherwise,
             // cross-domain errors will be triggered.
+            /*
+                Regex matches:
+                0 - Full Url
+                1 - Protocol
+                2 - Domain
+                3 - Port (Useful for internal applications)
+                4 - Path
+            */
             var source = '';
             var domain = '';
-            try { domain = document.domain; } catch (e) {}
-            var match = /(.*)\:\/\/([^\/]+)\/{0,1}([\s\S]*)/.exec(url);
+            try { domain = document.domain; } catch (e) { }
+            var match = /(.*)\:\/\/([^:\/]+)([:\d]*)\/{0,1}([\s\S]*)/.exec(url);
             if (match && match[2] === domain) {
                 source = loadSource(url);
             }
@@ -381,6 +439,7 @@ TraceKit.computeStackTrace = (function computeStackTraceWrapper() {
      * @param {string} url URL of source code.
      * @param {(string|number)} lineNo Line number in source code.
      * @return {string} The function name, if discoverable.
+     * @memberof TraceKit.computeStackTrace
      */
     function guessFunctionName(url, lineNo) {
         var reFunctionArgNames = /function ([^(]*)\(([^)]*)\)/,
@@ -417,6 +476,7 @@ TraceKit.computeStackTrace = (function computeStackTraceWrapper() {
      * @param {(string|number)} line Line number in source code to centre
      * around for context.
      * @return {?Array.<string>} Lines of source code.
+     * @memberof TraceKit.computeStackTrace
      */
     function gatherContext(url, line) {
         var source = getSource(url);
@@ -451,6 +511,7 @@ TraceKit.computeStackTrace = (function computeStackTraceWrapper() {
      * used inside a regular expression as a string literal.
      * @param {string} text The string.
      * @return {string} The escaped string literal.
+     * @memberof TraceKit.computeStackTrace
      */
     function escapeRegExp(text) {
         return text.replace(/[\-\[\]{}()*+?.,\\\^$|#]/g, '\\$&');
@@ -462,6 +523,7 @@ TraceKit.computeStackTrace = (function computeStackTraceWrapper() {
      * be matched the same as their literal friends.
      * @param {string} body The string.
      * @return {string} The escaped string.
+     * @memberof TraceKit.computeStackTrace
      */
     function escapeCodeAsRegExpForMatchingInsideHTML(body) {
         return escapeRegExp(body).replace('<', '(?:<|&lt;)').replace('>', '(?:>|&gt;)').replace('&', '(?:&|&amp;)').replace('"', '(?:"|&quot;)').replace(/\s+/g, '\\s+');
@@ -473,6 +535,7 @@ TraceKit.computeStackTrace = (function computeStackTraceWrapper() {
      * @param {Array.<string>} urls A list of URLs to search.
      * @return {?Object.<string, (string|number)>} An object containing
      * the url, line, and column number of the defined function.
+     * @memberof TraceKit.computeStackTrace
      */
     function findSourceInUrls(re, urls) {
         var source, m;
@@ -504,6 +567,7 @@ TraceKit.computeStackTrace = (function computeStackTraceWrapper() {
      * @param {string} url The URL to search.
      * @param {(string|number)} line The line number to examine.
      * @return {?number} The column number.
+     * @memberof TraceKit.computeStackTrace
      */
     function findSourceInLine(fragment, url, line) {
         var source = getSource(url),
@@ -525,6 +589,7 @@ TraceKit.computeStackTrace = (function computeStackTraceWrapper() {
      * function definition.
      * @return {?Object.<string, (string|number)>} An object containing
      * the url, line, and column number of the defined function.
+     * @memberof TraceKit.computeStackTrace
      */
     function findSourceByFunctionBody(func) {
         if (_isUndefined(document)) {
@@ -631,7 +696,8 @@ TraceKit.computeStackTrace = (function computeStackTraceWrapper() {
      * Computes stack trace information from the stack property.
      * Chrome and Gecko use this property.
      * @param {Error} ex
-     * @return {?Object.<string, *>} Stack trace information.
+     * @return {?TraceKit.StackTrace} Stack trace information.
+     * @memberof TraceKit.computeStackTrace
      */
     function computeStackTraceFromStackProp(ex) {
         if (!ex.stack) {
@@ -639,7 +705,7 @@ TraceKit.computeStackTrace = (function computeStackTraceWrapper() {
         }
 
         var chrome = /^\s*at (.*?) ?\(((?:file|https?|blob|chrome-extension|native|eval).*?)(?::(\d+))?(?::(\d+))?\)?\s*$/i,
-            gecko = /^\s*(.*?)(?:\((.*?)\))?(?:^|@)((?:file|https?|blob|chrome|\[).*?)(?::(\d+))?(?::(\d+))?\s*$/i,
+            gecko = /^\s*(.*?)(?:\((.*?)\))?(?:^|@)((?:file|https?|blob|chrome|\[native).*?)(?::(\d+))?(?::(\d+))?\s*$/i,
             winjs = /^\s*at (?:((?:\[object object\])?.+) )?\(?((?:ms-appx|https?|blob):.*?):(\d+)(?::(\d+))?\)?\s*$/i,
             lines = ex.stack.split('\n'),
             stack = [],
@@ -713,7 +779,8 @@ TraceKit.computeStackTrace = (function computeStackTraceWrapper() {
      * Computes stack trace information from the stacktrace property.
      * Opera 10+ uses this property.
      * @param {Error} ex
-     * @return {?Object.<string, *>} Stack trace information.
+     * @return {?TraceKit.StackTrace} Stack trace information.
+     * @memberof TraceKit.computeStackTrace
      */
     function computeStackTraceFromStacktraceProp(ex) {
         // Access and store the stacktrace property before doing ANYTHING
@@ -787,7 +854,8 @@ TraceKit.computeStackTrace = (function computeStackTraceWrapper() {
      * Opera 9 and earlier use this method if the option to show stack
      * traces is turned on in opera:config.
      * @param {Error} ex
-     * @return {?Object.<string, *>} Stack information.
+     * @return {?TraceKit.StackTrace} Stack information.
+     * @memberof TraceKit.computeStackTrace
      */
     function computeStackTraceFromOperaMultiLineMessage(ex) {
         // TODO: Clean this function up
@@ -897,7 +965,7 @@ TraceKit.computeStackTrace = (function computeStackTraceWrapper() {
     /**
      * Adds information about the first frame to incomplete stack traces.
      * Safari and IE require this to get complete data on the first frame.
-     * @param {Object.<string, *>} stackInfo Stack trace information from
+     * @param {TraceKit.StackTrace} stackInfo Stack trace information from
      * one of the compute* methods.
      * @param {string} url The URL of the script that caused an error.
      * @param {(number|string)} lineNo The line number of the script that
@@ -906,6 +974,7 @@ TraceKit.computeStackTrace = (function computeStackTraceWrapper() {
      * hopefully contains the name of the object that caused the error.
      * @return {boolean} Whether or not the stack information was
      * augmented.
+     * @memberof TraceKit.computeStackTrace
      */
     function augmentStackTraceWithInitialElement(stackInfo, url, lineNo, message) {
         var initial = {
@@ -958,7 +1027,8 @@ TraceKit.computeStackTrace = (function computeStackTraceWrapper() {
      * Safari and IE. The top frame is restored by
      * {@link augmentStackTraceWithInitialElement}.
      * @param {Error} ex
-     * @return {?Object.<string, *>} Stack trace information.
+     * @return {TraceKit.StackTrace=} Stack trace information.
+     * @memberof TraceKit.computeStackTrace
      */
     function computeStackTraceByWalkingCallerChain(ex, depth) {
         var functionName = /function\s+([_$a-zA-Z\xA0-\uFFFF][_$a-zA-Z0-9\xA0-\uFFFF]*)?\s*\(/i,
@@ -1038,6 +1108,7 @@ TraceKit.computeStackTrace = (function computeStackTraceWrapper() {
      * Computes a stack trace for an exception.
      * @param {Error} ex
      * @param {(string|number)=} depth
+     * @memberof TraceKit.computeStackTrace
      */
     function computeStackTrace(ex, depth) {
         var stack = null;
@@ -1098,7 +1169,8 @@ TraceKit.computeStackTrace = (function computeStackTraceWrapper() {
     /**
      * Logs a stacktrace starting from the previous call and working down.
      * @param {(number|string)=} depth How many frames deep to trace.
-     * @return {Object.<string, *>} Stack trace information.
+     * @return {TraceKit.StackTrace} Stack trace information.
+     * @memberof TraceKit.computeStackTrace
      */
     function computeStackTraceOfCaller(depth) {
         depth = (depth == null ? 0 : +depth) + 1; // "+ 1" because "ofCaller" should drop one frame
@@ -1121,6 +1193,7 @@ TraceKit.computeStackTrace = (function computeStackTraceWrapper() {
 /**
  * Extends support for global error handling for asynchronous browser
  * functions. Adopted from Closure Library's errorhandler.js
+ * @memberof TraceKit
  */
 TraceKit.extendToAsynchronousCallbacks = function () {
     var _helper = function _helper(fnName) {
@@ -1149,43 +1222,53 @@ TraceKit.extendToAsynchronousCallbacks = function () {
 
 //Default options:
 if (!TraceKit.remoteFetching) {
-  TraceKit.remoteFetching = true;
+    TraceKit.remoteFetching = true;
 }
 if (!TraceKit.collectWindowErrors) {
-  TraceKit.collectWindowErrors = true;
+    TraceKit.collectWindowErrors = true;
 }
 if (!TraceKit.linesOfContext || TraceKit.linesOfContext < 1) {
-  // 5 lines before, the offending line, 5 lines after
-  TraceKit.linesOfContext = 11;
+    // 5 lines before, the offending line, 5 lines after
+    TraceKit.linesOfContext = 11;
 }
 
-
-
-// Export to global object
-window.TraceKit = TraceKit;
+// UMD export
+if (typeof module !== 'undefined' && module.exports && this.module !== module) {
+    module.exports = TraceKit;
+} else if (typeof define === 'function' && define.amd) {
+    define('TraceKit', [], TraceKit);
+} else {
+    window.TraceKit = TraceKit;
+}
 
 }(typeof window !== 'undefined' ? window : global));
 
 
 (function(root, factory) {
   if (typeof define === 'function' && define.amd) {
-    define(factory);
+    define('exceptionless', factory);
   } else if (typeof exports === 'object') {
     module.exports = factory(require, exports, module);
   } else {
     root.exceptionless = factory();
   }
 }(this, function(require, exports, module) {
+if (!require) {
+	require = function(name) {
+		return (typeof window !== "undefined" ? window : global)[name];
+	}
+}
 if (!exports) {
 	var exports = {};
 }
 
-
+"use strict";
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
+var TraceKit = require('TraceKit');
 var SettingsManager = (function () {
     function SettingsManager() {
     }
@@ -1250,7 +1333,7 @@ var SettingsManager = (function () {
     };
     SettingsManager._handlers = [];
     return SettingsManager;
-})();
+}());
 exports.SettingsManager = SettingsManager;
 var DefaultLastReferenceIdManager = (function () {
     function DefaultLastReferenceIdManager() {
@@ -1266,7 +1349,7 @@ var DefaultLastReferenceIdManager = (function () {
         this._lastReferenceId = eventId;
     };
     return DefaultLastReferenceIdManager;
-})();
+}());
 exports.DefaultLastReferenceIdManager = DefaultLastReferenceIdManager;
 var ConsoleLog = (function () {
     function ConsoleLog() {
@@ -1286,7 +1369,7 @@ var ConsoleLog = (function () {
         }
     };
     return ConsoleLog;
-})();
+}());
 exports.ConsoleLog = ConsoleLog;
 var NullLog = (function () {
     function NullLog() {
@@ -1295,7 +1378,7 @@ var NullLog = (function () {
     NullLog.prototype.warn = function (message) { };
     NullLog.prototype.error = function (message) { };
     return NullLog;
-})();
+}());
 exports.NullLog = NullLog;
 var EventPluginContext = (function () {
     function EventPluginContext(client, event, contextData) {
@@ -1311,7 +1394,7 @@ var EventPluginContext = (function () {
         configurable: true
     });
     return EventPluginContext;
-})();
+}());
 exports.EventPluginContext = EventPluginContext;
 var EventPluginManager = (function () {
     function EventPluginManager() {
@@ -1353,12 +1436,14 @@ var EventPluginManager = (function () {
         config.addPlugin(new SubmissionMethodPlugin());
     };
     return EventPluginManager;
-})();
+}());
 exports.EventPluginManager = EventPluginManager;
 var HeartbeatPlugin = (function () {
-    function HeartbeatPlugin() {
+    function HeartbeatPlugin(heartbeatInterval) {
+        if (heartbeatInterval === void 0) { heartbeatInterval = 30000; }
         this.priority = 100;
         this.name = 'HeartbeatPlugin';
+        this._heartbeatInterval = heartbeatInterval;
     }
     HeartbeatPlugin.prototype.run = function (context, next) {
         var _this = this;
@@ -1368,29 +1453,17 @@ var HeartbeatPlugin = (function () {
                 _this._heartbeatIntervalId = 0;
             }
         };
-        var type = context.event.type;
-        if (type !== 'heartbeat') {
-            if (type === 'sessionend') {
-                clearHeartbeatInterval();
-            }
-            else {
-                var user = context.event.data['@user'];
-                if (user && user.identity) {
-                    var submitHeartbeatFn = function () { return context.client.createSessionHeartbeat().setUserIdentity(user).submit(); };
-                    if (!this._heartbeatIntervalId) {
-                        this._lastUser = user;
-                    }
-                    else {
-                        clearHeartbeatInterval();
-                    }
-                    this._heartbeatIntervalId = setInterval(submitHeartbeatFn, 30000);
-                }
-            }
+        if (this._heartbeatIntervalId) {
+            clearHeartbeatInterval();
+        }
+        var user = context.event.data['@user'];
+        if (user && user.identity) {
+            this._heartbeatIntervalId = setInterval(function () { return context.client.submitSessionHeartbeat(user.identity); }, this._heartbeatInterval);
         }
         next && next();
     };
     return HeartbeatPlugin;
-})();
+}());
 exports.HeartbeatPlugin = HeartbeatPlugin;
 var ReferenceIdPlugin = (function () {
     function ReferenceIdPlugin() {
@@ -1404,7 +1477,7 @@ var ReferenceIdPlugin = (function () {
         next && next();
     };
     return ReferenceIdPlugin;
-})();
+}());
 exports.ReferenceIdPlugin = ReferenceIdPlugin;
 var DefaultEventQueue = (function () {
     function DefaultEventQueue(config) {
@@ -1447,14 +1520,14 @@ var DefaultEventQueue = (function () {
         }
         this._processingQueue = true;
         try {
-            var events = config.storage.queue.get(config.submissionBatchSize);
-            if (!events || events.length === 0) {
+            var events_1 = config.storage.queue.get(config.submissionBatchSize);
+            if (!events_1 || events_1.length === 0) {
                 this._processingQueue = false;
                 return;
             }
-            log.info("Sending " + events.length + " events to " + config.serverUrl + ".");
-            config.submissionClient.postEvents(events.map(function (e) { return e.value; }), config, function (response) {
-                _this.processSubmissionResponse(response, events);
+            log.info("Sending " + events_1.length + " events to " + config.serverUrl + ".");
+            config.submissionClient.postEvents(events_1.map(function (e) { return e.value; }), config, function (response) {
+                _this.processSubmissionResponse(response, events_1);
                 log.info('Finished processing queue.');
                 _this._processingQueue = false;
             }, isAppExiting);
@@ -1550,7 +1623,7 @@ var DefaultEventQueue = (function () {
         }
     };
     return DefaultEventQueue;
-})();
+}());
 exports.DefaultEventQueue = DefaultEventQueue;
 var InMemoryStorageProvider = (function () {
     function InMemoryStorageProvider(maxQueueItems) {
@@ -1559,7 +1632,7 @@ var InMemoryStorageProvider = (function () {
         this.settings = new InMemoryStorage(1);
     }
     return InMemoryStorageProvider;
-})();
+}());
 exports.InMemoryStorageProvider = InMemoryStorageProvider;
 var DefaultSubmissionClient = (function () {
     function DefaultSubmissionClient() {
@@ -1567,19 +1640,19 @@ var DefaultSubmissionClient = (function () {
     }
     DefaultSubmissionClient.prototype.postEvents = function (events, config, callback, isAppExiting) {
         var data = JSON.stringify(events);
-        var request = this.createRequest(config, 'POST', '/api/v2/events', data);
+        var request = this.createRequest(config, 'POST', config.serverUrl + "/api/v2/events", data);
         var cb = this.createSubmissionCallback(config, callback);
         return config.submissionAdapter.sendRequest(request, cb, isAppExiting);
     };
     DefaultSubmissionClient.prototype.postUserDescription = function (referenceId, description, config, callback) {
-        var path = "/api/v2/events/by-ref/" + encodeURIComponent(referenceId) + "/user-description";
+        var path = config.serverUrl + "/api/v2/events/by-ref/" + encodeURIComponent(referenceId) + "/user-description";
         var data = JSON.stringify(description);
         var request = this.createRequest(config, 'POST', path, data);
         var cb = this.createSubmissionCallback(config, callback);
         return config.submissionAdapter.sendRequest(request, cb);
     };
     DefaultSubmissionClient.prototype.getSettings = function (config, callback) {
-        var request = this.createRequest(config, 'GET', '/api/v2/projects/config');
+        var request = this.createRequest(config, 'GET', config.serverUrl + "/api/v2/projects/config");
         var cb = function (status, message, data, headers) {
             if (status !== 200) {
                 return callback(new SettingsResponse(false, null, -1, null, message));
@@ -1598,13 +1671,16 @@ var DefaultSubmissionClient = (function () {
         };
         return config.submissionAdapter.sendRequest(request, cb);
     };
-    DefaultSubmissionClient.prototype.createRequest = function (config, method, path, data) {
+    DefaultSubmissionClient.prototype.sendHeartbeat = function (sessionIdOrUserId, closeSession, config) {
+        var request = this.createRequest(config, 'GET', config.heartbeatServerUrl + "/api/v2/events/session/heartbeat?id=" + sessionIdOrUserId + "&close=" + closeSession);
+        config.submissionAdapter.sendRequest(request);
+    };
+    DefaultSubmissionClient.prototype.createRequest = function (config, method, url, data) {
         if (data === void 0) { data = null; }
         return {
             method: method,
-            path: path,
+            url: url,
             data: data,
-            serverUrl: config.serverUrl,
             apiKey: config.apiKey,
             userAgent: config.userAgent
         };
@@ -1618,7 +1694,7 @@ var DefaultSubmissionClient = (function () {
         };
     };
     return DefaultSubmissionClient;
-})();
+}());
 exports.DefaultSubmissionClient = DefaultSubmissionClient;
 var Utils = (function () {
     function Utils() {
@@ -1790,7 +1866,7 @@ var Utils = (function () {
         return stringifyImpl(data, exclusions);
     };
     return Utils;
-})();
+}());
 exports.Utils = Utils;
 var Configuration = (function () {
     function Configuration(configSettings) {
@@ -1801,6 +1877,7 @@ var Configuration = (function () {
         this.settings = {};
         this._plugins = [];
         this._serverUrl = 'https://collector.exceptionless.io';
+        this._heartbeatServerUrl = 'https://heartbeat.exceptionless.io';
         this._dataExclusions = [];
         this._userAgentBotPatterns = [];
         function inject(fn) {
@@ -1810,6 +1887,7 @@ var Configuration = (function () {
         this.log = inject(configSettings.log) || new NullLog();
         this.apiKey = configSettings.apiKey;
         this.serverUrl = configSettings.serverUrl;
+        this.heartbeatServerUrl = configSettings.heartbeatServerUrl;
         this.environmentInfoCollector = inject(configSettings.environmentInfoCollector);
         this.errorParser = inject(configSettings.errorParser);
         this.lastReferenceIdManager = inject(configSettings.lastReferenceIdManager) || new DefaultLastReferenceIdManager();
@@ -1848,7 +1926,21 @@ var Configuration = (function () {
         set: function (value) {
             if (!!value) {
                 this._serverUrl = value;
+                this._heartbeatServerUrl = value;
                 this.log.info("serverUrl: " + this._serverUrl);
+            }
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Configuration.prototype, "heartbeatServerUrl", {
+        get: function () {
+            return this._heartbeatServerUrl;
+        },
+        set: function (value) {
+            if (!!value) {
+                this._heartbeatServerUrl = value;
+                this.log.info("heartbeatServerUrl: " + this._heartbeatServerUrl);
             }
         },
         enumerable: true,
@@ -1950,15 +2042,16 @@ var Configuration = (function () {
     };
     Object.defineProperty(Configuration.prototype, "userAgent", {
         get: function () {
-            return 'exceptionless-js/1.3.2';
+            return 'exceptionless-js/1.4.0';
         },
         enumerable: true,
         configurable: true
     });
-    Configuration.prototype.useSessions = function (sendHeartbeats) {
+    Configuration.prototype.useSessions = function (sendHeartbeats, heartbeatInterval) {
         if (sendHeartbeats === void 0) { sendHeartbeats = true; }
+        if (heartbeatInterval === void 0) { heartbeatInterval = 30000; }
         if (sendHeartbeats) {
-            this.addPlugin(new HeartbeatPlugin());
+            this.addPlugin(new HeartbeatPlugin(heartbeatInterval));
         }
     };
     Configuration.prototype.useReferenceIds = function () {
@@ -1981,7 +2074,7 @@ var Configuration = (function () {
     });
     Configuration._defaultSettings = null;
     return Configuration;
-})();
+}());
 exports.Configuration = Configuration;
 var EventBuilder = (function () {
     function EventBuilder(event, client, pluginContextData) {
@@ -2131,7 +2224,7 @@ var EventBuilder = (function () {
         return true;
     };
     return EventBuilder;
-})();
+}());
 exports.EventBuilder = EventBuilder;
 var ContextData = (function () {
     function ContextData() {
@@ -2170,7 +2263,7 @@ var ContextData = (function () {
         return this['@@_SubmissionMethod'] || null;
     };
     return ContextData;
-})();
+}());
 exports.ContextData = ContextData;
 var SubmissionResponse = (function () {
     function SubmissionResponse(statusCode, message) {
@@ -2192,11 +2285,11 @@ var SubmissionResponse = (function () {
         this.requestEntityTooLarge = statusCode === 413;
     }
     return SubmissionResponse;
-})();
+}());
 exports.SubmissionResponse = SubmissionResponse;
 var ExceptionlessClient = (function () {
     function ExceptionlessClient(settingsOrApiKey, serverUrl) {
-        if (typeof settingsOrApiKey !== 'object') {
+        if (typeof settingsOrApiKey === 'object') {
             this.config = new Configuration(settingsOrApiKey);
         }
         else {
@@ -2255,17 +2348,17 @@ var ExceptionlessClient = (function () {
     ExceptionlessClient.prototype.submitSessionStart = function (callback) {
         this.createSessionStart().submit(callback);
     };
-    ExceptionlessClient.prototype.createSessionEnd = function () {
-        return this.createEvent().setType('sessionend');
+    ExceptionlessClient.prototype.submitSessionEnd = function (sessionIdOrUserId) {
+        if (sessionIdOrUserId) {
+            this.config.log.info("Submitting session end: " + sessionIdOrUserId);
+            this.config.submissionClient.sendHeartbeat(sessionIdOrUserId, true, this.config);
+        }
     };
-    ExceptionlessClient.prototype.submitSessionEnd = function (callback) {
-        this.createSessionEnd().submit(callback);
-    };
-    ExceptionlessClient.prototype.createSessionHeartbeat = function () {
-        return this.createEvent().setType('heartbeat');
-    };
-    ExceptionlessClient.prototype.submitSessionHeartbeat = function (callback) {
-        this.createSessionHeartbeat().submit(callback);
+    ExceptionlessClient.prototype.submitSessionHeartbeat = function (sessionIdOrUserId) {
+        if (sessionIdOrUserId) {
+            this.config.log.info("Submitting session heartbeat: " + sessionIdOrUserId);
+            this.config.submissionClient.sendHeartbeat(sessionIdOrUserId, false, this.config);
+        }
     };
     ExceptionlessClient.prototype.createEvent = function (pluginContextData) {
         return new EventBuilder({ date: new Date() }, this, pluginContextData);
@@ -2338,7 +2431,7 @@ var ExceptionlessClient = (function () {
     });
     ExceptionlessClient._instance = null;
     return ExceptionlessClient;
-})();
+}());
 exports.ExceptionlessClient = ExceptionlessClient;
 var ConfigurationDefaultsPlugin = (function () {
     function ConfigurationDefaultsPlugin() {
@@ -2366,7 +2459,7 @@ var ConfigurationDefaultsPlugin = (function () {
         next && next();
     };
     return ConfigurationDefaultsPlugin;
-})();
+}());
 exports.ConfigurationDefaultsPlugin = ConfigurationDefaultsPlugin;
 var ErrorPlugin = (function () {
     function ErrorPlugin() {
@@ -2418,7 +2511,7 @@ var ErrorPlugin = (function () {
         next && next();
     };
     return ErrorPlugin;
-})();
+}());
 exports.ErrorPlugin = ErrorPlugin;
 var ModuleInfoPlugin = (function () {
     function ModuleInfoPlugin() {
@@ -2437,7 +2530,7 @@ var ModuleInfoPlugin = (function () {
         next && next();
     };
     return ModuleInfoPlugin;
-})();
+}());
 exports.ModuleInfoPlugin = ModuleInfoPlugin;
 var RequestInfoPlugin = (function () {
     function RequestInfoPlugin() {
@@ -2463,7 +2556,7 @@ var RequestInfoPlugin = (function () {
         next && next();
     };
     return RequestInfoPlugin;
-})();
+}());
 exports.RequestInfoPlugin = RequestInfoPlugin;
 var EnvironmentInfoPlugin = (function () {
     function EnvironmentInfoPlugin() {
@@ -2482,7 +2575,7 @@ var EnvironmentInfoPlugin = (function () {
         next && next();
     };
     return EnvironmentInfoPlugin;
-})();
+}());
 exports.EnvironmentInfoPlugin = EnvironmentInfoPlugin;
 var SubmissionMethodPlugin = (function () {
     function SubmissionMethodPlugin() {
@@ -2497,7 +2590,7 @@ var SubmissionMethodPlugin = (function () {
         next && next();
     };
     return SubmissionMethodPlugin;
-})();
+}());
 exports.SubmissionMethodPlugin = SubmissionMethodPlugin;
 var ERROR_KEY = '@error';
 var WINDOW_MILLISECONDS = 2000;
@@ -2549,7 +2642,7 @@ var DuplicateCheckerPlugin = (function () {
         return false;
     };
     return DuplicateCheckerPlugin;
-})();
+}());
 exports.DuplicateCheckerPlugin = DuplicateCheckerPlugin;
 var SettingsResponse = (function () {
     function SettingsResponse(success, settings, settingsVersion, exception, message) {
@@ -2565,7 +2658,7 @@ var SettingsResponse = (function () {
         this.message = message;
     }
     return SettingsResponse;
-})();
+}());
 exports.SettingsResponse = SettingsResponse;
 var InMemoryStorage = (function () {
     function InMemoryStorage(maxItems) {
@@ -2602,7 +2695,7 @@ var InMemoryStorage = (function () {
         this.items = [];
     };
     return InMemoryStorage;
-})();
+}());
 exports.InMemoryStorage = InMemoryStorage;
 var KeyValueStorageBase = (function () {
     function KeyValueStorageBase(maxItems) {
@@ -2702,7 +2795,7 @@ var KeyValueStorageBase = (function () {
         }
     };
     return KeyValueStorageBase;
-})();
+}());
 exports.KeyValueStorageBase = KeyValueStorageBase;
 function parseDate(key, value) {
     var dateRegx = /\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d\.\d+([+-][0-2]\d:[0-5]\d|Z)/g;
@@ -2755,7 +2848,7 @@ var BrowserStorage = (function (_super) {
         return parseInt(key.substr(this.prefix.length), 10);
     };
     return BrowserStorage;
-})(KeyValueStorageBase);
+}(KeyValueStorageBase));
 exports.BrowserStorage = BrowserStorage;
 var DefaultErrorParser = (function () {
     function DefaultErrorParser() {
@@ -2798,7 +2891,7 @@ var DefaultErrorParser = (function () {
         };
     };
     return DefaultErrorParser;
-})();
+}());
 exports.DefaultErrorParser = DefaultErrorParser;
 var DefaultModuleCollector = (function () {
     function DefaultModuleCollector() {
@@ -2830,7 +2923,7 @@ var DefaultModuleCollector = (function () {
         return modules;
     };
     return DefaultModuleCollector;
-})();
+}());
 exports.DefaultModuleCollector = DefaultModuleCollector;
 var DefaultRequestInfoCollector = (function () {
     function DefaultRequestInfoCollector() {
@@ -2855,7 +2948,7 @@ var DefaultRequestInfoCollector = (function () {
         return requestInfo;
     };
     return DefaultRequestInfoCollector;
-})();
+}());
 exports.DefaultRequestInfoCollector = DefaultRequestInfoCollector;
 var DefaultSubmissionAdapter = (function () {
     function DefaultSubmissionAdapter() {
@@ -2910,7 +3003,7 @@ var DefaultSubmissionAdapter = (function () {
                     }
                 }
             }
-            callback(status || 500, message || '', responseText, parseResponseHeaders(xhr.getAllResponseHeaders && xhr.getAllResponseHeaders()));
+            callback && callback(status || 500, message || '', responseText, parseResponseHeaders(xhr.getAllResponseHeaders && xhr.getAllResponseHeaders()));
         }
         function createRequest(userAgent, method, url) {
             var xhr = new XMLHttpRequest();
@@ -2934,10 +3027,10 @@ var DefaultSubmissionAdapter = (function () {
             }
             return xhr;
         }
-        var url = "" + request.serverUrl + request.path + "?access_token=" + encodeURIComponent(request.apiKey);
+        var url = "" + request.url + (request.url.indexOf('?') === -1 ? '?' : '&') + "access_token=" + encodeURIComponent(request.apiKey);
         var xhr = createRequest(request.userAgent, request.method || 'POST', url);
         if (!xhr) {
-            return callback(503, 'CORS not supported.');
+            return (callback && callback(503, 'CORS not supported.'));
         }
         if (WITH_CREDENTIALS in xhr) {
             xhr.onreadystatechange = function () {
@@ -2959,7 +3052,7 @@ var DefaultSubmissionAdapter = (function () {
         }
     };
     return DefaultSubmissionAdapter;
-})();
+}());
 exports.DefaultSubmissionAdapter = DefaultSubmissionAdapter;
 var BrowserStorageProvider = (function () {
     function BrowserStorageProvider(prefix, maxQueueItems) {
@@ -2968,7 +3061,7 @@ var BrowserStorageProvider = (function () {
         this.settings = new BrowserStorage('settings', prefix, 1);
     }
     return BrowserStorageProvider;
-})();
+}());
 exports.BrowserStorageProvider = BrowserStorageProvider;
 function getDefaultsSettingsFromScriptTag() {
     if (!document || !document.getElementsByTagName) {

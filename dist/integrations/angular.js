@@ -97,4 +97,3 @@ angular.module('exceptionless', [])
             $ExceptionlessClient.config.queue.process();
         });
     }]);
-//# sourceMappingURL=angular.js.map
