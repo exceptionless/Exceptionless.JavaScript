@@ -61,7 +61,7 @@ describe('EventExclusionPlugin', () => {
     it('[Trace] Test', () => expect(run('Test', 'Trace', null, null)).to.be.true);
     it('[Warn] Test', () => expect(run('Test', 'Warn', null, null)).to.be.false);
     it('[Error] Test (source min level: Debug)', () => expect(run('Test', 'Error', '@@log:Test', 'Debug')).to.be.false);
-    it('[Info] Test (source min level: Debug)', () => expect(run('Test', 'Info', '@@log:Test', 'Debug')).to.be.false);
+    it('[Debug] Test (source min level: Debug)', () => expect(run('Test', 'Debug', '@@log:Test', 'Debug')).to.be.false);
   });
 
   describe('should exclude source type', () => {
