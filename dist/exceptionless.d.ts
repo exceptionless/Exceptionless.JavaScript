@@ -166,8 +166,10 @@ export declare class Utils {
     static parseVersion(source: string): string;
     static parseQueryString(query: string, exclusions?: string[]): Object;
     static randomNumber(): number;
-    static isMatch(input: string, patterns: string[]): boolean;
+    static isMatch(input: string, patterns: string[], ignoreCase?: boolean): boolean;
     static isEmpty(input: Object): boolean;
+    static startsWith(input: string, prefix: string): boolean;
+    static endsWith(input: string, suffix: string): boolean;
     static stringify(data: any, exclusions?: string[], maxDepth?: number): string;
 }
 export declare class Configuration implements IConfigurationSettings {
@@ -409,10 +411,15 @@ export declare class SubmissionMethodPlugin implements IEventPlugin {
 export declare class DuplicateCheckerPlugin implements IEventPlugin {
     priority: number;
     name: string;
-    private recentlyProcessedErrors;
+    private _processedHashcodes;
+    private _getCurrentTime;
+    constructor(getCurrentTime?: () => number);
     run(context: EventPluginContext, next?: () => void): void;
-    private getNow();
-    private checkDuplicate(error, log);
+}
+export declare class EventExclusionPlugin implements IEventPlugin {
+    priority: number;
+    name: string;
+    run(context: EventPluginContext, next?: () => void): void;
 }
 export interface IError extends IInnerError {
     modules?: IModule[];

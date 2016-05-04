@@ -9,7 +9,7 @@ export class EventExclusionPlugin implements IEventPlugin {
 
   public run(context: EventPluginContext, next?: () => void): void {
     function getLogLevel(level: string): number {
-      switch (level.toLowerCase()) {
+      switch ((level || '').toLowerCase()) {
         case 'trace':
           return 0;
         case 'debug':
@@ -30,7 +30,7 @@ export class EventExclusionPlugin implements IEventPlugin {
     }
 
     function getMinLogLevel(settings: Object, loggerName: string = '*'): number {
-      return getLogLevel(getTypeAndSourceSetting(settings, 'log', loggerName, 'Trace'));
+      return getLogLevel(getTypeAndSourceSetting(settings, 'log', loggerName, 'Trace') + '');
     }
 
     function getTypeAndSourceSetting(settings: Object = {}, type: string, source: string, defaultValue: string|boolean = undefined): string|boolean {
@@ -58,7 +58,7 @@ export class EventExclusionPlugin implements IEventPlugin {
 
     if (ev.type === 'log') {
       let minLogLevel = getMinLogLevel(settings, ev.source);
-      let logLevel = getLogLevel(ev.data['@level'] || 'Trace');
+      let logLevel = getLogLevel(ev.data['@level']);
 
       if (logLevel >= 0 && (logLevel > 5 || logLevel < minLogLevel)) {
         context.log.info('Cancelling log event due to minimum log level.');
@@ -67,16 +67,14 @@ export class EventExclusionPlugin implements IEventPlugin {
     } else if (ev.type === 'error') {
       let error: IInnerError = ev.data['@error'];
       while (!context.cancelled && error) {
-        if (getTypeAndSourceSetting(settings, ev.type, error.type, true) === true) {
+        if (getTypeAndSourceSetting(settings, ev.type, error.type, true) === false) {
           context.log.info(`Cancelling error from excluded exception type: ${error.type}`);
           context.cancelled = true;
         }
 
         error = error.inner;
       }
-    }
-
-    if (!context.cancelled && getTypeAndSourceSetting(settings, ev.type, ev.source, true) === true) {
+    } else if (getTypeAndSourceSetting(settings, ev.type, ev.source, true) === false) {
       context.log.info(`Cancelling event from excluded type: ${ev.type} and source: ${ev.source}`);
       context.cancelled = true;
     }

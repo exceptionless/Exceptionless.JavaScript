@@ -174,6 +174,7 @@ var EventPluginManager = (function () {
         config.addPlugin(new ConfigurationDefaultsPlugin());
         config.addPlugin(new ErrorPlugin());
         config.addPlugin(new DuplicateCheckerPlugin());
+        config.addPlugin(new EventExclusionPlugin());
         config.addPlugin(new ModuleInfoPlugin());
         config.addPlugin(new RequestInfoPlugin());
         config.addPlugin(new EnvironmentInfoPlugin());
@@ -535,17 +536,18 @@ var Utils = (function () {
     Utils.randomNumber = function () {
         return Math.floor(Math.random() * 9007199254740992);
     };
-    Utils.isMatch = function (input, patterns) {
+    Utils.isMatch = function (input, patterns, ignoreCase) {
+        if (ignoreCase === void 0) { ignoreCase = true; }
         if (!input || typeof input !== 'string') {
             return false;
         }
         var trim = /^[\s\uFEFF\xA0]+|[\s\uFEFF\xA0]+$/g;
+        input = (ignoreCase ? input.toLowerCase() : input).replace(trim, '');
         return (patterns || []).some(function (pattern) {
-            if (!pattern) {
+            if (typeof pattern !== 'string') {
                 return false;
             }
-            pattern = pattern.toLowerCase().replace(trim, '');
-            input = input.toLowerCase().replace(trim, '');
+            pattern = (ignoreCase ? pattern.toLowerCase() : pattern).replace(trim, '');
             if (pattern.length <= 0) {
                 return false;
             }
@@ -558,20 +560,25 @@ var Utils = (function () {
                 pattern = pattern.substring(0, pattern.length - 1);
             }
             if (startsWithWildcard && endsWithWildcard) {
-                return input.indexOf(pattern) !== -1;
+                return pattern.length <= input.length && input.indexOf(pattern, 0) !== -1;
             }
             if (startsWithWildcard) {
-                var lastIndexOf = input.lastIndexOf(pattern);
-                return lastIndexOf !== -1 && lastIndexOf === (input.length - pattern.length);
+                return Utils.endsWith(input, pattern);
             }
             if (endsWithWildcard) {
-                return input.indexOf(pattern) === 0;
+                return Utils.startsWith(input, pattern);
             }
             return input === pattern;
         });
     };
     Utils.isEmpty = function (input) {
         return input === null || (typeof (input) === 'object' && Object.keys(input).length === 0);
+    };
+    Utils.startsWith = function (input, prefix) {
+        return input.substring(0, prefix.length) === prefix;
+    };
+    Utils.endsWith = function (input, suffix) {
+        return input.indexOf(suffix, input.length - suffix.length) !== -1;
     };
     Utils.stringify = function (data, exclusions, maxDepth) {
         function stringifyImpl(obj, excludedKeys) {
@@ -1336,58 +1343,121 @@ var SubmissionMethodPlugin = (function () {
     return SubmissionMethodPlugin;
 }());
 exports.SubmissionMethodPlugin = SubmissionMethodPlugin;
-var ERROR_KEY = '@error';
-var WINDOW_MILLISECONDS = 2000;
-var MAX_QUEUE_LENGTH = 10;
 var DuplicateCheckerPlugin = (function () {
-    function DuplicateCheckerPlugin() {
+    function DuplicateCheckerPlugin(getCurrentTime) {
+        if (getCurrentTime === void 0) { getCurrentTime = function () { return Date.now(); }; }
         this.priority = 40;
         this.name = 'DuplicateCheckerPlugin';
-        this.recentlyProcessedErrors = [];
+        this._processedHashcodes = [];
+        this._getCurrentTime = getCurrentTime;
     }
     DuplicateCheckerPlugin.prototype.run = function (context, next) {
+        function isDuplicate(error, processedHashcodes, now, log) {
+            var _loop_1 = function() {
+                var hashCode = Utils.getHashCode(error.stack_trace && JSON.stringify(error.stack_trace));
+                if (hashCode && processedHashcodes.some(function (h) { return h.hash === hashCode && h.timestamp >= (now - 2000); })) {
+                    log.info("Ignoring duplicate error event hash: " + hashCode);
+                    return { value: true };
+                }
+                processedHashcodes.push({ hash: hashCode, timestamp: now });
+                while (processedHashcodes.length > 20) {
+                    processedHashcodes.shift();
+                }
+                error = error.inner;
+            };
+            while (error) {
+                var state_1 = _loop_1();
+                if (typeof state_1 === "object") return state_1.value;
+            }
+            return false;
+        }
         if (context.event.type === 'error') {
-            var error = context.event.data[ERROR_KEY];
-            var isDuplicate = this.checkDuplicate(error, context.log);
-            if (isDuplicate) {
+            if (isDuplicate(context.event.data['@error'], this._processedHashcodes, this._getCurrentTime(), context.log)) {
                 context.cancelled = true;
                 return;
             }
         }
         next && next();
     };
-    DuplicateCheckerPlugin.prototype.getNow = function () {
-        return Date.now();
-    };
-    DuplicateCheckerPlugin.prototype.checkDuplicate = function (error, log) {
-        function getHashCodeForError(err) {
-            if (!err.stack_trace) {
-                return null;
-            }
-            return Utils.getHashCode(JSON.stringify(err.stack_trace));
-        }
-        var now = this.getNow();
-        var repeatWindow = now - WINDOW_MILLISECONDS;
-        var hashCode;
-        while (error) {
-            hashCode = getHashCodeForError(error);
-            if (hashCode && this.recentlyProcessedErrors.some(function (h) {
-                return h.hash === hashCode && h.timestamp >= repeatWindow;
-            })) {
-                log.info("Ignoring duplicate error event: hash=" + hashCode);
-                return true;
-            }
-            this.recentlyProcessedErrors.push({ hash: hashCode, timestamp: now });
-            while (this.recentlyProcessedErrors.length > MAX_QUEUE_LENGTH) {
-                this.recentlyProcessedErrors.shift();
-            }
-            error = error.inner;
-        }
-        return false;
-    };
     return DuplicateCheckerPlugin;
 }());
 exports.DuplicateCheckerPlugin = DuplicateCheckerPlugin;
+var EventExclusionPlugin = (function () {
+    function EventExclusionPlugin() {
+        this.priority = 45;
+        this.name = 'EventExclusionPlugin';
+    }
+    EventExclusionPlugin.prototype.run = function (context, next) {
+        function getLogLevel(level) {
+            switch ((level || '').toLowerCase()) {
+                case 'trace':
+                    return 0;
+                case 'debug':
+                    return 1;
+                case 'info':
+                    return 2;
+                case 'warn':
+                    return 3;
+                case 'error':
+                    return 4;
+                case 'fatal':
+                    return 5;
+                case 'off':
+                    return 6;
+                default:
+                    return -1;
+            }
+        }
+        function getMinLogLevel(settings, loggerName) {
+            if (loggerName === void 0) { loggerName = '*'; }
+            return getLogLevel(getTypeAndSourceSetting(settings, 'log', loggerName, 'Trace') + '');
+        }
+        function getTypeAndSourceSetting(settings, type, source, defaultValue) {
+            if (settings === void 0) { settings = {}; }
+            if (defaultValue === void 0) { defaultValue = undefined; }
+            if (!type) {
+                return defaultValue;
+            }
+            var sourcePrefix = "@@" + type + ":";
+            if (settings[sourcePrefix + source]) {
+                return settings[sourcePrefix + source];
+            }
+            for (var key in settings) {
+                if (Utils.startsWith(key.toLowerCase(), sourcePrefix.toLowerCase()) && Utils.isMatch(source, [key.substring(sourcePrefix.length)])) {
+                    return settings[key];
+                }
+            }
+            return defaultValue;
+        }
+        var ev = context.event;
+        var settings = context.client.config.settings;
+        if (ev.type === 'log') {
+            var minLogLevel = getMinLogLevel(settings, ev.source);
+            var logLevel = getLogLevel(ev.data['@level']);
+            if (logLevel >= 0 && (logLevel > 5 || logLevel < minLogLevel)) {
+                context.log.info('Cancelling log event due to minimum log level.');
+                context.cancelled = true;
+            }
+        }
+        else if (ev.type === 'error') {
+            var error = ev.data['@error'];
+            while (!context.cancelled && error) {
+                if (getTypeAndSourceSetting(settings, ev.type, error.type, true) === false) {
+                    context.log.info("Cancelling error from excluded exception type: " + error.type);
+                    context.cancelled = true;
+                }
+                error = error.inner;
+            }
+        }
+        else if (getTypeAndSourceSetting(settings, ev.type, ev.source, true) === false) {
+            context.log.info("Cancelling event from excluded type: " + ev.type + " and source: " + ev.source);
+            context.cancelled = true;
+        }
+        next && next();
+    };
+    return EventExclusionPlugin;
+}());
+exports.EventExclusionPlugin = EventExclusionPlugin;
 var SettingsResponse = (function () {
     function SettingsResponse(success, settings, settingsVersion, exception, message) {
         if (settingsVersion === void 0) { settingsVersion = -1; }

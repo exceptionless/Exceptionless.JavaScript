@@ -16,10 +16,7 @@ describe('DuplicateCheckerPlugin', () => {
   function run(exception: Error) {
     let context: EventPluginContext;
     let contextData: ContextData;
-    ({
-      context,
-      contextData
-    } = createFixture());
+    ({ context, contextData } = createFixture());
 
     contextData.setException(exception);
 
