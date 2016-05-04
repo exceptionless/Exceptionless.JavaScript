@@ -11,7 +11,7 @@ export class DuplicateCheckerPlugin implements IEventPlugin {
   private _processedHashcodes: TimestampedHash[] = [];
   private _getCurrentTime: () => number;
 
-  constructor(getCurrentTime:() => number = () => Date.now()) {
+  constructor(getCurrentTime: () => number = () => Date.now()) {
     this._getCurrentTime = getCurrentTime;
   }
 

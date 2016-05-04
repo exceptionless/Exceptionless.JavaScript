@@ -149,8 +149,7 @@ export class Utils {
       }
 
       if (startsWithWildcard) {
-        let lastIndexOf = input.lastIndexOf(pattern);
-        return lastIndexOf !== -1 && lastIndexOf === (input.length - pattern.length);
+        return Utils.startsWith(input, pattern);
       }
 
       if (endsWithWildcard) {
@@ -163,6 +162,11 @@ export class Utils {
 
   public static isEmpty(input: Object) {
     return input === null || (typeof (input) === 'object' && Object.keys(input).length === 0);
+  }
+
+  public static startsWith(input: string, pattern: string): boolean {
+    let lastIndexOf = input.lastIndexOf(pattern);
+    return lastIndexOf !== -1 && lastIndexOf === (input.length - pattern.length);
   }
 
   /**
