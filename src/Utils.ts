@@ -116,20 +116,20 @@ export class Utils {
    * @param input the value to check against the @pattern.
    * @param pattern The pattern to check, supports wild cards (*).
    */
-  public static isMatch(input: string, patterns: string[]): boolean {
+  public static isMatch(input: string, patterns: string[], ignoreCase: boolean = true): boolean {
     if (!input || typeof input !== 'string') {
       return false;
     }
 
     let trim = /^[\s\uFEFF\xA0]+|[\s\uFEFF\xA0]+$/g;
+    input = (ignoreCase ? input.toLowerCase() : input).replace(trim, '');
+
     return (patterns || []).some(pattern => {
-      if (!pattern) {
+      if (typeof pattern !== 'string') {
         return false;
       }
 
-      pattern = pattern.toLowerCase().replace(trim, '');
-      input = input.toLowerCase().replace(trim, '');
-
+      pattern = (ignoreCase ? pattern.toLowerCase() : pattern).replace(trim, '');
       if (pattern.length <= 0) {
         return false;
       }
@@ -145,16 +145,15 @@ export class Utils {
       }
 
       if (startsWithWildcard && endsWithWildcard) {
-        return input.indexOf(pattern) !== -1;
+        return pattern.length <= input.length && input.indexOf(pattern, 0) !== -1;
       }
 
       if (startsWithWildcard) {
-        let lastIndexOf = input.lastIndexOf(pattern);
-        return lastIndexOf !== -1 && lastIndexOf === (input.length - pattern.length);
+        return Utils.endsWith(input, pattern);
       }
 
       if (endsWithWildcard) {
-        return input.indexOf(pattern) === 0;
+        return Utils.startsWith(input, pattern);
       }
 
       return input === pattern;
@@ -163,6 +162,14 @@ export class Utils {
 
   public static isEmpty(input: Object) {
     return input === null || (typeof (input) === 'object' && Object.keys(input).length === 0);
+  }
+
+  public static startsWith(input: string, prefix: string): boolean {
+    return input.substring(0, prefix.length) === prefix;
+  }
+
+  public static endsWith(input: string, suffix: string): boolean {
+    return input.indexOf(suffix, input.length - suffix.length) !== -1;
   }
 
   /**
