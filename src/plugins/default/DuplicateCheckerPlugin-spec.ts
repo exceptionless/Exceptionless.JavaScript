@@ -6,14 +6,11 @@ import { createFixture } from './EventPluginTestFixture';
 import { expect } from 'chai';
 
 describe('DuplicateCheckerPlugin', () => {
-
-  let target: DuplicateCheckerPlugin;
-  let now: number;
+  let now: number = 0;
+  let plugin: DuplicateCheckerPlugin;
 
   beforeEach(() => {
-    target = new DuplicateCheckerPlugin();
-    (<any>target).getNow = () => now;
-    now = 0;
+    plugin = new DuplicateCheckerPlugin(() => now);
   });
 
   function run(exception: Error) {
@@ -28,7 +25,7 @@ describe('DuplicateCheckerPlugin', () => {
 
     let errorPlugin = new ErrorPlugin();
     errorPlugin.run(context);
-    target.run(context);
+    plugin.run(context);
 
     return context;
   }
