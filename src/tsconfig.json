@@ -9,8 +9,6 @@
   "bundles": {
     "exceptionless": {
       "files": [
-        "typings/tracekit/tracekit.d.ts",
-
         "exceptionless.ts"
       ]
     }

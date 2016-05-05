@@ -12,6 +12,7 @@ import { ISubmissionClient } from '../submission/ISubmissionClient';
 export interface IConfigurationSettings {
   apiKey?: string;
   serverUrl?: string;
+  heartbeatServerUrl?: string;
   environmentInfoCollector?: IEnvironmentInfoCollector;
   errorParser?: IErrorParser;
   lastReferenceIdManager?: ILastReferenceIdManager;

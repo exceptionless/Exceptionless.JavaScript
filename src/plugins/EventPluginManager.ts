@@ -8,6 +8,7 @@ import { RequestInfoPlugin } from './default/RequestInfoPlugin';
 import { EnvironmentInfoPlugin } from './default/EnvironmentInfoPlugin';
 import { SubmissionMethodPlugin } from './default/SubmissionMethodPlugin';
 import { DuplicateCheckerPlugin } from './default/DuplicateCheckerPlugin';
+import { EventExclusionPlugin } from './default/EventExclusionPlugin';
 
 export class EventPluginManager {
   public static run(context: EventPluginContext, callback: (context?: EventPluginContext) => void): void {
@@ -45,6 +46,7 @@ export class EventPluginManager {
     config.addPlugin(new ConfigurationDefaultsPlugin());
     config.addPlugin(new ErrorPlugin());
     config.addPlugin(new DuplicateCheckerPlugin());
+    config.addPlugin(new EventExclusionPlugin());
     config.addPlugin(new ModuleInfoPlugin());
     config.addPlugin(new RequestInfoPlugin());
     config.addPlugin(new EnvironmentInfoPlugin());

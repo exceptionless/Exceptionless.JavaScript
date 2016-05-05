@@ -97,6 +97,7 @@ export class Configuration implements IConfigurationSettings {
     this.log = inject(configSettings.log) || new NullLog();
     this.apiKey = configSettings.apiKey;
     this.serverUrl = configSettings.serverUrl;
+    this.heartbeatServerUrl = configSettings.heartbeatServerUrl;
 
     this.environmentInfoCollector = inject(configSettings.environmentInfoCollector);
     this.errorParser = inject(configSettings.errorParser);
@@ -167,7 +168,34 @@ export class Configuration implements IConfigurationSettings {
   public set serverUrl(value: string) {
     if (!!value) {
       this._serverUrl = value;
+      this._heartbeatServerUrl = value;
       this.log.info(`serverUrl: ${this._serverUrl}`);
+    }
+  }
+
+  /**
+   * The heartbeat server url that all heartbeats will be sent to.
+   * @type {string}
+   * @private
+   */
+  private _heartbeatServerUrl: string = 'https://heartbeat.exceptionless.io';
+
+  /**
+   * The heartbeat server url that all heartbeats will be sent to.
+   * @returns {string}
+   */
+  public get heartbeatServerUrl(): string {
+    return this._heartbeatServerUrl;
+  }
+
+  /**
+   * The heartbeat server url that all heartbeats will be sent to.
+   * @param value
+   */
+  public set heartbeatServerUrl(value: string) {
+    if (!!value) {
+      this._heartbeatServerUrl = value;
+      this.log.info(`heartbeatServerUrl: ${this._heartbeatServerUrl}`);
     }
   }
 
@@ -352,9 +380,9 @@ export class Configuration implements IConfigurationSettings {
   /**
    * Automatically send a heartbeat to keep the session alive.
    */
-  public useSessions(sendHeartbeats: boolean = true): void {
+  public useSessions(sendHeartbeats: boolean = true, heartbeatInterval: number = 30000): void {
     if (sendHeartbeats) {
-      this.addPlugin(new HeartbeatPlugin());
+      this.addPlugin(new HeartbeatPlugin(heartbeatInterval));
     }
   }
 

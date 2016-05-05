@@ -5,7 +5,7 @@ import { SubmissionRequest } from './SubmissionRequest';
 declare var XDomainRequest: { new (); create(); };
 
 export class DefaultSubmissionAdapter implements ISubmissionAdapter {
-  public sendRequest(request: SubmissionRequest, callback: SubmissionCallback, isAppExiting?: boolean) {
+  public sendRequest(request: SubmissionRequest, callback?: SubmissionCallback, isAppExiting?: boolean) {
     // TODO: Handle sending events when app is exiting with send beacon.
     const TIMEOUT: string = 'timeout';  // optimization for minifier.
     const LOADED: string = 'loaded';  // optimization for minifier.
@@ -62,7 +62,7 @@ export class DefaultSubmissionAdapter implements ISubmissionAdapter {
         }
       }
 
-      callback(status || 500, message || '', responseText, parseResponseHeaders(xhr.getAllResponseHeaders && xhr.getAllResponseHeaders()));
+      callback && callback(status || 500, message || '', responseText, parseResponseHeaders(xhr.getAllResponseHeaders && xhr.getAllResponseHeaders()));
     }
 
     function createRequest(userAgent: string, method: string, url: string): XMLHttpRequest {
@@ -89,10 +89,10 @@ export class DefaultSubmissionAdapter implements ISubmissionAdapter {
       return xhr;
     }
 
-    let url = `${request.serverUrl}${request.path}?access_token=${encodeURIComponent(request.apiKey)}`;
+    let url = `${request.url}${(request.url.indexOf('?') === -1 ? '?' : '&')}access_token=${encodeURIComponent(request.apiKey)}`;
     let xhr = createRequest(request.userAgent, request.method || 'POST', url);
     if (!xhr) {
-      return callback(503, 'CORS not supported.');
+      return (callback && callback(503, 'CORS not supported.'));
     }
 
     if (WITH_CREDENTIALS in xhr) {

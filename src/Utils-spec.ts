@@ -159,4 +159,115 @@ describe('Utils', () => {
     expect(Utils.parseVersion('https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/2.1.8-M1/swagger-ui.min.js')).to.equal('2.1.8-M1');
     expect(Utils.parseVersion('https://cdnjs.cloudflare.com/BLAH/BLAH.min.js')).to.equal(null);
   });
+
+  describe('isMatch', () => {
+    it('input: blake patterns ["pAssword"]', () => {
+      expect(Utils.isMatch('blake', ['pAssword'])).to.be.false;
+    });
+
+    it('input: pAssword patterns ["pAssword"]', () => {
+      expect(Utils.isMatch('pAssword', ['pAssword'])).to.be.true;
+    });
+
+    it('input: passwordResetToken patterns ["pAssword"]', () => {
+      expect(Utils.isMatch('passwordResetToken', ['pAssword'])).to.be.false;
+    });
+
+    it('input: myPassword patterns ["pAssword"]', () => {
+      expect(Utils.isMatch('myPassword', ['pAssword'])).to.be.false;
+    });
+
+    it('input: blake patterns ["*pAssword"]', () => {
+      expect(Utils.isMatch('blake', ['*pAssword'])).to.be.false;
+    });
+
+    it('input: pAssword patterns ["*pAssword"]', () => {
+      expect(Utils.isMatch('pAssword', ['*pAssword'])).to.be.true;
+    });
+
+    it('input: passwordResetToken patterns ["*pAssword"]', () => {
+      expect(Utils.isMatch('passwordResetToken', ['*pAssword'])).to.be.false;
+    });
+
+    it('input: myPassword patterns ["*pAssword"]', () => {
+      expect(Utils.isMatch('myPassword', ['*pAssword'])).to.be.true;
+    });
+
+    it('input: blake patterns ["pAssword*"]', () => {
+      expect(Utils.isMatch('blake', ['pAssword*'])).to.be.false;
+    });
+
+    it('input: pAssword patterns ["pAssword*"]', () => {
+      expect(Utils.isMatch('pAssword', ['pAssword*'])).to.be.true;
+    });
+
+    it('input: passwordResetToken patterns ["pAssword*"]', () => {
+      expect(Utils.isMatch('passwordResetToken', ['pAssword*'])).to.be.true;
+    });
+
+    it('input: myPassword patterns ["pAssword*"]', () => {
+      expect(Utils.isMatch('myPassword', ['pAssword*'])).to.be.false;
+    });
+
+    it('input: blake patterns ["*pAssword*"]', () => {
+      expect(Utils.isMatch('blake', ['*pAssword*'])).to.be.false;
+    });
+
+    it('input: pAssword patterns ["*pAssword*"]', () => {
+      expect(Utils.isMatch('pAssword', ['*pAssword*'])).to.be.true;
+    });
+
+    it('input: passwordResetToken patterns ["*pAssword*"]', () => {
+      expect(Utils.isMatch('passwordResetToken', ['*pAssword*'])).to.be.true;
+    });
+
+    it('input: myPassword patterns ["*pAssword*"]', () => {
+      expect(Utils.isMatch('myPassword', ['*pAssword*'])).to.be.true;
+    });
+  });
+
+  describe('startsWith', () => {
+    it('input: blake prefix: blake', () => {
+      expect(Utils.startsWith('blake', 'blake')).to.be.true;
+    });
+
+    it('input: blake prefix: bl', () => {
+      expect(Utils.startsWith('blake', 'bl')).to.be.true;
+    });
+
+    it('input: blake prefix: Blake', () => {
+      expect(Utils.startsWith('blake', 'Blake')).to.be.false;
+    });
+
+    it('input: @@log:* prefix: @@log:', () => {
+      expect(Utils.startsWith('@@log:*', '@@log:')).to.be.true;
+    });
+
+    it('input: test prefix: nopattern', () => {
+      expect(Utils.startsWith('test', 'nopattern')).to.be.false;
+    });
+  });
+
+  describe('endsWith', () => {
+    it('input: blake suffix: blake', () => {
+      expect(Utils.endsWith('blake', 'blake')).to.be.true;
+    });
+
+    it('input: blake suffix: ake', () => {
+      expect(Utils.endsWith('blake', 'ake')).to.be.true;
+    });
+
+    it('input: blake suffix: Blake', () => {
+      expect(Utils.endsWith('blake', 'Blake')).to.be.false;
+    });
+
+    it('input: @@log:* suffix: log:*', () => {
+      expect(Utils.endsWith('@@log:*', 'log:*')).to.be.true;
+    });
+
+
+    it('input: test suffix: nopattern', () => {
+      expect(Utils.endsWith('test', 'nopattern')).to.be.false;
+    });
+  });
 });
