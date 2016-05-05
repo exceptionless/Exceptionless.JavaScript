@@ -46,20 +46,33 @@ export class DefaultEventQueue implements IEventQueue {
   }
 
   public enqueue(event: IEvent): void {
+    const eventWillNotBeQueued: string = 'The event will not be queued.'; // optimization for minifier.
     let config: Configuration = this._config; // Optimization for minifier.
-    this.ensureQueueTimer();
+    let log: ILog = config.log; // Optimization for minifier.
 
-    if (this.areQueuedItemsDiscarded()) {
-      config.log.info('Queue items are currently being discarded. The event will not be queued.');
+    if (!config.enabled) {
+      log.info(`Configuration is disabled. ${eventWillNotBeQueued}`);
       return;
     }
+
+    if (!config.isValid) {
+      log.info(`Invalid Api Key. ${eventWillNotBeQueued}`);
+      return;
+    }
+
+    if (this.areQueuedItemsDiscarded()) {
+      log.info(`Queue items are currently being discarded. ${eventWillNotBeQueued}`);
+      return;
+    }
+
+    this.ensureQueueTimer();
 
     let timestamp = config.storage.queue.save(event);
     let logText = `type=${event.type} ${!!event.reference_id ? 'refid=' + event.reference_id : ''}`;
     if (timestamp) {
-      config.log.info(`Enqueuing event: ${timestamp} ${logText}`);
+      log.info(`Enqueuing event: ${timestamp} ${logText}`);
     } else {
-      config.log.error(`Could not enqueue event ${logText}`);
+      log.error(`Could not enqueue event ${logText}`);
     }
   }
 
@@ -67,8 +80,6 @@ export class DefaultEventQueue implements IEventQueue {
     const queueNotProcessed: string = 'The queue will not be processed.'; // optimization for minifier.
     let config: Configuration = this._config; // Optimization for minifier.
     let log: ILog = config.log; // Optimization for minifier.
-
-    this.ensureQueueTimer();
 
     if (this._processingQueue) {
       return;
@@ -86,6 +97,7 @@ export class DefaultEventQueue implements IEventQueue {
     }
 
     this._processingQueue = true;
+    this.ensureQueueTimer();
 
     try {
       let events = config.storage.queue.get(config.submissionBatchSize);
@@ -118,7 +130,7 @@ export class DefaultEventQueue implements IEventQueue {
     this._suspendProcessingUntil = new Date(new Date().getTime() + (durationInMinutes * 60000));
 
     if (discardFutureQueuedItems) {
-      this._discardQueuedItemsUntil = new Date(new Date().getTime() + (durationInMinutes * 60000));
+      this._discardQueuedItemsUntil = this._suspendProcessingUntil;
     }
 
     if (clearQueue) {

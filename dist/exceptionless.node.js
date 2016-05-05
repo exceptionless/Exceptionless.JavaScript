@@ -230,19 +230,29 @@ var DefaultEventQueue = (function () {
         this._config = config;
     }
     DefaultEventQueue.prototype.enqueue = function (event) {
+        var eventWillNotBeQueued = 'The event will not be queued.';
         var config = this._config;
-        this.ensureQueueTimer();
-        if (this.areQueuedItemsDiscarded()) {
-            config.log.info('Queue items are currently being discarded. The event will not be queued.');
+        var log = config.log;
+        if (!config.enabled) {
+            log.info("Configuration is disabled. " + eventWillNotBeQueued);
             return;
         }
+        if (!config.isValid) {
+            log.info("Invalid Api Key. " + eventWillNotBeQueued);
+            return;
+        }
+        if (this.areQueuedItemsDiscarded()) {
+            log.info("Queue items are currently being discarded. " + eventWillNotBeQueued);
+            return;
+        }
+        this.ensureQueueTimer();
         var timestamp = config.storage.queue.save(event);
         var logText = "type=" + event.type + " " + (!!event.reference_id ? 'refid=' + event.reference_id : '');
         if (timestamp) {
-            config.log.info("Enqueuing event: " + timestamp + " " + logText);
+            log.info("Enqueuing event: " + timestamp + " " + logText);
         }
         else {
-            config.log.error("Could not enqueue event " + logText);
+            log.error("Could not enqueue event " + logText);
         }
     };
     DefaultEventQueue.prototype.process = function (isAppExiting) {
@@ -250,7 +260,6 @@ var DefaultEventQueue = (function () {
         var queueNotProcessed = 'The queue will not be processed.';
         var config = this._config;
         var log = config.log;
-        this.ensureQueueTimer();
         if (this._processingQueue) {
             return;
         }
@@ -264,6 +273,7 @@ var DefaultEventQueue = (function () {
             return;
         }
         this._processingQueue = true;
+        this.ensureQueueTimer();
         try {
             var events_1 = config.storage.queue.get(config.submissionBatchSize);
             if (!events_1 || events_1.length === 0) {
@@ -291,7 +301,7 @@ var DefaultEventQueue = (function () {
         config.log.info("Suspending processing for " + durationInMinutes + " minutes.");
         this._suspendProcessingUntil = new Date(new Date().getTime() + (durationInMinutes * 60000));
         if (discardFutureQueuedItems) {
-            this._discardQueuedItemsUntil = new Date(new Date().getTime() + (durationInMinutes * 60000));
+            this._discardQueuedItemsUntil = this._suspendProcessingUntil;
         }
         if (clearQueue) {
             config.storage.queue.clear();
