@@ -7,7 +7,9 @@ angular.module('exceptionless', [])
                     $ExceptionlessClient.submitNotFound(rejection.config.url);
                 }
                 else if (rejection.status !== 401) {
-                    $ExceptionlessClient.createUnhandledException(new Error("[" + rejection.status + "] " + rejection.config.url), 'errorHttpInterceptor')
+                    var message = "[" + rejection.status + "] " + (rejection.data && rejection.data.Message ? rejection.data.Message : rejection.config.url);
+                    $ExceptionlessClient.createUnhandledException(new Error(message), 'errorHttpInterceptor')
+                        .setManualStackingInfo({ Status: rejection.status, ExceptionType: 'Error', Path: rejection.config.method + ' ' + rejection.config.url })
                         .setSource(rejection.config.url)
                         .setProperty('request', rejection.config)
                         .submit();
