@@ -116,8 +116,8 @@ export declare class EventPluginManager {
 export declare class HeartbeatPlugin implements IEventPlugin {
     priority: number;
     name: string;
-    private _heartbeatInterval;
-    private _heartbeatIntervalId;
+    private _interval;
+    private _intervalId;
     constructor(heartbeatInterval?: number);
     run(context: EventPluginContext, next?: () => void): void;
 }
@@ -378,6 +378,14 @@ export interface IInnerError {
     stack_trace?: IStackFrame[];
     target_method?: IMethod;
 }
+export declare class SettingsResponse {
+    success: boolean;
+    settings: any;
+    settingsVersion: number;
+    message: string;
+    exception: any;
+    constructor(success: boolean, settings: any, settingsVersion?: number, exception?: any, message?: string);
+}
 export declare class ConfigurationDefaultsPlugin implements IEventPlugin {
     priority: number;
     name: string;
@@ -421,6 +429,15 @@ export declare class EventExclusionPlugin implements IEventPlugin {
     name: string;
     run(context: EventPluginContext, next?: () => void): void;
 }
+export declare class UpdateConfigurationSettingsWhileIdlePlugin implements IEventPlugin {
+    priority: number;
+    name: string;
+    private _config;
+    private _interval;
+    private _intervalId;
+    constructor(config: Configuration, interval?: number);
+    run(context: EventPluginContext, next?: () => void): void;
+}
 export interface IError extends IInnerError {
     modules?: IModule[];
 }
@@ -443,14 +460,6 @@ export interface SubmissionRequest {
     method: string;
     url: string;
     data: string;
-}
-export declare class SettingsResponse {
-    success: boolean;
-    settings: any;
-    settingsVersion: number;
-    message: string;
-    exception: any;
-    constructor(success: boolean, settings: any, settingsVersion?: number, exception?: any, message?: string);
 }
 export declare class InMemoryStorage implements IStorage {
     private maxItems;
