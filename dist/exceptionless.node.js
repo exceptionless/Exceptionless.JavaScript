@@ -20,13 +20,16 @@ var SettingsManager = (function () {
         !!handler && this._handlers.push(handler);
     };
     SettingsManager.applySavedServerSettings = function (config) {
+        if (!config) {
+            return;
+        }
         var savedSettings = this.getSavedServerSettings(config);
         config.log.info('Applying saved settings.');
         config.settings = Utils.merge(config.settings, savedSettings.settings);
         this.changed(config);
     };
     SettingsManager.checkVersion = function (version, config) {
-        if (version) {
+        if (version && config) {
             var savedSettings = this.getSavedServerSettings(config);
             var savedVersion = savedSettings.version;
             if (version > savedVersion) {
@@ -37,12 +40,15 @@ var SettingsManager = (function () {
     };
     SettingsManager.updateSettings = function (config) {
         var _this = this;
+        if (!config) {
+            return;
+        }
         if (!config.isValid) {
             config.log.error('Unable to update settings: ApiKey is not set.');
             return;
         }
         config.submissionClient.getSettings(config, function (response) {
-            if (!response || !response.success || !response.settings) {
+            if (!config || !response || !response.success || !response.settings) {
                 return;
             }
             config.settings = Utils.merge(config.settings, response.settings);
@@ -179,6 +185,7 @@ var EventPluginManager = (function () {
         config.addPlugin(new RequestInfoPlugin());
         config.addPlugin(new EnvironmentInfoPlugin());
         config.addPlugin(new SubmissionMethodPlugin());
+        config.addPlugin(new UpdateConfigurationSettingsWhileIdlePlugin(config));
     };
     return EventPluginManager;
 }());
@@ -188,22 +195,22 @@ var HeartbeatPlugin = (function () {
         if (heartbeatInterval === void 0) { heartbeatInterval = 30000; }
         this.priority = 100;
         this.name = 'HeartbeatPlugin';
-        this._heartbeatInterval = heartbeatInterval;
+        this._interval = heartbeatInterval;
     }
     HeartbeatPlugin.prototype.run = function (context, next) {
         var _this = this;
         var clearHeartbeatInterval = function () {
-            if (_this._heartbeatIntervalId) {
-                clearInterval(_this._heartbeatIntervalId);
-                _this._heartbeatIntervalId = 0;
+            if (_this._intervalId) {
+                clearInterval(_this._intervalId);
+                _this._intervalId = 0;
             }
         };
-        if (this._heartbeatIntervalId) {
+        if (this._intervalId) {
             clearHeartbeatInterval();
         }
         var user = context.event.data['@user'];
         if (user && user.identity) {
-            this._heartbeatIntervalId = setInterval(function () { return context.client.submitSessionHeartbeat(user.identity); }, this._heartbeatInterval);
+            this._intervalId = setInterval(function () { return context.client.submitSessionHeartbeat(user.identity); }, this._interval);
         }
         next && next();
     };
@@ -1194,6 +1201,22 @@ var ExceptionlessClient = (function () {
     return ExceptionlessClient;
 }());
 exports.ExceptionlessClient = ExceptionlessClient;
+var SettingsResponse = (function () {
+    function SettingsResponse(success, settings, settingsVersion, exception, message) {
+        if (settingsVersion === void 0) { settingsVersion = -1; }
+        if (exception === void 0) { exception = null; }
+        if (message === void 0) { message = null; }
+        this.success = false;
+        this.settingsVersion = -1;
+        this.success = success;
+        this.settings = settings;
+        this.settingsVersion = settingsVersion;
+        this.exception = exception;
+        this.message = message;
+    }
+    return SettingsResponse;
+}());
+exports.SettingsResponse = SettingsResponse;
 var ConfigurationDefaultsPlugin = (function () {
     function ConfigurationDefaultsPlugin() {
         this.priority = 10;
@@ -1468,22 +1491,27 @@ var EventExclusionPlugin = (function () {
     return EventExclusionPlugin;
 }());
 exports.EventExclusionPlugin = EventExclusionPlugin;
-var SettingsResponse = (function () {
-    function SettingsResponse(success, settings, settingsVersion, exception, message) {
-        if (settingsVersion === void 0) { settingsVersion = -1; }
-        if (exception === void 0) { exception = null; }
-        if (message === void 0) { message = null; }
-        this.success = false;
-        this.settingsVersion = -1;
-        this.success = success;
-        this.settings = settings;
-        this.settingsVersion = settingsVersion;
-        this.exception = exception;
-        this.message = message;
+var UpdateConfigurationSettingsWhileIdlePlugin = (function () {
+    function UpdateConfigurationSettingsWhileIdlePlugin(config, interval) {
+        var _this = this;
+        if (interval === void 0) { interval = 1500000; }
+        this.priority = 1020;
+        this.name = 'UpdateConfigurationSettingsWhileIdlePlugin';
+        this._config = config;
+        this._interval = interval;
+        this._intervalId = setInterval(function () { return SettingsManager.updateSettings(_this._config); }, 5000);
     }
-    return SettingsResponse;
+    UpdateConfigurationSettingsWhileIdlePlugin.prototype.run = function (context, next) {
+        var _this = this;
+        if (this._intervalId) {
+            clearInterval(this._intervalId);
+        }
+        this._intervalId = setInterval(function () { return SettingsManager.updateSettings(_this._config); }, this._interval);
+        next && next();
+    };
+    return UpdateConfigurationSettingsWhileIdlePlugin;
 }());
-exports.SettingsResponse = SettingsResponse;
+exports.UpdateConfigurationSettingsWhileIdlePlugin = UpdateConfigurationSettingsWhileIdlePlugin;
 var InMemoryStorage = (function () {
     function InMemoryStorage(maxItems) {
         this.items = [];

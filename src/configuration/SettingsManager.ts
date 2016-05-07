@@ -20,6 +20,10 @@ export class SettingsManager {
   }
 
   public static applySavedServerSettings(config: Configuration): void {
+    if (!config) {
+      return;
+    }
+
     let savedSettings = this.getSavedServerSettings(config);
     config.log.info('Applying saved settings.');
     config.settings = Utils.merge(config.settings, savedSettings.settings);
@@ -27,7 +31,7 @@ export class SettingsManager {
   }
 
   public static checkVersion(version: number, config: Configuration): void {
-    if (version) {
+    if (version && config) {
       let savedSettings = this.getSavedServerSettings(config);
       let savedVersion = savedSettings.version;
       if (version > savedVersion) {
@@ -38,13 +42,17 @@ export class SettingsManager {
   }
 
   public static updateSettings(config: Configuration): void {
+    if (!config) {
+      return;
+    }
+
     if (!config.isValid) {
       config.log.error('Unable to update settings: ApiKey is not set.');
       return;
     }
 
     config.submissionClient.getSettings(config, (response: SettingsResponse) => {
-      if (!response || !response.success || !response.settings) {
+      if (!config || !response || !response.success || !response.settings) {
         return;
       }
 
