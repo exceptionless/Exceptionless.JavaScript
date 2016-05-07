@@ -1494,7 +1494,7 @@ exports.EventExclusionPlugin = EventExclusionPlugin;
 var UpdateConfigurationSettingsWhileIdlePlugin = (function () {
     function UpdateConfigurationSettingsWhileIdlePlugin(config, interval) {
         var _this = this;
-        if (interval === void 0) { interval = 1500000; }
+        if (interval === void 0) { interval = 150000; }
         this.priority = 1020;
         this.name = 'UpdateConfigurationSettingsWhileIdlePlugin';
         this._config = config;

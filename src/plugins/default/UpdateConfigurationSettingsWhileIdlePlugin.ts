@@ -11,7 +11,7 @@ export class UpdateConfigurationSettingsWhileIdlePlugin implements IEventPlugin 
   private _interval: number;
   private _intervalId: any;
 
-  constructor (config: Configuration, interval: number = 1500000) {
+  constructor (config: Configuration, interval: number = 150000) {
     this._config = config;
     this._interval = interval;
     this._intervalId = setInterval(() => SettingsManager.updateSettings(this._config), 5000);
