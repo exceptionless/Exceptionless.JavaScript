@@ -130,7 +130,7 @@ describe('DefaultSubmissionClient', () => {
   it('should get project settings', (done) => {
     adapter.withResponse(200, null, JSON.stringify({ version: 1 }));
 
-    submissionClient.getSettings(config, response => {
+    submissionClient.getSettings(config, 0, response => {
       expect(response.success).to.be.true;
       expect(response.message).to.be.null;
       expect(response.settings).not.to.be.null;

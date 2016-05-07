@@ -15,16 +15,7 @@ export class HeartbeatPlugin implements IEventPlugin {
 
 
   public run(context: EventPluginContext, next?: () => void): void {
-    let clearHeartbeatInterval = () => {
-      if (this._intervalId) {
-        clearInterval(this._intervalId);
-        this._intervalId = 0;
-      }
-    };
-
-    if (this._intervalId) {
-      clearHeartbeatInterval();
-    }
+    clearInterval(this._intervalId);
 
     let user: IUserInfo = context.event.data['@user'];
     if (user && user.identity) {

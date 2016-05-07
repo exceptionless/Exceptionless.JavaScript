@@ -7,6 +7,7 @@ import { EventPluginContext } from './plugins/EventPluginContext';
 import { EventPluginManager } from './plugins/EventPluginManager';
 import { ContextData } from './plugins/ContextData';
 import { SubmissionResponse } from './submission/SubmissionResponse';
+import { SettingsManager } from './configuration/SettingsManager';
 
 export class ExceptionlessClient {
   /**
@@ -18,6 +19,9 @@ export class ExceptionlessClient {
 
   public config: Configuration;
 
+  private _intervalId: any;
+  private _timeoutId: any;
+
   constructor();
   constructor(settings: IConfigurationSettings);
   constructor(apiKey: string, serverUrl?: string);
@@ -26,6 +30,13 @@ export class ExceptionlessClient {
       this.config = new Configuration(settingsOrApiKey);
     } else {
       this.config = new Configuration({ apiKey: <string>settingsOrApiKey, serverUrl: serverUrl });
+    }
+
+    let interval = this.config.updateSettingsWhenIdleInterval;
+    if (interval > 0) {
+      let updateSettings = () => SettingsManager.updateSettings(this.config);
+      this._timeoutId = setTimeout(updateSettings, 5000);
+      this._intervalId = setInterval(() => updateSettings, interval);
     }
   }
 
@@ -171,6 +182,14 @@ export class ExceptionlessClient {
           ctx.log.info(`Setting last reference id '${ev.reference_id}'`);
           config.lastReferenceIdManager.setLast(ev.reference_id);
         }
+      }
+
+      clearTimeout(this._timeoutId);
+      clearInterval(this._intervalId);
+
+      let interval = this.config.updateSettingsWhenIdleInterval;
+      if (interval > 0) {
+        this._intervalId = setInterval(() => SettingsManager.updateSettings(this.config), interval);
       }
 
       !!callback && callback(ctx);

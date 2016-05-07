@@ -20,7 +20,7 @@ export class SettingsManager {
   }
 
   public static applySavedServerSettings(config: Configuration): void {
-    if (!config) {
+    if (!config || !config.isValid) {
       return;
     }
 
@@ -30,18 +30,26 @@ export class SettingsManager {
     this.changed(config);
   }
 
-  public static checkVersion(version: number, config: Configuration): void {
-    if (version && config) {
-      let savedSettings = this.getSavedServerSettings(config);
-      let savedVersion = savedSettings.version;
-      if (version > savedVersion) {
-        config.log.info(`Updating settings from v${savedVersion} to v${version}`);
-        this.updateSettings(config);
-      }
+  public static getVersion(config: Configuration): number {
+    if (!config || !config.isValid) {
+      return 0;
     }
+
+    let savedSettings = this.getSavedServerSettings(config);
+    return savedSettings.version || 0;
   }
 
-  public static updateSettings(config: Configuration): void {
+  public static checkVersion(version: number, config: Configuration): void {
+    let currentVersion: number = this.getVersion(config);
+    if (version <= currentVersion) {
+      return;
+    }
+
+    config.log.info(`Updating settings from v${currentVersion} to v${version}`);
+    this.updateSettings(config, currentVersion);
+  }
+
+  public static updateSettings(config: Configuration, version?: number): void {
     if (!config) {
       return;
     }
@@ -51,7 +59,11 @@ export class SettingsManager {
       return;
     }
 
-    config.submissionClient.getSettings(config, (response: SettingsResponse) => {
+    if (!version || version < 0) {
+      version = this.getVersion(config);
+    }
+
+    config.submissionClient.getSettings(config, version, (response: SettingsResponse) => {
       if (!config || !response || !response.success || !response.settings) {
         return;
       }

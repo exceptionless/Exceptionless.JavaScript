@@ -46,7 +46,7 @@ export interface ISubmissionAdapter {
 export interface ISubmissionClient {
     postEvents(events: IEvent[], config: Configuration, callback: (response: SubmissionResponse) => void, isAppExiting?: boolean): void;
     postUserDescription(referenceId: string, description: IUserDescription, config: Configuration, callback: (response: SubmissionResponse) => void): void;
-    getSettings(config: Configuration, callback: (response: SettingsResponse) => void): void;
+    getSettings(config: Configuration, version: number, callback: (response: SettingsResponse) => void): void;
     sendHeartbeat(sessionIdOrUserId: string, closeSession: boolean, config: Configuration): void;
 }
 export interface IConfigurationSettings {
@@ -69,8 +69,9 @@ export declare class SettingsManager {
     private static _handlers;
     static onChanged(handler: (config: Configuration) => void): void;
     static applySavedServerSettings(config: Configuration): void;
+    static getVersion(config: Configuration): number;
     static checkVersion(version: number, config: Configuration): void;
-    static updateSettings(config: Configuration): void;
+    static updateSettings(config: Configuration, version?: number): void;
     private static changed(config);
     private static getSavedServerSettings(config);
 }
@@ -152,7 +153,7 @@ export declare class DefaultSubmissionClient implements ISubmissionClient {
     configurationVersionHeader: string;
     postEvents(events: IEvent[], config: Configuration, callback: (response: SubmissionResponse) => void, isAppExiting?: boolean): void;
     postUserDescription(referenceId: string, description: IUserDescription, config: Configuration, callback: (response: SubmissionResponse) => void): void;
-    getSettings(config: Configuration, callback: (response: SettingsResponse) => void): void;
+    getSettings(config: Configuration, version: number, callback: (response: SettingsResponse) => void): void;
     sendHeartbeat(sessionIdOrUserId: string, closeSession: boolean, config: Configuration): void;
     private createRequest(config, method, url, data?);
     private createSubmissionCallback(config, callback);
@@ -198,6 +199,8 @@ export declare class Configuration implements IConfigurationSettings {
     serverUrl: string;
     private _heartbeatServerUrl;
     heartbeatServerUrl: string;
+    private _updateSettingsWhenIdleInterval;
+    updateSettingsWhenIdleInterval: number;
     private _dataExclusions;
     private _userAgentBotPatterns;
     dataExclusions: string[];
@@ -275,6 +278,8 @@ export declare class SubmissionResponse {
 export declare class ExceptionlessClient {
     private static _instance;
     config: Configuration;
+    private _intervalId;
+    private _timeoutId;
     constructor();
     constructor(settings: IConfigurationSettings);
     constructor(apiKey: string, serverUrl?: string);
@@ -378,14 +383,6 @@ export interface IInnerError {
     stack_trace?: IStackFrame[];
     target_method?: IMethod;
 }
-export declare class SettingsResponse {
-    success: boolean;
-    settings: any;
-    settingsVersion: number;
-    message: string;
-    exception: any;
-    constructor(success: boolean, settings: any, settingsVersion?: number, exception?: any, message?: string);
-}
 export declare class ConfigurationDefaultsPlugin implements IEventPlugin {
     priority: number;
     name: string;
@@ -429,14 +426,13 @@ export declare class EventExclusionPlugin implements IEventPlugin {
     name: string;
     run(context: EventPluginContext, next?: () => void): void;
 }
-export declare class UpdateConfigurationSettingsWhileIdlePlugin implements IEventPlugin {
-    priority: number;
-    name: string;
-    private _config;
-    private _interval;
-    private _intervalId;
-    constructor(config: Configuration, interval?: number);
-    run(context: EventPluginContext, next?: () => void): void;
+export declare class SettingsResponse {
+    success: boolean;
+    settings: any;
+    settingsVersion: number;
+    message: string;
+    exception: any;
+    constructor(success: boolean, settings: any, settingsVersion?: number, exception?: any, message?: string);
 }
 export interface IError extends IInnerError {
     modules?: IModule[];

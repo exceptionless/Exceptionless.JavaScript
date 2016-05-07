@@ -169,7 +169,7 @@ export class Configuration implements IConfigurationSettings {
     if (!!value) {
       this._serverUrl = value;
       this._heartbeatServerUrl = value;
-      this.log.info(`serverUrl: ${this._serverUrl}`);
+      this.log.info(`serverUrl: ${value}`);
     }
   }
 
@@ -195,8 +195,38 @@ export class Configuration implements IConfigurationSettings {
   public set heartbeatServerUrl(value: string) {
     if (!!value) {
       this._heartbeatServerUrl = value;
-      this.log.info(`heartbeatServerUrl: ${this._heartbeatServerUrl}`);
+      this.log.info(`heartbeatServerUrl: ${value}`);
     }
+  }
+
+  /**
+   * How often the client should check for updated server settings when idle. The default is every 2 minutes.
+   * @type {number}
+   * @private
+   */
+  private _updateSettingsWhenIdleInterval: number = 120000;
+
+  /**
+   * How often the client should check for updated server settings when idle. The default is every 2 minutes.
+   * @returns {number}
+   */
+  public get updateSettingsWhenIdleInterval(): number {
+    return this._updateSettingsWhenIdleInterval;
+  }
+
+  /**
+   * How often the client should check for updated server settings when idle. The default is every 2 minutes.
+   * @param value
+   */
+  public set updateSettingsWhenIdleInterval(value: number) {
+    if (value > 0 && value < 15000) {
+      value = 15000;
+    } else if (value <= 0) {
+      value = -1;
+    }
+
+    this._updateSettingsWhenIdleInterval = value;
+    this.log.info(`updateSettingsWhenIdleInterval: ${value}`);
   }
 
   /**

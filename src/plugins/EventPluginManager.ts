@@ -9,7 +9,6 @@ import { EnvironmentInfoPlugin } from './default/EnvironmentInfoPlugin';
 import { SubmissionMethodPlugin } from './default/SubmissionMethodPlugin';
 import { DuplicateCheckerPlugin } from './default/DuplicateCheckerPlugin';
 import { EventExclusionPlugin } from './default/EventExclusionPlugin';
-import { UpdateConfigurationSettingsWhileIdlePlugin } from './default/UpdateConfigurationSettingsWhileIdlePlugin';
 
 export class EventPluginManager {
   public static run(context: EventPluginContext, callback: (context?: EventPluginContext) => void): void {
@@ -52,6 +51,5 @@ export class EventPluginManager {
     config.addPlugin(new RequestInfoPlugin());
     config.addPlugin(new EnvironmentInfoPlugin());
     config.addPlugin(new SubmissionMethodPlugin());
-    config.addPlugin(new UpdateConfigurationSettingsWhileIdlePlugin(config));
   }
 }
