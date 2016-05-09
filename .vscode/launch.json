@@ -5,26 +5,28 @@
       "name": "Test",
       "request": "launch",
       "type": "node",
-      "program": "node_modules/.bin/_mocha",
+      "program": "${workspaceRoot}/node_modules/.bin/_mocha",
       "args": [
-        "dist/temp/exceptionless-spec.js"
+        "${workspaceRoot}/dist/temp/exceptionless-spec.js"
       ],
       "runtimeArgs": [
         "--nolazy"
       ],
       "sourceMaps": false,
-      "outDir": "dist"
+      "cwd": "${workspaceRoot}",
+      "outDir": "${workspaceRoot}/dist"
     },
     {
       "name": "Express",
       "request": "launch",
       "type": "node",
-      "program": "example/express/app.js",
+      "program": "${workspaceRoot}/example/express/app.js",
       "runtimeArgs": [
         "--nolazy"
       ],
       "sourceMaps": true,
-      "outDir": "dist"
+      "cwd": "${workspaceRoot}",
+      "outDir": "${workspaceRoot}/dist"
     },
     {
       "name": "Attach",
@@ -32,7 +34,7 @@
       "type": "node",
       "port": 5858,
       "sourceMaps": true,
-      "outDir": "dist"
+      "outDir": "${workspaceRoot}/dist/"
     }
   ]
 }

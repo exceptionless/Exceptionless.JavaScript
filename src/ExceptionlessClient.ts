@@ -164,7 +164,10 @@ export class ExceptionlessClient {
     }
 
     EventPluginManager.run(context, function(ctx: EventPluginContext) {
+      let client = ctx.client;
+      let config = client.config;
       let ev = ctx.event;
+
       if (!ctx.cancelled) {
         // ensure all required data
         if (!ev.type || ev.type.length === 0) {
@@ -175,7 +178,6 @@ export class ExceptionlessClient {
           ev.date = new Date();
         }
 
-        let config = ctx.client.config;
         config.queue.enqueue(ev);
 
         if (ev.reference_id && ev.reference_id.length > 0) {
@@ -184,12 +186,12 @@ export class ExceptionlessClient {
         }
       }
 
-      clearTimeout(this._timeoutId);
-      clearInterval(this._intervalId);
+      clearTimeout(client._timeoutId);
+      clearInterval(client._intervalId);
 
-      let interval = this.config.updateSettingsWhenIdleInterval;
+      let interval = config.updateSettingsWhenIdleInterval;
       if (interval > 0) {
-        this._intervalId = setInterval(() => SettingsManager.updateSettings(this.config), interval);
+        client._intervalId = setInterval(() => SettingsManager.updateSettings(config), interval);
       }
 
       !!callback && callback(ctx);

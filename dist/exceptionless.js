@@ -2432,7 +2432,8 @@ var ExceptionlessClient = (function () {
             event.tags = [];
         }
         EventPluginManager.run(context, function (ctx) {
-            var _this = this;
+            var client = ctx.client;
+            var config = client.config;
             var ev = ctx.event;
             if (!ctx.cancelled) {
                 if (!ev.type || ev.type.length === 0) {
@@ -2441,18 +2442,17 @@ var ExceptionlessClient = (function () {
                 if (!ev.date) {
                     ev.date = new Date();
                 }
-                var config = ctx.client.config;
                 config.queue.enqueue(ev);
                 if (ev.reference_id && ev.reference_id.length > 0) {
                     ctx.log.info("Setting last reference id '" + ev.reference_id + "'");
                     config.lastReferenceIdManager.setLast(ev.reference_id);
                 }
             }
-            clearTimeout(this._timeoutId);
-            clearInterval(this._intervalId);
-            var interval = this.config.updateSettingsWhenIdleInterval;
+            clearTimeout(client._timeoutId);
+            clearInterval(client._intervalId);
+            var interval = config.updateSettingsWhenIdleInterval;
             if (interval > 0) {
-                this._intervalId = setInterval(function () { return SettingsManager.updateSettings(_this.config); }, interval);
+                client._intervalId = setInterval(function () { return SettingsManager.updateSettings(config); }, interval);
             }
             !!callback && callback(ctx);
         });
