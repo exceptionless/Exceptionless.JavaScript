@@ -677,6 +677,21 @@ var Utils = (function () {
         }
         return stringifyImpl(data, exclusions);
     };
+    Utils.toBoolean = function (input) {
+        if (!input || !input.toLowerCase) {
+            return !!input;
+        }
+        switch (input.toLowerCase().trim()) {
+            case 'true':
+            case 'yes':
+            case '1': return true;
+            case 'false':
+            case 'no':
+            case '0':
+            case null: return false;
+            default: return Boolean(input);
+        }
+    };
     return Utils;
 }());
 exports.Utils = Utils;
@@ -1516,24 +1531,27 @@ var EventExclusionPlugin = (function () {
             if (!type) {
                 return defaultValue;
             }
+            var isLog = type === 'log';
             var sourcePrefix = "@@" + type + ":";
-            if (settings[sourcePrefix + source]) {
-                return settings[sourcePrefix + source];
+            var value = settings[sourcePrefix + source];
+            if (value) {
+                return !isLog ? Utils.toBoolean(value) : value;
             }
             for (var key in settings) {
                 if (Utils.startsWith(key.toLowerCase(), sourcePrefix.toLowerCase()) && Utils.isMatch(source, [key.substring(sourcePrefix.length)])) {
-                    return settings[key];
+                    return !isLog ? Utils.toBoolean(settings[key]) : settings[key];
                 }
             }
             return defaultValue;
         }
         var ev = context.event;
+        var log = context.log;
         var settings = context.client.config.settings;
         if (ev.type === 'log') {
             var minLogLevel = getMinLogLevel(settings, ev.source);
             var logLevel = getLogLevel(ev.data['@level']);
             if (logLevel >= 0 && (logLevel > 5 || logLevel < minLogLevel)) {
-                context.log.info('Cancelling log event due to minimum log level.');
+                log.info('Cancelling log event due to minimum log level.');
                 context.cancelled = true;
             }
         }
@@ -1541,14 +1559,14 @@ var EventExclusionPlugin = (function () {
             var error = ev.data['@error'];
             while (!context.cancelled && error) {
                 if (getTypeAndSourceSetting(settings, ev.type, error.type, true) === false) {
-                    context.log.info("Cancelling error from excluded exception type: " + error.type);
+                    log.info("Cancelling error from excluded exception type: " + error.type);
                     context.cancelled = true;
                 }
                 error = error.inner;
             }
         }
         else if (getTypeAndSourceSetting(settings, ev.type, ev.source, true) === false) {
-            context.log.info("Cancelling event from excluded type: " + ev.type + " and source: " + ev.source);
+            log.info("Cancelling event from excluded type: " + ev.type + " and source: " + ev.source);
             context.cancelled = true;
         }
         next && next();

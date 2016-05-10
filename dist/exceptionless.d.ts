@@ -189,6 +189,7 @@ export declare class Utils {
     static startsWith(input: string, prefix: string): boolean;
     static endsWith(input: string, suffix: string): boolean;
     static stringify(data: any, exclusions?: string[], maxDepth?: number): string;
+    static toBoolean(input: any): boolean;
 }
 export declare class Configuration implements IConfigurationSettings {
     private static _defaultSettings;
