@@ -97,7 +97,7 @@ var SettingsManager = (function () {
                 settings: response.settings
             };
             config.storage.settings.save(newSettings);
-            config.log.info('Updated settings');
+            config.log.info("Updated settings: v" + newSettings.version);
             _this.changed(config);
         });
     };
@@ -769,7 +769,10 @@ var Configuration = (function () {
             return this._updateSettingsWhenIdleInterval;
         },
         set: function (value) {
-            if (typeof value !== 'number' || value <= 0) {
+            if (typeof value !== 'number') {
+                return;
+            }
+            if (value <= 0) {
                 value = -1;
             }
             else if (value > 0 && value < 15000) {
@@ -1124,9 +1127,9 @@ var ExceptionlessClient = (function () {
         else {
             this.config = new Configuration({ apiKey: settingsOrApiKey, serverUrl: serverUrl });
         }
+        this.updateSettingsTimer(5000);
         this.config.onChanged(function (config) { return _this.updateSettingsTimer(_this._timeoutId > 0 ? 5000 : 0); });
         this.config.queue.onEventsPosted(function (events, response) { return _this.updateSettingsTimer(); });
-        this.updateSettingsTimer(5000);
     }
     ExceptionlessClient.prototype.createException = function (exception) {
         var pluginContextData = new ContextData();
@@ -1253,7 +1256,7 @@ var ExceptionlessClient = (function () {
     };
     ExceptionlessClient.prototype.updateSettingsTimer = function (initialDelay) {
         var _this = this;
-        this.config.log.info('Updating settings timer');
+        this.config.log.info("Updating settings timer with delay: " + initialDelay);
         this._timeoutId = clearTimeout(this._timeoutId);
         this._timeoutId = clearInterval(this._intervalId);
         var interval = this.config.updateSettingsWhenIdleInterval;

@@ -32,9 +32,9 @@ export class ExceptionlessClient {
       this.config = new Configuration({ apiKey: <string>settingsOrApiKey, serverUrl: serverUrl });
     }
 
+    this.updateSettingsTimer(5000);
     this.config.onChanged((config) => this.updateSettingsTimer(this._timeoutId > 0 ? 5000 : 0));
     this.config.queue.onEventsPosted((events, response) =>  this.updateSettingsTimer());
-    this.updateSettingsTimer(5000);
   }
 
   public createException(exception: Error): EventBuilder {
@@ -217,7 +217,7 @@ export class ExceptionlessClient {
   }
 
   private updateSettingsTimer(initialDelay?: number) {
-    this.config.log.info('Updating settings timer');
+    this.config.log.info(`Updating settings timer with delay: ${initialDelay}`);
 
     this._timeoutId = clearTimeout(this._timeoutId);
     this._timeoutId = clearInterval(this._intervalId);

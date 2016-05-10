@@ -91,7 +91,7 @@ export class SettingsManager {
 
       config.storage.settings.save(newSettings);
 
-      config.log.info('Updated settings');
+      config.log.info(`Updated settings: v${newSettings.version}`);
       this.changed(config);
     });
   }

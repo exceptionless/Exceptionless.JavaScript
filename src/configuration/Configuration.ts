@@ -230,7 +230,11 @@ export class Configuration implements IConfigurationSettings {
    * @param value
    */
   public set updateSettingsWhenIdleInterval(value: number) {
-    if (typeof value !== 'number' || value <= 0) {
+    if (typeof value !== 'number') {
+      return;
+    }
+
+    if (value <= 0) {
       value = -1;
     } else if (value > 0 && value < 15000) {
       value = 15000;
