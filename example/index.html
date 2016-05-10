@@ -12,9 +12,9 @@
 <script type="text/javascript">
   var client = exceptionless.ExceptionlessClient.default;
   client.config.useDebugLogger();
+  client.config.useLocalStorage();
   client.config.serverUrl = 'http://localhost:50000';
   client.config.updateSettingsWhenIdleInterval = 15000;
-  client.config.useLocalStorage();
   client.config.setUserIdentity('12345678', 'Blake');
   client.config.useSessions();
 
