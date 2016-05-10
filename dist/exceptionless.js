@@ -1269,6 +1269,28 @@ var __extends = (this && this.__extends) || function (d, b) {
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
 var TraceKit = require('TraceKit');
+var SubmissionResponse = (function () {
+    function SubmissionResponse(statusCode, message) {
+        this.success = false;
+        this.badRequest = false;
+        this.serviceUnavailable = false;
+        this.paymentRequired = false;
+        this.unableToAuthenticate = false;
+        this.notFound = false;
+        this.requestEntityTooLarge = false;
+        this.statusCode = statusCode;
+        this.message = message;
+        this.success = statusCode >= 200 && statusCode <= 299;
+        this.badRequest = statusCode === 400;
+        this.serviceUnavailable = statusCode === 503;
+        this.paymentRequired = statusCode === 402;
+        this.unableToAuthenticate = statusCode === 401 || statusCode === 403;
+        this.notFound = statusCode === 404;
+        this.requestEntityTooLarge = statusCode === 413;
+    }
+    return SubmissionResponse;
+}());
+exports.SubmissionResponse = SubmissionResponse;
 var SettingsManager = (function () {
     function SettingsManager() {
     }
@@ -1335,7 +1357,12 @@ var SettingsManager = (function () {
     SettingsManager.changed = function (config) {
         var handlers = this._handlers;
         for (var index = 0; index < handlers.length; index++) {
-            handlers[index](config);
+            try {
+                handlers[index](config);
+            }
+            catch (ex) {
+                config.log.error("Error calling onChanged handler: " + ex);
+            }
         }
     };
     SettingsManager.getSavedServerSettings = function (config) {
@@ -1487,6 +1514,7 @@ var ReferenceIdPlugin = (function () {
 exports.ReferenceIdPlugin = ReferenceIdPlugin;
 var DefaultEventQueue = (function () {
     function DefaultEventQueue(config) {
+        this._handlers = [];
         this._processingQueue = false;
         this._config = config;
     }
@@ -1544,6 +1572,7 @@ var DefaultEventQueue = (function () {
             log.info("Sending " + events_1.length + " events to " + config.serverUrl + ".");
             config.submissionClient.postEvents(events_1.map(function (e) { return e.value; }), config, function (response) {
                 _this.processSubmissionResponse(response, events_1);
+                _this.eventsPosted(events_1.map(function (e) { return e.value; }), response);
                 log.info('Finished processing queue.');
                 _this._processingQueue = false;
             }, isAppExiting);
@@ -1566,6 +1595,20 @@ var DefaultEventQueue = (function () {
         }
         if (clearQueue) {
             config.storage.queue.clear();
+        }
+    };
+    DefaultEventQueue.prototype.onEventsPosted = function (handler) {
+        !!handler && this._handlers.push(handler);
+    };
+    DefaultEventQueue.prototype.eventsPosted = function (events, response) {
+        var handlers = this._handlers;
+        for (var index = 0; index < handlers.length; index++) {
+            try {
+                handlers[index](events, response);
+            }
+            catch (ex) {
+                this._config.log.error("Error calling onEventsPosted handler: " + ex);
+            }
         }
     };
     DefaultEventQueue.prototype.areQueuedItemsDiscarded = function () {
@@ -1898,6 +1941,7 @@ var Configuration = (function () {
         this.lastReferenceIdManager = new DefaultLastReferenceIdManager();
         this.settings = {};
         this._plugins = [];
+        this._handlers = [];
         this._serverUrl = 'https://collector.exceptionless.io';
         this._heartbeatServerUrl = 'https://heartbeat.exceptionless.io';
         this._updateSettingsWhenIdleInterval = 120000;
@@ -1911,6 +1955,7 @@ var Configuration = (function () {
         this.apiKey = configSettings.apiKey;
         this.serverUrl = configSettings.serverUrl;
         this.heartbeatServerUrl = configSettings.heartbeatServerUrl;
+        this.updateSettingsWhenIdleInterval = configSettings.updateSettingsWhenIdleInterval;
         this.environmentInfoCollector = inject(configSettings.environmentInfoCollector);
         this.errorParser = inject(configSettings.errorParser);
         this.lastReferenceIdManager = inject(configSettings.lastReferenceIdManager) || new DefaultLastReferenceIdManager();
@@ -1931,6 +1976,7 @@ var Configuration = (function () {
         set: function (value) {
             this._apiKey = value || null;
             this.log.info("apiKey: " + this._apiKey);
+            this.changed();
         },
         enumerable: true,
         configurable: true
@@ -1951,6 +1997,7 @@ var Configuration = (function () {
                 this._serverUrl = value;
                 this._heartbeatServerUrl = value;
                 this.log.info("serverUrl: " + value);
+                this.changed();
             }
         },
         enumerable: true,
@@ -1964,6 +2011,7 @@ var Configuration = (function () {
             if (!!value) {
                 this._heartbeatServerUrl = value;
                 this.log.info("heartbeatServerUrl: " + value);
+                this.changed();
             }
         },
         enumerable: true,
@@ -1974,14 +2022,15 @@ var Configuration = (function () {
             return this._updateSettingsWhenIdleInterval;
         },
         set: function (value) {
-            if (value > 0 && value < 15000) {
-                value = 15000;
-            }
-            else if (value <= 0) {
+            if (typeof value !== 'number' || value <= 0) {
                 value = -1;
+            }
+            else if (value > 0 && value < 15000) {
+                value = 15000;
             }
             this._updateSettingsWhenIdleInterval = value;
             this.log.info("updateSettingsWhenIdleInterval: " + value);
+            this.changed();
         },
         enumerable: true,
         configurable: true
@@ -2101,6 +2150,20 @@ var Configuration = (function () {
     };
     Configuration.prototype.useDebugLogger = function () {
         this.log = new ConsoleLog();
+    };
+    Configuration.prototype.onChanged = function (handler) {
+        !!handler && this._handlers.push(handler);
+    };
+    Configuration.prototype.changed = function () {
+        var handlers = this._handlers;
+        for (var index = 0; index < handlers.length; index++) {
+            try {
+                handlers[index](this);
+            }
+            catch (ex) {
+                this.log.error("Error calling onChanged handler: " + ex);
+            }
+        }
     };
     Object.defineProperty(Configuration, "defaults", {
         get: function () {
@@ -2305,28 +2368,6 @@ var ContextData = (function () {
     return ContextData;
 }());
 exports.ContextData = ContextData;
-var SubmissionResponse = (function () {
-    function SubmissionResponse(statusCode, message) {
-        this.success = false;
-        this.badRequest = false;
-        this.serviceUnavailable = false;
-        this.paymentRequired = false;
-        this.unableToAuthenticate = false;
-        this.notFound = false;
-        this.requestEntityTooLarge = false;
-        this.statusCode = statusCode;
-        this.message = message;
-        this.success = statusCode >= 200 && statusCode <= 299;
-        this.badRequest = statusCode === 400;
-        this.serviceUnavailable = statusCode === 503;
-        this.paymentRequired = statusCode === 402;
-        this.unableToAuthenticate = statusCode === 401 || statusCode === 403;
-        this.notFound = statusCode === 404;
-        this.requestEntityTooLarge = statusCode === 413;
-    }
-    return SubmissionResponse;
-}());
-exports.SubmissionResponse = SubmissionResponse;
 var ExceptionlessClient = (function () {
     function ExceptionlessClient(settingsOrApiKey, serverUrl) {
         var _this = this;
@@ -2336,12 +2377,9 @@ var ExceptionlessClient = (function () {
         else {
             this.config = new Configuration({ apiKey: settingsOrApiKey, serverUrl: serverUrl });
         }
-        var interval = this.config.updateSettingsWhenIdleInterval;
-        if (interval > 0) {
-            var updateSettings_1 = function () { return SettingsManager.updateSettings(_this.config); };
-            this._timeoutId = setTimeout(updateSettings_1, 5000);
-            this._intervalId = setInterval(function () { return updateSettings_1; }, interval);
-        }
+        this.config.onChanged(function (config) { return _this.updateSettingsTimer(_this._timeoutId > 0 ? 5000 : 0); });
+        this.config.queue.onEventsPosted(function (events, response) { return _this.updateSettingsTimer(); });
+        this.updateSettingsTimer(5000);
     }
     ExceptionlessClient.prototype.createException = function (exception) {
         var pluginContextData = new ContextData();
@@ -2432,8 +2470,7 @@ var ExceptionlessClient = (function () {
             event.tags = [];
         }
         EventPluginManager.run(context, function (ctx) {
-            var client = ctx.client;
-            var config = client.config;
+            var config = ctx.client.config;
             var ev = ctx.event;
             if (!ctx.cancelled) {
                 if (!ev.type || ev.type.length === 0) {
@@ -2447,12 +2484,6 @@ var ExceptionlessClient = (function () {
                     ctx.log.info("Setting last reference id '" + ev.reference_id + "'");
                     config.lastReferenceIdManager.setLast(ev.reference_id);
                 }
-            }
-            clearTimeout(client._timeoutId);
-            clearInterval(client._intervalId);
-            var interval = config.updateSettingsWhenIdleInterval;
-            if (interval > 0) {
-                client._intervalId = setInterval(function () { return SettingsManager.updateSettings(config); }, interval);
             }
             !!callback && callback(ctx);
         });
@@ -2472,6 +2503,20 @@ var ExceptionlessClient = (function () {
     };
     ExceptionlessClient.prototype.getLastReferenceId = function () {
         return this.config.lastReferenceIdManager.getLast();
+    };
+    ExceptionlessClient.prototype.updateSettingsTimer = function (initialDelay) {
+        var _this = this;
+        this.config.log.info('Updating settings timer');
+        this._timeoutId = clearTimeout(this._timeoutId);
+        this._timeoutId = clearInterval(this._intervalId);
+        var interval = this.config.updateSettingsWhenIdleInterval;
+        if (interval > 0) {
+            var updateSettings = function () { return SettingsManager.updateSettings(_this.config); };
+            if (initialDelay > 0) {
+                this._timeoutId = setTimeout(updateSettings, initialDelay);
+            }
+            this._intervalId = setInterval(updateSettings, interval);
+        }
     };
     Object.defineProperty(ExceptionlessClient, "default", {
         get: function () {

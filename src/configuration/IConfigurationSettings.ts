@@ -13,6 +13,7 @@ export interface IConfigurationSettings {
   apiKey?: string;
   serverUrl?: string;
   heartbeatServerUrl?: string;
+  updateSettingsWhenIdleInterval?: number;
   environmentInfoCollector?: IEnvironmentInfoCollector;
   errorParser?: IErrorParser;
   lastReferenceIdManager?: ILastReferenceIdManager;

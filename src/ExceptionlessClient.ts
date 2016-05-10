@@ -32,12 +32,9 @@ export class ExceptionlessClient {
       this.config = new Configuration({ apiKey: <string>settingsOrApiKey, serverUrl: serverUrl });
     }
 
-    let interval = this.config.updateSettingsWhenIdleInterval;
-    if (interval > 0) {
-      let updateSettings = () => SettingsManager.updateSettings(this.config);
-      this._timeoutId = setTimeout(updateSettings, 5000);
-      this._intervalId = setInterval(() => updateSettings, interval);
-    }
+    this.config.onChanged((config) => this.updateSettingsTimer(this._timeoutId > 0 ? 5000 : 0));
+    this.config.queue.onEventsPosted((events, response) =>  this.updateSettingsTimer());
+    this.updateSettingsTimer(5000);
   }
 
   public createException(exception: Error): EventBuilder {
@@ -81,7 +78,7 @@ export class ExceptionlessClient {
     } else if (message) {
       builder = builder.setSource(sourceOrMessage).setMessage(message);
     } else {
-      // TODO: Look into using https://www.stevefenton.co.uk/Content/Blog/Date/201304/Blog/Obtaining-A-Class-Name-At-Runtime-In-TypeScript/
+      // TODO: Look into using https: //www.stevefenton.co.uk/Content/Blog/Date/201304/Blog/Obtaining-A-Class-Name-At-Runtime-In-TypeScript/
       let caller: any = arguments.callee.caller;
       builder = builder.setSource(caller && caller.name).setMessage(sourceOrMessage);
     }
@@ -163,9 +160,8 @@ export class ExceptionlessClient {
       event.tags = [];
     }
 
-    EventPluginManager.run(context, function(ctx: EventPluginContext) {
-      let client = ctx.client;
-      let config = client.config;
+    EventPluginManager.run(context, function (ctx: EventPluginContext) {
+      let config = ctx.client.config;
       let ev = ctx.event;
 
       if (!ctx.cancelled) {
@@ -184,14 +180,6 @@ export class ExceptionlessClient {
           ctx.log.info(`Setting last reference id '${ev.reference_id}'`);
           config.lastReferenceIdManager.setLast(ev.reference_id);
         }
-      }
-
-      clearTimeout(client._timeoutId);
-      clearInterval(client._intervalId);
-
-      let interval = config.updateSettingsWhenIdleInterval;
-      if (interval > 0) {
-        client._intervalId = setInterval(() => SettingsManager.updateSettings(config), interval);
       }
 
       !!callback && callback(ctx);
@@ -226,6 +214,23 @@ export class ExceptionlessClient {
    */
   public getLastReferenceId(): string {
     return this.config.lastReferenceIdManager.getLast();
+  }
+
+  private updateSettingsTimer(initialDelay?: number) {
+    this.config.log.info('Updating settings timer');
+
+    this._timeoutId = clearTimeout(this._timeoutId);
+    this._timeoutId = clearInterval(this._intervalId);
+
+    let interval = this.config.updateSettingsWhenIdleInterval;
+    if (interval > 0) {
+      let updateSettings = () => SettingsManager.updateSettings(this.config);
+      if (initialDelay > 0) {
+        this._timeoutId = setTimeout(updateSettings, initialDelay);
+      }
+
+      this._intervalId = setInterval(updateSettings, interval);
+    }
   }
 
   /**

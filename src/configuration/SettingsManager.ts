@@ -96,7 +96,11 @@ export class SettingsManager {
   private static changed(config: Configuration) {
     let handlers = this._handlers; // optimization for minifier.
     for (let index = 0; index < handlers.length; index++) {
-      handlers[index](config);
+      try {
+        handlers[index](config);
+      } catch (ex) {
+        config.log.error(`Error calling onChanged handler: ${ex}`);
+      }
     }
   }
 

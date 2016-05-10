@@ -9,6 +9,18 @@ export interface IEvent {
     data?: any;
     reference_id?: string;
 }
+export declare class SubmissionResponse {
+    success: boolean;
+    badRequest: boolean;
+    serviceUnavailable: boolean;
+    paymentRequired: boolean;
+    unableToAuthenticate: boolean;
+    notFound: boolean;
+    requestEntityTooLarge: boolean;
+    statusCode: number;
+    message: string;
+    constructor(statusCode: number, message?: string);
+}
 export interface ILastReferenceIdManager {
     getLast(): string;
     clearLast(): void;
@@ -23,6 +35,7 @@ export interface IEventQueue {
     enqueue(event: IEvent): void;
     process(isAppExiting?: boolean): void;
     suspendProcessing(durationInMinutes?: number, discardFutureQueuedItems?: boolean, clearQueue?: boolean): void;
+    onEventsPosted(handler: (events: IEvent[], response: SubmissionResponse) => void): void;
 }
 export interface IEnvironmentInfoCollector {
     getEnvironmentInfo(context: EventPluginContext): IEnvironmentInfo;
@@ -53,6 +66,7 @@ export interface IConfigurationSettings {
     apiKey?: string;
     serverUrl?: string;
     heartbeatServerUrl?: string;
+    updateSettingsWhenIdleInterval?: number;
     environmentInfoCollector?: IEnvironmentInfoCollector;
     errorParser?: IErrorParser;
     lastReferenceIdManager?: ILastReferenceIdManager;
@@ -129,6 +143,7 @@ export declare class ReferenceIdPlugin implements IEventPlugin {
 }
 export declare class DefaultEventQueue implements IEventQueue {
     private _config;
+    private _handlers;
     private _suspendProcessingUntil;
     private _discardQueuedItemsUntil;
     private _processingQueue;
@@ -137,6 +152,8 @@ export declare class DefaultEventQueue implements IEventQueue {
     enqueue(event: IEvent): void;
     process(isAppExiting?: boolean): void;
     suspendProcessing(durationInMinutes?: number, discardFutureQueuedItems?: boolean, clearQueue?: boolean): void;
+    onEventsPosted(handler: (events: IEvent[], response: SubmissionResponse) => void): void;
+    private eventsPosted(events, response);
     private areQueuedItemsDiscarded();
     private ensureQueueTimer();
     private isQueueProcessingSuspended();
@@ -191,6 +208,7 @@ export declare class Configuration implements IConfigurationSettings {
     storage: IStorageProvider;
     queue: IEventQueue;
     private _plugins;
+    private _handlers;
     constructor(configSettings?: IConfigurationSettings);
     private _apiKey;
     apiKey: string;
@@ -221,6 +239,8 @@ export declare class Configuration implements IConfigurationSettings {
     useReferenceIds(): void;
     useLocalStorage(): void;
     useDebugLogger(): void;
+    onChanged(handler: (config: Configuration) => void): void;
+    private changed();
     static defaults: IConfigurationSettings;
 }
 export declare class EventBuilder {
@@ -263,18 +283,6 @@ export declare class ContextData {
     setSubmissionMethod(method: string): void;
     getSubmissionMethod(): string;
 }
-export declare class SubmissionResponse {
-    success: boolean;
-    badRequest: boolean;
-    serviceUnavailable: boolean;
-    paymentRequired: boolean;
-    unableToAuthenticate: boolean;
-    notFound: boolean;
-    requestEntityTooLarge: boolean;
-    statusCode: number;
-    message: string;
-    constructor(statusCode: number, message?: string);
-}
 export declare class ExceptionlessClient {
     private static _instance;
     config: Configuration;
@@ -305,6 +313,7 @@ export declare class ExceptionlessClient {
     submitEvent(event: IEvent, pluginContextData?: ContextData, callback?: (context: EventPluginContext) => void): void;
     updateUserEmailAndDescription(referenceId: string, email: string, description: string, callback?: (response: SubmissionResponse) => void): void;
     getLastReferenceId(): string;
+    private updateSettingsTimer(initialDelay?);
     static default: ExceptionlessClient;
 }
 export interface IManualStackingInfo {

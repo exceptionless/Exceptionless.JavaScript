@@ -87,6 +87,13 @@ export class Configuration implements IConfigurationSettings {
    */
   private _plugins: IEventPlugin[] = [];
 
+  /**
+   * A list of handlers that will be fired when configuration changes.
+   * @type {Array}
+   * @private
+   */
+  private _handlers: { (config: Configuration): void }[] = [];
+
   constructor(configSettings?: IConfigurationSettings) {
     function inject(fn: any) {
       return typeof fn === 'function' ? fn(this) : fn;
@@ -98,6 +105,7 @@ export class Configuration implements IConfigurationSettings {
     this.apiKey = configSettings.apiKey;
     this.serverUrl = configSettings.serverUrl;
     this.heartbeatServerUrl = configSettings.heartbeatServerUrl;
+    this.updateSettingsWhenIdleInterval = configSettings.updateSettingsWhenIdleInterval;
 
     this.environmentInfoCollector = inject(configSettings.environmentInfoCollector);
     this.errorParser = inject(configSettings.errorParser);
@@ -136,6 +144,7 @@ export class Configuration implements IConfigurationSettings {
   public set apiKey(value: string) {
     this._apiKey = value || null;
     this.log.info(`apiKey: ${this._apiKey}`);
+    this.changed();
   }
 
   /**
@@ -170,6 +179,7 @@ export class Configuration implements IConfigurationSettings {
       this._serverUrl = value;
       this._heartbeatServerUrl = value;
       this.log.info(`serverUrl: ${value}`);
+      this.changed();
     }
   }
 
@@ -196,6 +206,7 @@ export class Configuration implements IConfigurationSettings {
     if (!!value) {
       this._heartbeatServerUrl = value;
       this.log.info(`heartbeatServerUrl: ${value}`);
+      this.changed();
     }
   }
 
@@ -219,14 +230,15 @@ export class Configuration implements IConfigurationSettings {
    * @param value
    */
   public set updateSettingsWhenIdleInterval(value: number) {
-    if (value > 0 && value < 15000) {
-      value = 15000;
-    } else if (value <= 0) {
+    if (typeof value !== 'number' || value <= 0) {
       value = -1;
+    } else if (value > 0 && value < 15000) {
+      value = 15000;
     }
 
     this._updateSettingsWhenIdleInterval = value;
     this.log.info(`updateSettingsWhenIdleInterval: ${value}`);
+    this.changed();
   }
 
   /**
@@ -430,6 +442,21 @@ export class Configuration implements IConfigurationSettings {
   // TODO: Support a min log level.
   public useDebugLogger(): void {
     this.log = new ConsoleLog();
+  }
+
+  public onChanged(handler: (config: Configuration) => void) {
+    !!handler && this._handlers.push(handler);
+  }
+
+  private changed() {
+    let handlers = this._handlers; // optimization for minifier.
+    for (let index = 0; index < handlers.length; index++) {
+      try {
+        handlers[index](this);
+      } catch (ex) {
+        this.log.error(`Error calling onChanged handler: ${ex}`);
+      }
+    }
   }
 
   /**

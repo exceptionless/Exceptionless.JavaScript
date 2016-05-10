@@ -14,6 +14,13 @@ export class DefaultEventQueue implements IEventQueue {
   private _config: Configuration;
 
   /**
+   * A list of handlers that will be fired when events are submitted.
+   * @type {Array}
+   * @private
+   */
+  private _handlers: { (events: IEvent[], response: SubmissionResponse): void }[] = [];
+
+  /**
    * Suspends processing until the specified time.
    * @type {Date}
    * @private
@@ -109,6 +116,7 @@ export class DefaultEventQueue implements IEventQueue {
       log.info(`Sending ${events.length} events to ${config.serverUrl}.`);
       config.submissionClient.postEvents(events.map(e => e.value), config, (response: SubmissionResponse) => {
         this.processSubmissionResponse(response, events);
+        this.eventsPosted(events.map(e => e.value), response);
         log.info('Finished processing queue.');
         this._processingQueue = false;
       }, isAppExiting);
@@ -136,6 +144,21 @@ export class DefaultEventQueue implements IEventQueue {
     if (clearQueue) {
       // Account is over the limit and we want to ensure that the sample size being sent in will contain newer errors.
       config.storage.queue.clear();
+    }
+  }
+
+  public onEventsPosted(handler: (events: IEvent[], response: SubmissionResponse) => void): void {
+    !!handler && this._handlers.push(handler);
+  }
+
+  private eventsPosted(events: IEvent[], response: SubmissionResponse) {
+    let handlers = this._handlers; // optimization for minifier.
+    for (let index = 0; index < handlers.length; index++) {
+      try {
+        handlers[index](events, response);
+      } catch (ex) {
+        this._config.log.error(`Error calling onEventsPosted handler: ${ex}`);
+      }
     }
   }
 
