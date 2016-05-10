@@ -270,4 +270,50 @@ describe('Utils', () => {
       expect(Utils.endsWith('test', 'nopattern')).to.be.false;
     });
   });
+
+  describe('toBoolean', () => {
+    it('input: blake', () => {
+      expect(Utils.toBoolean('blake')).to.be.false;
+    });
+
+    it('input: 0', () => {
+      expect(Utils.toBoolean('0')).to.be.false;
+    });
+
+    it('input: no', () => {
+      expect(Utils.toBoolean('no')).to.be.false;
+    });
+
+    it('input: false', () => {
+      expect(Utils.toBoolean('false')).to.be.false;
+    });
+
+    it('input: false', () => {
+      expect(Utils.toBoolean(false)).to.be.false;
+    });
+
+    it('input: undefined', () => {
+      expect(Utils.toBoolean(undefined)).to.be.false;
+    });
+
+    it('input: null', () => {
+      expect(Utils.toBoolean(null)).to.be.false;
+    });
+
+    it('input: 1', () => {
+      expect(Utils.toBoolean('1')).to.be.true;
+    });
+
+    it('input: yes', () => {
+      expect(Utils.toBoolean('yes')).to.be.true;
+    });
+
+    it('input: true', () => {
+      expect(Utils.toBoolean('true')).to.be.true;
+    });
+
+    it('input: true', () => {
+      expect(Utils.toBoolean(true)).to.be.true;
+    });
+  });
 });

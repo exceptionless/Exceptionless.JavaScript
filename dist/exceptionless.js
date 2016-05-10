@@ -1933,11 +1933,15 @@ var Utils = (function () {
         }
         return stringifyImpl(data, exclusions);
     };
-    Utils.toBoolean = function (input) {
-        if (!input || !input.toLowerCase) {
-            return !!input;
+    Utils.toBoolean = function (input, defaultValue) {
+        if (defaultValue === void 0) { defaultValue = false; }
+        if (typeof input === 'boolean') {
+            return input;
         }
-        switch (input.toLowerCase().trim()) {
+        if (input === null || typeof input !== 'number' && typeof input !== 'string') {
+            return defaultValue;
+        }
+        switch ((input + '').toLowerCase().trim()) {
             case 'true':
             case 'yes':
             case '1': return true;
@@ -1945,8 +1949,8 @@ var Utils = (function () {
             case 'no':
             case '0':
             case null: return false;
-            default: return Boolean(input);
         }
+        return defaultValue;
     };
     return Utils;
 }());

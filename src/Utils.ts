@@ -226,15 +226,20 @@ export class Utils {
     return stringifyImpl(data, exclusions);
   }
 
-  public static toBoolean(input): boolean {
-    if (!input || !input.toLowerCase) {
-      return !!input;
+  public static toBoolean(input, defaultValue: boolean = false): boolean {
+    if (typeof input === 'boolean') {
+      return input;
     }
 
-    switch (input.toLowerCase().trim()) {
+    if (input === null || typeof input !== 'number' && typeof input !== 'string') {
+      return defaultValue;
+    }
+
+    switch ((input + '').toLowerCase().trim()) {
       case 'true': case 'yes': case '1': return true;
       case 'false': case 'no': case '0': case null: return false;
-      default: return Boolean(input);
     }
+
+    return defaultValue;
   }
 }
