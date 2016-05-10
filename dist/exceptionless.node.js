@@ -67,7 +67,7 @@ var SettingsManager = (function () {
     };
     SettingsManager.updateSettings = function (config, version) {
         var _this = this;
-        if (!config) {
+        if (!config || !config.enabled) {
             return;
         }
         var unableToUpdateMessage = 'Unable to update settings';

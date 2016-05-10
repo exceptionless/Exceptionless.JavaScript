@@ -50,7 +50,7 @@ export class SettingsManager {
   }
 
   public static updateSettings(config: Configuration, version?: number): void {
-    if (!config) {
+    if (!config || !config.enabled) {
       return;
     }
 
