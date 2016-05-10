@@ -9,8 +9,11 @@ export class EventExclusionPlugin implements IEventPlugin {
 
   public run(context: EventPluginContext, next?: () => void): void {
     function getLogLevel(level: string): number {
-      switch ((level || '').toLowerCase()) {
+      switch ((level || '').toLowerCase().trim()) {
         case 'trace':
+        case 'true':
+        case '1':
+        case 'yes':
           return 0;
         case 'debug':
           return 1;
@@ -23,6 +26,9 @@ export class EventExclusionPlugin implements IEventPlugin {
         case 'fatal':
           return 5;
         case 'off':
+        case 'false':
+        case '0':
+        case 'no':
           return 6;
         default:
           return -1;

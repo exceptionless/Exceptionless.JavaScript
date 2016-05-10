@@ -2762,8 +2762,11 @@ var EventExclusionPlugin = (function () {
     }
     EventExclusionPlugin.prototype.run = function (context, next) {
         function getLogLevel(level) {
-            switch ((level || '').toLowerCase()) {
+            switch ((level || '').toLowerCase().trim()) {
                 case 'trace':
+                case 'true':
+                case '1':
+                case 'yes':
                     return 0;
                 case 'debug':
                     return 1;
@@ -2776,6 +2779,9 @@ var EventExclusionPlugin = (function () {
                 case 'fatal':
                     return 5;
                 case 'off':
+                case 'false':
+                case '0':
+                case 'no':
                     return 6;
                 default:
                     return -1;
