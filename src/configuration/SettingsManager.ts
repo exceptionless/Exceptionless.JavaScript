@@ -25,7 +25,7 @@ export class SettingsManager {
     }
 
     let savedSettings = this.getSavedServerSettings(config);
-    config.log.info('Applying saved settings.');
+    config.log.info(`Applying saved settings: v${savedSettings.version}`);
     config.settings = Utils.merge(config.settings, savedSettings.settings);
     this.changed(config);
   }
@@ -54,8 +54,9 @@ export class SettingsManager {
       return;
     }
 
+    let unableToUpdateMessage = 'Unable to update settings';
     if (!config.isValid) {
-      config.log.error('Unable to update settings: ApiKey is not set.');
+      config.log.error(`${unableToUpdateMessage}: ApiKey is not set.`);
       return;
     }
 
@@ -63,8 +64,10 @@ export class SettingsManager {
       version = this.getVersion(config);
     }
 
+    config.log.info(`Checking for updated settings from: v${version}.`);
     config.submissionClient.getSettings(config, version, (response: SettingsResponse) => {
       if (!config || !response || !response.success || !response.settings) {
+        config.log.warn(`${unableToUpdateMessage}: ${response.message}`);
         return;
       }
 

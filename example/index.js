@@ -4,13 +4,29 @@ function getNonexistentData() {
 
 function sendEvents(numberToSends, eventType) {
   for (var index = 0; index < numberToSends; index++) {
-    switch (eventType || getRandomInt(0, 1)) {
+    switch (eventType || getRandomInt(0, 5)) {
       case 0: {
-        exceptionless.ExceptionlessClient.default.submitLog('sendEvents', 'This is a test message', 'info');
+        throwIndexOutOfRange();
         break;
       }
       case 1: {
-        throwIndexOutOfRange();
+        exceptionless.ExceptionlessClient.default.submitLog('sendEvents', 'This is a test trace message', 'trace');
+        break;
+      }
+      case 2: {
+        exceptionless.ExceptionlessClient.default.submitLog('sendEvents', 'This is a test debug message', 'debug');
+        break;
+      }
+      case 3: {
+        exceptionless.ExceptionlessClient.default.submitLog('sendEvents', 'This is a test info message', 'info');
+        break;
+      }
+      case 4: {
+        exceptionless.ExceptionlessClient.default.submitLog('sendEvents', 'This is a test warn message', 'warn');
+        break;
+      }
+      case 5: {
+        exceptionless.ExceptionlessClient.default.submitLog('sendEvents', 'This is a test error message', 'error');
         break;
       }
     }

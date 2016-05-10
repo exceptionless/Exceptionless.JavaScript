@@ -11,8 +11,9 @@
 <script type="text/javascript" src="index.js"></script>
 <script type="text/javascript">
   var client = exceptionless.ExceptionlessClient.default;
-  client.config.serverUrl = 'http://localhost:50000';
   client.config.useDebugLogger();
+  client.config.serverUrl = 'http://localhost:50000';
+  client.config.updateSettingsWhenIdleInterval = 15000;
   client.config.useLocalStorage();
   client.config.setUserIdentity('12345678', 'Blake');
   client.config.useSessions();
@@ -40,8 +41,17 @@
 <button onclick="throwStringError()">Throw String Message</button>
 <button onclick="sendEvents(10)">Send 10 random events</button>
 <button onclick="sendEvents(100)">Send 100 random events</button>
-<button onclick="sendEvents(100, 0)">Send 100 log messages</button>
-<button onclick="sendEvents(100, 1)">Send 100 exceptions</button>
+<button onclick="sendEvents(100, 0)">Send 100 exceptions</button>
+<br />
+<br />
+<button onclick="sendEvents(100, 1)">Send 100 log messages</button>
+<button onclick="sendEvents(1, 1)">Send trace log event</button>
+<button onclick="sendEvents(1, 2)">Send debug log event</button>
+<button onclick="sendEvents(1, 3)">Send info log event</button>
+<button onclick="sendEvents(1, 4)">Send warn log event</button>
+<button onclick="sendEvents(1, 5)">Send error log event</button>
+<br />
+<br />
 <button onclick="logClientConfigurationSettings()">Log Client Configuration Settings (settings sent from server)</button>
 </body>
 </html>
