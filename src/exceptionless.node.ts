@@ -23,6 +23,7 @@ defaults.submissionAdapter = new NodeSubmissionAdapter();
 Configuration.prototype.useLocalStorage = function() {
   this.storage = new NodeFileStorageProvider();
   SettingsManager.applySavedServerSettings(this);
+  this.changed();
 };
 
 function getListenerCount(emitter, event: string): number {

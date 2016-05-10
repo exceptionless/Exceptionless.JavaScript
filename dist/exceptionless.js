@@ -3249,6 +3249,7 @@ Configuration.prototype.useLocalStorage = function () {
     if (BrowserStorage.isAvailable()) {
         this.storage = new BrowserStorageProvider();
         SettingsManager.applySavedServerSettings(this);
+        this.changed();
     }
 };
 var defaults = Configuration.defaults;
