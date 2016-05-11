@@ -18,9 +18,12 @@ export class HeartbeatPlugin implements IEventPlugin {
     clearInterval(this._intervalId);
 
     let user: IUserInfo = context.event.data['@user'];
-    if (user && user.identity) {
-      this._intervalId = setInterval(() => context.client.submitSessionHeartbeat(user.identity), this._interval);
-    }
+
+    this._intervalId = setInterval(() => {
+      if (user && user.identity) {
+        context.client.submitSessionHeartbeat(user.identity);
+      }
+    }, this._interval);
 
     next && next();
   }

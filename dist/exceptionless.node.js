@@ -237,9 +237,11 @@ var HeartbeatPlugin = (function () {
     HeartbeatPlugin.prototype.run = function (context, next) {
         clearInterval(this._intervalId);
         var user = context.event.data['@user'];
-        if (user && user.identity) {
-            this._intervalId = setInterval(function () { return context.client.submitSessionHeartbeat(user.identity); }, this._interval);
-        }
+        this._intervalId = setInterval(function () {
+            if (user && user.identity) {
+                context.client.submitSessionHeartbeat(user.identity);
+            }
+        }, this._interval);
         next && next();
     };
     return HeartbeatPlugin;
