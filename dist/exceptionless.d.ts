@@ -8,6 +8,7 @@ export interface IEvent {
     value?: number;
     data?: any;
     reference_id?: string;
+    count?: number;
 }
 export declare class SubmissionResponse {
     success: boolean;
@@ -428,8 +429,10 @@ export declare class DuplicateCheckerPlugin implements IEventPlugin {
     name: string;
     private _processedHashcodes;
     private _getCurrentTime;
-    constructor(getCurrentTime?: () => number);
+    constructor(getCurrentTime?: () => number, interval?: number);
     run(context: EventPluginContext, next?: () => void): void;
+    private onInterval();
+    private enqueueMergedEvents();
 }
 export declare class EventExclusionPlugin implements IEventPlugin {
     priority: number;

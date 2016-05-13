@@ -1,4 +1,7 @@
 import { ContextData } from '../ContextData';
+import { DefaultErrorParser } from '../../services/DefaultErrorParser';
+import { ExceptionlessClient } from '../../ExceptionlessClient';
+import { IEvent } from '../../models/IEvent';
 import { EventPluginContext } from '../EventPluginContext';
 import { DuplicateCheckerPlugin } from './DuplicateCheckerPlugin';
 import { ErrorPlugin } from './ErrorPlugin';
@@ -7,33 +10,39 @@ import { expect } from 'chai';
 
 describe('DuplicateCheckerPlugin', () => {
   let now: number = 0;
+  let client: ExceptionlessClient;
   let plugin: DuplicateCheckerPlugin;
 
   beforeEach(() => {
-    plugin = new DuplicateCheckerPlugin(() => now);
+    client = new ExceptionlessClient('LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw', 'http://localhost:50000');
+    plugin = new DuplicateCheckerPlugin(() => now, 50);
   });
 
   function run(exception: Error) {
-    let context: EventPluginContext;
-    let contextData: ContextData;
-    ({ context, contextData } = createFixture());
+    let errorParser = new DefaultErrorParser();
+    let context = new EventPluginContext(client, { type: 'error', data: {} });
+    context.event.data['@error'] = errorParser.parse(context, exception);
 
-    contextData.setException(exception);
-
-    let errorPlugin = new ErrorPlugin();
-    errorPlugin.run(context);
     plugin.run(context);
 
     return context;
   }
 
-  it('should ignore duplicate within window', () => {
+  it('should ignore duplicate within window', (done) => {
     let exception = createException([{
       name: 'methodA'
     }]);
     run(exception);
+
     let contextOfSecondRun = run(exception);
     expect(contextOfSecondRun.cancelled).to.be.true;
+    setTimeout(() => {
+
+      expect(contextOfSecondRun.event.count).to.equal(1);
+
+      done();
+      }, 100);
+
   });
 
   it('shouldn\'t ignore error without stack', () => {
@@ -68,8 +77,11 @@ describe('DuplicateCheckerPlugin', () => {
 });
 
 function createException(stack?) {
+  function throwError() {
+    throw new ReferenceError('This is a test');
+  }
   try {
-    throw new Error();
+    throwError();
   } catch (e) {
     e.testStack = stack;
     return e;

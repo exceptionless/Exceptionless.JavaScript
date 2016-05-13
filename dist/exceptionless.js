@@ -2717,30 +2717,26 @@ var SubmissionMethodPlugin = (function () {
 }());
 exports.SubmissionMethodPlugin = SubmissionMethodPlugin;
 var DuplicateCheckerPlugin = (function () {
-    function DuplicateCheckerPlugin(getCurrentTime) {
+    function DuplicateCheckerPlugin(getCurrentTime, interval) {
         if (getCurrentTime === void 0) { getCurrentTime = function () { return Date.now(); }; }
-        this.priority = 40;
+        if (interval === void 0) { interval = 60000; }
+        this.priority = 90;
         this.name = 'DuplicateCheckerPlugin';
         this._processedHashcodes = [];
         this._getCurrentTime = getCurrentTime;
+        setInterval(this.onInterval, interval);
     }
     DuplicateCheckerPlugin.prototype.run = function (context, next) {
         function isDuplicate(error, processedHashcodes, now, log) {
-            var _loop_1 = function() {
-                var hashCode = Utils.getHashCode(error.stack_trace && JSON.stringify(error.stack_trace));
-                if (hashCode && processedHashcodes.some(function (h) { return h.hash === hashCode && h.timestamp >= (now - 2000); })) {
-                    log.info("Ignoring duplicate error event hash: " + hashCode);
-                    return { value: true };
-                }
-                processedHashcodes.push({ hash: hashCode, timestamp: now });
-                while (processedHashcodes.length > 20) {
-                    processedHashcodes.shift();
-                }
-                error = error.inner;
-            };
-            while (error) {
-                var state_1 = _loop_1();
-                if (typeof state_1 === "object") return state_1.value;
+            var _this = this;
+            var hashCode = Utils.getHashCode(JSON.stringify(error, ['stack_trace', 'inner']));
+            if (hashCode && processedHashcodes.some(function (h) { return h.hash === hashCode && h.timestamp >= (now - _this._interval); })) {
+                log.info("Ignoring duplicate error event hash: " + hashCode);
+                return true;
+            }
+            processedHashcodes.push({ hash: hashCode, timestamp: now });
+            while (processedHashcodes.length > 50) {
+                processedHashcodes.shift();
             }
             return false;
         }
@@ -2751,6 +2747,12 @@ var DuplicateCheckerPlugin = (function () {
             }
         }
         next && next();
+    };
+    DuplicateCheckerPlugin.prototype.onInterval = function () {
+        this.enqueueMergedEvents();
+    };
+    DuplicateCheckerPlugin.prototype.enqueueMergedEvents = function () {
+        return true;
     };
     return DuplicateCheckerPlugin;
 }());
