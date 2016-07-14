@@ -81,6 +81,48 @@ export class Configuration implements IConfigurationSettings {
   public queue: IEventQueue;
 
   /**
+   * The API key that will be used when sending events to the server.
+   * @type {string}
+   * @private
+   */
+  private _apiKey: string;
+
+  /**
+   * The server url that all events will be sent to.
+   * @type {string}
+   * @private
+   */
+  private _serverUrl: string = 'https://collector.exceptionless.io';
+
+  /**
+   * The heartbeat server url that all heartbeats will be sent to.
+   * @type {string}
+   * @private
+   */
+  private _heartbeatServerUrl: string = 'https://heartbeat.exceptionless.io';
+
+  /**
+   * How often the client should check for updated server settings when idle. The default is every 2 minutes.
+   * @type {number}
+   * @private
+   */
+  private _updateSettingsWhenIdleInterval: number = 120000;
+
+  /**
+   * A list of exclusion patterns.
+   * @type {Array}
+   * @private
+   */
+  private _dataExclusions: string[] = [];
+
+  /**
+   * A list of user agent patterns.
+   * @type {Array}
+   * @private
+   */
+  private _userAgentBotPatterns: string[] = [];
+
+  /**
    * The list of plugins that will be used in this configuration.
    * @type {Array}
    * @private
@@ -124,13 +166,6 @@ export class Configuration implements IConfigurationSettings {
 
   /**
    * The API key that will be used when sending events to the server.
-   * @type {string}
-   * @private
-   */
-  private _apiKey: string;
-
-  /**
-   * The API key that will be used when sending events to the server.
    * @returns {string}
    */
   public get apiKey(): string {
@@ -157,13 +192,6 @@ export class Configuration implements IConfigurationSettings {
 
   /**
    * The server url that all events will be sent to.
-   * @type {string}
-   * @private
-   */
-  private _serverUrl: string = 'https://collector.exceptionless.io';
-
-  /**
-   * The server url that all events will be sent to.
    * @returns {string}
    */
   public get serverUrl(): string {
@@ -185,13 +213,6 @@ export class Configuration implements IConfigurationSettings {
 
   /**
    * The heartbeat server url that all heartbeats will be sent to.
-   * @type {string}
-   * @private
-   */
-  private _heartbeatServerUrl: string = 'https://heartbeat.exceptionless.io';
-
-  /**
-   * The heartbeat server url that all heartbeats will be sent to.
    * @returns {string}
    */
   public get heartbeatServerUrl(): string {
@@ -209,13 +230,6 @@ export class Configuration implements IConfigurationSettings {
       this.changed();
     }
   }
-
-  /**
-   * How often the client should check for updated server settings when idle. The default is every 2 minutes.
-   * @type {number}
-   * @private
-   */
-  private _updateSettingsWhenIdleInterval: number = 120000;
 
   /**
    * How often the client should check for updated server settings when idle. The default is every 2 minutes.
@@ -244,20 +258,6 @@ export class Configuration implements IConfigurationSettings {
     this.log.info(`updateSettingsWhenIdleInterval: ${value}`);
     this.changed();
   }
-
-  /**
-   * A list of exclusion patterns.
-   * @type {Array}
-   * @private
-   */
-  private _dataExclusions: string[] = [];
-
-  /**
-   * A list of user agent patterns.
-   * @type {Array}
-   * @private
-   */
-  private _userAgentBotPatterns: string[] = [];
 
   /**
    *  A list of exclusion patterns that will automatically remove any data that
