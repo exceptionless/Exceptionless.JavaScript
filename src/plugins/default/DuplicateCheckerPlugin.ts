@@ -1,5 +1,4 @@
 import { IInnerError } from '../../models/IInnerError';
-import { ILog } from '../../logging/ILog';
 import { IEventPlugin } from '../IEventPlugin';
 import { EventPluginContext } from '../EventPluginContext';
 import { Utils } from '../../Utils';
@@ -18,27 +17,44 @@ export class DuplicateCheckerPlugin implements IEventPlugin {
     this._interval = interval;
 
     setInterval(() => {
-      while(this._mergedEvents.length > 0){
+      while (this._mergedEvents.length > 0) {
         this._mergedEvents.shift().resubmit();
       }
     }, interval);
   }
 
   public run(context: EventPluginContext, next?: () => void): void {
-    let hashCode = Utils.getHashCode(JSON.stringify(context.event.data['@error'], ['stack_trace', 'inner']));
-    let count = context.event.count || 1;
+    function getHashCode(error: IInnerError): number {
+      let hashCode = 0;
 
+      while (error) {
+        if (error.stack_trace && error.stack_trace.length) {
+          hashCode = (hashCode * 397) ^ Utils.getHashCode(JSON.stringify(error.stack_trace));
+        }
+        error = error.inner;
+      }
+
+      return hashCode;
+    }
+
+    let error = context.event.data['@error'];
+    let hashCode = getHashCode(error);
+    if (!hashCode) {
+      return;
+    }
+
+    let count = context.event.count || 1;
     let now = this._getCurrentTime();
 
     let merged = this._mergedEvents.filter(s => s.hashCode === hashCode)[0];
-    if(merged) {
+    if (merged) {
       merged.incrementCount(count);
       merged.updateDate(context.event.date);
       context.cancelled = true;
       return;
     }
 
-    if(this._processedHashcodes.some(h => h.hash === hashCode && h.timestamp >= (now - this._interval))) {
+    if (this._processedHashcodes.some(h => h.hash === hashCode && h.timestamp >= (now - this._interval))) {
       this._mergedEvents.push(new MergedEvent(hashCode, context, count));
       context.cancelled = true;
       return;
@@ -61,17 +77,17 @@ interface TimestampedHash {
 }
 
 class MergedEvent {
+  public hashCode: number;
   private _count: number;
   private _context: EventPluginContext;
-  public hashCode: number;
 
-  constructor(hashCode: number, context: EventPluginContext, count: number){
+  constructor(hashCode: number, context: EventPluginContext, count: number) {
     this.hashCode = hashCode;
     this._context = context;
     this._count = count;
   }
 
-  public incrementCount(count: number){
+  public incrementCount(count: number) {
     this._count += count;
   }
 
@@ -81,7 +97,7 @@ class MergedEvent {
   }
 
   public updateDate(date) {
-    if(date > this._context.event.date) {
+    if (date > this._context.event.date) {
       this._context.event.date = date;
     }
   }
