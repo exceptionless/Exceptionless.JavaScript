@@ -1,11 +1,7 @@
-import { ContextData } from '../ContextData';
 import { DefaultErrorParser } from '../../services/DefaultErrorParser';
 import { ExceptionlessClient } from '../../ExceptionlessClient';
-import { IEvent } from '../../models/IEvent';
 import { EventPluginContext } from '../EventPluginContext';
 import { DuplicateCheckerPlugin } from './DuplicateCheckerPlugin';
-import { ErrorPlugin } from './ErrorPlugin';
-import { createFixture } from './EventPluginTestFixture';
 import { expect } from 'chai';
 
 describe('DuplicateCheckerPlugin', () => {
@@ -29,9 +25,7 @@ describe('DuplicateCheckerPlugin', () => {
   }
 
   it('should ignore duplicate within window', (done) => {
-    let exception = createException([{
-      name: 'methodA'
-    }]);
+    let exception = createException();
     run(exception);
 
     let contextOfSecondRun = run(exception);
@@ -46,28 +40,25 @@ describe('DuplicateCheckerPlugin', () => {
   });
 
   it('shouldn\'t ignore error without stack', () => {
-    let exception = createException();
+    let exception = new ReferenceError('This is a test');
+    delete exception.stack;
+
     run(exception);
     let contextOfSecondRun = run(exception);
     expect(contextOfSecondRun.cancelled).not.to.be.true;
   });
 
   it('shouldn\'t ignore different stack within window', () => {
-    let exception1 = createException([{
-      name: 'methodA'
-    }]);
+    let exception1 = createException();
     run(exception1);
-    let exception2 = createException([{
-      name: 'methodB'
-    }]);
+    let exception2 = createException2();
     let contextOfSecondRun = run(exception2);
+
     expect(contextOfSecondRun.cancelled).not.to.be.true;
   });
 
   it('shouldn\'t ignore duplicate after window', () => {
-    let exception = createException([{
-      name: 'methodA'
-    }]);
+    let exception = createException();
     run(exception);
 
     now = 3000;
@@ -76,14 +67,24 @@ describe('DuplicateCheckerPlugin', () => {
   });
 });
 
-function createException(stack?) {
+function createException() {
   function throwError() {
     throw new ReferenceError('This is a test');
   }
   try {
     throwError();
   } catch (e) {
-    e.testStack = stack;
+    return e;
+  }
+}
+
+function createException2() {
+  function throwError2() {
+    throw new ReferenceError('This is a test');
+  }
+  try {
+    throwError2();
+  } catch (e) {
     return e;
   }
 }
