@@ -1,0 +1,35 @@
+<%
+var stdDeps = ['require', 'exports', 'module'];
+
+var amdDeps = stdDeps.concat(_.pluck(deps, 'amdName'));
+var cjsDeps = _.without(_.pluck(deps, 'cjsName'), stdDeps);
+cjsDeps = cjsDeps ? stdDeps.concat(_.map(cjsDeps, function(dep) { return "require('" + dep + "')" })) : stdDeps;
+
+var depNames = deps ? stdDeps.concat(_.pluck(deps, 'paramName')) : stdDeps;
+var globalDeps = deps ? stdDeps.concat(_.map(deps, function(dep) { return 'root.' + dep.globalName })) : stdDeps;
+
+%>
+(function(root, factory) {
+  if (typeof define === 'function' && define.amd) {
+    define('<%= namespace %>', <%= amdDeps ? JSON.stringify(amdDeps) + ', ' : '[], ' %>factory);
+  } else if (typeof exports === 'object') {
+    module.exports = factory(<%= cjsDeps.join(', ') %>);
+  } else {
+    root.<%= namespace %> = factory(<%= globalDeps.join(', ') %>);
+  }
+}(this, function(<%= depNames.join(', ') %>) {
+if (!require) {
+	require = function(name) {
+		return (typeof window !== "undefined" ? window : global)[name];
+	}
+}
+if (!exports) {
+	var exports = {};
+}
+<% if (exports) { %>
+<%= contents %>
+return <%= exports %>;
+<% } else { %>
+return <%= contents %>;
+<% } %>
+}));

@@ -706,13 +706,13 @@ var Configuration = (function () {
         this.enabled = true;
         this.lastReferenceIdManager = new DefaultLastReferenceIdManager();
         this.settings = {};
-        this._plugins = [];
-        this._handlers = [];
         this._serverUrl = 'https://collector.exceptionless.io';
         this._heartbeatServerUrl = 'https://heartbeat.exceptionless.io';
         this._updateSettingsWhenIdleInterval = 120000;
         this._dataExclusions = [];
         this._userAgentBotPatterns = [];
+        this._plugins = [];
+        this._handlers = [];
         function inject(fn) {
             return typeof fn === 'function' ? fn(this) : fn;
         }
