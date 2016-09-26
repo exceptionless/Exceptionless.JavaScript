@@ -15,7 +15,7 @@ describe('DuplicateCheckerPlugin', () => {
   });
 
   function run(exception: Error) {
-    let errorParser = new DefaultErrorParser();
+    let errorParser = client.config.errorParser;
     let context = new EventPluginContext(client, { type: 'error', data: {} });
     context.event.data['@error'] = errorParser.parse(context, exception);
 
