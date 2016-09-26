@@ -7,7 +7,7 @@ require.config({
 });
 
 require([
-    '../dist/temp/exceptionless-spec'
+    '../dist/temp/exceptionless-browserspec'
 ], function() {
     
     if (typeof mochaPhantomJS !== "undefined") { mochaPhantomJS.run(); }

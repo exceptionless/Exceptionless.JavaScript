@@ -4,6 +4,7 @@ var gulp = require('gulp');
 var replace = require('gulp-replace');
 var sourcemaps = require('gulp-sourcemaps');
 var tsProject = require('tsproject');
+var eventStream = require('event-stream');
 
 gulp.task('clean', function () {
   var del = require('del');
@@ -104,7 +105,9 @@ gulp.task('typescript.test', function () {
 
 gulp.task('exceptionless.test.umd', ['typescript.test'], function () {
   var umd = require('gulp-wrap-umd');
-  return gulp.src('dist/temp/src/exceptionless-spec.js')
+
+  var wrap = function(filename){
+    return gulp.src(filename)
     .pipe(sourcemaps.init({ loadMaps: true }))
     .pipe(umd({
       exports: 'exports',
@@ -114,11 +117,16 @@ gulp.task('exceptionless.test.umd', ['typescript.test'], function () {
     .pipe(replace('}(this, function(require, exports, module) {', '}(this, function(require, exports, module) {\nif (!exports) {\n\tvar exports = {};\n}\n'))
     .pipe(sourcemaps.write('.'))
     .pipe(gulp.dest('dist/temp'));
+  };
+
+  return eventStream.merge(
+    wrap('dist/temp/src/exceptionless-nodespec.js'), 
+    wrap('dist/temp/src/exceptionless-browserspec.js'));
 });
 
-gulp.task('test', ['exceptionless.test.umd'], function(done) {
+gulp.task('test-node', ['exceptionless.test.umd'], function(done) {
   var mocha = require('gulp-mocha');
-  return gulp.src('dist/temp/exceptionless-spec.js', { read: false })
+  return gulp.src('dist/temp/exceptionless-nodespec.js', { read: false })
     .pipe(mocha({
       require: ['source-map-support/register']
     }))
@@ -126,6 +134,12 @@ gulp.task('test', ['exceptionless.test.umd'], function(done) {
       process.exit();
     });
 });
+
+gulp.task('test-browser', function(){
+
+});
+
+gulp.task('test', ['test-node', 'test-browser']);
 
 gulp.task('format', function () {
   var exec = require('gulp-exec');
