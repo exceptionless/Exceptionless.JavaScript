@@ -706,13 +706,13 @@ var Configuration = (function () {
         this.enabled = true;
         this.lastReferenceIdManager = new DefaultLastReferenceIdManager();
         this.settings = {};
-        this._plugins = [];
-        this._handlers = [];
         this._serverUrl = 'https://collector.exceptionless.io';
         this._heartbeatServerUrl = 'https://heartbeat.exceptionless.io';
         this._updateSettingsWhenIdleInterval = 120000;
         this._dataExclusions = [];
         this._userAgentBotPatterns = [];
+        this._plugins = [];
+        this._handlers = [];
         function inject(fn) {
             return typeof fn === 'function' ? fn(this) : fn;
         }
@@ -1462,45 +1462,81 @@ var SubmissionMethodPlugin = (function () {
 exports.SubmissionMethodPlugin = SubmissionMethodPlugin;
 var DuplicateCheckerPlugin = (function () {
     function DuplicateCheckerPlugin(getCurrentTime, interval) {
+        var _this = this;
         if (getCurrentTime === void 0) { getCurrentTime = function () { return Date.now(); }; }
         if (interval === void 0) { interval = 60000; }
         this.priority = 90;
         this.name = 'DuplicateCheckerPlugin';
+        this._mergedEvents = [];
         this._processedHashcodes = [];
         this._getCurrentTime = getCurrentTime;
-        setInterval(this.onInterval, interval);
+        this._interval = interval;
+        setInterval(function () {
+            while (_this._mergedEvents.length > 0) {
+                _this._mergedEvents.shift().resubmit();
+            }
+        }, interval);
     }
     DuplicateCheckerPlugin.prototype.run = function (context, next) {
-        function isDuplicate(error, processedHashcodes, now, log) {
-            var _this = this;
-            var hashCode = Utils.getHashCode(JSON.stringify(error, ['stack_trace', 'inner']));
-            if (hashCode && processedHashcodes.some(function (h) { return h.hash === hashCode && h.timestamp >= (now - _this._interval); })) {
-                log.info("Ignoring duplicate error event hash: " + hashCode);
-                return true;
+        var _this = this;
+        function getHashCode(error) {
+            var hashCode = 0;
+            while (error) {
+                if (error.stack_trace && error.stack_trace.length) {
+                    hashCode = (hashCode * 397) ^ Utils.getHashCode(JSON.stringify(error.stack_trace));
+                }
+                error = error.inner;
             }
-            processedHashcodes.push({ hash: hashCode, timestamp: now });
-            while (processedHashcodes.length > 50) {
-                processedHashcodes.shift();
-            }
-            return false;
+            return hashCode;
         }
-        if (context.event.type === 'error') {
-            if (isDuplicate(context.event.data['@error'], this._processedHashcodes, this._getCurrentTime(), context.log)) {
-                context.cancelled = true;
-                return;
-            }
+        var error = context.event.data['@error'];
+        var hashCode = getHashCode(error);
+        if (!hashCode) {
+            return;
+        }
+        var count = context.event.count || 1;
+        var now = this._getCurrentTime();
+        var merged = this._mergedEvents.filter(function (s) { return s.hashCode === hashCode; })[0];
+        if (merged) {
+            merged.incrementCount(count);
+            merged.updateDate(context.event.date);
+            context.cancelled = true;
+            return;
+        }
+        if (this._processedHashcodes.some(function (h) { return h.hash === hashCode && h.timestamp >= (now - _this._interval); })) {
+            this._mergedEvents.push(new MergedEvent(hashCode, context, count));
+            context.cancelled = true;
+            return;
+        }
+        this._processedHashcodes.push({ hash: hashCode, timestamp: now });
+        while (this._processedHashcodes.length > 50) {
+            this._processedHashcodes.shift();
         }
         next && next();
-    };
-    DuplicateCheckerPlugin.prototype.onInterval = function () {
-        this.enqueueMergedEvents();
-    };
-    DuplicateCheckerPlugin.prototype.enqueueMergedEvents = function () {
-        return true;
     };
     return DuplicateCheckerPlugin;
 }());
 exports.DuplicateCheckerPlugin = DuplicateCheckerPlugin;
+var MergedEvent = (function () {
+    function MergedEvent(hashCode, context, count) {
+        this.hashCode = hashCode;
+        this._context = context;
+        this._count = count;
+    }
+    MergedEvent.prototype.incrementCount = function (count) {
+        this._count += count;
+    };
+    MergedEvent.prototype.resubmit = function () {
+        this._context.event.count = this._count;
+        this._context.client.config.queue.enqueue(this._context.event);
+    };
+    MergedEvent.prototype.updateDate = function (date) {
+        if (date > this._context.event.date) {
+            this._context.event.date = date;
+        }
+    };
+    return MergedEvent;
+}());
 var EventExclusionPlugin = (function () {
     function EventExclusionPlugin() {
         this.priority = 45;

@@ -209,20 +209,20 @@ export declare class Configuration implements IConfigurationSettings {
     settings: Object;
     storage: IStorageProvider;
     queue: IEventQueue;
+    private _apiKey;
+    private _serverUrl;
+    private _heartbeatServerUrl;
+    private _updateSettingsWhenIdleInterval;
+    private _dataExclusions;
+    private _userAgentBotPatterns;
     private _plugins;
     private _handlers;
     constructor(configSettings?: IConfigurationSettings);
-    private _apiKey;
     apiKey: string;
     isValid: boolean;
-    private _serverUrl;
     serverUrl: string;
-    private _heartbeatServerUrl;
     heartbeatServerUrl: string;
-    private _updateSettingsWhenIdleInterval;
     updateSettingsWhenIdleInterval: number;
-    private _dataExclusions;
-    private _userAgentBotPatterns;
     dataExclusions: string[];
     addDataExclusions(...exclusions: string[]): void;
     userAgentBotPatterns: string[];
@@ -427,12 +427,12 @@ export declare class SubmissionMethodPlugin implements IEventPlugin {
 export declare class DuplicateCheckerPlugin implements IEventPlugin {
     priority: number;
     name: string;
+    private _mergedEvents;
     private _processedHashcodes;
     private _getCurrentTime;
+    private _interval;
     constructor(getCurrentTime?: () => number, interval?: number);
     run(context: EventPluginContext, next?: () => void): void;
-    private onInterval();
-    private enqueueMergedEvents();
 }
 export declare class EventExclusionPlugin implements IEventPlugin {
     priority: number;

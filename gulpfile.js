@@ -1,3 +1,4 @@
+var fs = require("fs");
 var pkg = require('./package.json');
 var gulp = require('gulp');
 var replace = require('gulp-replace');
@@ -28,10 +29,10 @@ gulp.task('exceptionless.umd', ['typescript', 'typescript.integrations'], functi
     .pipe(umd({
       exports: 'exports',
       globalName: 'exceptionless',
-      namespace: 'exceptionless'
+      namespace: 'exceptionless',
+      deps: ['TraceKit'],
+      template: fs.readFileSync('./umd.template.jst', 'utf8')
     }))
-    .pipe(replace("define(factory);", "define('exceptionless', factory);"))
-    .pipe(replace('}(this, function(require, exports, module) {', '}(this, function(require, exports, module) {\nif (!require) {\n\trequire = function(name) {\n\t\treturn (typeof window !== "undefined" ? window : global)[name];\n\t}\n}\nif (!exports) {\n\tvar exports = {};\n}'))
     .pipe(sourcemaps.write('.'))
     .pipe(gulp.dest('dist/temp'));
 });
@@ -91,8 +92,8 @@ gulp.task('watch', ['build'], function () {
 gulp.task('lint', function () {
   var tslint = require('gulp-tslint');
   return gulp.src(['src/**/*.ts', '!src/typings/**/*.ts'])
-    .pipe(tslint())
-    .pipe(tslint.report('verbose'));
+    .pipe(tslint({ formatter: 'verbose' }))
+    .pipe(tslint.report());
 });
 
 gulp.task('build', ['clean', 'lint', 'exceptionless', 'exceptionless.node']);
