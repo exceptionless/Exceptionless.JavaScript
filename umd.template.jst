@@ -10,6 +10,7 @@ var globalDeps = deps ? stdDeps.concat(_.map(deps, function(dep) { return 'root.
 
 %>
 (function(root, factory) {
+  var require, exports, module;
   if (typeof define === 'function' && define.amd) {
     define('<%= namespace %>', <%= amdDeps ? JSON.stringify(amdDeps) + ', ' : '[], ' %>factory);
   } else if (typeof exports === 'object') {

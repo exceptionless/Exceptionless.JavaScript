@@ -1245,6 +1245,7 @@ if (typeof module !== 'undefined' && module.exports && this.module !== module) {
 
 
 (function(root, factory) {
+  var require, exports, module;
   if (typeof define === 'function' && define.amd) {
     define('exceptionless', ["require","exports","module","TraceKit"], factory);
   } else if (typeof exports === 'object') {
