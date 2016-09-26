@@ -22,8 +22,6 @@
       "files": [
         "typings/mocha/mocha.d.ts",
         "typings/chai/chai.d.ts",
-        "typings/node/node.d.ts",
-        "typings/stack-trace/stack-trace.d.ts",
 
         "**/*-spec.ts",
         "**/*-browserspec.ts"
