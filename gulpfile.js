@@ -136,7 +136,7 @@ gulp.task('test-node', ['exceptionless.test.umd'], function(done) {
     });
 });
 
-gulp.task('test-browser', function(){
+gulp.task('test-browser', ['exceptionless.test.umd'], function(){
   return gulp
     .src('testrunner.html')
     .pipe(mochaPhantomJS());
