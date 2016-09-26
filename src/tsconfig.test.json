@@ -15,7 +15,7 @@
         "typings/stack-trace/stack-trace.d.ts",
 
         "**/*-spec.ts",
-        "**/*-browserspec.ts"
+        "**/*-nodespec.ts"
       ]
     },
     "exceptionless-browserspec": {
