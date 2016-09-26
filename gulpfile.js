@@ -5,6 +5,7 @@ var replace = require('gulp-replace');
 var sourcemaps = require('gulp-sourcemaps');
 var tsProject = require('tsproject');
 var eventStream = require('event-stream');
+var mochaPhantomJS = require('gulp-mocha-phantomjs');
 
 gulp.task('clean', function () {
   var del = require('del');
@@ -136,7 +137,9 @@ gulp.task('test-node', ['exceptionless.test.umd'], function(done) {
 });
 
 gulp.task('test-browser', function(){
-
+  return gulp
+    .src('testrunner.html')
+    .pipe(mochaPhantomJS());
 });
 
 gulp.task('test', ['test-node', 'test-browser']);

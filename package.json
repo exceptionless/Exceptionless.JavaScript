@@ -36,6 +36,7 @@
     "gulp-concat": "2.6.0",
     "gulp-exec": "2.1.2",
     "gulp-mocha": "2.2.0",
+    "gulp-mocha-phantomjs": "^0.12.0",
     "gulp-replace": "0.5.4",
     "gulp-sourcemaps": "1.6.0",
     "gulp-tslint": "6.0.1",
