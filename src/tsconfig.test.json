@@ -7,14 +7,24 @@
     "target": "es5"
   },
   "bundles": {
-    "exceptionless-spec": {
+    "exceptionless-nodespec": {
       "files": [
         "typings/mocha/mocha.d.ts",
         "typings/chai/chai.d.ts",
         "typings/node/node.d.ts",
         "typings/stack-trace/stack-trace.d.ts",
 
-        "**/*-spec.ts"
+        "**/*-spec.ts",
+        "**/*-nodespec.ts"
+      ]
+    },
+    "exceptionless-browserspec": {
+      "files": [
+        "typings/mocha/mocha.d.ts",
+        "typings/chai/chai.d.ts",
+
+        "**/*-spec.ts",
+        "**/*-browserspec.ts"
       ]
     }
   }

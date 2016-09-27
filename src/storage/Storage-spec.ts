@@ -3,34 +3,14 @@ import { IStorage } from './IStorage';
 import { IStorageItem } from './IStorageItem';
 
 import { InMemoryStorage } from './InMemoryStorage';
-import { NodeFileStorage } from './NodeFileStorage';
 
 import { expect } from 'chai';
-import * as mockFs from 'mock-fs';
-
-let mockedFs;
-
-let nodeFileStorageFactory = (maxItems?) => {
-  return new NodeFileStorage('test', './fileStorage', 'ex-', maxItems, mockedFs);
-};
-
-let nodeFileStorageInitializer = () => {
-  mockedFs = mockFs.fs({
-    'fileStorage': {}
-  });
-};
-
-describeStorage('NodeFileStorage',
-  nodeFileStorageFactory,
-  nodeFileStorageInitializer,
-  true
-);
 
 describeStorage('InMemoryStorage', (maxItems = 250) => {
   return new InMemoryStorage(maxItems);
 });
 
-function describeStorage(name: string,
+export function describeStorage(name: string,
   storageFactory: (maxItems?: number) => IStorage,
   beforeEachCallback?: () => void,
   recreateStorage: boolean = false) {
