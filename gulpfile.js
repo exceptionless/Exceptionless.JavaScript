@@ -142,7 +142,11 @@ gulp.task('test-browser', ['exceptionless.test.umd'], function(){
     .pipe(mochaPhantomJS());
 });
 
-gulp.task('test', ['test-node', 'test-browser']);
+gulp.task('test', function(){
+  // test-node calls process.exit(), so run browser tests before node tests
+  var runSequence = require('run-sequence');
+  runSequence('test-browser', 'test-node');
+});
 
 gulp.task('format', function () {
   var exec = require('gulp-exec');
