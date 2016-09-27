@@ -129,7 +129,7 @@ gulp.task('test-node', ['exceptionless.test.umd'], function(done) {
 gulp.task('test-browser', ['exceptionless.test.umd'], function(){
   return gulp
     .src('testrunner.html')
-    .pipe($.mochaPhantomJS());
+    .pipe($.mochaPhantomjs());
 });
 
 gulp.task('test', function(){
@@ -139,10 +139,9 @@ gulp.task('test', function(){
 });
 
 gulp.task('format', function () {
-  var exec = require('gulp-exec');
   return gulp.src(['src/**/*.ts', '!src/typings/**/*.ts'])
-    .pipe(exec('node_modules/typescript-formatter/bin/tsfmt -r <%= file.path %>'))
-    .pipe(exec.reporter());
+    .pipe($.exec('node_modules/typescript-formatter/bin/tsfmt -r <%= file.path %>'))
+    .pipe($.exec.reporter());
 });
 
 gulp.task('default', ['watch', 'build', 'test']);
