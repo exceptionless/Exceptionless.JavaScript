@@ -1,4 +1,3 @@
-import { DefaultErrorParser } from '../../services/DefaultErrorParser';
 import { ExceptionlessClient } from '../../ExceptionlessClient';
 import { EventPluginContext } from '../EventPluginContext';
 import { DuplicateCheckerPlugin } from './DuplicateCheckerPlugin';
