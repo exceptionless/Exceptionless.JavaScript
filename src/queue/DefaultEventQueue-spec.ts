@@ -8,7 +8,6 @@ describe('DefaultEventQueue', () => {
 
   let config: Configuration;
   let xhr: any;
-  let requests: Array<any>;
 
   beforeEach(() => {
     xhr = sinon.useFakeXMLHttpRequest();
