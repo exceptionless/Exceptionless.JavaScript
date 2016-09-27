@@ -1,8 +1,19 @@
 import { ExceptionlessClient } from './ExceptionlessClient';
 import { EventPluginContext } from './plugins/EventPluginContext';
 import { expect } from 'chai';
+import * as sinon from 'sinon';
 
 describe('ExceptionlessClient', () => {
+  let xhr: any;
+
+  beforeEach(() => {
+    xhr = sinon.useFakeXMLHttpRequest();
+  });
+
+  afterEach(() => {
+    xhr.restore();
+  });
+
   it('should use event reference ids', (done) => {
     let error = new Error('From Unit Test');
 

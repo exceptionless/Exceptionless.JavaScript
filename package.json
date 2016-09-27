@@ -49,6 +49,7 @@
     "rewire": "^2.5.2",
     "rimraf": "2.5.3",
     "run-sequence": "^1.2.2",
+    "sinon": "^1.17.6",
     "source-map-support": "0.4.2",
     "systemjs": "^0.19.39",
     "tracekit": "0.4.3",

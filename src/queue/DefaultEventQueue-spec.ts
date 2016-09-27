@@ -1,12 +1,18 @@
 import { Configuration } from '../configuration/Configuration';
+import { SubmissionResponse } from '../submission/SubmissionResponse';
 import { IEvent } from '../models/IEvent';
 import { expect } from 'chai';
+import * as sinon from 'sinon';
 
 describe('DefaultEventQueue', () => {
 
   let config: Configuration;
+  let xhr: any;
+  let requests: Array<any>;
 
   beforeEach(() => {
+    xhr = sinon.useFakeXMLHttpRequest();
+
     config = getConfiguration();
   });
 
@@ -14,6 +20,7 @@ describe('DefaultEventQueue', () => {
     let queue = <any>config.queue;
     clearInterval(queue._queueTimer);
     config = null;
+    xhr.restore();
   });
 
   function getConfiguration(): Configuration {
@@ -38,11 +45,11 @@ describe('DefaultEventQueue', () => {
     expect(config.storage.queue.get().length).to.equal(1);
     config.queue.process();
 
-    if (!(<any>config.queue)._suspendProcessingUntil) {
-      expect(config.storage.queue.get().length).to.equal(0);
-    } else {
-      expect(config.storage.queue.get().length).to.equal(1);
-    }
+    config.queue.onEventsPosted((events: IEvent[], response: SubmissionResponse) => {
+      expect((<any>config.queue)._suspendProcessingUntil).to.be.undefined;
+
+        expect(config.storage.queue.get().length).to.equal(0);
+    });
   });
 
   it('should discard event submission', () => {

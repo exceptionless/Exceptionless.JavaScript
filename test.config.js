@@ -2,6 +2,7 @@ require.config({
     baseUrl: 'node_modules',
      paths: {
          chai: 'chai/chai',
+         sinon: 'sinon/lib/sinon',
          TraceKit: 'tracekit/tracekit'
      }
 });
