@@ -14,6 +14,8 @@
         "typings/node/node.d.ts",
         "typings/stack-trace/stack-trace.d.ts",
         
+        "exceptionless.node.ts",
+
         "**/*-spec.ts",
         "**/*-nodespec.ts"
       ]
@@ -22,6 +24,8 @@
       "files": [
         "typings/mocha/mocha.d.ts",
         "typings/chai/chai.d.ts",
+
+        "exceptionless.ts",
         
         "**/*-spec.ts",
         "**/*-browserspec.ts"
