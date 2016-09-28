@@ -29,6 +29,7 @@ export class DuplicateCheckerPlugin implements IEventPlugin {
 
       while (error) {
         if (error.stack_trace && error.stack_trace.length) {
+          hashCode += (hashCode * 397) ^ Utils.getHashCode(error.message);
           hashCode += (hashCode * 397) ^ Utils.getHashCode(JSON.stringify(error.stack_trace));
         }
         error = error.inner;
