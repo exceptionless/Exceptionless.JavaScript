@@ -4,7 +4,7 @@ import { EventPluginContext } from '../EventPluginContext';
 import { Utils } from '../../Utils';
 
 export class DuplicateCheckerPlugin implements IEventPlugin {
-  public priority: number = 90;
+  public priority: number = 1010;
   public name: string = 'DuplicateCheckerPlugin';
 
   private _mergedEvents: MergedEvent[] = [];
