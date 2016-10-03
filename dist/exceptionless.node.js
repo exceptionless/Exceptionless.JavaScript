@@ -1464,8 +1464,8 @@ var DuplicateCheckerPlugin = (function () {
     function DuplicateCheckerPlugin(getCurrentTime, interval) {
         var _this = this;
         if (getCurrentTime === void 0) { getCurrentTime = function () { return Date.now(); }; }
-        if (interval === void 0) { interval = 60000; }
-        this.priority = 90;
+        if (interval === void 0) { interval = 30000; }
+        this.priority = 1010;
         this.name = 'DuplicateCheckerPlugin';
         this._mergedEvents = [];
         this._processedHashcodes = [];
@@ -1482,8 +1482,11 @@ var DuplicateCheckerPlugin = (function () {
         function getHashCode(error) {
             var hashCode = 0;
             while (error) {
+                if (error.message && error.message.length) {
+                    hashCode += (hashCode * 397) ^ Utils.getHashCode(error.message);
+                }
                 if (error.stack_trace && error.stack_trace.length) {
-                    hashCode = (hashCode * 397) ^ Utils.getHashCode(JSON.stringify(error.stack_trace));
+                    hashCode += (hashCode * 397) ^ Utils.getHashCode(JSON.stringify(error.stack_trace));
                 }
                 error = error.inner;
             }
@@ -1500,14 +1503,17 @@ var DuplicateCheckerPlugin = (function () {
         if (merged) {
             merged.incrementCount(count);
             merged.updateDate(context.event.date);
+            context.log.info('Ignoring duplicate event with hash: ' + hashCode);
             context.cancelled = true;
             return;
         }
         if (this._processedHashcodes.some(function (h) { return h.hash === hashCode && h.timestamp >= (now - _this._interval); })) {
+            context.log.info('Adding event with hash: ' + hashCode);
             this._mergedEvents.push(new MergedEvent(hashCode, context, count));
             context.cancelled = true;
             return;
         }
+        context.log.info('Enqueueing event with hash: ' + hashCode + 'to cache.');
         this._processedHashcodes.push({ hash: hashCode, timestamp: now });
         while (this._processedHashcodes.length > 50) {
             this._processedHashcodes.shift();
