@@ -12,7 +12,7 @@ export class DuplicateCheckerPlugin implements IEventPlugin {
   private _getCurrentTime: () => number;
   private _interval: number;
 
-  constructor(getCurrentTime: () => number = () => Date.now(), interval: number = 60000) {
+  constructor(getCurrentTime: () => number = () => Date.now(), interval: number = 30000) {
     this._getCurrentTime = getCurrentTime;
     this._interval = interval;
 
