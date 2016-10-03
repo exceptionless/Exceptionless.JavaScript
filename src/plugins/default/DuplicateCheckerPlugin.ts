@@ -28,7 +28,7 @@ export class DuplicateCheckerPlugin implements IEventPlugin {
       let hashCode = 0;
 
       while (error) {
-        if (error.message && error.message.length){
+        if (error.message && error.message.length) {
           hashCode += (hashCode * 397) ^ Utils.getHashCode(error.message);
         }
         if (error.stack_trace && error.stack_trace.length) {
@@ -54,19 +54,19 @@ export class DuplicateCheckerPlugin implements IEventPlugin {
     if (merged) {
       merged.incrementCount(count);
       merged.updateDate(context.event.date);
-      context.log.info("Ignoring duplicate event with hash: " + hashCode);
+      context.log.info('Ignoring duplicate event with hash: ' + hashCode);
       context.cancelled = true;
       return;
     }
 
     if (this._processedHashcodes.some(h => h.hash === hashCode && h.timestamp >= (now - this._interval))) {
-      context.log.info("Adding event with hash: " + hashCode);
+      context.log.info('Adding event with hash: ' + hashCode);
       this._mergedEvents.push(new MergedEvent(hashCode, context, count));
       context.cancelled = true;
       return;
     }
 
-    context.log.info("Enqueueing event with hash: " + hashCode + "to cache.");
+    context.log.info('Enqueueing event with hash: ' + hashCode + 'to cache.');
     this._processedHashcodes.push({ hash: hashCode, timestamp: now });
 
     // Only keep the last 50 recent errors.
