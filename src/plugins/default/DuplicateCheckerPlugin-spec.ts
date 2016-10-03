@@ -38,13 +38,13 @@ describe('DuplicateCheckerPlugin', () => {
 
   });
 
-  it('shouldn\'t ignore error without stack', () => {
+  it('should ignore error without stack', () => {
     let exception = new ReferenceError('This is a test');
     delete exception.stack;
 
     run(exception);
     let contextOfSecondRun = run(exception);
-    expect(contextOfSecondRun.cancelled).not.to.be.true;
+    expect(contextOfSecondRun.cancelled).to.be.true;
   });
 
   it('shouldn\'t ignore different stack within window', () => {
