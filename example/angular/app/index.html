@@ -1,0 +1,30 @@
+<!DOCTYPE html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Exceptionless Angular Sample App</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="bower_components/html5-boilerplate/dist/css/normalize.css">
+    <link rel="stylesheet" href="bower_components/html5-boilerplate/dist/css/main.css">
+    <link rel="stylesheet" href="app.css">
+    <script src="bower_components/html5-boilerplate/dist/js/vendor/modernizr-2.8.3.min.js"></script>
+  </head>
+  <body ng-app="myApp">
+    <ul class="menu">
+      <li><a ui-sref="view1">View1 - Throws Controller Exception</a></li>
+      <li><a ui-sref="view2">View2 - Invalid Http Call</a></li>
+    </ul>
+
+    <div ui-view></div>
+
+    <script src="bower_components/angular/angular.js"></script>
+    <script src="bower_components/angular-ui-router/release/angular-ui-router.js"></script>
+    <script src="bower_components/exceptionless/dist/exceptionless.js"></script>
+    <script src="bower_components/exceptionless/dist/integrations/angular.js"></script>
+    <script src="app.js"></script>
+    <script src="app.constants.js"></script>
+    <script src="view1/view1.js"></script>
+    <script src="view2/view2.js"></script>
+    <script src="components/user.service.js"></script>
+  </body>
+</html>
