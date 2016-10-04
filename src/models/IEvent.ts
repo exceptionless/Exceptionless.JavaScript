@@ -8,4 +8,5 @@ export interface IEvent {
   value?: number;
   data?: any;
   reference_id?: string;
+  count?: number;
 }

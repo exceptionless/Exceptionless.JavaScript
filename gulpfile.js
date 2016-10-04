@@ -119,7 +119,8 @@ gulp.task('exceptionless.test.umd', ['typescript.test'], function () {
 gulp.task('test-node', ['exceptionless.test.umd'], function(done) {
   return gulp.src('dist/temp/exceptionless-nodespec.js', { read: false })
     .pipe($.mocha({
-      require: ['source-map-support/register']
+      require: ['source-map-support/register'],
+      timeout: 5000
     }))
     .once('end', function () {
       process.exit();

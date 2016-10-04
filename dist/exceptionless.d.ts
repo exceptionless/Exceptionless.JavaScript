@@ -8,6 +8,7 @@ export interface IEvent {
     value?: number;
     data?: any;
     reference_id?: string;
+    count?: number;
 }
 export declare class SubmissionResponse {
     success: boolean;
@@ -27,6 +28,7 @@ export interface ILastReferenceIdManager {
     setLast(eventId: string): void;
 }
 export interface ILog {
+    trace(message: string): void;
     info(message: string): void;
     warn(message: string): void;
     error(message: string): void;
@@ -96,12 +98,14 @@ export declare class DefaultLastReferenceIdManager implements ILastReferenceIdMa
     setLast(eventId: string): void;
 }
 export declare class ConsoleLog implements ILog {
+    trace(message: string): void;
     info(message: string): void;
     warn(message: string): void;
     error(message: string): void;
     private log(level, message);
 }
 export declare class NullLog implements ILog {
+    trace(message: string): void;
     info(message: string): void;
     warn(message: string): void;
     error(message: string): void;
@@ -426,9 +430,11 @@ export declare class SubmissionMethodPlugin implements IEventPlugin {
 export declare class DuplicateCheckerPlugin implements IEventPlugin {
     priority: number;
     name: string;
+    private _mergedEvents;
     private _processedHashcodes;
     private _getCurrentTime;
-    constructor(getCurrentTime?: () => number);
+    private _interval;
+    constructor(getCurrentTime?: () => number, interval?: number);
     run(context: EventPluginContext, next?: () => void): void;
 }
 export declare class EventExclusionPlugin implements IEventPlugin {

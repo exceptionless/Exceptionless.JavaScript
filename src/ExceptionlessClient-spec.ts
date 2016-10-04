@@ -1,10 +1,21 @@
 import { ExceptionlessClient } from './ExceptionlessClient';
 import { EventPluginContext } from './plugins/EventPluginContext';
 import { expect } from 'chai';
+import * as sinon from 'sinon';
 
 describe('ExceptionlessClient', () => {
+  let xhr: any;
+
+  beforeEach(() => {
+    xhr = sinon.useFakeXMLHttpRequest();
+  });
+
+  afterEach(() => {
+    xhr.restore();
+  });
+
   it('should use event reference ids', (done) => {
-    let error = new Error('From Unit Test');
+    let error = createException();
 
     let client = new ExceptionlessClient('LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw', 'http://localhost:50000');
     expect(client.config.lastReferenceIdManager.getLast()).to.be.null;
@@ -71,4 +82,15 @@ describe('ExceptionlessClient', () => {
     expect(client.config.apiKey).to.equal('LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw');
     expect(client.config.serverUrl).to.equal('http://localhost:50000');
   });
+
+  function createException() {
+    function throwError() {
+      throw new ReferenceError('This is a test');
+    }
+    try {
+      throwError();
+    } catch (e) {
+      return e;
+    }
+  }
 });

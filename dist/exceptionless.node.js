@@ -142,6 +142,9 @@ exports.DefaultLastReferenceIdManager = DefaultLastReferenceIdManager;
 var ConsoleLog = (function () {
     function ConsoleLog() {
     }
+    ConsoleLog.prototype.trace = function (message) {
+        this.log('trace', message);
+    };
     ConsoleLog.prototype.info = function (message) {
         this.log('info', message);
     };
@@ -152,8 +155,14 @@ var ConsoleLog = (function () {
         this.log('error', message);
     };
     ConsoleLog.prototype.log = function (level, message) {
-        if (console && console[level]) {
-            console[level]("[" + level + "] Exceptionless: " + message);
+        if (console) {
+            var msg = "[" + level + "] Exceptionless: " + message;
+            if (console[level]) {
+                console[level](msg);
+            }
+            else if (console.log) {
+                console["log"](msg);
+            }
         }
     };
     return ConsoleLog;
@@ -162,6 +171,7 @@ exports.ConsoleLog = ConsoleLog;
 var NullLog = (function () {
     function NullLog() {
     }
+    NullLog.prototype.trace = function (message) { };
     NullLog.prototype.info = function (message) { };
     NullLog.prototype.warn = function (message) { };
     NullLog.prototype.error = function (message) { };
@@ -1461,44 +1471,88 @@ var SubmissionMethodPlugin = (function () {
 }());
 exports.SubmissionMethodPlugin = SubmissionMethodPlugin;
 var DuplicateCheckerPlugin = (function () {
-    function DuplicateCheckerPlugin(getCurrentTime) {
+    function DuplicateCheckerPlugin(getCurrentTime, interval) {
+        var _this = this;
         if (getCurrentTime === void 0) { getCurrentTime = function () { return Date.now(); }; }
-        this.priority = 40;
+        if (interval === void 0) { interval = 30000; }
+        this.priority = 1010;
         this.name = 'DuplicateCheckerPlugin';
+        this._mergedEvents = [];
         this._processedHashcodes = [];
         this._getCurrentTime = getCurrentTime;
+        this._interval = interval;
+        setInterval(function () {
+            while (_this._mergedEvents.length > 0) {
+                _this._mergedEvents.shift().resubmit();
+            }
+        }, interval);
     }
     DuplicateCheckerPlugin.prototype.run = function (context, next) {
-        function isDuplicate(error, processedHashcodes, now, log) {
-            var _loop_1 = function() {
-                var hashCode = Utils.getHashCode(error.stack_trace && JSON.stringify(error.stack_trace));
-                if (hashCode && processedHashcodes.some(function (h) { return h.hash === hashCode && h.timestamp >= (now - 2000); })) {
-                    log.info("Ignoring duplicate error event hash: " + hashCode);
-                    return { value: true };
+        var _this = this;
+        function getHashCode(error) {
+            var hashCode = 0;
+            while (error) {
+                if (error.message && error.message.length) {
+                    hashCode += (hashCode * 397) ^ Utils.getHashCode(error.message);
                 }
-                processedHashcodes.push({ hash: hashCode, timestamp: now });
-                while (processedHashcodes.length > 20) {
-                    processedHashcodes.shift();
+                if (error.stack_trace && error.stack_trace.length) {
+                    hashCode += (hashCode * 397) ^ Utils.getHashCode(JSON.stringify(error.stack_trace));
                 }
                 error = error.inner;
-            };
-            while (error) {
-                var state_1 = _loop_1();
-                if (typeof state_1 === "object") return state_1.value;
             }
-            return false;
+            return hashCode;
         }
-        if (context.event.type === 'error') {
-            if (isDuplicate(context.event.data['@error'], this._processedHashcodes, this._getCurrentTime(), context.log)) {
-                context.cancelled = true;
-                return;
-            }
+        var error = context.event.data['@error'];
+        var hashCode = getHashCode(error);
+        if (!hashCode) {
+            return;
+        }
+        var count = context.event.count || 1;
+        var now = this._getCurrentTime();
+        var merged = this._mergedEvents.filter(function (s) { return s.hashCode === hashCode; })[0];
+        if (merged) {
+            merged.incrementCount(count);
+            merged.updateDate(context.event.date);
+            context.log.info('Ignoring duplicate event with hash: ' + hashCode);
+            context.cancelled = true;
+            return;
+        }
+        if (this._processedHashcodes.some(function (h) { return h.hash === hashCode && h.timestamp >= (now - _this._interval); })) {
+            context.log.trace('Adding event with hash: ' + hashCode);
+            this._mergedEvents.push(new MergedEvent(hashCode, context, count));
+            context.cancelled = true;
+            return;
+        }
+        context.log.trace('Enqueueing event with hash: ' + hashCode + 'to cache.');
+        this._processedHashcodes.push({ hash: hashCode, timestamp: now });
+        while (this._processedHashcodes.length > 50) {
+            this._processedHashcodes.shift();
         }
         next && next();
     };
     return DuplicateCheckerPlugin;
 }());
 exports.DuplicateCheckerPlugin = DuplicateCheckerPlugin;
+var MergedEvent = (function () {
+    function MergedEvent(hashCode, context, count) {
+        this.hashCode = hashCode;
+        this._context = context;
+        this._count = count;
+    }
+    MergedEvent.prototype.incrementCount = function (count) {
+        this._count += count;
+    };
+    MergedEvent.prototype.resubmit = function () {
+        this._context.event.count = this._count;
+        this._context.client.config.queue.enqueue(this._context.event);
+    };
+    MergedEvent.prototype.updateDate = function (date) {
+        if (date > this._context.event.date) {
+            this._context.event.date = date;
+        }
+    };
+    return MergedEvent;
+}());
 var EventExclusionPlugin = (function () {
     function EventExclusionPlugin() {
         this.priority = 45;

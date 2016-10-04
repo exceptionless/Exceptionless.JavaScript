@@ -1,50 +1,77 @@
 import { IInnerError } from '../../models/IInnerError';
-import { ILog } from '../../logging/ILog';
 import { IEventPlugin } from '../IEventPlugin';
 import { EventPluginContext } from '../EventPluginContext';
 import { Utils } from '../../Utils';
 
 export class DuplicateCheckerPlugin implements IEventPlugin {
-  public priority: number = 40;
+  public priority: number = 1010;
   public name: string = 'DuplicateCheckerPlugin';
 
+  private _mergedEvents: MergedEvent[] = [];
   private _processedHashcodes: TimestampedHash[] = [];
   private _getCurrentTime: () => number;
+  private _interval: number;
 
-  constructor(getCurrentTime: () => number = () => Date.now()) {
+  constructor(getCurrentTime: () => number = () => Date.now(), interval: number = 30000) {
     this._getCurrentTime = getCurrentTime;
+    this._interval = interval;
+
+    setInterval(() => {
+      while (this._mergedEvents.length > 0) {
+        this._mergedEvents.shift().resubmit();
+      }
+    }, interval);
   }
 
   public run(context: EventPluginContext, next?: () => void): void {
-    function isDuplicate(error: IInnerError, processedHashcodes, now, log: ILog): boolean {
+    function getHashCode(error: IInnerError): number {
+      let hashCode = 0;
+
       while (error) {
-        let hashCode = Utils.getHashCode(error.stack_trace && JSON.stringify(error.stack_trace));
-
-        // Only process the unique errors times within a 2 second window.
-        if (hashCode && processedHashcodes.some(h => h.hash === hashCode && h.timestamp >= (now - 2000))) {
-          log.info(`Ignoring duplicate error event hash: ${hashCode}`);
-          return true;
+        if (error.message && error.message.length) {
+          hashCode += (hashCode * 397) ^ Utils.getHashCode(error.message);
         }
-
-        // Add this exception to our list of recent processed errors.
-        processedHashcodes.push({ hash: hashCode, timestamp: now });
-
-        // Only keep the last 20 recent errors.
-        while (processedHashcodes.length > 20) {
-          processedHashcodes.shift();
+        if (error.stack_trace && error.stack_trace.length) {
+          hashCode += (hashCode * 397) ^ Utils.getHashCode(JSON.stringify(error.stack_trace));
         }
-
         error = error.inner;
       }
 
-      return false;
+      return hashCode;
     }
 
-    if (context.event.type === 'error') {
-      if (isDuplicate(context.event.data['@error'], this._processedHashcodes, this._getCurrentTime(), context.log)) {
-        context.cancelled = true;
-        return;
-      }
+    let error = context.event.data['@error'];
+    let hashCode = getHashCode(error);
+
+    if (!hashCode) {
+      return;
+    }
+
+    let count = context.event.count || 1;
+    let now = this._getCurrentTime();
+
+    let merged = this._mergedEvents.filter(s => s.hashCode === hashCode)[0];
+    if (merged) {
+      merged.incrementCount(count);
+      merged.updateDate(context.event.date);
+      context.log.info('Ignoring duplicate event with hash: ' + hashCode);
+      context.cancelled = true;
+      return;
+    }
+
+    if (this._processedHashcodes.some(h => h.hash === hashCode && h.timestamp >= (now - this._interval))) {
+      context.log.trace('Adding event with hash: ' + hashCode);
+      this._mergedEvents.push(new MergedEvent(hashCode, context, count));
+      context.cancelled = true;
+      return;
+    }
+
+    context.log.trace('Enqueueing event with hash: ' + hashCode + 'to cache.');
+    this._processedHashcodes.push({ hash: hashCode, timestamp: now });
+
+    // Only keep the last 50 recent errors.
+    while (this._processedHashcodes.length > 50) {
+      this._processedHashcodes.shift();
     }
 
     next && next();
@@ -54,4 +81,31 @@ export class DuplicateCheckerPlugin implements IEventPlugin {
 interface TimestampedHash {
   hash: number;
   timestamp: number;
+}
+
+class MergedEvent {
+  public hashCode: number;
+  private _count: number;
+  private _context: EventPluginContext;
+
+  constructor(hashCode: number, context: EventPluginContext, count: number) {
+    this.hashCode = hashCode;
+    this._context = context;
+    this._count = count;
+  }
+
+  public incrementCount(count: number) {
+    this._count += count;
+  }
+
+  public resubmit() {
+    this._context.event.count = this._count;
+    this._context.client.config.queue.enqueue(this._context.event);
+  }
+
+  public updateDate(date) {
+    if (date > this._context.event.date) {
+      this._context.event.date = date;
+    }
+  }
 }
