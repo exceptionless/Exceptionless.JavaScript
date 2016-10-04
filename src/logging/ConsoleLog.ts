@@ -1,6 +1,10 @@
 import { ILog } from './ILog';
 
 export class ConsoleLog implements ILog {
+  public trace(message: string): void {
+    this.log('trace', message);
+  }
+
   public info(message: string): void {
     this.log('info', message);
   }
@@ -14,8 +18,14 @@ export class ConsoleLog implements ILog {
   }
 
   private log(level: string, message: string) {
-    if (console && console[level]) {
-      console[level](`[${level}] Exceptionless: ${message}`);
+    if (console) {
+      let msg = `[${level}] Exceptionless: ${message}`;
+
+      if (console[level]) {
+        console[level](msg);
+      } else if (console.log) {
+        console[`log`](msg);
+      }
     }
   }
 }

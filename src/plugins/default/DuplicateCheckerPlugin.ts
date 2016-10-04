@@ -60,13 +60,13 @@ export class DuplicateCheckerPlugin implements IEventPlugin {
     }
 
     if (this._processedHashcodes.some(h => h.hash === hashCode && h.timestamp >= (now - this._interval))) {
-      context.log.info('Adding event with hash: ' + hashCode);
+      context.log.trace('Adding event with hash: ' + hashCode);
       this._mergedEvents.push(new MergedEvent(hashCode, context, count));
       context.cancelled = true;
       return;
     }
 
-    context.log.info('Enqueueing event with hash: ' + hashCode + 'to cache.');
+    context.log.trace('Enqueueing event with hash: ' + hashCode + 'to cache.');
     this._processedHashcodes.push({ hash: hashCode, timestamp: now });
 
     // Only keep the last 50 recent errors.
