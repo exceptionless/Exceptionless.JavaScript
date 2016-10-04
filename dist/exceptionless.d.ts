@@ -28,6 +28,7 @@ export interface ILastReferenceIdManager {
     setLast(eventId: string): void;
 }
 export interface ILog {
+    trace(message: string): void;
     info(message: string): void;
     warn(message: string): void;
     error(message: string): void;
@@ -97,12 +98,14 @@ export declare class DefaultLastReferenceIdManager implements ILastReferenceIdMa
     setLast(eventId: string): void;
 }
 export declare class ConsoleLog implements ILog {
+    trace(message: string): void;
     info(message: string): void;
     warn(message: string): void;
     error(message: string): void;
     private log(level, message);
 }
 export declare class NullLog implements ILog {
+    trace(message: string): void;
     info(message: string): void;
     warn(message: string): void;
     error(message: string): void;

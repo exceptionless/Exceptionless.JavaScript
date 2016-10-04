@@ -142,6 +142,9 @@ exports.DefaultLastReferenceIdManager = DefaultLastReferenceIdManager;
 var ConsoleLog = (function () {
     function ConsoleLog() {
     }
+    ConsoleLog.prototype.trace = function (message) {
+        this.log('trace', message);
+    };
     ConsoleLog.prototype.info = function (message) {
         this.log('info', message);
     };
@@ -152,8 +155,14 @@ var ConsoleLog = (function () {
         this.log('error', message);
     };
     ConsoleLog.prototype.log = function (level, message) {
-        if (console && console[level]) {
-            console[level]("[" + level + "] Exceptionless: " + message);
+        if (console) {
+            var msg = "[" + level + "] Exceptionless: " + message;
+            if (console[level]) {
+                console[level](msg);
+            }
+            else if (console.log) {
+                console["log"](msg);
+            }
         }
     };
     return ConsoleLog;
@@ -162,6 +171,7 @@ exports.ConsoleLog = ConsoleLog;
 var NullLog = (function () {
     function NullLog() {
     }
+    NullLog.prototype.trace = function (message) { };
     NullLog.prototype.info = function (message) { };
     NullLog.prototype.warn = function (message) { };
     NullLog.prototype.error = function (message) { };
@@ -1508,12 +1518,12 @@ var DuplicateCheckerPlugin = (function () {
             return;
         }
         if (this._processedHashcodes.some(function (h) { return h.hash === hashCode && h.timestamp >= (now - _this._interval); })) {
-            context.log.info('Adding event with hash: ' + hashCode);
+            context.log.trace('Adding event with hash: ' + hashCode);
             this._mergedEvents.push(new MergedEvent(hashCode, context, count));
             context.cancelled = true;
             return;
         }
-        context.log.info('Enqueueing event with hash: ' + hashCode + 'to cache.');
+        context.log.trace('Enqueueing event with hash: ' + hashCode + 'to cache.');
         this._processedHashcodes.push({ hash: hashCode, timestamp: now });
         while (this._processedHashcodes.length > 50) {
             this._processedHashcodes.shift();
