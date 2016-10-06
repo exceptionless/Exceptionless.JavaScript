@@ -30,6 +30,9 @@ angular.module('exceptionless', [])
                 function decorateRegularCall(property, logLevel) {
                     var previousFn = $delegate[property];
                     return $delegate[property] = function () {
+                        if (angular.mock) {
+                            $delegate[property].logs = [];
+                        }
                         previousFn.apply(null, arguments);
                         if (arguments[0] && arguments[0].length > 0) {
                             $ExceptionlessClient.submitLog(null, arguments[0], logLevel);

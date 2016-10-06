@@ -7,6 +7,7 @@
   },
   "files": [
     "../typings/angularjs/angular.d.ts",
+    "../typings/angularjs/angular-mocks.d.ts",
     "../typings/jquery/jquery.d.ts",
     "angular.ts"
   ],
@@ -14,6 +15,7 @@
     "angular": {
       "files": [
         "../typings/angularjs/angular.d.ts",
+        "../typings/angularjs/angular-mocks.d.ts",
         "../typings/jquery/jquery.d.ts",
         "angular.ts"
       ]
