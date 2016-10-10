@@ -86,11 +86,11 @@ describe('EventExclusionPlugin', () => {
     }
 
     it('<null>', () => expect(run(null, null, null, null)).to.be.false);
-    it('<null>', () => expect(run('feature', null, null, null)).to.be.false);
-    it('<null>', () => expect(run('feature', 'test', null, null)).to.be.false);
-    it('<null>', () => expect(run('feature', 'test', '@@feature:Test', true)).to.be.false);
-    it('<null>', () => expect(run('feature', 'test', '@@feature:Test', false)).to.be.true);
-    it('<null>', () => expect(run('feature', 'test', '@@feature:*', false)).to.be.true);
+    it('<null>', () => expect(run('usage', null, null, null)).to.be.false);
+    it('<null>', () => expect(run('usage', 'test', null, null)).to.be.false);
+    it('<null>', () => expect(run('usage', 'test', '@@usage:Test', true)).to.be.false);
+    it('<null>', () => expect(run('usage', 'test', '@@usage:Test', false)).to.be.true);
+    it('<null>', () => expect(run('usage', 'test', '@@usage:*', false)).to.be.true);
     it('<null>', () => expect(run('404', '/unknown', '@@404:*', false)).to.be.true);
     it('<null>', () => expect(run('404', '/unknown', '@@404:/unknown', false)).to.be.true);
     it('<null>', () => expect(run('404', '/unknown', '@@404:/unknown', true)).to.be.false);
