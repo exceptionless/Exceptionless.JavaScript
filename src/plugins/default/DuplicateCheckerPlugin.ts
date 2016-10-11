@@ -26,7 +26,6 @@ export class DuplicateCheckerPlugin implements IEventPlugin {
   public run(context: EventPluginContext, next?: () => void): void {
     function getHashCode(error: IInnerError): number {
       let hashCode = 0;
-
       while (error) {
         if (error.message && error.message.length) {
           hashCode += (hashCode * 397) ^ Utils.getHashCode(error.message);
@@ -42,36 +41,33 @@ export class DuplicateCheckerPlugin implements IEventPlugin {
 
     let error = context.event.data['@error'];
     let hashCode = getHashCode(error);
+    if (hashCode) {
+      let count = context.event.count || 1;
+      let now = this._getCurrentTime();
 
-    if (!hashCode) {
-      return;
-    }
+      let merged = this._mergedEvents.filter(s => s.hashCode === hashCode)[0];
+      if (merged) {
+        merged.incrementCount(count);
+        merged.updateDate(context.event.date);
+        context.log.info('Ignoring duplicate event with hash: ' + hashCode);
+        context.cancelled = true;
+      }
 
-    let count = context.event.count || 1;
-    let now = this._getCurrentTime();
+      if (!context.cancelled && this._processedHashcodes.some(h => h.hash === hashCode && h.timestamp >= (now - this._interval))) {
+        context.log.trace('Adding event with hash: ' + hashCode);
+        this._mergedEvents.push(new MergedEvent(hashCode, context, count));
+        context.cancelled = true;
+      }
 
-    let merged = this._mergedEvents.filter(s => s.hashCode === hashCode)[0];
-    if (merged) {
-      merged.incrementCount(count);
-      merged.updateDate(context.event.date);
-      context.log.info('Ignoring duplicate event with hash: ' + hashCode);
-      context.cancelled = true;
-      return;
-    }
+      if (!context.cancelled) {
+        context.log.trace('Enqueueing event with hash: ' + hashCode + 'to cache.');
+        this._processedHashcodes.push({ hash: hashCode, timestamp: now });
 
-    if (this._processedHashcodes.some(h => h.hash === hashCode && h.timestamp >= (now - this._interval))) {
-      context.log.trace('Adding event with hash: ' + hashCode);
-      this._mergedEvents.push(new MergedEvent(hashCode, context, count));
-      context.cancelled = true;
-      return;
-    }
-
-    context.log.trace('Enqueueing event with hash: ' + hashCode + 'to cache.');
-    this._processedHashcodes.push({ hash: hashCode, timestamp: now });
-
-    // Only keep the last 50 recent errors.
-    while (this._processedHashcodes.length > 50) {
-      this._processedHashcodes.shift();
+        // Only keep the last 50 recent errors.
+        while (this._processedHashcodes.length > 50) {
+          this._processedHashcodes.shift();
+        }
+      }
     }
 
     next && next();

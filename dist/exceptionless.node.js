@@ -1504,29 +1504,28 @@ var DuplicateCheckerPlugin = (function () {
         }
         var error = context.event.data['@error'];
         var hashCode = getHashCode(error);
-        if (!hashCode) {
-            return;
-        }
-        var count = context.event.count || 1;
-        var now = this._getCurrentTime();
-        var merged = this._mergedEvents.filter(function (s) { return s.hashCode === hashCode; })[0];
-        if (merged) {
-            merged.incrementCount(count);
-            merged.updateDate(context.event.date);
-            context.log.info('Ignoring duplicate event with hash: ' + hashCode);
-            context.cancelled = true;
-            return;
-        }
-        if (this._processedHashcodes.some(function (h) { return h.hash === hashCode && h.timestamp >= (now - _this._interval); })) {
-            context.log.trace('Adding event with hash: ' + hashCode);
-            this._mergedEvents.push(new MergedEvent(hashCode, context, count));
-            context.cancelled = true;
-            return;
-        }
-        context.log.trace('Enqueueing event with hash: ' + hashCode + 'to cache.');
-        this._processedHashcodes.push({ hash: hashCode, timestamp: now });
-        while (this._processedHashcodes.length > 50) {
-            this._processedHashcodes.shift();
+        if (hashCode) {
+            var count = context.event.count || 1;
+            var now_1 = this._getCurrentTime();
+            var merged = this._mergedEvents.filter(function (s) { return s.hashCode === hashCode; })[0];
+            if (merged) {
+                merged.incrementCount(count);
+                merged.updateDate(context.event.date);
+                context.log.info('Ignoring duplicate event with hash: ' + hashCode);
+                context.cancelled = true;
+            }
+            if (!context.cancelled && this._processedHashcodes.some(function (h) { return h.hash === hashCode && h.timestamp >= (now_1 - _this._interval); })) {
+                context.log.trace('Adding event with hash: ' + hashCode);
+                this._mergedEvents.push(new MergedEvent(hashCode, context, count));
+                context.cancelled = true;
+            }
+            if (!context.cancelled) {
+                context.log.trace('Enqueueing event with hash: ' + hashCode + 'to cache.');
+                this._processedHashcodes.push({ hash: hashCode, timestamp: now_1 });
+                while (this._processedHashcodes.length > 50) {
+                    this._processedHashcodes.shift();
+                }
+            }
         }
         next && next();
     };
