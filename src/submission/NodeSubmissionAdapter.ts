@@ -30,7 +30,7 @@ export class NodeSubmissionAdapter implements ISubmissionAdapter {
     if (request.method === 'POST') {
       options.headers = {
         'Content-Type': 'application/json',
-        'Content-Length': request.data.length
+        'Content-Length': new Buffer(request.data).length,
       };
     }
 
