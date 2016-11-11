@@ -27,7 +27,7 @@ var NodeSubmissionAdapter = (function () {
         if (request.method === 'POST') {
             options.headers = {
                 'Content-Type': 'application/json',
-                'Content-Length': request.data.length
+                'Content-Length': new Buffer(request.data).length
             };
         }
         var protocol = (parsedHost.protocol === 'https' ? https : http);
