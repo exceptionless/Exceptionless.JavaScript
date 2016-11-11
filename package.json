@@ -23,8 +23,8 @@
     "reporting"
   ],
   "repository": {
-    "type": "git",
-    "url": "git://github.com/exceptionless/Exceptionless.JavaScript.git"
+    "url": "git://github.com/exceptionless/Exceptionless.JavaScript.git",
+    "type": "git"
   },
   "devDependencies": {
     "chai": "3.5.0",
@@ -52,7 +52,7 @@
     "sinon": "^1.17.6",
     "source-map-support": "0.4.2",
     "systemjs": "^0.19.39",
-    "tracekit": "0.4.3",
+    "tracekit": "0.4.4",
     "tslint": "3.13.0",
     "tsproject": "1.2.1",
     "typescript": "1.8.10",

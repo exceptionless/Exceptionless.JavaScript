@@ -17,5 +17,9 @@
     "node_modules",
     "bower_components"
   ],
-  "dependencies": {}
+  "dependencies": {},
+  "repository": {
+    "url": "git://github.com/exceptionless/Exceptionless.JavaScript.git",
+    "type": "git"
+  }
 }
