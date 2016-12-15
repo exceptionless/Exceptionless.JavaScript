@@ -57,13 +57,13 @@ describe('ExceptionlessClient', () => {
     expect(builder.target.data).to.be.undefined;
   });
 
-  it('should accept source and message', () => {
+  it('should accept source and message and level', () => {
     let client = new ExceptionlessClient('LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw', 'http://localhost:50000');
-    let builder = client.createLog('Unit Test message');
+    let builder = client.createLog('source', 'Unit Test message', 'Info');
 
-    expect(builder.target.source).to.be.undefined;
+    expect(builder.target.source).to.equal('source');
     expect(builder.target.message).to.equal('Unit Test message');
-    expect(builder.target.data).to.be.undefined;
+    expect(builder.target.data['@level']).to.equal('Info');
   });
 
   it('should allow construction via apiKey and serverUrl parameters', () => {
