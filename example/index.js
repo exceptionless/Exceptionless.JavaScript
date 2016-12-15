@@ -34,6 +34,7 @@ function sendEvents(numberToSends, eventType) {
 }
 
 function getRandomInt(min, max) {
+  exceptionless.ExceptionlessClient.default.submitLog('getting random int min:' + min + ' max:' + max);
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 

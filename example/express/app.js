@@ -23,16 +23,17 @@ client.config.defaultData['SampleUser'] = {
 
 client.config.defaultTags.push('Example', 'Node');
 
-app.get('/', function (req, res) {
+app.get('/', function index(req, res) {
+  client.submitLog('loading index content');
   res.send('Hello World!');
 });
 
-app.get('/about', function (req, res) {
+app.get('/about', function about(req, res) {
   client.submitFeatureUsage('about');
   res.send('About');
 });
 
-app.get('/boom', function (req, res) {
+app.get('/boom', function boom(req, res) {
   throw new Error('Boom!!');
 });
 

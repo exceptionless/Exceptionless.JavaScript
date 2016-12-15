@@ -2167,7 +2167,7 @@ var Configuration = (function () {
     };
     Object.defineProperty(Configuration.prototype, "userAgent", {
         get: function () {
-            return 'exceptionless-js/1.4.2';
+            return 'exceptionless-js/1.4.3';
         },
         enumerable: true,
         configurable: true
@@ -2449,8 +2449,14 @@ var ExceptionlessClient = (function () {
             builder = builder.setSource(sourceOrMessage).setMessage(message);
         }
         else {
-            var caller = arguments.callee.caller;
-            builder = builder.setSource(caller && caller.name).setMessage(sourceOrMessage);
+            builder = builder.setMessage(sourceOrMessage);
+            try {
+                var caller = this.createLog.caller;
+                builder = builder.setSource(caller && caller.caller && caller.caller.name);
+            }
+            catch (e) {
+                this.config.log.trace('Unable to resolve log source: ' + e.message);
+            }
         }
         return builder;
     };

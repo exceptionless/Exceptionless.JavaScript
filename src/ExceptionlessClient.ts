@@ -78,9 +78,15 @@ export class ExceptionlessClient {
     } else if (message) {
       builder = builder.setSource(sourceOrMessage).setMessage(message);
     } else {
-      // TODO: Look into using https: //www.stevefenton.co.uk/Content/Blog/Date/201304/Blog/Obtaining-A-Class-Name-At-Runtime-In-TypeScript/
-      let caller: any = arguments.callee.caller;
-      builder = builder.setSource(caller && caller.name).setMessage(sourceOrMessage);
+      builder = builder.setMessage(sourceOrMessage);
+
+      try {
+        // TODO: Look into using https: //www.stevefenton.co.uk/Content/Blog/Date/201304/Blog/Obtaining-A-Class-Name-At-Runtime-In-TypeScript/
+        let caller: any = this.createLog.caller;
+        builder = builder.setSource(caller && caller.caller && caller.caller.name);
+      } catch (e) {
+        this.config.log.trace('Unable to resolve log source: ' + e.message);
+      }
     }
 
     return builder;
