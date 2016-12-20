@@ -3140,9 +3140,10 @@ var DefaultErrorParser = (function () {
         if (!stackTrace) {
             throw new Error('Unable to parse the exceptions stack trace.');
         }
+        var message = typeof (exception) === 'string' ? exception : undefined;
         return {
             type: stackTrace.name,
-            message: stackTrace.message || exception.message,
+            message: stackTrace.message || exception.message || message,
             stack_trace: getStackFrames(stackTrace.stack || [])
         };
     };

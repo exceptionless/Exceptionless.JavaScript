@@ -46,9 +46,10 @@ export class DefaultErrorParser implements IErrorParser {
       throw new Error('Unable to parse the exceptions stack trace.');
     }
 
+    let message = typeof(exception) === 'string' ? <any>exception : undefined;
     return {
       type: stackTrace.name,
-      message: stackTrace.message || exception.message,
+      message: stackTrace.message || exception.message || message,
       stack_trace: getStackFrames(stackTrace.stack || [])
     };
   }
