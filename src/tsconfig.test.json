@@ -9,10 +9,10 @@
   "bundles": {
     "exceptionless-nodespec": {
       "files": [
-        "typings/mocha/mocha.d.ts",
-        "typings/chai/chai.d.ts",
-        "typings/node/node.d.ts",
-        "typings/stack-trace/stack-trace.d.ts",
+        "../node_modules/@types/mocha/index.d.ts",
+        "../node_modules/@types/chai/index.d.ts",
+        "../node_modules/@types/node/index.d.ts",
+        "../node_modules/@types/stack-trace/index.d.ts",
         
         "exceptionless.node.ts",
 
@@ -22,8 +22,8 @@
     },
     "exceptionless-browserspec": {
       "files": [
-        "typings/mocha/mocha.d.ts",
-        "typings/chai/chai.d.ts",
+        "../node_modules/@types/mocha/index.d.ts",
+        "../node_modules/@types/chai/index.d.ts",
 
         "exceptionless.ts",
         
