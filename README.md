@@ -248,21 +248,19 @@ If you find a bug or want to contribute a feature, feel free to create a pull re
 3. Install [tsd](https://github.com/DefinitelyTyped/tsd) and [gulp](http://gulpjs.com) and the development dependencies using [npm](https://www.npmjs.com).
 
   ```sh
-  npm install -g tsd
-  npm install -g gulp
   npm install
   ```
 
 4. Build the project by running the following gulp command.
 
   ```sh
-  gulp build
+  npm run build
   ```
 
 5. Test the project by running the following gulp command.
 
   ```sh
-  gulp test
+  npm run test
   ```
 
 During development, you can use relative paths to require Exceptionless, e.g. `require('./dist/exceptionless.node.js')` when you are running Node.js from the git root directory.

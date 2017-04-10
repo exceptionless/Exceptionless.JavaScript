@@ -1,3 +1,6 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+var angular = require("angular");
 angular.module('exceptionless', [])
     .constant('$ExceptionlessClient', exceptionless.ExceptionlessClient.default)
     .factory('exceptionlessHttpInterceptor', ['$q', '$ExceptionlessClient', function ($q, $ExceptionlessClient) {

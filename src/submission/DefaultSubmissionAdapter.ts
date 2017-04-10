@@ -50,7 +50,7 @@ export class DefaultSubmissionAdapter implements ISubmissionAdapter {
       } else if (mode === LOADED && !status) {
         status = request.method === 'POST' ? 202 : 200;
       } else if (status < 200 || status > 299) {
-        let responseBody: any = xhr.responseBody;
+        let responseBody: any = (xhr as any).responseBody;
         if (!!responseBody && !!responseBody.message) {
           message = responseBody.message;
         } else if (!!responseText && responseText.indexOf('message') !== -1) {

@@ -8,7 +8,7 @@ let decoder = new StringDecoder('utf8');
 let strings: string[] = [];
 
 let jsonStream = new stream.Writable();
-jsonStream._write = (chunk: Buffer | string, encoding: string, next: Function) => {
+(jsonStream as any)._write = (chunk: Buffer | string, encoding: string, next: Function) => {
   strings.push(decoder.write(<Buffer>chunk));
   next();
 };

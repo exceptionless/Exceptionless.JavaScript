@@ -2,7 +2,6 @@ version: 1.4.{build}
 
 install:
   - ps: Install-Product node 5
-  - npm install -g tsd
   - npm install -g gulp
   - npm install -g bower
   - npm install
