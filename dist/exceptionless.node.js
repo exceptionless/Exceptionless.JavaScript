@@ -1,18 +1,24 @@
 "use strict";
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+Object.defineProperty(exports, "__esModule", { value: true });
 var child = require("child_process");
 var http = require("http");
-var os = require('os');
-var nodestacktrace = require('stack-trace');
-var path = require('path');
-var https = require('https');
-var url = require('url');
-var Fs = require('fs');
-var Path = require('path');
+var os = require("os");
+var nodestacktrace = require("stack-trace");
+var path = require("path");
+var https = require("https");
+var url = require("url");
+var Fs = require("fs");
+var Path = require("path");
 var SubmissionResponse = (function () {
     function SubmissionResponse(statusCode, message) {
         this.success = false;
@@ -119,9 +125,9 @@ var SettingsManager = (function () {
         }
         return { version: 0, settings: {} };
     };
-    SettingsManager._handlers = [];
     return SettingsManager;
 }());
+SettingsManager._handlers = [];
 exports.SettingsManager = SettingsManager;
 var DefaultLastReferenceIdManager = (function () {
     function DefaultLastReferenceIdManager() {
@@ -825,7 +831,7 @@ var Configuration = (function () {
     Configuration.prototype.addDataExclusions = function () {
         var exclusions = [];
         for (var _i = 0; _i < arguments.length; _i++) {
-            exclusions[_i - 0] = arguments[_i];
+            exclusions[_i] = arguments[_i];
         }
         this._dataExclusions = Utils.addRange.apply(Utils, [this._dataExclusions].concat(exclusions));
     };
@@ -840,7 +846,7 @@ var Configuration = (function () {
     Configuration.prototype.addUserAgentBotPatterns = function () {
         var userAgentBotPatterns = [];
         for (var _i = 0; _i < arguments.length; _i++) {
-            userAgentBotPatterns[_i - 0] = arguments[_i];
+            userAgentBotPatterns[_i] = arguments[_i];
         }
         this._userAgentBotPatterns = Utils.addRange.apply(Utils, [this._userAgentBotPatterns].concat(userAgentBotPatterns));
     };
@@ -954,9 +960,9 @@ var Configuration = (function () {
         enumerable: true,
         configurable: true
     });
-    Configuration._defaultSettings = null;
     return Configuration;
 }());
+Configuration._defaultSettings = null;
 exports.Configuration = Configuration;
 var EventBuilder = (function () {
     function EventBuilder(event, client, pluginContextData) {
@@ -1054,7 +1060,7 @@ var EventBuilder = (function () {
     EventBuilder.prototype.addTags = function () {
         var tags = [];
         for (var _i = 0; _i < arguments.length; _i++) {
-            tags[_i - 0] = arguments[_i];
+            tags[_i] = arguments[_i];
         }
         this.target.tags = Utils.addRange.apply(Utils, [this.target.tags].concat(tags));
         return this;
@@ -1313,9 +1319,9 @@ var ExceptionlessClient = (function () {
         enumerable: true,
         configurable: true
     });
-    ExceptionlessClient._instance = null;
     return ExceptionlessClient;
 }());
+ExceptionlessClient._instance = null;
 exports.ExceptionlessClient = ExceptionlessClient;
 var ConfigurationDefaultsPlugin = (function () {
     function ConfigurationDefaultsPlugin() {
@@ -1478,9 +1484,9 @@ var SubmissionMethodPlugin = (function () {
 exports.SubmissionMethodPlugin = SubmissionMethodPlugin;
 var DuplicateCheckerPlugin = (function () {
     function DuplicateCheckerPlugin(getCurrentTime, interval) {
-        var _this = this;
         if (getCurrentTime === void 0) { getCurrentTime = function () { return Date.now(); }; }
         if (interval === void 0) { interval = 30000; }
+        var _this = this;
         this.priority = 1010;
         this.name = 'DuplicateCheckerPlugin';
         this._mergedEvents = [];
@@ -1812,15 +1818,16 @@ var NodeFileStorage = (function (_super) {
     function NodeFileStorage(namespace, folder, prefix, maxItems, fs) {
         if (prefix === void 0) { prefix = 'ex-'; }
         if (maxItems === void 0) { maxItems = 20; }
-        _super.call(this, maxItems);
+        var _this = _super.call(this, maxItems) || this;
         if (!folder) {
             folder = Path.join(Path.dirname(require.main.filename), '.exceptionless');
         }
         var subfolder = Path.join(folder, namespace);
-        this.directory = Path.resolve(subfolder);
-        this.prefix = prefix;
-        this.fs = fs ? fs : Fs;
-        this.mkdir(this.directory);
+        _this.directory = Path.resolve(subfolder);
+        _this.prefix = prefix;
+        _this.fs = fs ? fs : Fs;
+        _this.mkdir(_this.directory);
+        return _this;
     }
     NodeFileStorage.prototype.write = function (key, value) {
         this.fs.writeFileSync(key, value);

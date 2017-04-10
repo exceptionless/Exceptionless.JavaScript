@@ -1,10 +1,11 @@
 "use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 var stream = require("stream");
 var child = require("child_process");
 var http = require("http");
-var https = require('https');
-var url = require('url');
-var string_decoder_1 = require('string_decoder');
+var https = require("https");
+var url = require("url");
+var string_decoder_1 = require("string_decoder");
 var NodeSubmissionAdapter = (function () {
     function NodeSubmissionAdapter() {
     }

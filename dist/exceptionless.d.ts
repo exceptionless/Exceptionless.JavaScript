@@ -126,7 +126,7 @@ export declare class EventPluginContext {
     event: IEvent;
     contextData: ContextData;
     constructor(client: ExceptionlessClient, event: IEvent, contextData?: ContextData);
-    log: ILog;
+    readonly log: ILog;
 }
 export declare class EventPluginManager {
     static run(context: EventPluginContext, callback: (context?: EventPluginContext) => void): void;
@@ -222,15 +222,15 @@ export declare class Configuration implements IConfigurationSettings {
     private _handlers;
     constructor(configSettings?: IConfigurationSettings);
     apiKey: string;
-    isValid: boolean;
+    readonly isValid: boolean;
     serverUrl: string;
     heartbeatServerUrl: string;
     updateSettingsWhenIdleInterval: number;
-    dataExclusions: string[];
+    readonly dataExclusions: string[];
     addDataExclusions(...exclusions: string[]): void;
-    userAgentBotPatterns: string[];
+    readonly userAgentBotPatterns: string[];
     addUserAgentBotPatterns(...userAgentBotPatterns: string[]): void;
-    plugins: IEventPlugin[];
+    readonly plugins: IEventPlugin[];
     addPlugin(plugin: IEventPlugin): void;
     addPlugin(name: string, priority: number, pluginAction: (context: EventPluginContext, next?: () => void) => void): void;
     removePlugin(plugin: IEventPlugin): void;
@@ -239,14 +239,14 @@ export declare class Configuration implements IConfigurationSettings {
     setUserIdentity(userInfo: IUserInfo): void;
     setUserIdentity(identity: string): void;
     setUserIdentity(identity: string, name: string): void;
-    userAgent: string;
+    readonly userAgent: string;
     useSessions(sendHeartbeats?: boolean, heartbeatInterval?: number): void;
     useReferenceIds(): void;
     useLocalStorage(): void;
     useDebugLogger(): void;
     onChanged(handler: (config: Configuration) => void): void;
     private changed();
-    static defaults: IConfigurationSettings;
+    static readonly defaults: IConfigurationSettings;
 }
 export declare class EventBuilder {
     target: IEvent;
@@ -281,10 +281,10 @@ export interface IUserDescription {
 }
 export declare class ContextData {
     setException(exception: Error): void;
-    hasException: boolean;
+    readonly hasException: boolean;
     getException(): Error;
     markAsUnhandledError(): void;
-    isUnhandledError: boolean;
+    readonly isUnhandledError: boolean;
     setSubmissionMethod(method: string): void;
     getSubmissionMethod(): string;
 }
@@ -319,7 +319,7 @@ export declare class ExceptionlessClient {
     updateUserEmailAndDescription(referenceId: string, email: string, description: string, callback?: (response: SubmissionResponse) => void): void;
     getLastReferenceId(): string;
     private updateSettingsTimer(initialDelay?);
-    static default: ExceptionlessClient;
+    static readonly default: ExceptionlessClient;
 }
 export interface IManualStackingInfo {
     title?: string;
@@ -511,7 +511,7 @@ export declare class BrowserStorage extends KeyValueStorageBase {
     static isAvailable(): boolean;
     constructor(namespace: string, prefix?: string, maxItems?: number);
     write(key: string, value: string): void;
-    read(key: string): any;
+    read(key: string): string;
     readAllKeys(): string[];
     delete(key: string): void;
     getKey(timestamp: any): string;
