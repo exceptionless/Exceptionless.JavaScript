@@ -64,7 +64,7 @@ gulp.task('exceptionless', ['exceptionless.umd'], function () {
     .pipe($.replace('exceptionless-js/1.0.0.0', 'exceptionless-js/' + pkg.version))
     .pipe($.uglify({ output: { beautify: false } }))
     .pipe($.sourcemaps.write('.'))
-    .pipe(gulp.dest('dist'))
+    .pipe(gulp.dest('dist'));
 });
 
 gulp.task('exceptionless.node', ['typescript.node'], function () {

@@ -1,25 +1,25 @@
-import { DefaultErrorParser } from '../../services/DefaultErrorParser';
+import { expect } from 'chai';
 import { ExceptionlessClient } from '../../ExceptionlessClient';
+import { IEvent } from '../../models/IEvent';
+import { DefaultErrorParser } from '../../services/DefaultErrorParser';
 import { EventPluginContext } from '../EventPluginContext';
 import { EventExclusionPlugin } from './EventExclusionPlugin';
-import { expect } from 'chai';
-import { IEvent } from '../../models/IEvent';
 
 describe('EventExclusionPlugin', () => {
   describe('should exclude log levels', () => {
     function run(source: string, level: string, settingKey: string, settingValue: string): boolean {
-      let client = new ExceptionlessClient('LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw', 'http://localhost:50000');
+      const client = new ExceptionlessClient('LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw', 'http://localhost:50000');
       if (settingKey) {
         client.config.settings[settingKey] = settingValue;
       }
 
-      let ev: IEvent = { type: 'log', source: source, data: {} };
+      const ev: IEvent = { type: 'log', source, data: {} };
       if (level) {
         ev.data['@level'] = level;
       }
 
-      let context = new EventPluginContext(client, ev);
-      let plugin = new EventExclusionPlugin();
+      const context = new EventPluginContext(client, ev);
+      const plugin = new EventExclusionPlugin();
       plugin.run(context);
 
       return !!context.cancelled;
@@ -45,19 +45,19 @@ describe('EventExclusionPlugin', () => {
 
   describe('should exclude log levels with info default:', () => {
     function run(source: string, level: string, settingKey: string, settingValue: string): boolean {
-      let client = new ExceptionlessClient('LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw', 'http://localhost:50000');
+      const client = new ExceptionlessClient('LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw', 'http://localhost:50000');
       client.config.settings['@@log:*'] = 'Info';
       if (settingKey) {
         client.config.settings[settingKey] = settingValue;
       }
 
-      let ev: IEvent = { type: 'log', source: source, data: {} };
+      const ev: IEvent = { type: 'log', source, data: {} };
       if (level) {
         ev.data['@level'] = level;
       }
 
-      let context = new EventPluginContext(client, ev);
-      let plugin = new EventExclusionPlugin();
+      const context = new EventPluginContext(client, ev);
+      const plugin = new EventExclusionPlugin();
       plugin.run(context);
 
       return !!context.cancelled;
@@ -73,13 +73,13 @@ describe('EventExclusionPlugin', () => {
 
   describe('should exclude source type', () => {
     function run(type: string, source: string, settingKey: string, settingValue: string|boolean): boolean {
-      let client = new ExceptionlessClient('LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw', 'http://localhost:50000');
+      const client = new ExceptionlessClient('LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw', 'http://localhost:50000');
       if (settingKey) {
         client.config.settings[settingKey] = settingValue;
       }
 
-      let context = new EventPluginContext(client, { type: type, source: source, data: {} });
-      let plugin = new EventExclusionPlugin();
+      const context = new EventPluginContext(client, { type, source, data: {} });
+      const plugin = new EventExclusionPlugin();
       plugin.run(context);
 
       return !!context.cancelled;
@@ -110,16 +110,16 @@ describe('EventExclusionPlugin', () => {
     }
 
     function run(settingKey: string): boolean {
-      let client = new ExceptionlessClient('LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw', 'http://localhost:50000');
+      const client = new ExceptionlessClient('LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw', 'http://localhost:50000');
       if (settingKey) {
         client.config.settings[settingKey] = false;
       }
 
-      let errorParser = new DefaultErrorParser();
-      let context = new EventPluginContext(client, { type: 'error', data: { } });
+      const errorParser = new DefaultErrorParser();
+      const context = new EventPluginContext(client, { type: 'error', data: { } });
       context.event.data['@error'] = errorParser.parse(context, createException());
 
-      let plugin = new EventExclusionPlugin();
+      const plugin = new EventExclusionPlugin();
       plugin.run(context);
 
       return !!context.cancelled;

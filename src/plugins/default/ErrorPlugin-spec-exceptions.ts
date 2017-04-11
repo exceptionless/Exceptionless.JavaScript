@@ -1,7 +1,7 @@
 export let CapturedExceptions: any = {};
 
 CapturedExceptions.OPERA_854 = {
-  message: 'Statement on line 44: Type mismatch (usually a non-object value used where an object is required)\n' +
+  'message': 'Statement on line 44: Type mismatch (usually a non-object value used where an object is required)\n' +
   'Backtrace:\n' +
   '  Line 44 of linked script http://path/to/file.js\n' +
   '    this.undef();\n' +
@@ -22,7 +22,7 @@ CapturedExceptions.OPERA_854 = {
 };
 
 CapturedExceptions.OPERA_902 = {
-  message: 'Statement on line 44: Type mismatch (usually a non-object value used where an object is required)\n' +
+  'message': 'Statement on line 44: Type mismatch (usually a non-object value used where an object is required)\n' +
   'Backtrace:\n' +
   '  Line 44 of linked script http://path/to/file.js\n' +
   '    this.undef();\n' +
@@ -43,7 +43,7 @@ CapturedExceptions.OPERA_902 = {
 };
 
 CapturedExceptions.OPERA_927 = {
-  message: 'Statement on line 43: Type mismatch (usually a non-object value used where an object is required)\n' +
+  'message': 'Statement on line 43: Type mismatch (usually a non-object value used where an object is required)\n' +
   'Backtrace:\n' +
   '  Line 43 of linked script http://path/to/file.js\n' +
   '    bar(n - 1);\n' +
@@ -56,7 +56,7 @@ CapturedExceptions.OPERA_927 = {
 };
 
 CapturedExceptions.OPERA_964 = {
-  message: 'Statement on line 42: Type mismatch (usually non-object value supplied where object required)\n' +
+  'message': 'Statement on line 42: Type mismatch (usually non-object value supplied where object required)\n' +
   'Backtrace:\n' +
   '  Line 42 of linked script http://path/to/file.js\n' +
   '                this.undef();\n' +
@@ -74,7 +74,7 @@ CapturedExceptions.OPERA_964 = {
   '         foo();\n' +
   '',
   'opera#sourceloc': 42,
-  stacktrace: '  ...  Line 27 of linked script http://path/to/file.js\n' +
+  'stacktrace': '  ...  Line 27 of linked script http://path/to/file.js\n' +
   '            ex = ex || this.createException();\n' +
   '  Line 18 of linked script http://path/to/file.js: In function printStackTrace\n' +
   '        CapturedExceptions.p = new printStackTrace.implementation(), result = p.run(ex);\n' +
@@ -90,9 +90,9 @@ CapturedExceptions.OPERA_964 = {
 };
 
 CapturedExceptions.OPERA_10 = {
-  message: 'Statement on line 42: Type mismatch (usually non-object value supplied where object required)',
+  'message': 'Statement on line 42: Type mismatch (usually non-object value supplied where object required)',
   'opera#sourceloc': 42,
-  stacktrace: '  Line 42 of linked script http://path/to/file.js\n' +
+  'stacktrace': '  Line 42 of linked script http://path/to/file.js\n' +
   '                this.undef();\n' +
   '  Line 27 of linked script http://path/to/file.js\n' +
   '            ex = ex || this.createException();\n' +
@@ -155,7 +155,7 @@ CapturedExceptions.OPERA_25 = {
 };
 
 CapturedExceptions.CHROME_15 = {
-  'arguments': ['undef'],
+  arguments: ['undef'],
   message: 'Object #<Object> has no method \'undef\'',
   stack: 'TypeError: Object #<Object> has no method \'undef\'\n' +
   '    at bar (http://path/to/file.js:13:17)\n' +

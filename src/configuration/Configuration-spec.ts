@@ -1,6 +1,6 @@
-import { Configuration } from './Configuration';
-import { EventPluginContext } from '../plugins/EventPluginContext';
 import { expect } from 'chai';
+import { EventPluginContext } from '../plugins/EventPluginContext';
+import { Configuration } from './Configuration';
 
 describe('Configuration', () => {
   it('should override configuration defaults', () => {
@@ -22,7 +22,7 @@ describe('Configuration', () => {
   });
 
   it('should not add duplicate plugin', () => {
-    let config = new Configuration({ apiKey: 'LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw', serverUrl: 'http://localhost:50000' });
+    const config = new Configuration({ apiKey: 'LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw', serverUrl: 'http://localhost:50000' });
     expect(config.plugins).not.to.equal(null);
     while (config.plugins.length > 0) {
       config.removePlugin(config.plugins[0]);
@@ -34,7 +34,7 @@ describe('Configuration', () => {
   });
 
   it('should generate plugin name and priority', () => {
-    let config = new Configuration({ apiKey: 'LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw', serverUrl: 'http://localhost:50000' });
+    const config = new Configuration({ apiKey: 'LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw', serverUrl: 'http://localhost:50000' });
     expect(config.plugins).not.to.equal(null);
     while (config.plugins.length > 0) {
       config.removePlugin(config.plugins[0]);
@@ -47,7 +47,7 @@ describe('Configuration', () => {
   });
 
   it('should sort plugins by priority', () => {
-    let config = new Configuration({ apiKey: 'LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw', serverUrl: 'http://localhost:50000' });
+    const config = new Configuration({ apiKey: 'LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw', serverUrl: 'http://localhost:50000' });
     expect(config.plugins).not.to.equal(null);
     while (config.plugins.length > 0) {
       config.removePlugin(config.plugins[0]);

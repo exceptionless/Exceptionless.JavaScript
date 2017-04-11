@@ -1,6 +1,6 @@
-import { IEventPlugin } from '../IEventPlugin';
-import { EventPluginContext } from '../EventPluginContext';
 import { Utils } from '../../Utils';
+import { EventPluginContext } from '../EventPluginContext';
+import { IEventPlugin } from '../IEventPlugin';
 
 export class ErrorPlugin implements IEventPlugin {
   public priority: number = 30;
@@ -8,7 +8,7 @@ export class ErrorPlugin implements IEventPlugin {
 
   public run(context: EventPluginContext, next?: () => void): void {
     const ERROR_KEY: string = '@error'; // optimization for minifier.
-    let ignoredProperties: string[] = [
+    const ignoredProperties: string[] = [
       'arguments',
       'column',
       'columnNumber',
@@ -27,20 +27,20 @@ export class ErrorPlugin implements IEventPlugin {
       'stacktrace'
     ];
 
-    let exception = context.contextData.getException();
+    const exception = context.contextData.getException();
     if (!!exception) {
       context.event.type = 'error';
 
       if (!context.event.data[ERROR_KEY]) {
-        let config = context.client.config;
-        let parser = config.errorParser;
+        const config = context.client.config;
+        const parser = config.errorParser;
         if (!parser) {
           throw new Error('No error parser was defined.');
         }
 
-        let result = parser.parse(context, exception);
+        const result = parser.parse(context, exception);
         if (!!result) {
-          let additionalData = JSON.parse(Utils.stringify(exception, config.dataExclusions.concat(ignoredProperties)));
+          const additionalData = JSON.parse(Utils.stringify(exception, config.dataExclusions.concat(ignoredProperties)));
           if (!Utils.isEmpty(additionalData)) {
             if (!result.data) {
               result.data = {};

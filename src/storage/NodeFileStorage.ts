@@ -14,8 +14,8 @@ export class NodeFileStorage extends KeyValueStorageBase {
     if (!folder) {
       folder = Path.join(Path.dirname(require.main.filename), '.exceptionless');
     }
-    let subfolder = Path.join(folder, namespace);
 
+    const subfolder = Path.join(folder, namespace);
     this.directory = Path.resolve(subfolder);
     this.prefix = prefix;
     this.fs = fs ? fs : Fs;
@@ -33,8 +33,8 @@ export class NodeFileStorage extends KeyValueStorageBase {
 
   public readAllKeys() {
     return this.fs.readdirSync(this.directory)
-      .filter(file => file.indexOf(this.prefix) === 0)
-      .map(file => Path.join(this.directory, file));
+      .filter((file) => file.indexOf(this.prefix) === 0)
+      .map((file) => Path.join(this.directory, file));
   }
 
   public delete(key: string) {
@@ -51,11 +51,11 @@ export class NodeFileStorage extends KeyValueStorageBase {
   }
 
   private mkdir(path) {
-    let dirs = path.split(Path.sep);
+    const dirs = path.split(Path.sep);
     let root = '';
 
     while (dirs.length > 0) {
-      let dir = dirs.shift();
+      const dir = dirs.shift();
       if (dir === '') {
         root = Path.sep;
       }
@@ -64,5 +64,5 @@ export class NodeFileStorage extends KeyValueStorageBase {
       }
       root += dir + Path.sep;
     }
-  };
+  }
 }

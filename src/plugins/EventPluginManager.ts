@@ -1,18 +1,18 @@
 import { Configuration } from '../configuration/Configuration';
-import { IEventPlugin } from './IEventPlugin';
-import { EventPluginContext } from './EventPluginContext';
 import { ConfigurationDefaultsPlugin } from './default/ConfigurationDefaultsPlugin';
+import { DuplicateCheckerPlugin } from './default/DuplicateCheckerPlugin';
+import { EnvironmentInfoPlugin } from './default/EnvironmentInfoPlugin';
 import { ErrorPlugin } from './default/ErrorPlugin';
+import { EventExclusionPlugin } from './default/EventExclusionPlugin';
 import { ModuleInfoPlugin } from './default/ModuleInfoPlugin';
 import { RequestInfoPlugin } from './default/RequestInfoPlugin';
-import { EnvironmentInfoPlugin } from './default/EnvironmentInfoPlugin';
 import { SubmissionMethodPlugin } from './default/SubmissionMethodPlugin';
-import { DuplicateCheckerPlugin } from './default/DuplicateCheckerPlugin';
-import { EventExclusionPlugin } from './default/EventExclusionPlugin';
+import { EventPluginContext } from './EventPluginContext';
+import { IEventPlugin } from './IEventPlugin';
 
 export class EventPluginManager {
   public static run(context: EventPluginContext, callback: (context?: EventPluginContext) => void): void {
-    let wrap = function(plugin: IEventPlugin, next?: () => void): () => void {
+    const wrap = function(plugin: IEventPlugin, next?: () => void): () => void {
       return () => {
         try {
           if (!context.cancelled) {
@@ -29,8 +29,8 @@ export class EventPluginManager {
       };
     };
 
-    let plugins: IEventPlugin[] = context.client.config.plugins; // optimization for minifier.
-    let wrappedPlugins: { (): void }[] = [];
+    const plugins: IEventPlugin[] = context.client.config.plugins; // optimization for minifier.
+    const wrappedPlugins: { (): void }[] = [];
     if (!!callback) {
       wrappedPlugins[plugins.length] = wrap({ name: 'cb', priority: 9007199254740992, run: callback }, null);
     }

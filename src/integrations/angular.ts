@@ -10,7 +10,7 @@ angular.module('exceptionless', [])
         if (rejection.status === 404) {
           $ExceptionlessClient.submitNotFound(rejection.config.url);
         } else if (rejection.status !== 401) {
-          let message = `[${rejection.status}] ${(rejection.data && rejection.data.Message ? rejection.data.Message : rejection.config.url)}`;
+          const message = `[${rejection.status}] ${(rejection.data && rejection.data.Message ? rejection.data.Message : rejection.config.url)}`;
           $ExceptionlessClient.createUnhandledException(new Error(message), 'errorHttpInterceptor')
             .setManualStackingInfo({ Status: rejection.status, ExceptionType: 'Error', Path: rejection.config.method + ' ' + rejection.config.url })
             .setSource(rejection.config.url)
@@ -31,7 +31,7 @@ angular.module('exceptionless', [])
     }]);
     $provide.decorator('$log', ['$delegate', function($delegate) {
       function decorateRegularCall(property, logLevel) {
-        let previousFn = $delegate[property];
+        const previousFn = $delegate[property];
         return $delegate[property] = function() {
           if (angular.mock) {
             // Needed to support angular-mocks.
@@ -101,7 +101,7 @@ angular.module('exceptionless', [])
         return;
       }
 
-      let builder = error && error.status === 404 ? $ExceptionlessClient.createNotFound(error.config.url) : $ExceptionlessClient.createUnhandledException(error, stateChangeError);
+      const builder = error && error.status === 404 ? $ExceptionlessClient.createNotFound(error.config.url) : $ExceptionlessClient.createUnhandledException(error, stateChangeError);
       builder.setSource(stateChangeError)
         .setMessage(error && error.statusText)
         .setProperty('toState', toState)

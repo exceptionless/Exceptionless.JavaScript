@@ -1,6 +1,6 @@
+import { BrowserStorage } from './BrowserStorage';
 import { IStorage } from './IStorage';
 import { IStorageProvider } from './IStorageProvider';
-import { BrowserStorage } from './BrowserStorage';
 
 export class BrowserStorageProvider implements IStorageProvider {
   public queue: IStorage;

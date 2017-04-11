@@ -1,6 +1,6 @@
-import { IEventPlugin } from '../IEventPlugin';
-import { EventPluginContext } from '../EventPluginContext';
 import { Utils } from '../../Utils';
+import { EventPluginContext } from '../EventPluginContext';
+import { IEventPlugin } from '../IEventPlugin';
 
 export class ReferenceIdPlugin implements IEventPlugin {
   public priority: number = 20;

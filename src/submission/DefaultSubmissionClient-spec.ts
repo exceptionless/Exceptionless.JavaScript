@@ -1,16 +1,16 @@
+import { expect } from 'chai';
 import { Configuration } from '../configuration/Configuration';
 import { IEvent } from '../models/IEvent';
 import { IUserDescription } from '../models/IUserDescription';
-import { ISubmissionClient } from './ISubmissionClient';
-import { ISubmissionAdapter } from './ISubmissionAdapter';
 import { DefaultSubmissionClient } from './DefaultSubmissionClient';
+import { ISubmissionAdapter } from './ISubmissionAdapter';
+import { ISubmissionClient } from './ISubmissionClient';
 import { SubmissionCallback } from './SubmissionCallback';
 import { SubmissionRequest } from './SubmissionRequest';
-import { expect } from 'chai';
 
 class TestAdapter implements ISubmissionAdapter {
   private request;
-  private checks: { (request: SubmissionRequest): void }[] = [];
+  private checks: Array<{ (request: SubmissionRequest): void }> = [];
   private callback: SubmissionCallback;
   private status = 202;
   private message = null;
@@ -49,7 +49,7 @@ class TestAdapter implements ISubmissionAdapter {
       return;
     }
 
-    this.checks.forEach(c => c(this.request));
+    this.checks.forEach((c) => c(this.request));
     this.callback && this.callback(this.status, this.message, this.data, this.headers);
   }
 }
@@ -60,8 +60,8 @@ describe('DefaultSubmissionClient', () => {
   let submissionClient: ISubmissionClient;
 
   beforeEach(() => {
-    let apiKey = 'LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw';
-    let serverUrl = 'http://localhost:50000';
+    const apiKey = 'LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw';
+    const serverUrl = 'http://localhost:50000';
 
     submissionClient = new DefaultSubmissionClient();
 
@@ -70,7 +70,7 @@ describe('DefaultSubmissionClient', () => {
       serverUrl
     });
 
-    adapter = new TestAdapter(r => {
+    adapter = new TestAdapter((r) => {
       expect(r.apiKey).to.equal(apiKey);
     });
 
@@ -78,9 +78,9 @@ describe('DefaultSubmissionClient', () => {
   });
 
   it('should submit events', (done) => {
-    let events = [{ type: 'log', message: 'From js client', reference_id: '123454321' }];
+    const events = [{ type: 'log', message: 'From js client', reference_id: '123454321' }];
 
-    adapter.withCheck(r => {
+    adapter.withCheck((r) => {
       expect(r.data).to.equal(JSON.stringify(events));
       expect(r.method).to.equal('POST');
       expect(r.url).to.equal(`${config.serverUrl}/api/v2/events`);
@@ -92,14 +92,14 @@ describe('DefaultSubmissionClient', () => {
   });
 
   it('should submit invalid object data', (done) => {
-    let events: IEvent[] = [{
+    const events: IEvent[] = [{
       type: 'log', message: 'From js client', reference_id: '123454321', data: {
         name: 'blake',
         age: function() { throw new Error('Test'); }
       }
     }];
 
-    adapter.withCheck(r => {
+    adapter.withCheck((r) => {
       expect(r.data).to.equal(JSON.stringify(events));
       expect(r.method).to.equal('POST');
       expect(r.url).to.equal(`${config.serverUrl}/api/v2/events`);
@@ -111,12 +111,12 @@ describe('DefaultSubmissionClient', () => {
   });
 
   it('should submit user description', (done) => {
-    let description: IUserDescription = {
+    const description: IUserDescription = {
       email_address: 'norply@exceptionless.io',
       description: 'unit test'
     };
 
-    adapter.withCheck(r => {
+    adapter.withCheck((r) => {
       expect(r.data).to.equal(JSON.stringify(description));
       expect(r.method).to.equal('POST');
       expect(r.url).to.equal(`${config.serverUrl}/api/v2/events/by-ref/123454321/user-description`);
@@ -130,7 +130,7 @@ describe('DefaultSubmissionClient', () => {
   it('should get project settings', (done) => {
     adapter.withResponse(200, null, JSON.stringify({ version: 1 }));
 
-    submissionClient.getSettings(config, 0, response => {
+    submissionClient.getSettings(config, 0, (response) => {
       expect(response.success).to.be.true;
       expect(response.message).to.be.null;
       expect(response.settings).not.to.be.null;

@@ -4,21 +4,21 @@ import { SubmissionRequest } from './submission/SubmissionRequest';
 import * as stream from 'stream';
 import { StringDecoder } from 'string_decoder';
 
-let decoder = new StringDecoder('utf8');
-let strings: string[] = [];
+const decoder = new StringDecoder('utf8');
+const strings: string[] = [];
 
-let jsonStream = new stream.Writable();
+const jsonStream = new stream.Writable();
 (jsonStream as any)._write = (chunk: Buffer | string, encoding: string, next: Function) => {
-  strings.push(decoder.write(<Buffer>chunk));
+  strings.push(decoder.write( chunk as Buffer));
   next();
 };
 
 jsonStream.on('finish', () => {
-  let json = strings.join('');
-  let request: SubmissionRequest = JSON.parse(json);
-  let adapter = new NodeSubmissionAdapter();
+  const json = strings.join('');
+  const request: SubmissionRequest = JSON.parse(json);
+  const adapter = new NodeSubmissionAdapter();
   adapter.sendRequest(request, (status, message, data, headers) => {
-    let result = {
+    const result = {
       status,
       message,
       data,

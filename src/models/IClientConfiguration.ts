@@ -1,4 +1,4 @@
 export interface IClientConfiguration {
-  settings: Object;
+  settings: object;
   version: number;
 }

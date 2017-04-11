@@ -1,7 +1,7 @@
-import { ContextData } from '../ContextData';
-import { EventPluginContext } from '../EventPluginContext';
 import { IEvent } from '../../models/IEvent';
 import { IErrorParser } from '../../services/IErrorParser';
+import { ContextData } from '../ContextData';
+import { EventPluginContext } from '../EventPluginContext';
 
 // TODO: This should use the real object instances and inject the error parser.
 export function createFixture() {
@@ -15,7 +15,7 @@ export function createFixture() {
     parse: (c: EventPluginContext, exception: Error) => ({
       type: exception.name,
       message: exception.message,
-      stack_trace: (<any>exception).testStack || null
+      stack_trace: ( exception as any).testStack || null
     })
   };
   client = {

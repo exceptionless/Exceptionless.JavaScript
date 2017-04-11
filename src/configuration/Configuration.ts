@@ -1,28 +1,28 @@
-import { IConfigurationSettings } from './IConfigurationSettings';
-import { SettingsManager } from './SettingsManager';
-import { ILastReferenceIdManager } from '../lastReferenceIdManager/ILastReferenceIdManager';
 import { DefaultLastReferenceIdManager } from '../lastReferenceIdManager/DefaultLastReferenceIdManager';
+import { ILastReferenceIdManager } from '../lastReferenceIdManager/ILastReferenceIdManager';
 import { ConsoleLog } from '../logging/ConsoleLog';
 import { ILog } from '../logging/ILog';
 import { NullLog } from '../logging/NullLog';
 import { IUserInfo } from '../models/IUserInfo';
-import { IEventPlugin } from '../plugins/IEventPlugin';
-import { EventPluginContext } from '../plugins/EventPluginContext';
-import { EventPluginManager } from '../plugins/EventPluginManager';
 import { HeartbeatPlugin } from '../plugins/default/HeartbeatPlugin';
 import { ReferenceIdPlugin } from '../plugins/default/ReferenceIdPlugin';
-import { IEventQueue } from '../queue/IEventQueue';
+import { EventPluginContext } from '../plugins/EventPluginContext';
+import { EventPluginManager } from '../plugins/EventPluginManager';
+import { IEventPlugin } from '../plugins/IEventPlugin';
 import { DefaultEventQueue } from '../queue/DefaultEventQueue';
+import { IEventQueue } from '../queue/IEventQueue';
 import { IEnvironmentInfoCollector } from '../services/IEnvironmentInfoCollector';
 import { IErrorParser } from '../services/IErrorParser';
 import { IModuleCollector } from '../services/IModuleCollector';
 import { IRequestInfoCollector } from '../services/IRequestInfoCollector';
-import { IStorageProvider } from '../storage/IStorageProvider';
 import { InMemoryStorageProvider } from '../storage/InMemoryStorageProvider';
+import { IStorageProvider } from '../storage/IStorageProvider';
+import { DefaultSubmissionClient } from '../submission/DefaultSubmissionClient';
 import { ISubmissionAdapter } from '../submission/ISubmissionAdapter';
 import { ISubmissionClient } from '../submission/ISubmissionClient';
-import { DefaultSubmissionClient } from '../submission/DefaultSubmissionClient';
 import { Utils } from '../Utils';
+import { IConfigurationSettings } from './IConfigurationSettings';
+import { SettingsManager } from './SettingsManager';
 
 export class Configuration implements IConfigurationSettings {
   /**
@@ -134,7 +134,7 @@ export class Configuration implements IConfigurationSettings {
    * @type {Array}
    * @private
    */
-  private _handlers: { (config: Configuration): void }[] = [];
+  private _handlers: Array<{ (config: Configuration): void }> = [];
 
   constructor(configSettings?: IConfigurationSettings) {
     function inject(fn: any) {
@@ -269,7 +269,7 @@ export class Configuration implements IConfigurationSettings {
    * @returns {string[]}
    */
   public get dataExclusions(): string[] {
-    let exclusions: string = this.settings['@@DataExclusions'];
+    const exclusions: string = this.settings['@@DataExclusions'];
     return this._dataExclusions.concat(exclusions && exclusions.split(',') || []);
   }
 
@@ -294,7 +294,7 @@ export class Configuration implements IConfigurationSettings {
    * @returns {string[]}
    */
   public get userAgentBotPatterns(): string[] {
-    let patterns: string = this.settings['@@UserAgentBotPatterns'];
+    const patterns: string = this.settings['@@UserAgentBotPatterns'];
     return this._userAgentBotPatterns.concat(patterns && patterns.split(',') || []);
   }
 
@@ -333,7 +333,7 @@ export class Configuration implements IConfigurationSettings {
    */
   public addPlugin(name: string, priority: number, pluginAction: (context: EventPluginContext, next?: () => void) => void): void;
   public addPlugin(pluginOrName: IEventPlugin | string, priority?: number, pluginAction?: (context: EventPluginContext, next?: () => void) => void): void {
-    let plugin: IEventPlugin = !!pluginAction ? { name: <string>pluginOrName, priority: priority, run: pluginAction } : <IEventPlugin>pluginOrName;
+    const plugin: IEventPlugin = !!pluginAction ? { name: pluginOrName as string, priority, run: pluginAction } :  pluginOrName as IEventPlugin;
     if (!plugin || !plugin.run) {
       this.log.error('Add plugin failed: Run method not defined');
       return;
@@ -348,7 +348,7 @@ export class Configuration implements IConfigurationSettings {
     }
 
     let pluginExists: boolean = false;
-    let plugins = this._plugins; // optimization for minifier.
+    const plugins = this._plugins; // optimization for minifier.
     for (let index = 0; index < plugins.length; index++) {
       if (plugins[index].name === plugin.name) {
         pluginExists = true;
@@ -373,13 +373,13 @@ export class Configuration implements IConfigurationSettings {
    */
   public removePlugin(name: string): void;
   public removePlugin(pluginOrName: IEventPlugin | string): void {
-    let name: string = typeof pluginOrName === 'string' ? pluginOrName : pluginOrName.name;
+    const name: string = typeof pluginOrName === 'string' ? pluginOrName : pluginOrName.name;
     if (!name) {
       this.log.error('Remove plugin failed: Plugin name not defined');
       return;
     }
 
-    let plugins = this._plugins; // optimization for minifier.
+    const plugins = this._plugins; // optimization for minifier.
     for (let index = 0; index < plugins.length; index++) {
       if (plugins[index].name === name) {
         plugins.splice(index, 1);
@@ -403,9 +403,9 @@ export class Configuration implements IConfigurationSettings {
   public setUserIdentity(identity: string, name: string): void;
   public setUserIdentity(userInfoOrIdentity: IUserInfo | string, name?: string): void {
     const USER_KEY: string = '@user'; // optimization for minifier.
-    let userInfo: IUserInfo = typeof userInfoOrIdentity !== 'string' ? userInfoOrIdentity : { identity: userInfoOrIdentity, name: name };
+    const userInfo: IUserInfo = typeof userInfoOrIdentity !== 'string' ? userInfoOrIdentity : { identity: userInfoOrIdentity, name };
 
-    let shouldRemove: boolean = !userInfo || (!userInfo.identity && !userInfo.name);
+    const shouldRemove: boolean = !userInfo || (!userInfo.identity && !userInfo.name);
     if (shouldRemove) {
       delete this.defaultData[USER_KEY];
     } else {
@@ -453,7 +453,7 @@ export class Configuration implements IConfigurationSettings {
   }
 
   private changed() {
-    let handlers = this._handlers; // optimization for minifier.
+    const handlers = this._handlers; // optimization for minifier.
     for (let index = 0; index < handlers.length; index++) {
       try {
         handlers[index](this);

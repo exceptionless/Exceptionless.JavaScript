@@ -1,7 +1,7 @@
 import { IRequestInfo } from '../models/IRequestInfo';
-import { IRequestInfoCollector } from './IRequestInfoCollector';
 import { EventPluginContext } from '../plugins/EventPluginContext';
 import { Utils } from '../Utils';
+import { IRequestInfoCollector } from './IRequestInfoCollector';
 
 export class DefaultRequestInfoCollector implements IRequestInfoCollector {
   public getRequestInfo(context: EventPluginContext): IRequestInfo {
@@ -9,8 +9,8 @@ export class DefaultRequestInfoCollector implements IRequestInfoCollector {
       return null;
     }
 
-    let exclusions = context.client.config.dataExclusions;
-    let requestInfo: IRequestInfo = {
+    const exclusions = context.client.config.dataExclusions;
+    const requestInfo: IRequestInfo = {
       user_agent: navigator.userAgent,
       is_secure: location.protocol === 'https:',
       host: location.hostname,

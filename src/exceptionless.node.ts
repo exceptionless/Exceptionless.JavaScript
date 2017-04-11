@@ -1,19 +1,19 @@
 import { Configuration } from './configuration/Configuration';
 import { SettingsManager } from './configuration/SettingsManager';
+import { ExceptionlessClient } from './ExceptionlessClient';
 import { NodeEnvironmentInfoCollector } from './services/NodeEnvironmentInfoCollector';
 import { NodeErrorParser } from './services/NodeErrorParser';
 import { NodeModuleCollector } from './services/NodeModuleCollector';
 import { NodeRequestInfoCollector } from './services/NodeRequestInfoCollector';
-import { NodeSubmissionAdapter } from './submission/NodeSubmissionAdapter';
 import { NodeFileStorageProvider } from './storage/NodeFileStorageProvider';
-import { ExceptionlessClient } from './ExceptionlessClient';
+import { NodeSubmissionAdapter } from './submission/NodeSubmissionAdapter';
 
 const EXIT: string = 'exit';
 const UNCAUGHT_EXCEPTION: string = 'uncaughtException';
 const SIGINT: string = 'SIGINT';
 const SIGINT_CODE: number = 2;
 
-let defaults = Configuration.defaults;
+const defaults = Configuration.defaults;
 defaults.environmentInfoCollector = new NodeEnvironmentInfoCollector();
 defaults.errorParser = new NodeErrorParser();
 defaults.moduleCollector = new NodeModuleCollector();
@@ -39,7 +39,7 @@ function getListenerCount(emitter, event: string): number {
  * we hijack the event emitter and forward the exception to the callback.
  */
 function onUncaughtException(callback: (error: Error) => void) {
-  let originalEmit = process.emit;
+  const originalEmit = process.emit;
 
   process.emit = function(type: string, error: Error) {
     if (type === UNCAUGHT_EXCEPTION) {
@@ -114,8 +114,8 @@ process.on(EXIT, function(code: number) {
     return null;
   }
 
-  let client = ExceptionlessClient.default;
-  let message = getExitCodeReason(code);
+  const client = ExceptionlessClient.default;
+  const message = getExitCodeReason(code);
 
   if (message !== null) {
     client.submitLog(EXIT, message, 'Error');

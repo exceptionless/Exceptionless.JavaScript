@@ -1,6 +1,6 @@
-import { Configuration } from './Configuration';
 import { SettingsResponse } from '../submission/SettingsResponse';
 import { Utils } from '../Utils';
+import { Configuration } from './Configuration';
 
 interface ISettingsWithVersion {
   version: number;
@@ -13,7 +13,7 @@ export class SettingsManager {
    * @type {Array}
    * @private
    */
-  private static _handlers: { (config: Configuration): void }[] = [];
+  private static _handlers: Array<{ (config: Configuration): void }> = [];
 
   public static onChanged(handler: (config: Configuration) => void) {
     !!handler && this._handlers.push(handler);
@@ -24,7 +24,7 @@ export class SettingsManager {
       return;
     }
 
-    let savedSettings = this.getSavedServerSettings(config);
+    const savedSettings = this.getSavedServerSettings(config);
     config.log.info(`Applying saved settings: v${savedSettings.version}`);
     config.settings = Utils.merge(config.settings, savedSettings.settings);
     this.changed(config);
@@ -35,12 +35,12 @@ export class SettingsManager {
       return 0;
     }
 
-    let savedSettings = this.getSavedServerSettings(config);
+    const savedSettings = this.getSavedServerSettings(config);
     return savedSettings.version || 0;
   }
 
   public static checkVersion(version: number, config: Configuration): void {
-    let currentVersion: number = this.getVersion(config);
+    const currentVersion: number = this.getVersion(config);
     if (version <= currentVersion) {
       return;
     }
@@ -75,8 +75,8 @@ export class SettingsManager {
 
       // TODO: Store snapshot of settings after reading from config and attributes and use that to revert to defaults.
       // Remove any existing server settings that are not in the new server settings.
-      let savedServerSettings = SettingsManager.getSavedServerSettings(config);
-      for (let key in savedServerSettings) {
+      const savedServerSettings = SettingsManager.getSavedServerSettings(config);
+      for (const key in savedServerSettings) {
         if (response.settings[key]) {
           continue;
         }
@@ -84,10 +84,10 @@ export class SettingsManager {
         delete config.settings[key];
       }
 
-      let newSettings = <ISettingsWithVersion>{
+      const newSettings =  {
         version: response.settingsVersion,
         settings: response.settings
-      };
+      } as ISettingsWithVersion;
 
       config.storage.settings.save(newSettings);
 
@@ -97,7 +97,7 @@ export class SettingsManager {
   }
 
   private static changed(config: Configuration) {
-    let handlers = this._handlers; // optimization for minifier.
+    const handlers = this._handlers; // optimization for minifier.
     for (let index = 0; index < handlers.length; index++) {
       try {
         handlers[index](config);
@@ -108,7 +108,7 @@ export class SettingsManager {
   }
 
   private static getSavedServerSettings(config: Configuration): ISettingsWithVersion {
-    let item = config.storage.settings.get()[0];
+    const item = config.storage.settings.get()[0];
     if (item && item.value && item.value.version && item.value.settings) {
       return item.value;
     }

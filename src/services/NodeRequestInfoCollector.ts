@@ -1,7 +1,7 @@
 import { IRequestInfo } from '../models/IRequestInfo';
-import { IRequestInfoCollector } from './IRequestInfoCollector';
 import { EventPluginContext } from '../plugins/EventPluginContext';
 import { Utils } from '../Utils';
+import { IRequestInfoCollector } from './IRequestInfoCollector';
 
 export class NodeRequestInfoCollector implements IRequestInfoCollector {
   public getRequestInfo(context: EventPluginContext): IRequestInfo {
@@ -10,11 +10,11 @@ export class NodeRequestInfoCollector implements IRequestInfoCollector {
       return null;
     }
 
-    let exclusions = context.client.config.dataExclusions;
+    const exclusions = context.client.config.dataExclusions;
 
     // TODO: include referrer
-    let request = context.contextData[REQUEST_KEY];
-    let requestInfo: IRequestInfo = {
+    const request = context.contextData[REQUEST_KEY];
+    const requestInfo: IRequestInfo = {
       client_ip_address: request.ip,
       user_agent: request.headers['user-agent'],
       is_secure: request.secure,
@@ -26,8 +26,8 @@ export class NodeRequestInfoCollector implements IRequestInfoCollector {
       query_string: JSON.parse(Utils.stringify(request.params || {}, exclusions))
     };
 
-    let host = request.headers.host;
-    let port: number = host && parseInt(host.slice(host.indexOf(':') + 1), 10);
+    const host = request.headers.host;
+    const port: number = host && parseInt(host.slice(host.indexOf(':') + 1), 10);
     if (port > 0) {
       requestInfo.port = port;
     }

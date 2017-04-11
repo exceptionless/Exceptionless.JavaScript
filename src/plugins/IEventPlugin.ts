@@ -1,5 +1,5 @@
-import { IEventPlugin } from './IEventPlugin';
 import { EventPluginContext } from './EventPluginContext';
+import { IEventPlugin } from './IEventPlugin';
 
 export interface IEventPlugin {
   priority?: number;

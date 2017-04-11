@@ -1,7 +1,7 @@
-import { ExceptionlessClient } from './ExceptionlessClient';
-import { EventPluginContext } from './plugins/EventPluginContext';
 import { expect } from 'chai';
 import * as sinon from 'sinon';
+import { ExceptionlessClient } from './ExceptionlessClient';
+import { EventPluginContext } from './plugins/EventPluginContext';
 
 describe('ExceptionlessClient', () => {
   let xhr: any;
@@ -15,15 +15,15 @@ describe('ExceptionlessClient', () => {
   });
 
   it('should use event reference ids', (done) => {
-    let error = createException();
+    const error = createException();
 
-    let client = new ExceptionlessClient('LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw', 'http://localhost:50000');
+    const client = new ExceptionlessClient('LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw', 'http://localhost:50000');
     expect(client.config.lastReferenceIdManager.getLast()).to.be.null;
     client.submitException(error, (context: EventPluginContext) => {
       expect(client.config.lastReferenceIdManager.getLast()).to.be.null;
     });
 
-    let numberOfPlugins = client.config.plugins.length;
+    const numberOfPlugins = client.config.plugins.length;
     client.config.useReferenceIds();
     expect(client.config.plugins.length).to.equal(numberOfPlugins + 1);
 
@@ -40,8 +40,8 @@ describe('ExceptionlessClient', () => {
   });
 
   it('should accept null source', () => {
-    let client = new ExceptionlessClient('LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw', 'http://localhost:50000');
-    let builder = client.createLog(null, 'Unit Test message', 'Trace');
+    const client = new ExceptionlessClient('LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw', 'http://localhost:50000');
+    const builder = client.createLog(null, 'Unit Test message', 'Trace');
 
     expect(builder.target.source).to.be.undefined;
     expect(builder.target.message).to.equal('Unit Test message');
@@ -49,8 +49,8 @@ describe('ExceptionlessClient', () => {
   });
 
   it('should accept source and message', () => {
-    let client = new ExceptionlessClient('LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw', 'http://localhost:50000');
-    let builder = client.createLog('ExceptionlessClient', 'Unit Test message');
+    const client = new ExceptionlessClient('LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw', 'http://localhost:50000');
+    const builder = client.createLog('ExceptionlessClient', 'Unit Test message');
 
     expect(builder.target.source).to.equal('ExceptionlessClient');
     expect(builder.target.message).to.equal('Unit Test message');
@@ -58,8 +58,8 @@ describe('ExceptionlessClient', () => {
   });
 
   it('should accept source and message and level', () => {
-    let client = new ExceptionlessClient('LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw', 'http://localhost:50000');
-    let builder = client.createLog('source', 'Unit Test message', 'Info');
+    const client = new ExceptionlessClient('LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw', 'http://localhost:50000');
+    const builder = client.createLog('source', 'Unit Test message', 'Info');
 
     expect(builder.target.source).to.equal('source');
     expect(builder.target.message).to.equal('Unit Test message');
@@ -67,14 +67,14 @@ describe('ExceptionlessClient', () => {
   });
 
   it('should allow construction via apiKey and serverUrl parameters', () => {
-    let client = new ExceptionlessClient('LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw', 'http://localhost:50000');
+    const client = new ExceptionlessClient('LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw', 'http://localhost:50000');
 
     expect(client.config.apiKey).to.equal('LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw');
     expect(client.config.serverUrl).to.equal('http://localhost:50000');
   });
 
   it('should allow construction via a configuration object', () => {
-    let client = new ExceptionlessClient({
+    const client = new ExceptionlessClient({
       apiKey: 'LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw',
       serverUrl: 'http://localhost:50000'
     });

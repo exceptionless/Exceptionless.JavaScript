@@ -1,13 +1,13 @@
-import { IConfigurationSettings } from './configuration/IConfigurationSettings';
 import { Configuration } from './configuration/Configuration';
+import { IConfigurationSettings } from './configuration/IConfigurationSettings';
+import { SettingsManager } from './configuration/SettingsManager';
 import { EventBuilder } from './EventBuilder';
 import { IEvent } from './models/IEvent';
 import { IUserDescription } from './models/IUserDescription';
+import { ContextData } from './plugins/ContextData';
 import { EventPluginContext } from './plugins/EventPluginContext';
 import { EventPluginManager } from './plugins/EventPluginManager';
-import { ContextData } from './plugins/ContextData';
 import { SubmissionResponse } from './submission/SubmissionResponse';
-import { SettingsManager } from './configuration/SettingsManager';
 
 export class ExceptionlessClient {
   /**
@@ -29,7 +29,7 @@ export class ExceptionlessClient {
     if (typeof settingsOrApiKey === 'object') {
       this.config = new Configuration(settingsOrApiKey);
     } else {
-      this.config = new Configuration({ apiKey: <string>settingsOrApiKey, serverUrl: serverUrl });
+      this.config = new Configuration({ apiKey:  settingsOrApiKey as string, serverUrl });
     }
 
     this.updateSettingsTimer(5000);
@@ -38,7 +38,7 @@ export class ExceptionlessClient {
   }
 
   public createException(exception: Error): EventBuilder {
-    let pluginContextData = new ContextData();
+    const pluginContextData = new ContextData();
     pluginContextData.setException(exception);
     return this.createEvent(pluginContextData).setType('error');
   }
@@ -48,7 +48,7 @@ export class ExceptionlessClient {
   }
 
   public createUnhandledException(exception: Error, submissionMethod?: string): EventBuilder {
-    let builder = this.createException(exception);
+    const builder = this.createException(exception);
     builder.pluginContextData.markAsUnhandledError();
     builder.pluginContextData.setSubmissionMethod(submissionMethod);
 
@@ -82,7 +82,7 @@ export class ExceptionlessClient {
 
       try {
         // TODO: Look into using https: //www.stevefenton.co.uk/Content/Blog/Date/201304/Blog/Obtaining-A-Class-Name-At-Runtime-In-TypeScript/
-        let caller: any = this.createLog.caller;
+        const caller: any = this.createLog.caller;
         builder = builder.setSource(caller && caller.caller && caller.caller.name);
       } catch (e) {
         this.config.log.trace('Unable to resolve log source: ' + e.message);
@@ -148,7 +148,7 @@ export class ExceptionlessClient {
       return !!callback && callback(context);
     }
 
-    let context = new EventPluginContext(this, event, pluginContextData);
+    const context = new EventPluginContext(this, event, pluginContextData);
     if (!event) {
       return cancelled(context);
     }
@@ -166,9 +166,9 @@ export class ExceptionlessClient {
       event.tags = [];
     }
 
-    EventPluginManager.run(context, function (ctx: EventPluginContext) {
-      let config = ctx.client.config;
-      let ev = ctx.event;
+    EventPluginManager.run(context, (ctx: EventPluginContext) => {
+      const config = ctx.client.config;
+      const ev = ctx.event;
 
       if (!ctx.cancelled) {
         // ensure all required data
@@ -204,7 +204,7 @@ export class ExceptionlessClient {
       return !!callback && callback(new SubmissionResponse(500, 'cancelled'));
     }
 
-    let userDescription: IUserDescription = { email_address: email, description: description };
+    const userDescription: IUserDescription = { email_address: email, description };
     this.config.submissionClient.postUserDescription(referenceId, userDescription, this.config, (response: SubmissionResponse) => {
       if (!response.success) {
         this.config.log.error(`Failed to submit user email and description for event '${referenceId}': ${response.statusCode} ${response.message}`);
@@ -228,9 +228,9 @@ export class ExceptionlessClient {
     this._timeoutId = clearTimeout(this._timeoutId);
     this._timeoutId = clearInterval(this._intervalId);
 
-    let interval = this.config.updateSettingsWhenIdleInterval;
+    const interval = this.config.updateSettingsWhenIdleInterval;
     if (interval > 0) {
-      let updateSettings = () => SettingsManager.updateSettings(this.config);
+      const updateSettings = () => SettingsManager.updateSettings(this.config);
       if (initialDelay > 0) {
         this._timeoutId = setTimeout(updateSettings, initialDelay);
       }

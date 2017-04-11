@@ -1,7 +1,7 @@
 import { Configuration } from '../configuration/Configuration';
 import { SettingsManager } from '../configuration/SettingsManager';
-import { IEvent } from '../models/IEvent';
 import { IClientConfiguration } from '../models/IClientConfiguration';
+import { IEvent } from '../models/IEvent';
 import { IUserDescription } from '../models/IUserDescription';
 import { ISubmissionClient } from './ISubmissionClient';
 import { SettingsResponse } from './SettingsResponse';
@@ -14,25 +14,25 @@ export class DefaultSubmissionClient implements ISubmissionClient {
   public configurationVersionHeader: string = 'x-exceptionless-configversion';
 
   public postEvents(events: IEvent[], config: Configuration, callback: (response: SubmissionResponse) => void, isAppExiting?: boolean): void {
-    let data = JSON.stringify(events);
-    let request = this.createRequest(config, 'POST',  `${config.serverUrl}/api/v2/events`, data);
-    let cb = this.createSubmissionCallback(config, callback);
+    const data = JSON.stringify(events);
+    const request = this.createRequest(config, 'POST',  `${config.serverUrl}/api/v2/events`, data);
+    const cb = this.createSubmissionCallback(config, callback);
 
     return config.submissionAdapter.sendRequest(request, cb, isAppExiting);
   }
 
   public postUserDescription(referenceId: string, description: IUserDescription, config: Configuration, callback: (response: SubmissionResponse) => void): void {
-    let path = `${config.serverUrl}/api/v2/events/by-ref/${encodeURIComponent(referenceId)}/user-description`;
-    let data = JSON.stringify(description);
-    let request = this.createRequest(config, 'POST', path, data);
-    let cb = this.createSubmissionCallback(config, callback);
+    const path = `${config.serverUrl}/api/v2/events/by-ref/${encodeURIComponent(referenceId)}/user-description`;
+    const data = JSON.stringify(description);
+    const request = this.createRequest(config, 'POST', path, data);
+    const cb = this.createSubmissionCallback(config, callback);
 
     return config.submissionAdapter.sendRequest(request, cb);
   }
 
   public getSettings(config: Configuration, version: number, callback: (response: SettingsResponse) => void): void {
-    let request = this.createRequest(config, 'GET', `${config.serverUrl}/api/v2/projects/config?v=${version}`);
-    let cb = (status, message, data?, headers?) => {
+    const request = this.createRequest(config, 'GET', `${config.serverUrl}/api/v2/projects/config?v=${version}`);
+    const cb = (status, message, data?, headers?) => {
       if (status !== 200) {
         return callback(new SettingsResponse(false, null, -1, null, message));
       }
@@ -55,7 +55,7 @@ export class DefaultSubmissionClient implements ISubmissionClient {
   }
 
   public sendHeartbeat(sessionIdOrUserId: string, closeSession: boolean, config: Configuration): void {
-    let request = this.createRequest(config, 'GET', `${config.heartbeatServerUrl}/api/v2/events/session/heartbeat?id=${sessionIdOrUserId}&close=${closeSession}`);
+    const request = this.createRequest(config, 'GET', `${config.heartbeatServerUrl}/api/v2/events/session/heartbeat?id=${sessionIdOrUserId}&close=${closeSession}`);
     config.submissionAdapter.sendRequest(request);
   }
 
@@ -65,13 +65,13 @@ export class DefaultSubmissionClient implements ISubmissionClient {
       url,
       data,
       apiKey: config.apiKey,
-      userAgent: config.userAgent
+      userAgent: config.userAgent,
     };
   }
 
   private createSubmissionCallback(config: Configuration, callback: (response: SubmissionResponse) => void) {
     return (status, message, data?, headers?) => {
-      let settingsVersion: number = headers && parseInt(headers[this.configurationVersionHeader], 10);
+      const settingsVersion: number = headers && parseInt(headers[this.configurationVersionHeader], 10);
       SettingsManager.checkVersion(settingsVersion, config);
 
       callback(new SubmissionResponse(status, message));

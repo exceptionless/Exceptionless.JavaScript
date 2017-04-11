@@ -1,5 +1,5 @@
-import { Utils } from './Utils';
 import { expect } from 'chai';
+import { Utils } from './Utils';
 
 describe('Utils', () => {
   it('should add range', () => {
@@ -16,7 +16,7 @@ describe('Utils', () => {
   });
 
   describe('stringify', () => {
-    let user: any = {
+    const user: any = {
       id: 1,
       name: 'Blake',
       password: '123456',
@@ -30,36 +30,36 @@ describe('Utils', () => {
     };
 
     it('array', () => {
-      let error = {
-        'type': 'error',
-        'data': {
+      const error = {
+        type: 'error',
+        data: {
           '@error': {
-            'type': 'Error',
-            'message': 'string error message',
-            'stack_trace': [
+            type: 'Error',
+            message: 'string error message',
+            stack_trace: [
               {
-                'name': 'throwStringErrorImpl',
-                'parameters': [],
-                'file_name': 'http://localhost/index.js',
-                'line_number': 22,
-                'column': 9
+                name: 'throwStringErrorImpl',
+                parameters: [],
+                file_name: 'http://localhost/index.js',
+                line_number: 22,
+                column: 9
               },
               {
-                'name': 'throwStringError',
-                'parameters': [],
-                'file_name': 'http://localhost/index.js',
-                'line_number': 10,
-                'column': 10
+                name: 'throwStringError',
+                parameters: [],
+                file_name: 'http://localhost/index.js',
+                line_number: 10,
+                column: 10
               }, {
-                'name': 'HTMLButtonElement.onclick',
-                'parameters': [],
-                'file_name': 'http://localhost/',
-                'line_number': 22,
-                'column': 10
+                name: 'HTMLButtonElement.onclick',
+                parameters: [],
+                file_name: 'http://localhost/',
+                line_number: 22,
+                column: 10
               }]
           }, '@submission_method': 'onerror'
         },
-        'tags': []
+        tags: []
       };
 
       expect(Utils.stringify(error)).to.equal(JSON.stringify(error));
@@ -67,7 +67,7 @@ describe('Utils', () => {
     });
 
     it('circular reference', () => {
-      let afoo: any = { a: 'foo' };
+      const afoo: any = { a: 'foo' };
       afoo.b = afoo;
 
       expect(Utils.stringify(afoo)).to.equal('{"a":"foo"}');
@@ -75,22 +75,22 @@ describe('Utils', () => {
     });
 
     it.skip('deep circular reference', () => {
-      let a: any = {};
-      let b: any = {};
-      let c: any = { d: 'test' };
+      const a: any = {};
+      const b: any = {};
+      const c: any = { d: 'test' };
 
       a.b = b;
       b.c = c;
       c.a = a;
 
-      let expected = '{"b":{"c":{"d":"test"}}}';
+      const expected = '{"b":{"c":{"d":"test"}}}';
 
-      let actual = Utils.stringify(a);
+      const actual = Utils.stringify(a);
       expect(actual).to.equal(expected);
     });
 
     describe('should behave like JSON.stringify', () => {
-      [new Date(), 1, true, null, undefined, function() { }, user].forEach(value => {
+      [new Date(), 1, true, null, undefined, () => { }, user].forEach((value) => {
         it('for ' + typeof (value), () => {
           expect(Utils.stringify(value)).to.equal(JSON.stringify(value));
         });
@@ -98,7 +98,7 @@ describe('Utils', () => {
     });
 
     it.skip('should respect maxDepth', () => {
-      let deepObject = {
+      const deepObject = {
         a: {
           b: {
             c: {
@@ -112,17 +112,17 @@ describe('Utils', () => {
     });
 
     it('should serialize inherited properties', () => {
-      let Foo = function() { this.a = 'a'; };
-      let Bar = function() { this.b = 'b'; };
+      const Foo = function() { this.a = 'a'; };
+      const Bar = function() { this.b = 'b'; };
       Bar.prototype = new Foo();
-      let bar = new Bar();
+      const bar = new Bar();
 
-      let expected = {
+      const expected = {
         a: 'a',
         b: 'b'
       };
 
-      let result = JSON.parse(Utils.stringify(bar));
+      const result = JSON.parse(Utils.stringify(bar));
       expect(result).to.eql(expected);
     });
 
@@ -144,7 +144,7 @@ describe('Utils', () => {
       });
 
       it('*Address', () => {
-        let event = { type: 'usage', source: 'about' };
+        const event = { type: 'usage', source: 'about' };
         expect(Utils.stringify(event, ['*Address'])).to.equal(JSON.stringify(event));
       });
     });
@@ -264,7 +264,6 @@ describe('Utils', () => {
     it('input: @@log:* suffix: log:*', () => {
       expect(Utils.endsWith('@@log:*', 'log:*')).to.be.true;
     });
-
 
     it('input: test suffix: nopattern', () => {
       expect(Utils.endsWith('test', 'nopattern')).to.be.false;
