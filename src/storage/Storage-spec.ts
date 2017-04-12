@@ -1,10 +1,8 @@
+import { expect } from 'chai';
 import { IEvent } from '../models/IEvent';
+import { InMemoryStorage } from './InMemoryStorage';
 import { IStorage } from './IStorage';
 import { IStorageItem } from './IStorageItem';
-
-import { InMemoryStorage } from './InMemoryStorage';
-
-import { expect } from 'chai';
 
 describeStorage('InMemoryStorage', (maxItems = 250) => {
   return new InMemoryStorage(maxItems);
@@ -14,9 +12,7 @@ export function describeStorage(name: string,
                                 storageFactory: (maxItems?: number) => IStorage,
                                 beforeEachCallback?: () => void,
                                 recreateStorage: boolean = false) {
-
   describe(name, () => {
-
     if (beforeEachCallback) {
       beforeEach(beforeEachCallback);
     }
