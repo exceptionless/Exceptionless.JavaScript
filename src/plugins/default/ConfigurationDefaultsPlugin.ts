@@ -9,14 +9,14 @@ export class ConfigurationDefaultsPlugin implements IEventPlugin {
   public run(context: EventPluginContext, next?: () => void): void {
     const config = context.client.config;
     const defaultTags: string[] = config.defaultTags || [];
-    for (let index = 0; index < defaultTags.length; index++) {
-      const tag = defaultTags[index];
+    for (const tag of defaultTags) {
       if (!!tag && context.event.tags.indexOf(tag) < 0) {
         context.event.tags.push(tag);
       }
     }
 
-    const defaultData: object = config.defaultData || {};
+    // tslint:disable-next-line:ban-types
+    const defaultData: Object = config.defaultData || {};
     for (const key in defaultData) {
       if (!!defaultData[key]) {
         const result = JSON.parse(Utils.stringify(defaultData[key], config.dataExclusions));

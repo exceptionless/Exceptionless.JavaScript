@@ -84,7 +84,8 @@ export class EventBuilder {
     return this;
   }
 
-  public setUserIdentity(userInfo: IUserInfo | string): EventBuilder;
+  public setUserIdentity(userInfo: IUserInfo): EventBuilder;
+  public setUserIdentity(identity: string): EventBuilder;
   public setUserIdentity(identity: string, name: string): EventBuilder;
   public setUserIdentity(userInfoOrIdentity: IUserInfo | string, name?: string): EventBuilder {
     const userInfo = typeof userInfoOrIdentity !== 'string' ? userInfoOrIdentity : { identity: userInfoOrIdentity, name };

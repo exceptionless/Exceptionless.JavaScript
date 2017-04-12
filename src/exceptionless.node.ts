@@ -50,7 +50,7 @@ function onUncaughtException(callback: (error: Error) => void) {
   };
 }
 
-onUncaughtException(function(error: Error) {
+onUncaughtException((error: Error) => {
   ExceptionlessClient.default.submitUnhandledException(error, UNCAUGHT_EXCEPTION);
 });
 
@@ -58,13 +58,13 @@ onUncaughtException(function(error: Error) {
  * We cannot hijack SIGINT, so if there are no other handlers,
  * we just reproduce default Node.js behavior by exiting.
  */
-process.on(SIGINT, function() {
+process.on(SIGINT, () => {
   if (getListenerCount(process, SIGINT) <= 1) {
     process.exit(128 + SIGINT_CODE);
   }
 });
 
-process.on(EXIT, function(code: number) {
+process.on(EXIT, (code: number) => {
   /**
    * exit codes: https://nodejs.org/api/process.html#process_event_exit
    * From now on, only synchronous code may run. As soon as this method
@@ -125,4 +125,4 @@ process.on(EXIT, function(code: number) {
   // Application will now exit.
 });
 
-(<any>Error).stackTraceLimit = Infinity;
+(Error as any).stackTraceLimit = Infinity;

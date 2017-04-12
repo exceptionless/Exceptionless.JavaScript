@@ -46,7 +46,7 @@ export class Configuration implements IConfigurationSettings {
    *
    * @type {{}}
    */
-  public defaultData: Object = {};
+  public defaultData: object = {};
 
   /**
    * Whether the client is currently enabled or not. If it is disabled,
@@ -74,7 +74,7 @@ export class Configuration implements IConfigurationSettings {
    * Contains a dictionary of custom settings that can be used to control
    * the client and will be automatically updated from the server.
    */
-  public settings: Object = {};
+  public settings: object = {};
 
   public storage: IStorageProvider;
 
@@ -134,7 +134,7 @@ export class Configuration implements IConfigurationSettings {
    * @type {Array}
    * @private
    */
-  private _handlers: Array<{ (config: Configuration): void }> = [];
+  private _handlers: Array<(config: Configuration) => void> = [];
 
   constructor(configSettings?: IConfigurationSettings) {
     function inject(fn: any) {
@@ -349,8 +349,8 @@ export class Configuration implements IConfigurationSettings {
 
     let pluginExists: boolean = false;
     const plugins = this._plugins; // optimization for minifier.
-    for (let index = 0; index < plugins.length; index++) {
-      if (plugins[index].name === plugin.name) {
+    for (const p of plugins) {
+      if (p.name === plugin.name) {
         pluginExists = true;
         break;
       }
@@ -371,7 +371,6 @@ export class Configuration implements IConfigurationSettings {
    * Remove an plugin by key from this configuration.
    * @param name
    */
-  public removePlugin(name: string): void;
   public removePlugin(pluginOrName: IEventPlugin | string): void {
     const name: string = typeof pluginOrName === 'string' ? pluginOrName : pluginOrName.name;
     if (!name) {
@@ -454,9 +453,9 @@ export class Configuration implements IConfigurationSettings {
 
   private changed() {
     const handlers = this._handlers; // optimization for minifier.
-    for (let index = 0; index < handlers.length; index++) {
+    for (const handler of handlers) {
       try {
-        handlers[index](this);
+        handler(this);
       } catch (ex) {
         this.log.error(`Error calling onChanged handler: ${ex}`);
       }

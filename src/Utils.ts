@@ -8,9 +8,9 @@ export class Utils {
       return target;
     }
 
-    for (let index = 0; index < values.length; index++) {
-      if (values[index] && target.indexOf(values[index]) < 0) {
-        target.push(values[index]);
+    for (const value of values) {
+      if (value && target.indexOf(value) < 0) {
+        target.push(value);
       }
     }
 
@@ -32,12 +32,12 @@ export class Utils {
     return hash;
   }
 
-  public static getCookies(cookies: string, exclusions?: string[]): Object {
-    const result: Object = {};
+  public static getCookies(cookies: string, exclusions?: string[]): object {
+    const result: object = {};
 
     const parts: string[] = (cookies || '').split('; ');
-    for (let index = 0; index < parts.length; index++) {
-      const cookie: string[] = parts[index].split('=');
+    for (const part of parts) {
+      const cookie: string[] = part.split('=');
       if (!Utils.isMatch(cookie[0], exclusions)) {
         result[cookie[0]] = cookie[1];
       }
@@ -54,8 +54,9 @@ export class Utils {
     return s4() + s4() + '-' + s4() + '-' + s4() + '-' + s4() + '-' + s4() + s4() + s4();
   }
 
+  // tslint:disable-next-line:ban-types
   public static merge(defaultValues: Object, values: Object) {
-    const result: Object = {};
+    const result: object = {};
 
     for (const key in defaultValues || {}) {
       if (!!defaultValues[key]) {
@@ -96,11 +97,11 @@ export class Utils {
       return null;
     }
 
-    const result: Object = {};
-    for (let index = 0; index < pairs.length; index++) {
-      const pair = pairs[index].split('=');
-      if (!Utils.isMatch(pair[0], exclusions)) {
-        result[decodeURIComponent(pair[0])] = decodeURIComponent(pair[1]);
+    const result: object = {};
+    for (const pair of pairs) {
+      const parts = pair.split('=');
+      if (!Utils.isMatch(parts[0], exclusions)) {
+        result[decodeURIComponent(parts[0])] = decodeURIComponent(parts[1]);
       }
     }
 
@@ -160,7 +161,7 @@ export class Utils {
     });
   }
 
-  public static isEmpty(input: Object) {
+  public static isEmpty(input: object) {
     return input === null || (typeof (input) === 'object' && Object.keys(input).length === 0);
   }
 
@@ -181,7 +182,7 @@ export class Utils {
   public static stringify(data: any, exclusions?: string[], maxDepth?: number): string {
     function stringifyImpl(obj: any, excludedKeys: string[]): string {
       const cache: string[] = [];
-      return JSON.stringify(obj, function(key: string, value: any) {
+      return JSON.stringify(obj, (key: string, value: any) => {
         if (Utils.isMatch(key, excludedKeys)) {
           return;
         }

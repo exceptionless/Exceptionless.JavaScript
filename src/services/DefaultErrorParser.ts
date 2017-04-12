@@ -11,8 +11,8 @@ export class DefaultErrorParser implements IErrorParser {
       const params: string[] = (typeof parameters === 'string' ? [parameters] : parameters) || [];
 
       const result: IParameter[] = [];
-      for (let index = 0; index < params.length; index++) {
-        result.push({ name: params[index] });
+      for (const param of params) {
+        result.push({ name: param });
       }
 
       return result;
@@ -22,8 +22,7 @@ export class DefaultErrorParser implements IErrorParser {
       const ANONYMOUS: string = '<anonymous>';
       const frames: IStackFrame[] = [];
 
-      for (let index = 0; index < stackFrames.length; index++) {
-        const frame = stackFrames[index];
+      for (const frame of stackFrames) {
         frames.push({
           name: (frame.func || ANONYMOUS).replace('?', ANONYMOUS),
           parameters: getParameters(frame.args),

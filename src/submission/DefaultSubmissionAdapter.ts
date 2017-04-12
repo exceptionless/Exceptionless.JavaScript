@@ -2,6 +2,7 @@ import { ISubmissionAdapter } from './ISubmissionAdapter';
 import { SubmissionCallback } from './SubmissionCallback';
 import { SubmissionRequest } from './SubmissionRequest';
 
+// tslint:disable-next-line:prefer-const
 declare var XDomainRequest: { new (); create(); };
 
 export class DefaultSubmissionAdapter implements ISubmissionAdapter {
@@ -21,8 +22,7 @@ export class DefaultSubmissionAdapter implements ISubmissionAdapter {
 
         const headers = {};
         const headerPairs = (headerStr || '').split('\u000d\u000a');
-        for (let index: number = 0; index < headerPairs.length; index++) {
-          const headerPair = headerPairs[index];
+        for (const headerPair of headerPairs) {
           // Can't use split() here because it does the wrong thing
           // if the header value has the string ": " in it.
           const separator = headerPair.indexOf('\u003a\u0020');

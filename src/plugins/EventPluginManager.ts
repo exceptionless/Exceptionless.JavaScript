@@ -12,7 +12,7 @@ import { IEventPlugin } from './IEventPlugin';
 
 export class EventPluginManager {
   public static run(context: EventPluginContext, callback: (context?: EventPluginContext) => void): void {
-    const wrap = function(plugin: IEventPlugin, next?: () => void): () => void {
+    const wrap = (plugin: IEventPlugin, next?: () => void): () => void => {
       return () => {
         try {
           if (!context.cancelled) {
@@ -30,7 +30,7 @@ export class EventPluginManager {
     };
 
     const plugins: IEventPlugin[] = context.client.config.plugins; // optimization for minifier.
-    const wrappedPlugins: { (): void }[] = [];
+    const wrappedPlugins: Array<() => void> = [];
     if (!!callback) {
       wrappedPlugins[plugins.length] = wrap({ name: 'cb', priority: 9007199254740992, run: callback }, null);
     }

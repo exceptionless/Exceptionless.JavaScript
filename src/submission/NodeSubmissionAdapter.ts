@@ -46,7 +46,7 @@ export class NodeSubmissionAdapter implements ISubmissionAdapter {
     clientRequest.end(request.data);
   }
 
-  private complete(response: http.IncomingMessage, responseBody: string, responseHeaders: Object, callback: SubmissionCallback): void {
+  private complete(response: http.IncomingMessage, responseBody: string, responseHeaders: object, callback: SubmissionCallback): void {
     let message: string;
     if (response.statusCode === 0) {
       message = 'Unable to connect to server.';

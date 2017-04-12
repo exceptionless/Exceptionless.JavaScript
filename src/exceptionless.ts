@@ -17,6 +17,7 @@ function getDefaultsSettingsFromScriptTag(): IConfigurationSettings {
   }
 
   const scripts = document.getElementsByTagName('script');
+  // tslint:disable-next-line:prefer-for-of
   for (let index = 0; index < scripts.length; index++) {
     if (scripts[index].src && scripts[index].src.indexOf('/exceptionless') > -1) {
       return Utils.parseQueryString(scripts[index].src.split('?').pop());
@@ -79,6 +80,7 @@ TraceKit.extendToAsynchronousCallbacks();
 //   $(document).ajaxError(processJQueryAjaxError);
 // }
 
-(<any>Error).stackTraceLimit = Infinity;
+(Error as any).stackTraceLimit = Infinity;
 
+// tslint:disable-next-line:prefer-const
 declare var $;

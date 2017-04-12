@@ -13,7 +13,7 @@ export class SettingsManager {
    * @type {Array}
    * @private
    */
-  private static _handlers: Array<{ (config: Configuration): void }> = [];
+  private static _handlers: Array<(config: Configuration) => void> = [];
 
   public static onChanged(handler: (config: Configuration) => void) {
     !!handler && this._handlers.push(handler);
@@ -54,7 +54,7 @@ export class SettingsManager {
       return;
     }
 
-    let unableToUpdateMessage = 'Unable to update settings';
+    const unableToUpdateMessage = 'Unable to update settings';
     if (!config.isValid) {
       config.log.error(`${unableToUpdateMessage}: ApiKey is not set.`);
       return;
@@ -98,9 +98,9 @@ export class SettingsManager {
 
   private static changed(config: Configuration) {
     const handlers = this._handlers; // optimization for minifier.
-    for (let index = 0; index < handlers.length; index++) {
+    for (const handler of handlers) {
       try {
-        handlers[index](config);
+        handler(config);
       } catch (ex) {
         config.log.error(`Error calling onChanged handler: ${ex}`);
       }

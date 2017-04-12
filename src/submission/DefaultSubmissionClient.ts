@@ -8,6 +8,7 @@ import { SettingsResponse } from './SettingsResponse';
 import { SubmissionRequest } from './SubmissionRequest';
 import { SubmissionResponse } from './SubmissionResponse';
 
+// tslint:disable-next-line:prefer-const
 declare var XDomainRequest: { new (); create(); };
 
 export class DefaultSubmissionClient implements ISubmissionClient {
@@ -65,7 +66,7 @@ export class DefaultSubmissionClient implements ISubmissionClient {
       url,
       data,
       apiKey: config.apiKey,
-      userAgent: config.userAgent,
+      userAgent: config.userAgent
     };
   }
 

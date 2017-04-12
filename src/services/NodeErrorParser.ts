@@ -10,8 +10,7 @@ export class NodeErrorParser implements IErrorParser {
     function getStackFrames(stackFrames: any[]): IStackFrame[] {
       const frames: IStackFrame[] = [];
 
-      for (let index = 0; index < stackFrames.length; index++) {
-        const frame = stackFrames[index];
+      for (const frame of stackFrames) {
         frames.push({
           name: frame.getMethodName() || frame.getFunctionName(),
           // parameters: frame.args,

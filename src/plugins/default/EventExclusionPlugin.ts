@@ -39,7 +39,8 @@ export class EventExclusionPlugin implements IEventPlugin {
       return getLogLevel(getTypeAndSourceSetting(settings, 'log', loggerName, 'Trace') + '');
     }
 
-    function getTypeAndSourceSetting(settings: object = {}, type: string, source: string, defaultValue: string|boolean = undefined): string|boolean {
+    // tslint:disable-next-line:ban-types
+    function getTypeAndSourceSetting(settings: Object = {}, type: string, source: string, defaultValue?: string|boolean): string|boolean {
       if (!type) {
         return defaultValue;
       }

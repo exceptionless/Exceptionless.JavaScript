@@ -10,7 +10,7 @@ import { SubmissionRequest } from './SubmissionRequest';
 
 class TestAdapter implements ISubmissionAdapter {
   private request;
-  private checks: Array<{ (request: SubmissionRequest): void }> = [];
+  private checks: Array<(request: SubmissionRequest) => void > = [];
   private callback: SubmissionCallback;
   private status = 202;
   private message = null;
@@ -95,7 +95,7 @@ describe('DefaultSubmissionClient', () => {
     const events: IEvent[] = [{
       type: 'log', message: 'From js client', reference_id: '123454321', data: {
         name: 'blake',
-        age: function() { throw new Error('Test'); }
+        age: () => { throw new Error('Test'); }
       }
     }];
 

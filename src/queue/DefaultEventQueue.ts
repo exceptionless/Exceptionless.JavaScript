@@ -18,7 +18,7 @@ export class DefaultEventQueue implements IEventQueue {
    * @type {Array}
    * @private
    */
-  private _handlers: Array<{ (events: IEvent[], response: SubmissionResponse): void }> = [];
+  private _handlers: Array<(events: IEvent[], response: SubmissionResponse) => void> = [];
 
   /**
    * Suspends processing until the specified time.
@@ -153,9 +153,9 @@ export class DefaultEventQueue implements IEventQueue {
 
   private eventsPosted(events: IEvent[], response: SubmissionResponse) {
     const handlers = this._handlers; // optimization for minifier.
-    for (let index = 0; index < handlers.length; index++) {
+    for (const handler of handlers) {
       try {
-        handlers[index](events, response);
+        handler(events, response);
       } catch (ex) {
         this._config.log.error(`Error calling onEventsPosted handler: ${ex}`);
       }

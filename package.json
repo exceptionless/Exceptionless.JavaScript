@@ -52,7 +52,7 @@
     "gulp-tslint": "8.0.0",
     "gulp-uglify": "2.1.2",
     "gulp-wrap-umd": "0.2.1",
-    "jshint": "^2.9.4",
+    "jshint": "2.9.4",
     "mock-fs": "4.2.0",
     "path": "0.12.7",
     "requirejs": "2.3.3",

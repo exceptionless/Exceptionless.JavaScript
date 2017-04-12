@@ -17,13 +17,13 @@ export class DefaultModuleCollector implements IModuleCollector {
           modules.push({
             module_id: index,
             name: scripts[index].src,
-            version: Utils.parseVersion(scripts[index].src),
+            version: Utils.parseVersion(scripts[index].src)
           });
         } else if (!!scripts[index].innerHTML) {
           modules.push({
             module_id: index,
             name: 'Script Tag',
-            version: Utils.getHashCode(scripts[index].innerHTML).toString(),
+            version: Utils.getHashCode(scripts[index].innerHTML).toString()
           });
         }
       }

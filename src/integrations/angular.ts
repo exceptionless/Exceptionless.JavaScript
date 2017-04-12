@@ -4,7 +4,7 @@ declare var exceptionless;
 
 angular.module('exceptionless', [])
   .constant('$ExceptionlessClient', exceptionless.ExceptionlessClient.default)
-  .factory('exceptionlessHttpInterceptor', ['$q', '$ExceptionlessClient', function($q, $ExceptionlessClient) {
+  .factory('exceptionlessHttpInterceptor', ['$q', '$ExceptionlessClient', ($q, $ExceptionlessClient) => {
     return {
       responseError: function responseError(rejection) {
         if (rejection.status === 404) {
@@ -21,28 +21,29 @@ angular.module('exceptionless', [])
       }
     };
   }])
-  .config(['$httpProvider', '$provide', '$ExceptionlessClient', function($httpProvider, $provide, $ExceptionlessClient) {
+  .config(['$httpProvider', '$provide', '$ExceptionlessClient', ($httpProvider, $provide, $ExceptionlessClient) => {
     $httpProvider.interceptors.push('exceptionlessHttpInterceptor');
-    $provide.decorator('$exceptionHandler', ['$delegate', function($delegate) {
-      return function(exception, cause) {
+    $provide.decorator('$exceptionHandler', ['$delegate', ($delegate) => {
+      return (exception, cause) => {
         $delegate(exception, cause);
         $ExceptionlessClient.createUnhandledException(exception, '$exceptionHandler').setMessage(cause).submit();
       };
     }]);
-    $provide.decorator('$log', ['$delegate', function($delegate) {
+    $provide.decorator('$log', ['$delegate', ($delegate) => {
       function decorateRegularCall(property, logLevel) {
         const previousFn = $delegate[property];
-        return $delegate[property] = function() {
+        return $delegate[property] = (...args) => {
           if (angular.mock) {
             // Needed to support angular-mocks.
             $delegate[property].logs = [];
           }
-          previousFn.apply(null, arguments);
-          if (arguments[0] && arguments[0].length > 0) {
-            $ExceptionlessClient.submitLog(null, arguments[0], logLevel);
+          previousFn.apply(null, args);
+          if (args[0] && args[0].length > 0) {
+            $ExceptionlessClient.submitLog(null, args[0], logLevel);
           }
         };
       }
+
       $delegate.log = decorateRegularCall('log', 'Trace');
       $delegate.info = decorateRegularCall('info', 'Info');
       $delegate.warn = decorateRegularCall('warn', 'Warn');
@@ -51,8 +52,8 @@ angular.module('exceptionless', [])
       return $delegate;
     }]);
   }])
-  .run(['$rootScope', '$ExceptionlessClient', function($rootScope, $ExceptionlessClient) {
-    $rootScope.$on('$routeChangeSuccess', function(event, next, current) {
+  .run(['$rootScope', '$ExceptionlessClient', ($rootScope, $ExceptionlessClient) => {
+    $rootScope.$on('$routeChangeSuccess', (event, next, current) => {
       if (!current) {
         return;
       }
@@ -63,14 +64,14 @@ angular.module('exceptionless', [])
         .submit();
     });
 
-    $rootScope.$on('$routeChangeError', function(event, current, previous, rejection) {
+    $rootScope.$on('$routeChangeError', (event, current, previous, rejection) => {
       $ExceptionlessClient.createUnhandledException(new Error(rejection), '$routeChangeError')
         .setProperty('current', current)
         .setProperty('previous', previous)
         .submit();
     });
 
-    $rootScope.$on('$stateChangeSuccess', function(event, toState, toParams, fromState, fromParams) {
+    $rootScope.$on('$stateChangeSuccess', (event, toState, toParams, fromState, fromParams) => {
       if (!toState || toState.name === 'otherwise') {
         return;
       }
@@ -83,7 +84,7 @@ angular.module('exceptionless', [])
         .submit();
     });
 
-    $rootScope.$on('$stateNotFound', function(event, unfoundState, fromState, fromParams) {
+    $rootScope.$on('$stateNotFound', (event, unfoundState, fromState, fromParams) => {
       if (!unfoundState) {
         return;
       }
@@ -95,8 +96,8 @@ angular.module('exceptionless', [])
         .submit();
     });
 
-    let stateChangeError = '$stateChangeError';
-    $rootScope.$on(stateChangeError, function(event, toState, toParams, fromState, fromParams, error) {
+    const stateChangeError = '$stateChangeError';
+    $rootScope.$on(stateChangeError, (event, toState, toParams, fromState, fromParams, error) => {
       if (!error) {
         return;
       }
@@ -111,7 +112,7 @@ angular.module('exceptionless', [])
         .submit();
     });
 
-    $rootScope.$on('$destroy', function() {
+    $rootScope.$on('$destroy', () => {
       $ExceptionlessClient.config.queue.process();
     });
   }]);
