@@ -2,7 +2,7 @@ import { ILog } from './ILog';
 
 export class ConsoleLog implements ILog {
   public trace(message: string): void {
-    this.log('trace', message);
+    this.log('debug', message);
   }
 
   public info(message: string): void {
