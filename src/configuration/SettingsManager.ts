@@ -84,10 +84,10 @@ export class SettingsManager {
         delete config.settings[key];
       }
 
-      const newSettings =  {
+      const newSettings: ISettingsWithVersion = {
         version: response.settingsVersion,
         settings: response.settings
-      } as ISettingsWithVersion;
+      };
 
       config.storage.settings.save(newSettings);
 

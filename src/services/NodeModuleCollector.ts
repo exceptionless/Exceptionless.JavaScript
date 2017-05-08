@@ -64,11 +64,11 @@ export class NodeModuleCollector implements IModuleCollector {
 
     Object.keys(items).forEach((key) => {
       const item = items[key];
-      const theModule =  {
+      const theModule: IModule = {
         module_id: id++,
         name: key,
         version: item.version
-      } as IModule;
+      };
 
       this.installedModules[key] = theModule;
     });

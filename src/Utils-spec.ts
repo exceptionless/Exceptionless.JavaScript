@@ -57,7 +57,8 @@ describe('Utils', () => {
                 line_number: 22,
                 column: 10
               }]
-          }, '@submission_method': 'onerror'
+          },
+          '@submission_method': 'onerror'
         },
         tags: []
       };
