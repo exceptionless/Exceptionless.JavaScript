@@ -64,7 +64,7 @@
     "systemjs": "0.20.12",
     "tracekit": "0.4.4",
     "tslint": "5.2.0",
-    "tsproject": "2.1.1",
+    "tsproject": "2.1.2",
     "typescript": "2.3.2",
     "typescript-formatter": "5.1.3"
   },

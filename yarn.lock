@@ -373,8 +373,8 @@ chalk@^0.5.0:
     supports-color "^0.2.0"
 
 chokidar@^1.6.1:
-  version "1.6.1"
-  resolved "https://registry.yarnpkg.com/chokidar/-/chokidar-1.6.1.tgz#2f4447ab5e96e50fb3d789fd90d4c72e0e4c70c2"
+  version "1.7.0"
+  resolved "https://registry.yarnpkg.com/chokidar/-/chokidar-1.7.0.tgz#798e689778151c8076b4b360e5edd28cda2bb468"
   dependencies:
     anymatch "^1.3.0"
     async-each "^1.0.0"
@@ -2961,9 +2961,9 @@ tslint@5.2.0:
     tslib "^1.6.0"
     tsutils "^1.8.0"
 
-tsproject@2.1.1:
-  version "2.1.1"
-  resolved "https://registry.yarnpkg.com/tsproject/-/tsproject-2.1.1.tgz#87cf20f5f6fa9006dce5d77feb8d8c273e752d7e"
+tsproject@2.1.2:
+  version "2.1.2"
+  resolved "https://registry.yarnpkg.com/tsproject/-/tsproject-2.1.2.tgz#0e401704105d705178882ac4c9668d91eee7b3b1"
   dependencies:
     "@types/chalk" "^0.4.3"
     "@types/chokidar" "1.6.0"
