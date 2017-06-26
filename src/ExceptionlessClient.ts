@@ -26,11 +26,9 @@ export class ExceptionlessClient {
   constructor(settings: IConfigurationSettings);
   constructor(apiKey: string, serverUrl?: string);
   constructor(settingsOrApiKey?: IConfigurationSettings | string, serverUrl?: string) {
-    if (typeof settingsOrApiKey === 'object') {
-      this.config = new Configuration(settingsOrApiKey);
-    } else {
-      this.config = new Configuration({ apiKey:  settingsOrApiKey as string, serverUrl });
-    }
+    this.config = typeof settingsOrApiKey === 'object'
+      ? new Configuration(settingsOrApiKey)
+      : new Configuration({ apiKey:  settingsOrApiKey as string, serverUrl });
 
     this.updateSettingsTimer(5000);
     this.config.onChanged((config) => this.updateSettingsTimer(this._timeoutId > 0 ? 5000 : 0));

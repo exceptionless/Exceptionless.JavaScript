@@ -1,6 +1,3 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-var angular = require("angular");
 angular.module('exceptionless', [])
     .constant('$ExceptionlessClient', exceptionless.ExceptionlessClient.default)
     .factory('exceptionlessHttpInterceptor', ['$q', '$ExceptionlessClient', function ($q, $ExceptionlessClient) {
@@ -33,12 +30,16 @@ angular.module('exceptionless', [])
                 function decorateRegularCall(property, logLevel) {
                     var previousFn = $delegate[property];
                     return $delegate[property] = function () {
+                        var args = [];
+                        for (var _i = 0; _i < arguments.length; _i++) {
+                            args[_i] = arguments[_i];
+                        }
                         if (angular.mock) {
                             $delegate[property].logs = [];
                         }
-                        previousFn.apply(null, arguments);
-                        if (arguments[0] && arguments[0].length > 0) {
-                            $ExceptionlessClient.submitLog(null, arguments[0], logLevel);
+                        previousFn.apply(null, args);
+                        if (args[0] && args[0].length > 0) {
+                            $ExceptionlessClient.submitLog(null, args[0], logLevel);
                         }
                     };
                 }

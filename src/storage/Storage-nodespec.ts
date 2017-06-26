@@ -9,7 +9,7 @@ const nodeFileStorageFactory = (maxItems?) => {
 };
 
 const nodeFileStorageInitializer = () => {
-  mockedFs = mockFs.fs({
+  mockedFs = mockFs({
     fileStorage: {}
   });
 };
