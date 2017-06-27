@@ -1,22 +1,23 @@
+import * as TraceKit from 'TraceKit';
 import { Configuration } from './configuration/Configuration';
 import { IConfigurationSettings } from './configuration/IConfigurationSettings';
 import { SettingsManager } from './configuration/SettingsManager';
+import { ExceptionlessClient } from './ExceptionlessClient';
 import { DefaultErrorParser } from './services/DefaultErrorParser';
 import { DefaultModuleCollector } from './services/DefaultModuleCollector';
 import { DefaultRequestInfoCollector } from './services/DefaultRequestInfoCollector';
-import { DefaultSubmissionAdapter } from './submission/DefaultSubmissionAdapter';
 import { BrowserStorage } from './storage/BrowserStorage';
 import { BrowserStorageProvider } from './storage/BrowserStorageProvider';
-import { ExceptionlessClient } from './ExceptionlessClient';
+import { DefaultSubmissionAdapter } from './submission/DefaultSubmissionAdapter';
 import { Utils } from './Utils';
-import * as TraceKit from 'TraceKit';
 
 function getDefaultsSettingsFromScriptTag(): IConfigurationSettings {
   if (!document || !document.getElementsByTagName) {
     return null;
   }
 
-  let scripts = document.getElementsByTagName('script');
+  const scripts = document.getElementsByTagName('script');
+  // tslint:disable-next-line:prefer-for-of
   for (let index = 0; index < scripts.length; index++) {
     if (scripts[index].src && scripts[index].src.indexOf('/exceptionless') > -1) {
       return Utils.parseQueryString(scripts[index].src.split('?').pop());
@@ -26,7 +27,7 @@ function getDefaultsSettingsFromScriptTag(): IConfigurationSettings {
 }
 
 function processUnhandledException(stackTrace: TraceKit.StackTrace, options?: any): void {
-  let builder = ExceptionlessClient.default.createUnhandledException(new Error(stackTrace.message || (options || {}).status || 'Script error'), 'onerror');
+  const builder = ExceptionlessClient.default.createUnhandledException(new Error(stackTrace.message || (options || {}).status || 'Script error'), 'onerror');
   builder.pluginContextData['@@_TraceKit.StackTrace'] = stackTrace;
   builder.submit();
 }
@@ -56,8 +57,8 @@ Configuration.prototype.useLocalStorage = function() {
   }
 };
 
-let defaults = Configuration.defaults;
-let settings = getDefaultsSettingsFromScriptTag();
+const defaults = Configuration.defaults;
+const settings = getDefaultsSettingsFromScriptTag();
 if (settings && (settings.apiKey || settings.serverUrl)) {
   defaults.apiKey = settings.apiKey;
   defaults.serverUrl = settings.serverUrl;
@@ -79,6 +80,7 @@ TraceKit.extendToAsynchronousCallbacks();
 //   $(document).ajaxError(processJQueryAjaxError);
 // }
 
-(<any>Error).stackTraceLimit = Infinity;
+(Error as any).stackTraceLimit = Infinity;
 
+// tslint:disable-next-line:prefer-const
 declare var $;

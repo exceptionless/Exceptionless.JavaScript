@@ -1,6 +1,6 @@
-import { IEventPlugin } from '../IEventPlugin';
-import { EventPluginContext } from '../EventPluginContext';
 import { IEnvironmentInfo } from '../../models/IEnvironmentInfo';
+import { EventPluginContext } from '../EventPluginContext';
+import { IEventPlugin } from '../IEventPlugin';
 
 export class EnvironmentInfoPlugin implements IEventPlugin {
   public priority: number = 80;
@@ -9,9 +9,9 @@ export class EnvironmentInfoPlugin implements IEventPlugin {
   public run(context: EventPluginContext, next?: () => void): void {
     const ENVIRONMENT_KEY: string = '@environment'; // optimization for minifier.
 
-    let collector = context.client.config.environmentInfoCollector;
+    const collector = context.client.config.environmentInfoCollector;
     if (!context.event.data[ENVIRONMENT_KEY] && collector) {
-      let environmentInfo: IEnvironmentInfo = collector.getEnvironmentInfo(context);
+      const environmentInfo: IEnvironmentInfo = collector.getEnvironmentInfo(context);
       if (!!environmentInfo) {
         context.event.data[ENVIRONMENT_KEY] = environmentInfo;
       }

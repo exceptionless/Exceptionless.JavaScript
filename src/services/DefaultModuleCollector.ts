@@ -1,7 +1,7 @@
 import { IModule } from '../models/IModule';
-import { IModuleCollector } from './IModuleCollector';
 import { EventPluginContext } from '../plugins/EventPluginContext';
 import { Utils } from '../Utils';
+import { IModuleCollector } from './IModuleCollector';
 
 export class DefaultModuleCollector implements IModuleCollector {
   public getModules(context: EventPluginContext): IModule[] {
@@ -9,8 +9,8 @@ export class DefaultModuleCollector implements IModuleCollector {
       return null;
     }
 
-    let modules: IModule[] = [];
-    let scripts: NodeListOf<HTMLScriptElement> = document.getElementsByTagName('script');
+    const modules: IModule[] = [];
+    const scripts: NodeListOf<HTMLScriptElement> = document.getElementsByTagName('script');
     if (scripts && scripts.length > 0) {
       for (let index = 0; index < scripts.length; index++) {
         if (scripts[index].src) {

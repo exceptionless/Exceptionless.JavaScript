@@ -64,7 +64,7 @@ gulp.task('exceptionless', ['exceptionless.umd'], function () {
     .pipe($.replace('exceptionless-js/1.0.0.0', 'exceptionless-js/' + pkg.version))
     .pipe($.uglify({ output: { beautify: false } }))
     .pipe($.sourcemaps.write('.'))
-    .pipe(gulp.dest('dist'))
+    .pipe(gulp.dest('dist'));
 });
 
 gulp.task('exceptionless.node', ['typescript.node'], function () {
@@ -86,7 +86,7 @@ gulp.task('watch', ['build'], function () {
 });
 
 gulp.task('lint', function () {
-  return gulp.src(['src/**/*.ts', '!src/typings/**/*.ts'])
+  return gulp.src(['src/**/*.ts'])
     .pipe($.tslint({ formatter: 'verbose' }))
     .pipe($.tslint.report());
 });
@@ -140,7 +140,7 @@ gulp.task('test', function(){
 });
 
 gulp.task('format', function () {
-  return gulp.src(['src/**/*.ts', '!src/typings/**/*.ts'])
+  return gulp.src(['src/**/*.ts'])
     .pipe($.exec('node_modules/typescript-formatter/bin/tsfmt -r <%= file.path %>'))
     .pipe($.exec.reporter());
 });

@@ -1,3 +1,1 @@
-export interface SubmissionCallback {
-  (status: number, message: string, data?: string, headers?: Object): void;
-}
+export type SubmissionCallback = (status: number, message: string, data?: string, headers?: object) => void;

@@ -15,9 +15,9 @@ export class InMemoryStorage implements IStorage {
       return null;
     }
 
-    let items = this.items;
-    let timestamp = Math.max(Date.now(), this.lastTimestamp + 1);
-    let item = { timestamp, value };
+    const items = this.items;
+    const timestamp = Math.max(Date.now(), this.lastTimestamp + 1);
+    const item = { timestamp, value };
 
     if (items.push(item) > this.maxItems) {
       items.shift();
@@ -32,7 +32,7 @@ export class InMemoryStorage implements IStorage {
   }
 
   public remove(timestamp: number): void {
-    let items = this.items;
+    const items = this.items;
     for (let i = 0; i < items.length; i++) {
       if (items[i].timestamp === timestamp) {
         items.splice(i, 1);

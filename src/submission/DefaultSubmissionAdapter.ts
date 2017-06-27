@@ -2,6 +2,7 @@ import { ISubmissionAdapter } from './ISubmissionAdapter';
 import { SubmissionCallback } from './SubmissionCallback';
 import { SubmissionRequest } from './SubmissionRequest';
 
+// tslint:disable-next-line:prefer-const
 declare var XDomainRequest: { new (); create(); };
 
 export class DefaultSubmissionAdapter implements ISubmissionAdapter {
@@ -19,13 +20,12 @@ export class DefaultSubmissionAdapter implements ISubmissionAdapter {
           return value.replace(/^[\s\uFEFF\xA0]+|[\s\uFEFF\xA0]+$/g, '');
         }
 
-        let headers = {};
-        let headerPairs = (headerStr || '').split('\u000d\u000a');
-        for (let index: number = 0; index < headerPairs.length; index++) {
-          let headerPair = headerPairs[index];
+        const headers = {};
+        const headerPairs = (headerStr || '').split('\u000d\u000a');
+        for (const headerPair of headerPairs) {
           // Can't use split() here because it does the wrong thing
           // if the header value has the string ": " in it.
-          let separator = headerPair.indexOf('\u003a\u0020');
+          const separator = headerPair.indexOf('\u003a\u0020');
           if (separator > 0) {
             headers[trim(headerPair.substring(0, separator).toLowerCase())] = headerPair.substring(separator + 2);
           }
@@ -41,7 +41,7 @@ export class DefaultSubmissionAdapter implements ISubmissionAdapter {
       isCompleted = true;
 
       let message: string = xhr.statusText;
-      let responseText: string = xhr.responseText;
+      const responseText: string = xhr.responseText;
       let status: number = xhr.status;
 
       if (mode === TIMEOUT || status === 0) {
@@ -50,7 +50,7 @@ export class DefaultSubmissionAdapter implements ISubmissionAdapter {
       } else if (mode === LOADED && !status) {
         status = request.method === 'POST' ? 202 : 200;
       } else if (status < 200 || status > 299) {
-        let responseBody: any = xhr.responseBody;
+        const responseBody: any = (xhr as any).responseBody;
         if (!!responseBody && !!responseBody.message) {
           message = responseBody.message;
         } else if (!!responseText && responseText.indexOf('message') !== -1) {
@@ -89,8 +89,8 @@ export class DefaultSubmissionAdapter implements ISubmissionAdapter {
       return xhr;
     }
 
-    let url = `${request.url}${(request.url.indexOf('?') === -1 ? '?' : '&')}access_token=${encodeURIComponent(request.apiKey)}`;
-    let xhr = createRequest(request.userAgent, request.method || 'POST', url);
+    const url = `${request.url}${(request.url.indexOf('?') === -1 ? '?' : '&')}access_token=${encodeURIComponent(request.apiKey)}`;
+    const xhr = createRequest(request.userAgent, request.method || 'POST', url);
     if (!xhr) {
       return (callback && callback(503, 'CORS not supported.'));
     }

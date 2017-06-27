@@ -1,7 +1,7 @@
 import { ExceptionlessClient } from './ExceptionlessClient';
 import { IEvent } from './models/IEvent';
-import { IUserInfo } from './models/IUserInfo';
 import { IManualStackingInfo } from './models/IManualStackingInfo';
+import { IUserInfo } from './models/IUserInfo';
 import { ContextData } from './plugins/ContextData';
 import { EventPluginContext } from './plugins/EventPluginContext';
 import { Utils } from './Utils';
@@ -49,7 +49,7 @@ export class EventBuilder {
    * @param name Reference name
    * @param id The reference id that points to a specific event
    * @returns {EventBuilder}
-     */
+   */
   public setEventReference(name: string, id: string): EventBuilder {
     if (!name) {
       throw new Error('Invalid name');
@@ -88,7 +88,7 @@ export class EventBuilder {
   public setUserIdentity(identity: string): EventBuilder;
   public setUserIdentity(identity: string, name: string): EventBuilder;
   public setUserIdentity(userInfoOrIdentity: IUserInfo | string, name?: string): EventBuilder {
-    let userInfo = typeof userInfoOrIdentity !== 'string' ? userInfoOrIdentity : { identity: userInfoOrIdentity, name: name };
+    const userInfo = typeof userInfoOrIdentity !== 'string' ? userInfoOrIdentity : { identity: userInfoOrIdentity, name };
     if (!userInfo || (!userInfo.identity && !userInfo.name)) {
       return this;
     }
@@ -103,10 +103,10 @@ export class EventBuilder {
    * @param emailAddress The email address
    * @param description The user's description of the event.
    * @returns {EventBuilder}
-     */
+   */
   public setUserDescription(emailAddress: string, description: string): EventBuilder {
     if (emailAddress && description) {
-      this.setProperty('@user_description', { email_address: emailAddress, description: description });
+      this.setProperty('@user_description', { email_address: emailAddress, description });
     }
 
     return this;
@@ -118,15 +118,14 @@ export class EventBuilder {
    * @param signatureData A dictionary of strings to use for stacking.
    * @param title An optional title for the stacking information.
    * @returns {EventBuilder}
-     */
+   */
   public setManualStackingInfo(signatureData: any, title?: string) {
     if (signatureData) {
-      let stack = <IManualStackingInfo>{
-        signature_data: signatureData
-      };
+      const stack: IManualStackingInfo = { signature_data: signatureData };
       if (title) {
         stack.title = title;
       }
+
       this.setProperty('@stack', stack);
     }
 
@@ -138,12 +137,10 @@ export class EventBuilder {
    * @param manualStackingKey The manual stacking key.
    * @param title An optional title for the stacking information.
    * @returns {EventBuilder}
-     */
+   */
   public setManualStackingKey(manualStackingKey: string, title?: string): EventBuilder {
     if (manualStackingKey) {
-      let data = {
-        'ManualStackingKey': manualStackingKey
-      };
+      const data = { ManualStackingKey: manualStackingKey };
       this.setManualStackingInfo(data, title);
     }
 
@@ -180,7 +177,7 @@ export class EventBuilder {
       this.target.data = {};
     }
 
-    let result = JSON.parse(Utils.stringify(value, this.client.config.dataExclusions.concat(excludedPropertyNames || []), maxDepth));
+    const result = JSON.parse(Utils.stringify(value, this.client.config.dataExclusions.concat(excludedPropertyNames || []), maxDepth));
     if (!Utils.isEmpty(result)) {
       this.target.data[name] = result;
     }
@@ -196,7 +193,7 @@ export class EventBuilder {
     return this;
   }
 
-  public addRequestInfo(request: Object): EventBuilder {
+  public addRequestInfo(request: object): EventBuilder {
     if (!!request) {
       this.pluginContextData['@request'] = request;
     }
@@ -218,10 +215,10 @@ export class EventBuilder {
     }
 
     for (let index = 0; index < value.length; index++) {
-      let code = value.charCodeAt(index);
-      let isDigit = (code >= 48) && (code <= 57);
-      let isLetter = ((code >= 65) && (code <= 90)) || ((code >= 97) && (code <= 122));
-      let isMinus = code === 45;
+      const code = value.charCodeAt(index);
+      const isDigit = (code >= 48) && (code <= 57);
+      const isLetter = ((code >= 65) && (code <= 90)) || ((code >= 97) && (code <= 122));
+      const isMinus = code === 45;
 
       if (!(isDigit || isLetter) && !isMinus) {
         return false;

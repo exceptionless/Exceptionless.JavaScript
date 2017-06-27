@@ -5,8 +5,8 @@ export class BrowserStorage extends KeyValueStorageBase {
 
   public static isAvailable(): boolean {
     try {
-      let storage = window.localStorage,
-        x = '__storage_test__';
+      const storage = window.localStorage;
+      const x = '__storage_test__';
       storage.setItem(x, x);
       storage.removeItem(x);
       return true;
@@ -31,7 +31,7 @@ export class BrowserStorage extends KeyValueStorageBase {
 
   public readAllKeys() {
     return Object.keys(window.localStorage)
-      .filter(key => key.indexOf(this.prefix) === 0);
+      .filter((key) => key.indexOf(this.prefix) === 0);
   }
 
   public delete(key: string) {

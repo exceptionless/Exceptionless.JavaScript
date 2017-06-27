@@ -1,7 +1,7 @@
 import { IInnerError } from '../../models/IInnerError';
-import { IEventPlugin } from '../IEventPlugin';
-import { EventPluginContext } from '../EventPluginContext';
 import { Utils } from '../../Utils';
+import { EventPluginContext } from '../EventPluginContext';
+import { IEventPlugin } from '../IEventPlugin';
 
 export class EventExclusionPlugin implements IEventPlugin {
   public priority: number = 45;
@@ -35,25 +35,26 @@ export class EventExclusionPlugin implements IEventPlugin {
       }
     }
 
-    function getMinLogLevel(settings: Object, loggerName: string = '*'): number {
+    function getMinLogLevel(settings: object, loggerName: string = '*'): number {
       return getLogLevel(getTypeAndSourceSetting(settings, 'log', loggerName, 'Trace') + '');
     }
 
-    function getTypeAndSourceSetting(settings: Object = {}, type: string, source: string, defaultValue: string|boolean = undefined): string|boolean {
+    // tslint:disable-next-line:ban-types
+    function getTypeAndSourceSetting(settings: Object = {}, type: string, source: string, defaultValue?: string|boolean): string|boolean {
       if (!type) {
         return defaultValue;
       }
 
-      let isLog = type === 'log';
-      let sourcePrefix =  `@@${type}:`;
+      const isLog = type === 'log';
+      const sourcePrefix =  `@@${type}:`;
 
-      let value = settings[sourcePrefix + source];
+      const value = settings[sourcePrefix + source];
       if (value) {
         return !isLog ? Utils.toBoolean(value) : value;
       }
 
       // check for wildcard match
-      for (let key in settings) {
+      for (const key in settings) {
         if (Utils.startsWith(key.toLowerCase(), sourcePrefix.toLowerCase()) && Utils.isMatch(source, [key.substring(sourcePrefix.length)])) {
           return !isLog ? Utils.toBoolean(settings[key]) : settings[key];
         }
@@ -62,13 +63,13 @@ export class EventExclusionPlugin implements IEventPlugin {
       return defaultValue;
     }
 
-    let ev = context.event;
-    let log = context.log;
-    let settings = context.client.config.settings;
+    const ev = context.event;
+    const log = context.log;
+    const settings = context.client.config.settings;
 
     if (ev.type === 'log') {
-      let minLogLevel = getMinLogLevel(settings, ev.source);
-      let logLevel = getLogLevel(ev.data['@level']);
+      const minLogLevel = getMinLogLevel(settings, ev.source);
+      const logLevel = getLogLevel(ev.data['@level']);
 
       if (logLevel >= 0 && (logLevel > 5 || logLevel < minLogLevel)) {
         log.info('Cancelling log event due to minimum log level.');

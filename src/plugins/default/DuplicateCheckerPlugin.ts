@@ -1,7 +1,7 @@
 import { IInnerError } from '../../models/IInnerError';
-import { IEventPlugin } from '../IEventPlugin';
-import { EventPluginContext } from '../EventPluginContext';
 import { Utils } from '../../Utils';
+import { EventPluginContext } from '../EventPluginContext';
+import { IEventPlugin } from '../IEventPlugin';
 
 export class DuplicateCheckerPlugin implements IEventPlugin {
   public priority: number = 1010;
@@ -39,13 +39,13 @@ export class DuplicateCheckerPlugin implements IEventPlugin {
       return hashCode;
     }
 
-    let error = context.event.data['@error'];
-    let hashCode = getHashCode(error);
+    const error = context.event.data['@error'];
+    const hashCode = getHashCode(error);
     if (hashCode) {
-      let count = context.event.count || 1;
-      let now = this._getCurrentTime();
+      const count = context.event.count || 1;
+      const now = this._getCurrentTime();
 
-      let merged = this._mergedEvents.filter(s => s.hashCode === hashCode)[0];
+      const merged = this._mergedEvents.filter((s) => s.hashCode === hashCode)[0];
       if (merged) {
         merged.incrementCount(count);
         merged.updateDate(context.event.date);
@@ -53,7 +53,7 @@ export class DuplicateCheckerPlugin implements IEventPlugin {
         context.cancelled = true;
       }
 
-      if (!context.cancelled && this._processedHashcodes.some(h => h.hash === hashCode && h.timestamp >= (now - this._interval))) {
+      if (!context.cancelled && this._processedHashcodes.some((h) => h.hash === hashCode && h.timestamp >= (now - this._interval))) {
         context.log.trace('Adding event with hash: ' + hashCode);
         this._mergedEvents.push(new MergedEvent(hashCode, context, count));
         context.cancelled = true;

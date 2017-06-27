@@ -8,9 +8,9 @@ export class Utils {
       return target;
     }
 
-    for (let index = 0; index < values.length; index++) {
-      if (values[index] && target.indexOf(values[index]) < 0) {
-        target.push(values[index]);
+    for (const value of values) {
+      if (value && target.indexOf(value) < 0) {
+        target.push(value);
       }
     }
 
@@ -24,7 +24,7 @@ export class Utils {
 
     let hash: number = 0;
     for (let index = 0; index < source.length; index++) {
-      let character = source.charCodeAt(index);
+      const character = source.charCodeAt(index);
       hash = ((hash << 5) - hash) + character;
       hash |= 0;
     }
@@ -32,12 +32,12 @@ export class Utils {
     return hash;
   }
 
-  public static getCookies(cookies: string, exclusions?: string[]): Object {
-    let result: Object = {};
+  public static getCookies(cookies: string, exclusions?: string[]): object {
+    const result: object = {};
 
-    let parts: string[] = (cookies || '').split('; ');
-    for (let index = 0; index < parts.length; index++) {
-      let cookie: string[] = parts[index].split('=');
+    const parts: string[] = (cookies || '').split('; ');
+    for (const part of parts) {
+      const cookie: string[] = part.split('=');
       if (!Utils.isMatch(cookie[0], exclusions)) {
         result[cookie[0]] = cookie[1];
       }
@@ -54,16 +54,17 @@ export class Utils {
     return s4() + s4() + '-' + s4() + '-' + s4() + '-' + s4() + '-' + s4() + s4() + s4();
   }
 
+  // tslint:disable-next-line:ban-types
   public static merge(defaultValues: Object, values: Object) {
-    let result: Object = {};
+    const result: object = {};
 
-    for (let key in defaultValues || {}) {
+    for (const key in defaultValues || {}) {
       if (!!defaultValues[key]) {
         result[key] = defaultValues[key];
       }
     }
 
-    for (let key in values || {}) {
+    for (const key in values || {}) {
       if (!!values[key]) {
         result[key] = values[key];
       }
@@ -77,8 +78,8 @@ export class Utils {
       return null;
     }
 
-    let versionRegex = /(v?((\d+)\.(\d+)(\.(\d+))?)(?:-([\dA-Za-z\-]+(?:\.[\dA-Za-z\-]+)*))?(?:\+([\dA-Za-z\-]+(?:\.[\dA-Za-z\-]+)*))?)/;
-    let matches = versionRegex.exec(source);
+    const versionRegex = /(v?((\d+)\.(\d+)(\.(\d+))?)(?:-([\dA-Za-z\-]+(?:\.[\dA-Za-z\-]+)*))?(?:\+([\dA-Za-z\-]+(?:\.[\dA-Za-z\-]+)*))?)/;
+    const matches = versionRegex.exec(source);
     if (matches && matches.length > 0) {
       return matches[0];
     }
@@ -91,16 +92,16 @@ export class Utils {
       return null;
     }
 
-    let pairs: string[] = query.split('&');
+    const pairs: string[] = query.split('&');
     if (pairs.length === 0) {
       return null;
     }
 
-    let result: Object = {};
-    for (let index = 0; index < pairs.length; index++) {
-      let pair = pairs[index].split('=');
-      if (!Utils.isMatch(pair[0], exclusions)) {
-        result[decodeURIComponent(pair[0])] = decodeURIComponent(pair[1]);
+    const result: object = {};
+    for (const pair of pairs) {
+      const parts = pair.split('=');
+      if (!Utils.isMatch(parts[0], exclusions)) {
+        result[decodeURIComponent(parts[0])] = decodeURIComponent(parts[1]);
       }
     }
 
@@ -121,10 +122,10 @@ export class Utils {
       return false;
     }
 
-    let trim = /^[\s\uFEFF\xA0]+|[\s\uFEFF\xA0]+$/g;
+    const trim = /^[\s\uFEFF\xA0]+|[\s\uFEFF\xA0]+$/g;
     input = (ignoreCase ? input.toLowerCase() : input).replace(trim, '');
 
-    return (patterns || []).some(pattern => {
+    return (patterns || []).some((pattern) => {
       if (typeof pattern !== 'string') {
         return false;
       }
@@ -134,12 +135,12 @@ export class Utils {
         return false;
       }
 
-      let startsWithWildcard: boolean = pattern[0] === '*';
+      const startsWithWildcard: boolean = pattern[0] === '*';
       if (startsWithWildcard) {
         pattern = pattern.slice(1);
       }
 
-      let endsWithWildcard: boolean = pattern[pattern.length - 1] === '*';
+      const endsWithWildcard: boolean = pattern[pattern.length - 1] === '*';
       if (endsWithWildcard) {
         pattern = pattern.substring(0, pattern.length - 1);
       }
@@ -160,7 +161,7 @@ export class Utils {
     });
   }
 
-  public static isEmpty(input: Object) {
+  public static isEmpty(input: object) {
     return input === null || (typeof (input) === 'object' && Object.keys(input).length === 0);
   }
 
@@ -180,8 +181,8 @@ export class Utils {
    */
   public static stringify(data: any, exclusions?: string[], maxDepth?: number): string {
     function stringifyImpl(obj: any, excludedKeys: string[]): string {
-      let cache: string[] = [];
-      return JSON.stringify(obj, function(key: string, value: any) {
+      const cache: string[] = [];
+      return JSON.stringify(obj, (key: string, value: any) => {
         if (Utils.isMatch(key, excludedKeys)) {
           return;
         }
@@ -200,10 +201,10 @@ export class Utils {
     }
 
     if (({}).toString.call(data) === '[object Object]') {
-      let flattened = {};
+      const flattened = {};
       /* tslint:disable:forin */
-      for (let prop in data) {
-        let value = data[prop];
+      for (const prop in data) {
+        const value = data[prop];
         if (value === data) {
           continue;
         }
@@ -215,7 +216,7 @@ export class Utils {
     }
 
     if (({}).toString.call(data) === '[object Array]') {
-      let result = [];
+      const result = [];
       for (let index = 0; index < data.length; index++) {
         result[index] = JSON.parse(stringifyImpl(data[index], exclusions));
       }

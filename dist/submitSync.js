@@ -1,10 +1,11 @@
 "use strict";
-var stream = require("stream");
-var child = require("child_process");
+Object.defineProperty(exports, "__esModule", { value: true });
 var http = require("http");
-var https = require('https');
-var url = require('url');
-var string_decoder_1 = require('string_decoder');
+var https = require("https");
+var url = require("url");
+var child = require("child_process");
+var stream = require("stream");
+var string_decoder_1 = require("string_decoder");
 var NodeSubmissionAdapter = (function () {
     function NodeSubmissionAdapter() {
     }
@@ -86,5 +87,4 @@ jsonStream.on('finish', function () {
     });
 });
 process.stdin.pipe(jsonStream);
-
 //# sourceMappingURL=submitSync.js.map

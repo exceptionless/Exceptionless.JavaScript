@@ -10,5 +10,4 @@ export class NodeFileStorageProvider implements IStorageProvider {
     this.queue = new NodeFileStorage('q', folder, prefix, maxQueueItems);
     this.settings = new NodeFileStorage('settings', folder, prefix, 1);
   }
-
 }

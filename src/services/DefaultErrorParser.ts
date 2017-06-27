@@ -1,18 +1,18 @@
+import * as TraceKit from 'TraceKit';
 import { IError } from '../models/IError';
 import { IParameter } from '../models/IParameter';
-import { IErrorParser } from './IErrorParser';
 import { IStackFrame } from '../models/IStackFrame';
 import { EventPluginContext } from '../plugins/EventPluginContext';
-import * as TraceKit from 'TraceKit';
+import { IErrorParser } from './IErrorParser';
 
 export class DefaultErrorParser implements IErrorParser {
   public parse(context: EventPluginContext, exception: Error): IError {
     function getParameters(parameters: string | string[]): IParameter[] {
-      let params: string[] = (typeof parameters === 'string' ? [parameters] : parameters) || [];
+      const params: string[] = (typeof parameters === 'string' ? [parameters] : parameters) || [];
 
-      let result: IParameter[] = [];
-      for (let index = 0; index < params.length; index++) {
-        result.push({ name: params[index] });
+      const result: IParameter[] = [];
+      for (const param of params) {
+        result.push({ name: param });
       }
 
       return result;
@@ -20,10 +20,9 @@ export class DefaultErrorParser implements IErrorParser {
 
     function getStackFrames(stackFrames: TraceKit.StackFrame[]): IStackFrame[] {
       const ANONYMOUS: string = '<anonymous>';
-      let frames: IStackFrame[] = [];
+      const frames: IStackFrame[] = [];
 
-      for (let index = 0; index < stackFrames.length; index++) {
-        let frame = stackFrames[index];
+      for (const frame of stackFrames) {
         frames.push({
           name: (frame.func || ANONYMOUS).replace('?', ANONYMOUS),
           parameters: getParameters(frame.args),
@@ -38,7 +37,7 @@ export class DefaultErrorParser implements IErrorParser {
 
     const TRACEKIT_STACK_TRACE_KEY: string = '@@_TraceKit.StackTrace'; // optimization for minifier.
 
-    let stackTrace: TraceKit.StackTrace = !!context.contextData[TRACEKIT_STACK_TRACE_KEY]
+    const stackTrace: TraceKit.StackTrace = !!context.contextData[TRACEKIT_STACK_TRACE_KEY]
       ? context.contextData[TRACEKIT_STACK_TRACE_KEY]
       : TraceKit.computeStackTrace(exception, 25);
 
@@ -46,7 +45,7 @@ export class DefaultErrorParser implements IErrorParser {
       throw new Error('Unable to parse the exceptions stack trace.');
     }
 
-    let message = typeof(exception) === 'string' ? <any>exception : undefined;
+    const message = typeof(exception) === 'string' ? exception as any : undefined;
     return {
       type: stackTrace.name,
       message: stackTrace.message || exception.message || message,

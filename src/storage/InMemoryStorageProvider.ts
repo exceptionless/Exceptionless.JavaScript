@@ -1,6 +1,6 @@
+import { InMemoryStorage } from './InMemoryStorage';
 import { IStorage } from './IStorage';
 import { IStorageProvider } from './IStorageProvider';
-import { InMemoryStorage } from './InMemoryStorage';
 
 export class InMemoryStorageProvider implements IStorageProvider {
   public queue: IStorage;

@@ -17,10 +17,10 @@ export abstract class KeyValueStorageBase implements IStorage {
 
     this.ensureIndex();
 
-    let items = this.items;
-    let timestamp = Math.max(Date.now(), this.lastTimestamp + 1);
-    let key = this.getKey(timestamp);
-    let json = JSON.stringify(value);
+    const items = this.items;
+    const timestamp = Math.max(Date.now(), this.lastTimestamp + 1);
+    const key = this.getKey(timestamp);
+    const json = JSON.stringify(value);
 
     try {
       this.write(key, json);
@@ -39,12 +39,12 @@ export abstract class KeyValueStorageBase implements IStorage {
     this.ensureIndex();
 
     return this.items.slice(0, limit)
-      .map(timestamp => {
+      .map((timestamp) => {
         // Read and parse item for this timestamp
-        let key = this.getKey(timestamp);
+        const key = this.getKey(timestamp);
         try {
-          let json = this.read(key);
-          let value = JSON.parse(json, parseDate);
+          const json = this.read(key);
+          const value = JSON.parse(json, parseDate);
           return { timestamp, value };
         } catch (error) {
           // Something went wrong - try to delete the cause.
@@ -52,23 +52,23 @@ export abstract class KeyValueStorageBase implements IStorage {
           return null;
         }
       })
-      .filter(item => item != null);
+      .filter((item) => item != null);
   }
 
   public remove(timestamp: number): void {
     this.ensureIndex();
 
-    let items = this.items;
-    let index = items.indexOf(timestamp);
+    const items = this.items;
+    const index = items.indexOf(timestamp);
     if (index >= 0) {
-      let key = this.getKey(timestamp);
+      const key = this.getKey(timestamp);
       this.safeDelete(key);
       items.splice(index, 1);
-    };
+    }
   }
 
   public clear(): void {
-    this.items.forEach(item => this.safeDelete(this.getKey(item)));
+    this.items.forEach((item) => this.safeDelete(this.getKey(item)));
     this.items = [];
   }
 
@@ -95,10 +95,10 @@ export abstract class KeyValueStorageBase implements IStorage {
 
   private createIndex() {
     try {
-      let keys = this.readAllKeys();
-      return keys.map(key => {
+      const keys = this.readAllKeys();
+      return keys.map((key) => {
         try {
-          let timestamp = this.getTimestamp(key);
+          const timestamp = this.getTimestamp(key);
           if (!timestamp) {
             this.safeDelete(key);
             return null;
@@ -108,7 +108,7 @@ export abstract class KeyValueStorageBase implements IStorage {
           this.safeDelete(key);
           return null;
         }
-      }).filter(timestamp => timestamp != null)
+      }).filter((timestamp) => timestamp != null)
         .sort((a, b) => a - b);
     } catch (error) {
       return [];
@@ -117,12 +117,12 @@ export abstract class KeyValueStorageBase implements IStorage {
 }
 
 function parseDate(key, value) {
-  let dateRegx = /\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d\.\d+([+-][0-2]\d:[0-5]\d|Z)/g;
+  const dateRegx = /\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d\.\d+([+-][0-2]\d:[0-5]\d|Z)/g;
   if (typeof value === 'string') {
-    let a = dateRegx.exec(value);
+    const a = dateRegx.exec(value);
     if (a) {
       return new Date(value);
     }
   }
   return value;
-};
+}

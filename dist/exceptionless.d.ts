@@ -1,27 +1,3 @@
-export interface IEvent {
-    type?: string;
-    source?: string;
-    date?: Date;
-    tags?: string[];
-    message?: string;
-    geo?: string;
-    value?: number;
-    data?: any;
-    reference_id?: string;
-    count?: number;
-}
-export declare class SubmissionResponse {
-    success: boolean;
-    badRequest: boolean;
-    serviceUnavailable: boolean;
-    paymentRequired: boolean;
-    unableToAuthenticate: boolean;
-    notFound: boolean;
-    requestEntityTooLarge: boolean;
-    statusCode: number;
-    message: string;
-    constructor(statusCode: number, message?: string);
-}
 export interface ILastReferenceIdManager {
     getLast(): string;
     clearLast(): void;
@@ -32,6 +8,80 @@ export interface ILog {
     info(message: string): void;
     warn(message: string): void;
     error(message: string): void;
+}
+export declare class DefaultLastReferenceIdManager implements ILastReferenceIdManager {
+    private _lastReferenceId;
+    getLast(): string;
+    clearLast(): void;
+    setLast(eventId: string): void;
+}
+export declare class ConsoleLog implements ILog {
+    trace(message: string): void;
+    info(message: string): void;
+    warn(message: string): void;
+    error(message: string): void;
+    private log(level, message);
+}
+export declare class NullLog implements ILog {
+    trace(message: string): void;
+    info(message: string): void;
+    warn(message: string): void;
+    error(message: string): void;
+}
+export interface IUserInfo {
+    identity?: string;
+    name?: string;
+    data?: any;
+}
+export declare class HeartbeatPlugin implements IEventPlugin {
+    priority: number;
+    name: string;
+    private _interval;
+    private _intervalId;
+    constructor(heartbeatInterval?: number);
+    run(context: EventPluginContext, next?: () => void): void;
+}
+export declare class ReferenceIdPlugin implements IEventPlugin {
+    priority: number;
+    name: string;
+    run(context: EventPluginContext, next?: () => void): void;
+}
+export declare class EventPluginContext {
+    cancelled: boolean;
+    client: ExceptionlessClient;
+    event: IEvent;
+    contextData: ContextData;
+    constructor(client: ExceptionlessClient, event: IEvent, contextData?: ContextData);
+    readonly log: ILog;
+}
+export declare class EventPluginManager {
+    static run(context: EventPluginContext, callback: (context?: EventPluginContext) => void): void;
+    static addDefaultPlugins(config: Configuration): void;
+}
+export interface IEventPlugin {
+    priority?: number;
+    name?: string;
+    run(context: EventPluginContext, next?: () => void): void;
+}
+export declare class DefaultEventQueue implements IEventQueue {
+    private _config;
+    private _handlers;
+    private _suspendProcessingUntil;
+    private _discardQueuedItemsUntil;
+    private _processingQueue;
+    private _queueTimer;
+    constructor(config: Configuration);
+    enqueue(event: IEvent): void;
+    process(isAppExiting?: boolean): void;
+    suspendProcessing(durationInMinutes?: number, discardFutureQueuedItems?: boolean, clearQueue?: boolean): void;
+    onEventsPosted(handler: (events: IEvent[], response: SubmissionResponse) => void): void;
+    private eventsPosted(events, response);
+    private areQueuedItemsDiscarded();
+    private ensureQueueTimer();
+    private isQueueProcessingSuspended();
+    private onProcessQueue();
+    private processSubmissionResponse(response, events);
+    private removeEvents(events);
 }
 export interface IEventQueue {
     enqueue(event: IEvent): void;
@@ -51,9 +101,23 @@ export interface IModuleCollector {
 export interface IRequestInfoCollector {
     getRequestInfo(context: EventPluginContext): IRequestInfo;
 }
+export declare class InMemoryStorageProvider implements IStorageProvider {
+    queue: IStorage;
+    settings: IStorage;
+    constructor(maxQueueItems?: number);
+}
 export interface IStorageProvider {
     queue: IStorage;
     settings: IStorage;
+}
+export declare class DefaultSubmissionClient implements ISubmissionClient {
+    configurationVersionHeader: string;
+    postEvents(events: IEvent[], config: Configuration, callback: (response: SubmissionResponse) => void, isAppExiting?: boolean): void;
+    postUserDescription(referenceId: string, description: IUserDescription, config: Configuration, callback: (response: SubmissionResponse) => void): void;
+    getSettings(config: Configuration, version: number, callback: (response: SettingsResponse) => void): void;
+    sendHeartbeat(sessionIdOrUserId: string, closeSession: boolean, config: Configuration): void;
+    private createRequest(config, method, url, data?);
+    private createSubmissionCallback(config, callback);
 }
 export interface ISubmissionAdapter {
     sendRequest(request: SubmissionRequest, callback?: SubmissionCallback, isAppExiting?: boolean): void;
@@ -63,6 +127,22 @@ export interface ISubmissionClient {
     postUserDescription(referenceId: string, description: IUserDescription, config: Configuration, callback: (response: SubmissionResponse) => void): void;
     getSettings(config: Configuration, version: number, callback: (response: SettingsResponse) => void): void;
     sendHeartbeat(sessionIdOrUserId: string, closeSession: boolean, config: Configuration): void;
+}
+export declare class Utils {
+    static addRange<T>(target: T[], ...values: T[]): T[];
+    static getHashCode(source: string): number;
+    static getCookies(cookies: string, exclusions?: string[]): object;
+    static guid(): string;
+    static merge(defaultValues: Object, values: Object): object;
+    static parseVersion(source: string): string;
+    static parseQueryString(query: string, exclusions?: string[]): object;
+    static randomNumber(): number;
+    static isMatch(input: string, patterns: string[], ignoreCase?: boolean): boolean;
+    static isEmpty(input: object): boolean;
+    static startsWith(input: string, prefix: string): boolean;
+    static endsWith(input: string, suffix: string): boolean;
+    static stringify(data: any, exclusions?: string[], maxDepth?: number): string;
+    static toBoolean(input: any, defaultValue?: boolean): boolean;
 }
 export interface IConfigurationSettings {
     apiKey?: string;
@@ -91,202 +171,29 @@ export declare class SettingsManager {
     private static changed(config);
     private static getSavedServerSettings(config);
 }
-export declare class DefaultLastReferenceIdManager implements ILastReferenceIdManager {
-    private _lastReferenceId;
-    getLast(): string;
-    clearLast(): void;
-    setLast(eventId: string): void;
-}
-export declare class ConsoleLog implements ILog {
-    trace(message: string): void;
-    info(message: string): void;
-    warn(message: string): void;
-    error(message: string): void;
-    private log(level, message);
-}
-export declare class NullLog implements ILog {
-    trace(message: string): void;
-    info(message: string): void;
-    warn(message: string): void;
-    error(message: string): void;
-}
-export interface IUserInfo {
-    identity?: string;
-    name?: string;
+export interface IEvent {
+    type?: string;
+    source?: string;
+    date?: Date;
+    tags?: string[];
+    message?: string;
+    geo?: string;
+    value?: number;
     data?: any;
+    reference_id?: string;
+    count?: number;
 }
-export interface IEventPlugin {
-    priority?: number;
-    name?: string;
-    run(context: EventPluginContext, next?: () => void): void;
-}
-export declare class EventPluginContext {
-    cancelled: boolean;
-    client: ExceptionlessClient;
-    event: IEvent;
-    contextData: ContextData;
-    constructor(client: ExceptionlessClient, event: IEvent, contextData?: ContextData);
-    log: ILog;
-}
-export declare class EventPluginManager {
-    static run(context: EventPluginContext, callback: (context?: EventPluginContext) => void): void;
-    static addDefaultPlugins(config: Configuration): void;
-}
-export declare class HeartbeatPlugin implements IEventPlugin {
-    priority: number;
-    name: string;
-    private _interval;
-    private _intervalId;
-    constructor(heartbeatInterval?: number);
-    run(context: EventPluginContext, next?: () => void): void;
-}
-export declare class ReferenceIdPlugin implements IEventPlugin {
-    priority: number;
-    name: string;
-    run(context: EventPluginContext, next?: () => void): void;
-}
-export declare class DefaultEventQueue implements IEventQueue {
-    private _config;
-    private _handlers;
-    private _suspendProcessingUntil;
-    private _discardQueuedItemsUntil;
-    private _processingQueue;
-    private _queueTimer;
-    constructor(config: Configuration);
-    enqueue(event: IEvent): void;
-    process(isAppExiting?: boolean): void;
-    suspendProcessing(durationInMinutes?: number, discardFutureQueuedItems?: boolean, clearQueue?: boolean): void;
-    onEventsPosted(handler: (events: IEvent[], response: SubmissionResponse) => void): void;
-    private eventsPosted(events, response);
-    private areQueuedItemsDiscarded();
-    private ensureQueueTimer();
-    private isQueueProcessingSuspended();
-    private onProcessQueue();
-    private processSubmissionResponse(response, events);
-    private removeEvents(events);
-}
-export declare class InMemoryStorageProvider implements IStorageProvider {
-    queue: IStorage;
-    settings: IStorage;
-    constructor(maxQueueItems?: number);
-}
-export declare class DefaultSubmissionClient implements ISubmissionClient {
-    configurationVersionHeader: string;
-    postEvents(events: IEvent[], config: Configuration, callback: (response: SubmissionResponse) => void, isAppExiting?: boolean): void;
-    postUserDescription(referenceId: string, description: IUserDescription, config: Configuration, callback: (response: SubmissionResponse) => void): void;
-    getSettings(config: Configuration, version: number, callback: (response: SettingsResponse) => void): void;
-    sendHeartbeat(sessionIdOrUserId: string, closeSession: boolean, config: Configuration): void;
-    private createRequest(config, method, url, data?);
-    private createSubmissionCallback(config, callback);
-}
-export declare class Utils {
-    static addRange<T>(target: T[], ...values: T[]): T[];
-    static getHashCode(source: string): number;
-    static getCookies(cookies: string, exclusions?: string[]): Object;
-    static guid(): string;
-    static merge(defaultValues: Object, values: Object): Object;
-    static parseVersion(source: string): string;
-    static parseQueryString(query: string, exclusions?: string[]): Object;
-    static randomNumber(): number;
-    static isMatch(input: string, patterns: string[], ignoreCase?: boolean): boolean;
-    static isEmpty(input: Object): boolean;
-    static startsWith(input: string, prefix: string): boolean;
-    static endsWith(input: string, suffix: string): boolean;
-    static stringify(data: any, exclusions?: string[], maxDepth?: number): string;
-    static toBoolean(input: any, defaultValue?: boolean): boolean;
-}
-export declare class Configuration implements IConfigurationSettings {
-    private static _defaultSettings;
-    defaultTags: string[];
-    defaultData: Object;
-    enabled: boolean;
-    environmentInfoCollector: IEnvironmentInfoCollector;
-    errorParser: IErrorParser;
-    lastReferenceIdManager: ILastReferenceIdManager;
-    log: ILog;
-    moduleCollector: IModuleCollector;
-    requestInfoCollector: IRequestInfoCollector;
-    submissionBatchSize: number;
-    submissionAdapter: ISubmissionAdapter;
-    submissionClient: ISubmissionClient;
-    settings: Object;
-    storage: IStorageProvider;
-    queue: IEventQueue;
-    private _apiKey;
-    private _serverUrl;
-    private _heartbeatServerUrl;
-    private _updateSettingsWhenIdleInterval;
-    private _dataExclusions;
-    private _userAgentBotPatterns;
-    private _plugins;
-    private _handlers;
-    constructor(configSettings?: IConfigurationSettings);
-    apiKey: string;
-    isValid: boolean;
-    serverUrl: string;
-    heartbeatServerUrl: string;
-    updateSettingsWhenIdleInterval: number;
-    dataExclusions: string[];
-    addDataExclusions(...exclusions: string[]): void;
-    userAgentBotPatterns: string[];
-    addUserAgentBotPatterns(...userAgentBotPatterns: string[]): void;
-    plugins: IEventPlugin[];
-    addPlugin(plugin: IEventPlugin): void;
-    addPlugin(name: string, priority: number, pluginAction: (context: EventPluginContext, next?: () => void) => void): void;
-    removePlugin(plugin: IEventPlugin): void;
-    removePlugin(name: string): void;
-    setVersion(version: string): void;
-    setUserIdentity(userInfo: IUserInfo): void;
-    setUserIdentity(identity: string): void;
-    setUserIdentity(identity: string, name: string): void;
-    userAgent: string;
-    useSessions(sendHeartbeats?: boolean, heartbeatInterval?: number): void;
-    useReferenceIds(): void;
-    useLocalStorage(): void;
-    useDebugLogger(): void;
-    onChanged(handler: (config: Configuration) => void): void;
-    private changed();
-    static defaults: IConfigurationSettings;
-}
-export declare class EventBuilder {
-    target: IEvent;
-    client: ExceptionlessClient;
-    pluginContextData: ContextData;
-    private _validIdentifierErrorMessage;
-    constructor(event: IEvent, client: ExceptionlessClient, pluginContextData?: ContextData);
-    setType(type: string): EventBuilder;
-    setSource(source: string): EventBuilder;
-    setReferenceId(referenceId: string): EventBuilder;
-    setEventReference(name: string, id: string): EventBuilder;
-    setMessage(message: string): EventBuilder;
-    setGeo(latitude: number, longitude: number): EventBuilder;
-    setUserIdentity(userInfo: IUserInfo): EventBuilder;
-    setUserIdentity(identity: string): EventBuilder;
-    setUserIdentity(identity: string, name: string): EventBuilder;
-    setUserDescription(emailAddress: string, description: string): EventBuilder;
-    setManualStackingInfo(signatureData: any, title?: string): this;
-    setManualStackingKey(manualStackingKey: string, title?: string): EventBuilder;
-    setValue(value: number): EventBuilder;
-    addTags(...tags: string[]): EventBuilder;
-    setProperty(name: string, value: any, maxDepth?: number, excludedPropertyNames?: string[]): EventBuilder;
-    markAsCritical(critical: boolean): EventBuilder;
-    addRequestInfo(request: Object): EventBuilder;
-    submit(callback?: (context: EventPluginContext) => void): void;
-    private isValidIdentifier(value);
-}
-export interface IUserDescription {
-    email_address?: string;
-    description?: string;
-    data?: any;
-}
-export declare class ContextData {
-    setException(exception: Error): void;
-    hasException: boolean;
-    getException(): Error;
-    markAsUnhandledError(): void;
-    isUnhandledError: boolean;
-    setSubmissionMethod(method: string): void;
-    getSubmissionMethod(): string;
+export declare class SubmissionResponse {
+    success: boolean;
+    badRequest: boolean;
+    serviceUnavailable: boolean;
+    paymentRequired: boolean;
+    unableToAuthenticate: boolean;
+    notFound: boolean;
+    requestEntityTooLarge: boolean;
+    statusCode: number;
+    message: string;
+    constructor(statusCode: number, message?: string);
 }
 export declare class ExceptionlessClient {
     private static _instance;
@@ -319,34 +226,16 @@ export declare class ExceptionlessClient {
     updateUserEmailAndDescription(referenceId: string, email: string, description: string, callback?: (response: SubmissionResponse) => void): void;
     getLastReferenceId(): string;
     private updateSettingsTimer(initialDelay?);
-    static default: ExceptionlessClient;
+    static readonly default: ExceptionlessClient;
 }
-export interface IManualStackingInfo {
-    title?: string;
-    signature_data?: any;
-}
-export interface IModule {
-    data?: any;
-    module_id?: number;
-    name?: string;
-    version?: string;
-    is_entry?: boolean;
-    created_date?: Date;
-    modified_date?: Date;
-}
-export interface IRequestInfo {
-    user_agent?: string;
-    http_method?: string;
-    is_secure?: boolean;
-    host?: string;
-    port?: number;
-    path?: string;
-    referrer?: string;
-    client_ip_address?: string;
-    cookies?: any;
-    post_data?: any;
-    query_string?: any;
-    data?: any;
+export declare class ContextData {
+    setException(exception: Error): void;
+    readonly hasException: boolean;
+    getException(): Error;
+    markAsUnhandledError(): void;
+    readonly isUnhandledError: boolean;
+    setSubmissionMethod(method: string): void;
+    getSubmissionMethod(): string;
 }
 export interface IEnvironmentInfo {
     processor_count?: number;
@@ -397,32 +286,146 @@ export interface IInnerError {
     stack_trace?: IStackFrame[];
     target_method?: IMethod;
 }
+export interface IModule {
+    data?: any;
+    module_id?: number;
+    name?: string;
+    version?: string;
+    is_entry?: boolean;
+    created_date?: Date;
+    modified_date?: Date;
+}
+export interface IError extends IInnerError {
+    modules?: IModule[];
+}
+export interface IRequestInfo {
+    user_agent?: string;
+    http_method?: string;
+    is_secure?: boolean;
+    host?: string;
+    port?: number;
+    path?: string;
+    referrer?: string;
+    client_ip_address?: string;
+    cookies?: any;
+    post_data?: any;
+    query_string?: any;
+    data?: any;
+}
+export interface IStorageItem {
+    timestamp: number;
+    value: any;
+}
+export interface IStorage {
+    save(value: any): number;
+    get(limit?: number): IStorageItem[];
+    remove(timestamp: number): void;
+    clear(): void;
+}
+export declare type SubmissionCallback = (status: number, message: string, data?: string, headers?: object) => void;
+export interface SubmissionRequest {
+    apiKey: string;
+    userAgent: string;
+    method: string;
+    url: string;
+    data: string;
+}
+export declare class Configuration implements IConfigurationSettings {
+    private static _defaultSettings;
+    defaultTags: string[];
+    defaultData: object;
+    enabled: boolean;
+    environmentInfoCollector: IEnvironmentInfoCollector;
+    errorParser: IErrorParser;
+    lastReferenceIdManager: ILastReferenceIdManager;
+    log: ILog;
+    moduleCollector: IModuleCollector;
+    requestInfoCollector: IRequestInfoCollector;
+    submissionBatchSize: number;
+    submissionAdapter: ISubmissionAdapter;
+    submissionClient: ISubmissionClient;
+    settings: object;
+    storage: IStorageProvider;
+    queue: IEventQueue;
+    private _apiKey;
+    private _serverUrl;
+    private _heartbeatServerUrl;
+    private _updateSettingsWhenIdleInterval;
+    private _dataExclusions;
+    private _userAgentBotPatterns;
+    private _plugins;
+    private _handlers;
+    constructor(configSettings?: IConfigurationSettings);
+    apiKey: string;
+    readonly isValid: boolean;
+    serverUrl: string;
+    heartbeatServerUrl: string;
+    updateSettingsWhenIdleInterval: number;
+    readonly dataExclusions: string[];
+    addDataExclusions(...exclusions: string[]): void;
+    readonly userAgentBotPatterns: string[];
+    addUserAgentBotPatterns(...userAgentBotPatterns: string[]): void;
+    readonly plugins: IEventPlugin[];
+    addPlugin(plugin: IEventPlugin): void;
+    addPlugin(name: string, priority: number, pluginAction: (context: EventPluginContext, next?: () => void) => void): void;
+    removePlugin(plugin: IEventPlugin): void;
+    setVersion(version: string): void;
+    setUserIdentity(userInfo: IUserInfo): void;
+    setUserIdentity(identity: string): void;
+    setUserIdentity(identity: string, name: string): void;
+    readonly userAgent: string;
+    useSessions(sendHeartbeats?: boolean, heartbeatInterval?: number): void;
+    useReferenceIds(): void;
+    useLocalStorage(): void;
+    useDebugLogger(): void;
+    onChanged(handler: (config: Configuration) => void): void;
+    private changed();
+    static readonly defaults: IConfigurationSettings;
+}
+export interface IUserDescription {
+    email_address?: string;
+    description?: string;
+    data?: any;
+}
+export declare class SettingsResponse {
+    success: boolean;
+    settings: any;
+    settingsVersion: number;
+    message: string;
+    exception: any;
+    constructor(success: boolean, settings: any, settingsVersion?: number, exception?: any, message?: string);
+}
+export declare class EventBuilder {
+    target: IEvent;
+    client: ExceptionlessClient;
+    pluginContextData: ContextData;
+    private _validIdentifierErrorMessage;
+    constructor(event: IEvent, client: ExceptionlessClient, pluginContextData?: ContextData);
+    setType(type: string): EventBuilder;
+    setSource(source: string): EventBuilder;
+    setReferenceId(referenceId: string): EventBuilder;
+    setEventReference(name: string, id: string): EventBuilder;
+    setMessage(message: string): EventBuilder;
+    setGeo(latitude: number, longitude: number): EventBuilder;
+    setUserIdentity(userInfo: IUserInfo): EventBuilder;
+    setUserIdentity(identity: string): EventBuilder;
+    setUserIdentity(identity: string, name: string): EventBuilder;
+    setUserDescription(emailAddress: string, description: string): EventBuilder;
+    setManualStackingInfo(signatureData: any, title?: string): this;
+    setManualStackingKey(manualStackingKey: string, title?: string): EventBuilder;
+    setValue(value: number): EventBuilder;
+    addTags(...tags: string[]): EventBuilder;
+    setProperty(name: string, value: any, maxDepth?: number, excludedPropertyNames?: string[]): EventBuilder;
+    markAsCritical(critical: boolean): EventBuilder;
+    addRequestInfo(request: object): EventBuilder;
+    submit(callback?: (context: EventPluginContext) => void): void;
+    private isValidIdentifier(value);
+}
+export interface IManualStackingInfo {
+    title?: string;
+    signature_data?: any;
+}
 export declare class ConfigurationDefaultsPlugin implements IEventPlugin {
-    priority: number;
-    name: string;
-    run(context: EventPluginContext, next?: () => void): void;
-}
-export declare class ErrorPlugin implements IEventPlugin {
-    priority: number;
-    name: string;
-    run(context: EventPluginContext, next?: () => void): void;
-}
-export declare class ModuleInfoPlugin implements IEventPlugin {
-    priority: number;
-    name: string;
-    run(context: EventPluginContext, next?: () => void): void;
-}
-export declare class RequestInfoPlugin implements IEventPlugin {
-    priority: number;
-    name: string;
-    run(context: EventPluginContext, next?: () => void): void;
-}
-export declare class EnvironmentInfoPlugin implements IEventPlugin {
-    priority: number;
-    name: string;
-    run(context: EventPluginContext, next?: () => void): void;
-}
-export declare class SubmissionMethodPlugin implements IEventPlugin {
     priority: number;
     name: string;
     run(context: EventPluginContext, next?: () => void): void;
@@ -437,41 +440,35 @@ export declare class DuplicateCheckerPlugin implements IEventPlugin {
     constructor(getCurrentTime?: () => number, interval?: number);
     run(context: EventPluginContext, next?: () => void): void;
 }
+export declare class EnvironmentInfoPlugin implements IEventPlugin {
+    priority: number;
+    name: string;
+    run(context: EventPluginContext, next?: () => void): void;
+}
+export declare class ErrorPlugin implements IEventPlugin {
+    priority: number;
+    name: string;
+    run(context: EventPluginContext, next?: () => void): void;
+}
 export declare class EventExclusionPlugin implements IEventPlugin {
     priority: number;
     name: string;
     run(context: EventPluginContext, next?: () => void): void;
 }
-export declare class SettingsResponse {
-    success: boolean;
-    settings: any;
-    settingsVersion: number;
-    message: string;
-    exception: any;
-    constructor(success: boolean, settings: any, settingsVersion?: number, exception?: any, message?: string);
+export declare class ModuleInfoPlugin implements IEventPlugin {
+    priority: number;
+    name: string;
+    run(context: EventPluginContext, next?: () => void): void;
 }
-export interface IError extends IInnerError {
-    modules?: IModule[];
+export declare class RequestInfoPlugin implements IEventPlugin {
+    priority: number;
+    name: string;
+    run(context: EventPluginContext, next?: () => void): void;
 }
-export interface IStorageItem {
-    timestamp: number;
-    value: any;
-}
-export interface IStorage {
-    save(value: any): number;
-    get(limit?: number): IStorageItem[];
-    remove(timestamp: number): void;
-    clear(): void;
-}
-export interface SubmissionCallback {
-    (status: number, message: string, data?: string, headers?: Object): void;
-}
-export interface SubmissionRequest {
-    apiKey: string;
-    userAgent: string;
-    method: string;
-    url: string;
-    data: string;
+export declare class SubmissionMethodPlugin implements IEventPlugin {
+    priority: number;
+    name: string;
+    run(context: EventPluginContext, next?: () => void): void;
 }
 export declare class InMemoryStorage implements IStorage {
     private maxItems;
@@ -484,7 +481,7 @@ export declare class InMemoryStorage implements IStorage {
     clear(): void;
 }
 export interface IClientConfiguration {
-    settings: Object;
+    settings: object;
     version: number;
 }
 export declare abstract class KeyValueStorageBase implements IStorage {
@@ -511,7 +508,7 @@ export declare class BrowserStorage extends KeyValueStorageBase {
     static isAvailable(): boolean;
     constructor(namespace: string, prefix?: string, maxItems?: number);
     write(key: string, value: string): void;
-    read(key: string): any;
+    read(key: string): string;
     readAllKeys(): string[];
     delete(key: string): void;
     getKey(timestamp: any): string;
@@ -526,11 +523,11 @@ export declare class DefaultModuleCollector implements IModuleCollector {
 export declare class DefaultRequestInfoCollector implements IRequestInfoCollector {
     getRequestInfo(context: EventPluginContext): IRequestInfo;
 }
-export declare class DefaultSubmissionAdapter implements ISubmissionAdapter {
-    sendRequest(request: SubmissionRequest, callback?: SubmissionCallback, isAppExiting?: boolean): void;
-}
 export declare class BrowserStorageProvider implements IStorageProvider {
     queue: IStorage;
     settings: IStorage;
     constructor(prefix?: string, maxQueueItems?: number);
+}
+export declare class DefaultSubmissionAdapter implements ISubmissionAdapter {
+    sendRequest(request: SubmissionRequest, callback?: SubmissionCallback, isAppExiting?: boolean): void;
 }

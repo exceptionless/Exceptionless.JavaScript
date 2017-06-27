@@ -1,17 +1,16 @@
 import { IError } from '../models/IError';
-import { IErrorParser } from './IErrorParser';
 import { IStackFrame } from '../models/IStackFrame';
 import { EventPluginContext } from '../plugins/EventPluginContext';
+import { IErrorParser } from './IErrorParser';
 
 import nodestacktrace = require('stack-trace');
 
 export class NodeErrorParser implements IErrorParser {
   public parse(context: EventPluginContext, exception: Error): IError {
     function getStackFrames(stackFrames: any[]): IStackFrame[] {
-      let frames: IStackFrame[] = [];
+      const frames: IStackFrame[] = [];
 
-      for (let index = 0; index < stackFrames.length; index++) {
-        let frame = stackFrames[index];
+      for (const frame of stackFrames) {
         frames.push({
           name: frame.getMethodName() || frame.getFunctionName(),
           // parameters: frame.args,
@@ -32,7 +31,7 @@ export class NodeErrorParser implements IErrorParser {
       throw new Error('Unable to load the stack trace library.');
     }
 
-    let stackFrames = nodestacktrace.parse(exception) || [];
+    const stackFrames = nodestacktrace.parse(exception) || [];
     return {
       type: exception.name,
       message: exception.message,

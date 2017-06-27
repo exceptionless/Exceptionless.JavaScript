@@ -1,6 +1,6 @@
 import { IModule } from '../models/IModule';
-import { IModuleCollector } from './IModuleCollector';
 import { EventPluginContext } from '../plugins/EventPluginContext';
+import { IModuleCollector } from './IModuleCollector';
 
 import child = require('child_process');
 import path = require('path');
@@ -17,21 +17,21 @@ export class NodeModuleCollector implements IModuleCollector {
       return [];
     }
 
-    let modulePath = path.dirname(require.main.filename) + '/node_modules/';
-    let pathLength = modulePath.length;
+    const modulePath = path.dirname(require.main.filename) + '/node_modules/';
+    const pathLength = modulePath.length;
 
-    let loadedKeys = Object.keys(require.cache);
-    let loadedModules = {};
+    const loadedKeys = Object.keys(require.cache);
+    const loadedModules = {};
 
-    loadedKeys.forEach(key => {
+    loadedKeys.forEach((key) => {
       let id = key.substr(pathLength);
       id = id.substr(0, id.indexOf('/'));
       loadedModules[id] = true;
     });
 
     return Object.keys(loadedModules)
-      .map(key => this.installedModules[key])
-      .filter(m => m !== undefined);
+      .map((key) => this.installedModules[key])
+      .filter((m) => m !== undefined);
   }
 
   private initialize() {
@@ -41,7 +41,7 @@ export class NodeModuleCollector implements IModuleCollector {
 
     this.initialized = true;
 
-    let output = child.spawnSync('npm', ['ls', '--depth=0', '--json']).stdout;
+    const output = child.spawnSync('npm', ['ls', '--depth=0', '--json']).stdout;
 
     if (!output) {
       return;
@@ -54,7 +54,7 @@ export class NodeModuleCollector implements IModuleCollector {
       return;
     }
 
-    let items = json.dependencies;
+    const items = json.dependencies;
     if (!items) {
       return;
     }
@@ -62,9 +62,9 @@ export class NodeModuleCollector implements IModuleCollector {
     let id = 0;
     this.installedModules = {};
 
-    Object.keys(items).forEach(key => {
-      let item = items[key];
-      let theModule = <IModule>{
+    Object.keys(items).forEach((key) => {
+      const item = items[key];
+      const theModule: IModule = {
         module_id: id++,
         name: key,
         version: item.version
