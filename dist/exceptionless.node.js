@@ -39,7 +39,7 @@ var ConsoleLog = (function () {
     function ConsoleLog() {
     }
     ConsoleLog.prototype.trace = function (message) {
-        this.log('trace', message);
+        this.log('debug', message);
     };
     ConsoleLog.prototype.info = function (message) {
         this.log('info', message);
@@ -2105,60 +2105,70 @@ var NodeSubmissionAdapter = (function () {
     return NodeSubmissionAdapter;
 }());
 exports.NodeSubmissionAdapter = NodeSubmissionAdapter;
-var defaults = Configuration.defaults;
-defaults.environmentInfoCollector = new NodeEnvironmentInfoCollector();
-defaults.errorParser = new NodeErrorParser();
-defaults.moduleCollector = new NodeModuleCollector();
-defaults.requestInfoCollector = new NodeRequestInfoCollector();
-defaults.submissionAdapter = new NodeSubmissionAdapter();
-Configuration.prototype.useLocalStorage = function () {
-    this.storage = new NodeFileStorageProvider();
-    SettingsManager.applySavedServerSettings(this);
-    this.changed();
-};
-process.addListener('uncaughtException', function (error) {
-    ExceptionlessClient.default.submitUnhandledException(error, 'uncaughtException');
-});
-process.on('exit', function (code) {
-    function getExitCodeReason(exitCode) {
-        if (exitCode === 1) {
-            return 'Uncaught Fatal Exception';
+function isNode() {
+    return typeof process !== 'undefined';
+}
+exports.isNode = isNode;
+function nodeInit() {
+    var defaults = Configuration.defaults;
+    defaults.environmentInfoCollector = new NodeEnvironmentInfoCollector();
+    defaults.errorParser = new NodeErrorParser();
+    defaults.moduleCollector = new NodeModuleCollector();
+    defaults.requestInfoCollector = new NodeRequestInfoCollector();
+    defaults.submissionAdapter = new NodeSubmissionAdapter();
+    Configuration.prototype.useLocalStorage = function () {
+        this.storage = new NodeFileStorageProvider();
+        SettingsManager.applySavedServerSettings(this);
+        this.changed();
+    };
+    process.addListener('uncaughtException', function (error) {
+        ExceptionlessClient.default.submitUnhandledException(error, 'uncaughtException');
+    });
+    process.on('exit', function (code) {
+        function getExitCodeReason(exitCode) {
+            if (exitCode === 1) {
+                return 'Uncaught Fatal Exception';
+            }
+            if (exitCode === 3) {
+                return 'Internal JavaScript Parse Error';
+            }
+            if (exitCode === 4) {
+                return 'Internal JavaScript Evaluation Failure';
+            }
+            if (exitCode === 5) {
+                return 'Fatal Exception';
+            }
+            if (exitCode === 6) {
+                return 'Non-function Internal Exception Handler ';
+            }
+            if (exitCode === 7) {
+                return 'Internal Exception Handler Run-Time Failure';
+            }
+            if (exitCode === 8) {
+                return 'Uncaught Exception';
+            }
+            if (exitCode === 9) {
+                return 'Invalid Argument';
+            }
+            if (exitCode === 10) {
+                return 'Internal JavaScript Run-Time Failure';
+            }
+            if (exitCode === 12) {
+                return 'Invalid Debug Argument';
+            }
+            return null;
         }
-        if (exitCode === 3) {
-            return 'Internal JavaScript Parse Error';
+        var client = ExceptionlessClient.default;
+        var message = getExitCodeReason(code);
+        if (message !== null) {
+            client.submitLog('exit', message, 'Error');
         }
-        if (exitCode === 4) {
-            return 'Internal JavaScript Evaluation Failure';
-        }
-        if (exitCode === 5) {
-            return 'Fatal Exception';
-        }
-        if (exitCode === 6) {
-            return 'Non-function Internal Exception Handler ';
-        }
-        if (exitCode === 7) {
-            return 'Internal Exception Handler Run-Time Failure';
-        }
-        if (exitCode === 8) {
-            return 'Uncaught Exception';
-        }
-        if (exitCode === 9) {
-            return 'Invalid Argument';
-        }
-        if (exitCode === 10) {
-            return 'Internal JavaScript Run-Time Failure';
-        }
-        if (exitCode === 12) {
-            return 'Invalid Debug Argument';
-        }
-        return null;
-    }
-    var client = ExceptionlessClient.default;
-    var message = getExitCodeReason(code);
-    if (message !== null) {
-        client.submitLog('exit', message, 'Error');
-    }
-    client.config.queue.process(true);
-});
-Error.stackTraceLimit = Infinity;
+        client.config.queue.process(true);
+    });
+    Error.stackTraceLimit = Infinity;
+}
+exports.nodeInit = nodeInit;
+if (isNode()) {
+    nodeInit();
+}
 //# sourceMappingURL=exceptionless.node.js.map
