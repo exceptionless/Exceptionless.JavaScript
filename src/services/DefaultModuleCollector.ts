@@ -5,7 +5,7 @@ import { IModuleCollector } from './IModuleCollector';
 
 export class DefaultModuleCollector implements IModuleCollector {
   public getModules(context: EventPluginContext): IModule[] {
-    if (document && document.getElementsByTagName) {
+    if (!document || !document.getElementsByTagName) {
       return null;
     }
 
@@ -16,7 +16,7 @@ export class DefaultModuleCollector implements IModuleCollector {
         if (scripts[index].src) {
           modules.push({
             module_id: index,
-            name: scripts[index].src,
+            name: scripts[index].src.split('?')[0],
             version: Utils.parseVersion(scripts[index].src)
           });
         } else if (!!scripts[index].innerHTML) {

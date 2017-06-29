@@ -531,5 +531,3 @@ export declare class BrowserStorageProvider implements IStorageProvider {
 export declare class DefaultSubmissionAdapter implements ISubmissionAdapter {
     sendRequest(request: SubmissionRequest, callback?: SubmissionCallback, isAppExiting?: boolean): void;
 }
-export declare function isBrowser(): boolean;
-export declare function browserInit(): void;

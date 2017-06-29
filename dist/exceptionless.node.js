@@ -2105,11 +2105,10 @@ var NodeSubmissionAdapter = (function () {
     return NodeSubmissionAdapter;
 }());
 exports.NodeSubmissionAdapter = NodeSubmissionAdapter;
-function isNode() {
-    return typeof process !== 'undefined';
-}
-exports.isNode = isNode;
-function nodeInit() {
+(function init() {
+    if (typeof process === 'undefined') {
+        return;
+    }
     var defaults = Configuration.defaults;
     defaults.environmentInfoCollector = new NodeEnvironmentInfoCollector();
     defaults.errorParser = new NodeErrorParser();
@@ -2166,9 +2165,5 @@ function nodeInit() {
         client.config.queue.process(true);
     });
     Error.stackTraceLimit = Infinity;
-}
-exports.nodeInit = nodeInit;
-if (isNode()) {
-    nodeInit();
-}
+})();
 //# sourceMappingURL=exceptionless.node.js.map

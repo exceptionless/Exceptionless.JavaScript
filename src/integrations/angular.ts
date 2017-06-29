@@ -6,18 +6,18 @@ angular.module('exceptionless', [])
   .constant('$ExceptionlessClient', exceptionless.ExceptionlessClient.default)
   .factory('exceptionlessHttpInterceptor', ['$q', '$ExceptionlessClient', ($q, $ExceptionlessClient) => {
     return {
-      responseError: function responseError(rejection) {
-        if (rejection.status === 404) {
-          $ExceptionlessClient.submitNotFound(rejection.config.url);
-        } else if (rejection.status !== 401) {
-          const message = `[${rejection.status}] ${(rejection.data && rejection.data.Message ? rejection.data.Message : rejection.config.url)}`;
+      responseError: function responseError(response) {
+        if (response.status === 404) {
+          $ExceptionlessClient.submitNotFound(response.config.url);
+        } else if (response.status !== 401) {
+          const message = `[${response.status}] ${(response.data && response.data.Message ? response.data.Message : response.config.url)}`;
           $ExceptionlessClient.createUnhandledException(new Error(message), 'errorHttpInterceptor')
-            .setManualStackingInfo({ Status: rejection.status, ExceptionType: 'Error', Path: rejection.config.method + ' ' + rejection.config.url })
-            .setSource(rejection.config.url)
-            .setProperty('request', rejection.config)
+            .setSource(response.config.url)
+            .setCode(response.status)
+            .setProperty('response', response)
             .submit();
         }
-        return $q.reject(rejection);
+        return $q.reject(response);
       }
     };
   }])

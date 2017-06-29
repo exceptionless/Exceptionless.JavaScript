@@ -11,11 +11,7 @@ import { BrowserStorageProvider } from './storage/BrowserStorageProvider';
 import { DefaultSubmissionAdapter } from './submission/DefaultSubmissionAdapter';
 import { Utils } from './Utils';
 
-export function isBrowser(): boolean {
-  return typeof document !== 'undefined';
-}
-
-export function browserInit() {
+(function init() {
   function getDefaultsSettingsFromScriptTag(): IConfigurationSettings {
     if (!document || !document.getElementsByTagName) {
       return null;
@@ -35,6 +31,10 @@ export function browserInit() {
     const builder = ExceptionlessClient.default.createUnhandledException(new Error(stackTrace.message || (options || {}).status || 'Script error'), 'onerror');
     builder.pluginContextData['@@_TraceKit.StackTrace'] = stackTrace;
     builder.submit();
+  }
+
+  if (typeof document === 'undefined') {
+    return;
   }
 
   /*
@@ -86,11 +86,7 @@ export function browserInit() {
   // }
 
   (Error as any).stackTraceLimit = Infinity;
-}
-
-if (isBrowser()) {
-  browserInit();
-}
+})();
 
 // tslint:disable-next-line:prefer-const
 declare var $;

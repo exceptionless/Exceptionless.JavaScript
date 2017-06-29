@@ -3196,7 +3196,7 @@ var DefaultModuleCollector = (function () {
     function DefaultModuleCollector() {
     }
     DefaultModuleCollector.prototype.getModules = function (context) {
-        if (document && document.getElementsByTagName) {
+        if (!document || !document.getElementsByTagName) {
             return null;
         }
         var modules = [];
@@ -3206,7 +3206,7 @@ var DefaultModuleCollector = (function () {
                 if (scripts[index].src) {
                     modules.push({
                         module_id: index,
-                        name: scripts[index].src,
+                        name: scripts[index].src.split('?')[0],
                         version: Utils.parseVersion(scripts[index].src)
                     });
                 }
@@ -3657,11 +3657,7 @@ var NodeSubmissionAdapter = (function () {
     return NodeSubmissionAdapter;
 }());
 exports.NodeSubmissionAdapter = NodeSubmissionAdapter;
-function isBrowser() {
-    return typeof document !== 'undefined';
-}
-exports.isBrowser = isBrowser;
-function browserInit() {
+(function init() {
     function getDefaultsSettingsFromScriptTag() {
         if (!document || !document.getElementsByTagName) {
             return null;
@@ -3678,6 +3674,9 @@ function browserInit() {
         var builder = ExceptionlessClient.default.createUnhandledException(new Error(stackTrace.message || (options || {}).status || 'Script error'), 'onerror');
         builder.pluginContextData['@@_TraceKit.StackTrace'] = stackTrace;
         builder.submit();
+    }
+    if (typeof document === 'undefined') {
+        return;
     }
     Configuration.prototype.useLocalStorage = function () {
         if (BrowserStorage.isAvailable()) {
@@ -3699,16 +3698,11 @@ function browserInit() {
     TraceKit.report.subscribe(processUnhandledException);
     TraceKit.extendToAsynchronousCallbacks();
     Error.stackTraceLimit = Infinity;
-}
-exports.browserInit = browserInit;
-if (isBrowser()) {
-    browserInit();
-}
-function isNode() {
-    return typeof process !== 'undefined';
-}
-exports.isNode = isNode;
-function nodeInit() {
+})();
+(function init() {
+    if (typeof process === 'undefined') {
+        return;
+    }
     var defaults = Configuration.defaults;
     defaults.environmentInfoCollector = new NodeEnvironmentInfoCollector();
     defaults.errorParser = new NodeErrorParser();
@@ -3765,22 +3759,7 @@ function nodeInit() {
         client.config.queue.process(true);
     });
     Error.stackTraceLimit = Infinity;
-}
-exports.nodeInit = nodeInit;
-if (isNode()) {
-    nodeInit();
-}
-if (isNode()) {
-    nodeInit();
-    ExceptionlessClient.default.config.log.trace('Using node Exceptionless implementation.');
-}
-else if (isBrowser()) {
-    browserInit();
-    ExceptionlessClient.default.config.log.trace('Using browser Exceptionless implementation.');
-}
-else {
-    ExceptionlessClient.default.config.log.error('No Exceptionless implementation was found.');
-}
+})();
 
 return exports;
 

@@ -3185,7 +3185,7 @@ var DefaultModuleCollector = (function () {
     function DefaultModuleCollector() {
     }
     DefaultModuleCollector.prototype.getModules = function (context) {
-        if (document && document.getElementsByTagName) {
+        if (!document || !document.getElementsByTagName) {
             return null;
         }
         var modules = [];
@@ -3195,7 +3195,7 @@ var DefaultModuleCollector = (function () {
                 if (scripts[index].src) {
                     modules.push({
                         module_id: index,
-                        name: scripts[index].src,
+                        name: scripts[index].src.split('?')[0],
                         version: Utils.parseVersion(scripts[index].src)
                     });
                 }
@@ -3351,11 +3351,7 @@ var DefaultSubmissionAdapter = (function () {
     return DefaultSubmissionAdapter;
 }());
 exports.DefaultSubmissionAdapter = DefaultSubmissionAdapter;
-function isBrowser() {
-    return typeof document !== 'undefined';
-}
-exports.isBrowser = isBrowser;
-function browserInit() {
+(function init() {
     function getDefaultsSettingsFromScriptTag() {
         if (!document || !document.getElementsByTagName) {
             return null;
@@ -3372,6 +3368,9 @@ function browserInit() {
         var builder = ExceptionlessClient.default.createUnhandledException(new Error(stackTrace.message || (options || {}).status || 'Script error'), 'onerror');
         builder.pluginContextData['@@_TraceKit.StackTrace'] = stackTrace;
         builder.submit();
+    }
+    if (typeof document === 'undefined') {
+        return;
     }
     Configuration.prototype.useLocalStorage = function () {
         if (BrowserStorage.isAvailable()) {
@@ -3393,11 +3392,7 @@ function browserInit() {
     TraceKit.report.subscribe(processUnhandledException);
     TraceKit.extendToAsynchronousCallbacks();
     Error.stackTraceLimit = Infinity;
-}
-exports.browserInit = browserInit;
-if (isBrowser()) {
-    browserInit();
-}
+})();
 
 return exports;
 

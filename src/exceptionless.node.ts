@@ -8,11 +8,11 @@ import { NodeRequestInfoCollector } from './services/NodeRequestInfoCollector';
 import { NodeFileStorageProvider } from './storage/NodeFileStorageProvider';
 import { NodeSubmissionAdapter } from './submission/NodeSubmissionAdapter';
 
-export function isNode(): boolean {
-  return typeof process !== 'undefined';
-}
+(function init() {
+  if (typeof process === 'undefined') {
+    return;
+  }
 
-export function nodeInit() {
   const defaults = Configuration.defaults;
   defaults.environmentInfoCollector = new NodeEnvironmentInfoCollector();
   defaults.errorParser = new NodeErrorParser();
@@ -92,8 +92,4 @@ export function nodeInit() {
   });
 
   (Error as any).stackTraceLimit = Infinity;
-}
-
-if (isNode()) {
-  nodeInit();
-}
+})();
