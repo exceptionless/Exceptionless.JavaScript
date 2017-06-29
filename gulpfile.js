@@ -73,6 +73,7 @@ gulp.task('exceptionless', ['exceptionless.umd'], function () {
     .pipe($.sourcemaps.init({ loadMaps: true }))
     .pipe($.concat('exceptionless.js'))
     .pipe($.replace('exceptionless-js/1.0.0.0', 'exceptionless-js/' + pkg.version))
+    .pipe($.replace('var TraceKit = require("TraceKit");\n', ''))
     .pipe($.sourcemaps.write('.'))
     .pipe(gulp.dest('dist'));
 
@@ -80,6 +81,7 @@ gulp.task('exceptionless', ['exceptionless.umd'], function () {
     .pipe($.sourcemaps.init({ loadMaps: true }))
     .pipe($.concat('exceptionless.min.js'))
     .pipe($.replace('exceptionless-js/1.0.0.0', 'exceptionless-js/' + pkg.version))
+    .pipe($.replace('var TraceKit = require("TraceKit");\n', ''))
     .pipe($.uglify({ output: { beautify: false } }))
     .pipe($.sourcemaps.write('.'))
     .pipe(gulp.dest('dist'));
@@ -109,7 +111,7 @@ gulp.task('exceptionless.universal', ['exceptionless.universal.umd'], function (
     .pipe($.sourcemaps.init({ loadMaps: true }))
     .pipe($.concat('exceptionless.universal.js'))
     .pipe($.replace('exceptionless-js/1.0.0.0', 'exceptionless-universal-js/' + pkg.version))
-    .pipe($.replace('var TraceKit = require("TraceKit");', 'if (typeof process !== \'undefined\') {\nvar TraceKit = require("TraceKit");'))
+    .pipe($.replace('var TraceKit = require("TraceKit");', 'if (typeof process !== \'undefined\') {'))
     .pipe($.replace('var url = require("url");', 'var url = require("url");\n}'))
     .pipe($.sourcemaps.write('.'))
     .pipe(gulp.dest('dist'));
@@ -118,7 +120,7 @@ gulp.task('exceptionless.universal', ['exceptionless.universal.umd'], function (
     .pipe($.sourcemaps.init({ loadMaps: true }))
     .pipe($.concat('exceptionless.universal.min.js'))
     .pipe($.replace('exceptionless-js/1.0.0.0', 'exceptionless-universal-js/' + pkg.version))
-    .pipe($.replace('var TraceKit = require("TraceKit");', 'if (require && typeof process !== \'undefined\') {\n\tvar TraceKit = require("TraceKit");'))
+    .pipe($.replace('var TraceKit = require("TraceKit");', 'if (require && typeof process !== \'undefined\') {'))
     .pipe($.replace('var url = require("url");', 'var url = require("url");\n}'))
     .pipe($.uglify({ output: { beautify: false } }))
     .pipe($.sourcemaps.write('.'))

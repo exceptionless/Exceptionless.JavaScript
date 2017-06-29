@@ -1,8 +1,11 @@
 {
   "name": "exceptionless",
-  "version": "1.4.3",
+  "version": "1.5.0",
   "description": "JavaScript client for Exceptionless",
   "license": "Apache-2.0",
+  "browser": "dist/exceptionless.js",
+  "browserify": "dist/exceptionless.universal.js",
+  "webpack": "dist/exceptionless.universal.js",
   "main": "dist/exceptionless.node.js",
   "jspm": {
     "main": "dist/exceptionless.js"
@@ -26,14 +29,14 @@
     "type": "git"
   },
   "devDependencies": {
-    "@types/angular": "1.6.23",
+    "@types/angular": "1.6.25",
     "@types/angular-mocks": "1.5.10",
     "@types/assertion-error": "1.0.30",
     "@types/chai": "4.0.1",
     "@types/jquery": "3.2.5",
     "@types/mocha": "2.2.41",
     "@types/mock-fs": "3.6.30",
-    "@types/node": "8.0.4",
+    "@types/node": "8.0.6",
     "@types/sinon": "2.3.2",
     "@types/stack-trace": "0.0.28",
     "chai": "4.0.2",
@@ -59,10 +62,10 @@
     "rewire": "2.5.2",
     "rimraf": "2.6.1",
     "run-sequence": "1.2.2",
-    "sinon": "2.3.5",
+    "sinon": "2.3.6",
     "source-map-support": "0.4.15",
     "systemjs": "0.20.14",
-    "tracekit": "0.4.4",
+    "tracekit": "0.4.5",
     "tslint": "5.4.3",
     "tsproject": "2.1.2",
     "typescript": "2.4.1",

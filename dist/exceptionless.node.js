@@ -1128,7 +1128,7 @@ var Configuration = (function () {
     };
     Object.defineProperty(Configuration.prototype, "userAgent", {
         get: function () {
-            return 'exceptionless-node/1.4.3';
+            return 'exceptionless-node/1.5.0';
         },
         enumerable: true,
         configurable: true
