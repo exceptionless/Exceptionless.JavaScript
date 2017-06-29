@@ -22,8 +22,26 @@ gulp.task('typescript.node', function () {
   return tsProject.src('src/tsconfig.node.json').pipe(gulp.dest('dist/temp'));
 });
 
+gulp.task('typescript.universal', function () {
+  return tsProject.src('src/tsconfig.universal.json').pipe(gulp.dest('dist/temp'));
+});
+
 gulp.task('exceptionless.umd', ['typescript', 'typescript.integrations'], function () {
   return gulp.src('dist/temp/src/exceptionless.js')
+    .pipe($.sourcemaps.init({ loadMaps: true }))
+    .pipe($.wrapUmd({
+      exports: 'exports',
+      globalName: 'exceptionless',
+      namespace: 'exceptionless',
+      deps: ['TraceKit'],
+      template: fs.readFileSync('./umd.template.jst', 'utf8')
+    }))
+    .pipe($.sourcemaps.write('.'))
+    .pipe(gulp.dest('dist/temp'));
+});
+
+gulp.task('exceptionless.universal.umd', ['typescript.universal'], function () {
+  return gulp.src('dist/temp/src/exceptionless.universal.js')
     .pipe($.sourcemaps.init({ loadMaps: true }))
     .pipe($.wrapUmd({
       exports: 'exports',
@@ -55,6 +73,7 @@ gulp.task('exceptionless', ['exceptionless.umd'], function () {
     .pipe($.sourcemaps.init({ loadMaps: true }))
     .pipe($.concat('exceptionless.js'))
     .pipe($.replace('exceptionless-js/1.0.0.0', 'exceptionless-js/' + pkg.version))
+    .pipe($.replace('var TraceKit = require("TraceKit");\n', ''))
     .pipe($.sourcemaps.write('.'))
     .pipe(gulp.dest('dist'));
 
@@ -62,13 +81,13 @@ gulp.task('exceptionless', ['exceptionless.umd'], function () {
     .pipe($.sourcemaps.init({ loadMaps: true }))
     .pipe($.concat('exceptionless.min.js'))
     .pipe($.replace('exceptionless-js/1.0.0.0', 'exceptionless-js/' + pkg.version))
+    .pipe($.replace('var TraceKit = require("TraceKit");\n', ''))
     .pipe($.uglify({ output: { beautify: false } }))
     .pipe($.sourcemaps.write('.'))
     .pipe(gulp.dest('dist'));
 });
 
 gulp.task('exceptionless.node', ['typescript.node'], function () {
-
   var files = [
     'dist/temp/src/exceptionless.node.js',
     'dist/temp/src/submitSync.js'
@@ -77,6 +96,33 @@ gulp.task('exceptionless.node', ['typescript.node'], function () {
   gulp.src(files)
     .pipe($.sourcemaps.init({ loadMaps: true }))
     .pipe($.replace('exceptionless-js/1.0.0.0', 'exceptionless-node/' + pkg.version))
+    .pipe($.sourcemaps.write('.'))
+    .pipe(gulp.dest('dist'));
+});
+
+gulp.task('exceptionless.universal', ['exceptionless.universal.umd'], function () {
+  var files = [
+    'node_modules/tracekit/tracekit.js',
+    'dist/temp/exceptionless.universal.js'
+  ];
+
+  // NOTE: This is really hacky to replace require statements based on order..... but we need to ensure they are excluded for requirejs.
+  gulp.src(files)
+    .pipe($.sourcemaps.init({ loadMaps: true }))
+    .pipe($.concat('exceptionless.universal.js'))
+    .pipe($.replace('exceptionless-js/1.0.0.0', 'exceptionless-universal-js/' + pkg.version))
+    .pipe($.replace('var TraceKit = require("TraceKit");', 'if (typeof process !== \'undefined\') {'))
+    .pipe($.replace('var url = require("url");', 'var url = require("url");\n}'))
+    .pipe($.sourcemaps.write('.'))
+    .pipe(gulp.dest('dist'));
+
+  return gulp.src(files)
+    .pipe($.sourcemaps.init({ loadMaps: true }))
+    .pipe($.concat('exceptionless.universal.min.js'))
+    .pipe($.replace('exceptionless-js/1.0.0.0', 'exceptionless-universal-js/' + pkg.version))
+    .pipe($.replace('var TraceKit = require("TraceKit");', 'if (require && typeof process !== \'undefined\') {'))
+    .pipe($.replace('var url = require("url");', 'var url = require("url");\n}'))
+    .pipe($.uglify({ output: { beautify: false } }))
     .pipe($.sourcemaps.write('.'))
     .pipe(gulp.dest('dist'));
 });
@@ -91,7 +137,7 @@ gulp.task('lint', function () {
     .pipe($.tslint.report());
 });
 
-gulp.task('build', ['clean', 'lint', 'exceptionless', 'exceptionless.node']);
+gulp.task('build', ['clean', 'lint', 'exceptionless', 'exceptionless.node', 'exceptionless.universal']);
 
 gulp.task('typescript.test', function () {
   return tsProject.src('src/tsconfig.test.json').pipe(gulp.dest('dist/temp'));
@@ -106,13 +152,12 @@ gulp.task('exceptionless.test.umd', ['typescript.test'], function () {
       globalName: 'exceptionless',
       namespace: 'exceptionless'
     }))
-    .pipe($.replace('}(this, function(require, exports, module) {', '}(this, function(require, exports, module) {\nif (!exports) {\n\tvar exports = {};\n}\n'))
     .pipe($.sourcemaps.write('.'))
     .pipe(gulp.dest('dist/temp'));
   };
 
   return eventStream.merge(
-    wrap('dist/temp/src/exceptionless-nodespec.js'), 
+    wrap('dist/temp/src/exceptionless-nodespec.js'),
     wrap('dist/temp/src/exceptionless-browserspec.js'));
 });
 

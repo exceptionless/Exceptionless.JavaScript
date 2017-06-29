@@ -1,0 +1,26 @@
+{
+  "compilerOptions": {
+    "declaration": true,
+    "module": "commonjs",
+    "removeComments": true,
+    "sourceMap": true,
+    "target": "es5"
+  },
+  "bundles": {
+    "exceptionless.universal": {
+      "files": [
+        "../node_modules/@types/node/index.d.ts",
+        "../node_modules/@types/stack-trace/index.d.ts",
+
+        "exceptionless.universal.ts"
+      ]
+    },
+    "submitSync": {
+      "files": [
+        "../node_modules/@types/node/index.d.ts",
+
+        "submitSync.ts"
+      ]
+    }
+  }
+}

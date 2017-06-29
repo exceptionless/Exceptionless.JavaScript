@@ -1301,6 +1301,17 @@ var __extends = (this && this.__extends) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
+if (typeof process !== 'undefined') {
+var os = require("os");
+var nodestacktrace = require("stack-trace");
+var child = require("child_process");
+var path = require("path");
+var Fs = require("fs");
+var Path = require("path");
+var http = require("http");
+var https = require("https");
+var url = require("url");
+}
 var DefaultLastReferenceIdManager = (function () {
     function DefaultLastReferenceIdManager() {
         this._lastReferenceId = null;
@@ -2410,7 +2421,7 @@ var Configuration = (function () {
     };
     Object.defineProperty(Configuration.prototype, "userAgent", {
         get: function () {
-            return 'exceptionless-js/1.5.0';
+            return 'exceptionless-universal-js/1.5.0';
         },
         enumerable: true,
         configurable: true
@@ -3351,6 +3362,301 @@ var DefaultSubmissionAdapter = (function () {
     return DefaultSubmissionAdapter;
 }());
 exports.DefaultSubmissionAdapter = DefaultSubmissionAdapter;
+var NodeFileStorage = (function (_super) {
+    __extends(NodeFileStorage, _super);
+    function NodeFileStorage(namespace, folder, prefix, maxItems, fs) {
+        if (prefix === void 0) { prefix = 'ex-'; }
+        if (maxItems === void 0) { maxItems = 20; }
+        var _this = _super.call(this, maxItems) || this;
+        if (!folder) {
+            folder = Path.join(Path.dirname(require.main.filename), '.exceptionless');
+        }
+        var subfolder = Path.join(folder, namespace);
+        _this.directory = Path.resolve(subfolder);
+        _this.prefix = prefix;
+        _this.fs = fs ? fs : Fs;
+        _this.mkdir(_this.directory);
+        return _this;
+    }
+    NodeFileStorage.prototype.write = function (key, value) {
+        this.fs.writeFileSync(key, value);
+    };
+    NodeFileStorage.prototype.read = function (key) {
+        return this.fs.readFileSync(key, 'utf8');
+    };
+    NodeFileStorage.prototype.readAllKeys = function () {
+        var _this = this;
+        return this.fs.readdirSync(this.directory)
+            .filter(function (file) { return file.indexOf(_this.prefix) === 0; })
+            .map(function (file) { return Path.join(_this.directory, file); });
+    };
+    NodeFileStorage.prototype.delete = function (key) {
+        this.fs.unlinkSync(key);
+    };
+    NodeFileStorage.prototype.getKey = function (timestamp) {
+        return Path.join(this.directory, "" + this.prefix + timestamp + ".json");
+    };
+    NodeFileStorage.prototype.getTimestamp = function (key) {
+        return parseInt(Path.basename(key, '.json')
+            .substr(this.prefix.length), 10);
+    };
+    NodeFileStorage.prototype.mkdir = function (path) {
+        var dirs = path.split(Path.sep);
+        var root = '';
+        while (dirs.length > 0) {
+            var dir = dirs.shift();
+            if (dir === '') {
+                root = Path.sep;
+            }
+            if (!this.fs.existsSync(root + dir)) {
+                this.fs.mkdirSync(root + dir);
+            }
+            root += dir + Path.sep;
+        }
+    };
+    return NodeFileStorage;
+}(KeyValueStorageBase));
+exports.NodeFileStorage = NodeFileStorage;
+var NodeEnvironmentInfoCollector = (function () {
+    function NodeEnvironmentInfoCollector() {
+    }
+    NodeEnvironmentInfoCollector.prototype.getEnvironmentInfo = function (context) {
+        function getIpAddresses() {
+            var ips = [];
+            var interfaces = os.networkInterfaces();
+            Object.keys(interfaces).forEach(function (name) {
+                interfaces[name].forEach(function (iface) {
+                    if ('IPv4' === iface.family && !iface.internal) {
+                        ips.push(iface.address);
+                    }
+                });
+            });
+            return ips.join(', ');
+        }
+        if (!os) {
+            return null;
+        }
+        var environmentInfo = {
+            processor_count: os.cpus().length,
+            total_physical_memory: os.totalmem(),
+            available_physical_memory: os.freemem(),
+            command_line: process.argv.join(' '),
+            process_name: (process.title || '').replace(/[\uE000-\uF8FF]/g, ''),
+            process_id: process.pid + '',
+            process_memory_size: process.memoryUsage().heapTotal,
+            architecture: os.arch(),
+            o_s_name: os.type(),
+            o_s_version: os.release(),
+            ip_address: getIpAddresses(),
+            machine_name: os.hostname(),
+            runtime_version: process.version,
+            data: {
+                loadavg: os.loadavg(),
+                platform: os.platform(),
+                tmpdir: os.tmpdir(),
+                uptime: os.uptime()
+            }
+        };
+        if (os.endianness) {
+            environmentInfo.data.endianness = os.endianness();
+        }
+        return environmentInfo;
+    };
+    return NodeEnvironmentInfoCollector;
+}());
+exports.NodeEnvironmentInfoCollector = NodeEnvironmentInfoCollector;
+var NodeErrorParser = (function () {
+    function NodeErrorParser() {
+    }
+    NodeErrorParser.prototype.parse = function (context, exception) {
+        function getStackFrames(stackFrames) {
+            var frames = [];
+            for (var _i = 0, stackFrames_2 = stackFrames; _i < stackFrames_2.length; _i++) {
+                var frame = stackFrames_2[_i];
+                frames.push({
+                    name: frame.getMethodName() || frame.getFunctionName(),
+                    file_name: frame.getFileName(),
+                    line_number: frame.getLineNumber() || 0,
+                    column: frame.getColumnNumber() || 0,
+                    declaring_type: frame.getTypeName(),
+                    data: {
+                        is_native: frame.isNative() || (!!frame.filename && frame.filename[0] !== '/' && frame.filename[0] !== '.')
+                    }
+                });
+            }
+            return frames;
+        }
+        if (!nodestacktrace) {
+            throw new Error('Unable to load the stack trace library.');
+        }
+        var stackFrames = nodestacktrace.parse(exception) || [];
+        return {
+            type: exception.name,
+            message: exception.message,
+            stack_trace: getStackFrames(stackFrames)
+        };
+    };
+    return NodeErrorParser;
+}());
+exports.NodeErrorParser = NodeErrorParser;
+var NodeModuleCollector = (function () {
+    function NodeModuleCollector() {
+        this.initialized = false;
+        this.installedModules = {};
+    }
+    NodeModuleCollector.prototype.getModules = function (context) {
+        var _this = this;
+        this.initialize();
+        if (!require.main) {
+            return [];
+        }
+        var modulePath = path.dirname(require.main.filename) + '/node_modules/';
+        var pathLength = modulePath.length;
+        var loadedKeys = Object.keys(require.cache);
+        var loadedModules = {};
+        loadedKeys.forEach(function (key) {
+            var id = key.substr(pathLength);
+            id = id.substr(0, id.indexOf('/'));
+            loadedModules[id] = true;
+        });
+        return Object.keys(loadedModules)
+            .map(function (key) { return _this.installedModules[key]; })
+            .filter(function (m) { return m !== undefined; });
+    };
+    NodeModuleCollector.prototype.initialize = function () {
+        var _this = this;
+        if (this.initialized) {
+            return;
+        }
+        this.initialized = true;
+        var output = child.spawnSync('npm', ['ls', '--depth=0', '--json']).stdout;
+        if (!output) {
+            return;
+        }
+        var json;
+        try {
+            json = JSON.parse(output.toString());
+        }
+        catch (e) {
+            return;
+        }
+        var items = json.dependencies;
+        if (!items) {
+            return;
+        }
+        var id = 0;
+        this.installedModules = {};
+        Object.keys(items).forEach(function (key) {
+            var item = items[key];
+            var theModule = {
+                module_id: id++,
+                name: key,
+                version: item.version
+            };
+            _this.installedModules[key] = theModule;
+        });
+    };
+    return NodeModuleCollector;
+}());
+exports.NodeModuleCollector = NodeModuleCollector;
+var NodeRequestInfoCollector = (function () {
+    function NodeRequestInfoCollector() {
+    }
+    NodeRequestInfoCollector.prototype.getRequestInfo = function (context) {
+        var REQUEST_KEY = '@request';
+        if (!context.contextData[REQUEST_KEY]) {
+            return null;
+        }
+        var exclusions = context.client.config.dataExclusions;
+        var request = context.contextData[REQUEST_KEY];
+        var requestInfo = {
+            client_ip_address: request.ip,
+            user_agent: request.headers['user-agent'],
+            is_secure: request.secure,
+            http_method: request.method,
+            host: request.hostname || request.host,
+            path: request.path,
+            post_data: JSON.parse(Utils.stringify(request.body || {}, exclusions)),
+            cookies: Utils.getCookies(request.headers.cookie, exclusions),
+            query_string: JSON.parse(Utils.stringify(request.params || {}, exclusions))
+        };
+        var host = request.headers.host;
+        var port = host && parseInt(host.slice(host.indexOf(':') + 1), 10);
+        if (port > 0) {
+            requestInfo.port = port;
+        }
+        return requestInfo;
+    };
+    return NodeRequestInfoCollector;
+}());
+exports.NodeRequestInfoCollector = NodeRequestInfoCollector;
+var NodeFileStorageProvider = (function () {
+    function NodeFileStorageProvider(folder, prefix, maxQueueItems) {
+        if (maxQueueItems === void 0) { maxQueueItems = 250; }
+        this.queue = new NodeFileStorage('q', folder, prefix, maxQueueItems);
+        this.settings = new NodeFileStorage('settings', folder, prefix, 1);
+    }
+    return NodeFileStorageProvider;
+}());
+exports.NodeFileStorageProvider = NodeFileStorageProvider;
+var NodeSubmissionAdapter = (function () {
+    function NodeSubmissionAdapter() {
+    }
+    NodeSubmissionAdapter.prototype.sendRequest = function (request, callback, isAppExiting) {
+        var _this = this;
+        if (isAppExiting) {
+            this.sendRequestSync(request, callback);
+            return;
+        }
+        var parsedHost = url.parse(request.url);
+        var options = {
+            auth: "client:" + request.apiKey,
+            headers: {},
+            hostname: parsedHost.hostname,
+            method: request.method,
+            port: parsedHost.port && parseInt(parsedHost.port, 10),
+            path: request.url
+        };
+        options.headers['User-Agent'] = request.userAgent;
+        if (request.method === 'POST') {
+            options.headers = {
+                'Content-Type': 'application/json',
+                'Content-Length': Buffer.byteLength(request.data)
+            };
+        }
+        var protocol = (parsedHost.protocol === 'https' ? https : http);
+        var clientRequest = protocol.request(options, function (response) {
+            var body = '';
+            response.setEncoding('utf8');
+            response.on('data', function (chunk) { return body += chunk; });
+            response.on('end', function () { return _this.complete(response, body, response.headers, callback); });
+        });
+        clientRequest.on('error', function (error) { return callback && callback(500, error.message); });
+        clientRequest.end(request.data);
+    };
+    NodeSubmissionAdapter.prototype.complete = function (response, responseBody, responseHeaders, callback) {
+        var message;
+        if (response.statusCode === 0) {
+            message = 'Unable to connect to server.';
+        }
+        else if (response.statusCode < 200 || response.statusCode > 299) {
+            message = response.statusMessage || response.message;
+        }
+        callback && callback(response.statusCode || 500, message, responseBody, responseHeaders);
+    };
+    NodeSubmissionAdapter.prototype.sendRequestSync = function (request, callback) {
+        var requestJson = JSON.stringify(request);
+        var res = child.spawnSync(process.execPath, [require.resolve('./submitSync.js')], {
+            input: requestJson,
+            stdio: ['pipe', 'pipe', process.stderr]
+        });
+        var out = res.stdout.toString();
+        var result = JSON.parse(out);
+        callback && callback(result.status, result.message, result.data, result.headers);
+    };
+    return NodeSubmissionAdapter;
+}());
+exports.NodeSubmissionAdapter = NodeSubmissionAdapter;
 (function init() {
     function getDefaultsSettingsFromScriptTag() {
         if (!document || !document.getElementsByTagName) {
@@ -3393,10 +3699,71 @@ exports.DefaultSubmissionAdapter = DefaultSubmissionAdapter;
     TraceKit.extendToAsynchronousCallbacks();
     Error.stackTraceLimit = Infinity;
 })();
+(function init() {
+    if (typeof process === 'undefined') {
+        return;
+    }
+    var defaults = Configuration.defaults;
+    defaults.environmentInfoCollector = new NodeEnvironmentInfoCollector();
+    defaults.errorParser = new NodeErrorParser();
+    defaults.moduleCollector = new NodeModuleCollector();
+    defaults.requestInfoCollector = new NodeRequestInfoCollector();
+    defaults.submissionAdapter = new NodeSubmissionAdapter();
+    Configuration.prototype.useLocalStorage = function () {
+        this.storage = new NodeFileStorageProvider();
+        SettingsManager.applySavedServerSettings(this);
+        this.changed();
+    };
+    process.addListener('uncaughtException', function (error) {
+        ExceptionlessClient.default.submitUnhandledException(error, 'uncaughtException');
+    });
+    process.on('exit', function (code) {
+        function getExitCodeReason(exitCode) {
+            if (exitCode === 1) {
+                return 'Uncaught Fatal Exception';
+            }
+            if (exitCode === 3) {
+                return 'Internal JavaScript Parse Error';
+            }
+            if (exitCode === 4) {
+                return 'Internal JavaScript Evaluation Failure';
+            }
+            if (exitCode === 5) {
+                return 'Fatal Exception';
+            }
+            if (exitCode === 6) {
+                return 'Non-function Internal Exception Handler ';
+            }
+            if (exitCode === 7) {
+                return 'Internal Exception Handler Run-Time Failure';
+            }
+            if (exitCode === 8) {
+                return 'Uncaught Exception';
+            }
+            if (exitCode === 9) {
+                return 'Invalid Argument';
+            }
+            if (exitCode === 10) {
+                return 'Internal JavaScript Run-Time Failure';
+            }
+            if (exitCode === 12) {
+                return 'Invalid Debug Argument';
+            }
+            return null;
+        }
+        var client = ExceptionlessClient.default;
+        var message = getExitCodeReason(code);
+        if (message !== null) {
+            client.submitLog('exit', message, 'Error');
+        }
+        client.config.queue.process(true);
+    });
+    Error.stackTraceLimit = Infinity;
+})();
 
 return exports;
 
 }));
 
 
-//# sourceMappingURL=exceptionless.js.map
+//# sourceMappingURL=exceptionless.universal.js.map
