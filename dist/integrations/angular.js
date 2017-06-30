@@ -1,6 +1,6 @@
 angular.module('exceptionless', [])
     .constant('$ExceptionlessClient', exceptionless.ExceptionlessClient.default)
-    .factory('exceptionlessHttpInterceptor', ['$q', '$ExceptionlessClient', function ($q, $ExceptionlessClient) {
+    .factory('exceptionlessHttpInterceptor', ['$location', '$q', '$ExceptionlessClient', function ($location, $q, $ExceptionlessClient) {
         return {
             responseError: function responseError(response) {
                 if (response.status === 404) {
@@ -10,8 +10,8 @@ angular.module('exceptionless', [])
                     var message = "[" + response.status + "] " + (response.data && response.data.Message ? response.data.Message : response.config.url);
                     $ExceptionlessClient.createUnhandledException(new Error(message), 'errorHttpInterceptor')
                         .setSource(response.config.url)
-                        .setCode(response.status)
                         .setProperty('response', response)
+                        .setProperty('referrer', $location.absUrl())
                         .submit();
                 }
                 return $q.reject(response);
@@ -20,10 +20,10 @@ angular.module('exceptionless', [])
     }])
     .config(['$httpProvider', '$provide', '$ExceptionlessClient', function ($httpProvider, $provide, $ExceptionlessClient) {
         $httpProvider.interceptors.push('exceptionlessHttpInterceptor');
-        $provide.decorator('$exceptionHandler', ['$delegate', function ($delegate) {
+        $provide.decorator('$exceptionHandler', ['$delegate', '$location', function ($delegate, $location) {
                 return function (exception, cause) {
                     $delegate(exception, cause);
-                    $ExceptionlessClient.createUnhandledException(exception, '$exceptionHandler').setMessage(cause).submit();
+                    $ExceptionlessClient.createUnhandledException(exception, '$exceptionHandler').setMessage(cause).setSource($location.absUrl()).submit();
                 };
             }]);
         $provide.decorator('$log', ['$delegate', function ($delegate) {
