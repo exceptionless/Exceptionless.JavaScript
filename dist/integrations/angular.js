@@ -20,10 +20,10 @@ angular.module('exceptionless', [])
     }])
     .config(['$httpProvider', '$provide', '$ExceptionlessClient', function ($httpProvider, $provide, $ExceptionlessClient) {
         $httpProvider.interceptors.push('exceptionlessHttpInterceptor');
-        $provide.decorator('$exceptionHandler', ['$delegate', '$location', function ($delegate, $location) {
+        $provide.decorator('$exceptionHandler', ['$delegate', function ($delegate) {
                 return function (exception, cause) {
                     $delegate(exception, cause);
-                    $ExceptionlessClient.createUnhandledException(exception, '$exceptionHandler').setMessage(cause).setSource($location.absUrl()).submit();
+                    $ExceptionlessClient.createUnhandledException(exception, '$exceptionHandler').setMessage(cause).submit();
                 };
             }]);
         $provide.decorator('$log', ['$delegate', function ($delegate) {
