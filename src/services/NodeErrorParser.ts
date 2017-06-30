@@ -33,7 +33,7 @@ export class NodeErrorParser implements IErrorParser {
 
     const stackFrames = nodestacktrace.parse(exception) || [];
     return {
-      type: exception.name,
+      type: exception.name || 'Error',
       message: exception.message,
       stack_trace: getStackFrames(stackFrames)
     };
