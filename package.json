@@ -1,6 +1,6 @@
 {
   "name": "exceptionless",
-  "version": "1.5.2",
+  "version": "1.5.3",
   "description": "JavaScript client for Exceptionless",
   "license": "Apache-2.0",
   "browser": "dist/exceptionless.js",
