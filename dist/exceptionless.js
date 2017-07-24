@@ -2037,7 +2037,7 @@ var ExceptionlessClient = (function () {
     };
     ExceptionlessClient.prototype.createLog = function (sourceOrMessage, message, level) {
         var builder = this.createEvent().setType('log');
-        if (message && level) {
+        if (level) {
             builder = builder.setSource(sourceOrMessage).setMessage(message).setProperty('@level', level);
         }
         else if (message) {
@@ -2410,7 +2410,7 @@ var Configuration = (function () {
     };
     Object.defineProperty(Configuration.prototype, "userAgent", {
         get: function () {
-            return 'exceptionless-js/1.5.3';
+            return 'exceptionless-js/1.5.4';
         },
         enumerable: true,
         configurable: true
@@ -3173,7 +3173,7 @@ var DefaultErrorParser = (function () {
         }
         var message = typeof (exception) === 'string' ? exception : undefined;
         return {
-            type: stackTrace.name,
+            type: stackTrace.name || 'Error',
             message: stackTrace.message || exception.message || message,
             stack_trace: getStackFrames(stackTrace.stack || [])
         };

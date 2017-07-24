@@ -71,7 +71,7 @@ export class ExceptionlessClient {
   public createLog(sourceOrMessage: string, message?: string, level?: string): EventBuilder {
     let builder = this.createEvent().setType('log');
 
-    if (message && level) {
+    if (level) {
       builder = builder.setSource(sourceOrMessage).setMessage(message).setProperty('@level', level);
     } else if (message) {
       builder = builder.setSource(sourceOrMessage).setMessage(message);
