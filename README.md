@@ -10,7 +10,7 @@ The definition of the word exceptionless is: to be without exception. Exceptionl
 ## Show me the code! ##
 
 ```html
-<script src="https://cdn.rawgit.com/exceptionless/Exceptionless.JavaScript/v1.5.3/dist/exceptionless.min.js"></script>
+<script src="https://cdn.rawgit.com/exceptionless/Exceptionless.JavaScript/v1.5.4/dist/exceptionless.min.js"></script>
 <script>
   var client = exceptionless.ExceptionlessClient.default;
   client.config.apiKey = 'API_KEY_HERE';
@@ -49,7 +49,7 @@ Use one of the following methods to install Exceptionless.js into your browser a
   Add the following script to your page:
 
   ```html
-  <script src="https://cdn.rawgit.com/exceptionless/Exceptionless.JavaScript/v1.5.3/dist/exceptionless.min.js"></script>
+  <script src="https://cdn.rawgit.com/exceptionless/Exceptionless.JavaScript/v1.5.4/dist/exceptionless.min.js"></script>
   ```
 
 - **Bower:**
@@ -131,7 +131,7 @@ You can configure the `ExceptionlessClient` class using one of the following way
 ### Submitting Events and Errors
 Once configured, Exceptionless.js will automatically submit any unhandled exceptions that happen in your application to the Exceptionless server. The following sections will show you how to manually submit different event types as well as customize the data that is sent:
 
-####Submitting Events
+#### Submitting Events
 
 You may also want to submit log messages, feature usage data or other kinds of events. You can do this very easily with the fluent API:
 
@@ -159,7 +159,7 @@ client.createNotFound('/somepage').addTags('Exceptionless').submit();
 // Submit a custom event type
 client.submitEvent({ message = 'Low Fuel', type = 'racecar', source = 'Fuel System' });
 ```
-####Manually submitting Errors
+#### Manually submitting Errors
 
 In addition to automatically sending all unhandled exceptions, you may want to manually send exceptions to the service. You can do so by using code like this:
 
@@ -176,7 +176,7 @@ try {
 }
 ```
 
-####Sending Additional Information
+#### Sending Additional Information
 
 You can easily include additional information in your error reports using the fluent [event builder API](https://github.com/exceptionless/Exceptionless.JavaScript/blob/master/src/EventBuilder.ts).
 
