@@ -250,8 +250,8 @@ export class Configuration implements IConfigurationSettings {
 
     if (value <= 0) {
       value = -1;
-    } else if (value > 0 && value < 15000) {
-      value = 15000;
+    } else if (value > 0 && value < 120000) {
+      value = 120000;
     }
 
     this._updateSettingsWhenIdleInterval = value;

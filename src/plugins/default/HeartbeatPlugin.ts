@@ -10,7 +10,7 @@ export class HeartbeatPlugin implements IEventPlugin {
   private _intervalId: any;
 
   constructor(heartbeatInterval: number = 30000) {
-    this._interval = heartbeatInterval;
+    this._interval = heartbeatInterval >= 30000 ? heartbeatInterval : 60000;
   }
 
   public run(context: EventPluginContext, next?: () => void): void {
