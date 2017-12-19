@@ -72,7 +72,7 @@ describe('EventExclusionPlugin', () => {
   });
 
   describe('should exclude source type', () => {
-    function run(type: string, source: string, settingKey: string, settingValue: string|boolean): boolean {
+    function run(type: string, source: string, settingKey: string, settingValue: string | boolean): boolean {
       const client = new ExceptionlessClient('LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw', 'http://localhost:50000');
       if (settingKey) {
         client.config.settings[settingKey] = settingValue;

@@ -9,7 +9,7 @@ const strings: string[] = [];
 
 const jsonStream = new stream.Writable();
 (jsonStream as any)._write = (chunk: Buffer | string, encoding: string, next: () => void) => {
-  strings.push(decoder.write( chunk as Buffer));
+  strings.push(decoder.write(chunk as Buffer));
   next();
 };
 

@@ -2,10 +2,10 @@ import { ISubmissionAdapter } from './ISubmissionAdapter';
 import { SubmissionCallback } from './SubmissionCallback';
 import { SubmissionRequest } from './SubmissionRequest';
 
+import child = require('child_process');
 import http = require('http');
 import https = require('https');
 import url = require('url');
-import child = require('child_process');
 
 export class NodeSubmissionAdapter implements ISubmissionAdapter {
   public sendRequest(request: SubmissionRequest, callback?: SubmissionCallback, isAppExiting?: boolean) {
@@ -51,7 +51,7 @@ export class NodeSubmissionAdapter implements ISubmissionAdapter {
     if (response.statusCode === 0) {
       message = 'Unable to connect to server.';
     } else if (response.statusCode < 200 || response.statusCode > 299) {
-      message = response.statusMessage || ( response as any).message;
+      message = response.statusMessage || (response as any).message;
     }
 
     callback && callback(response.statusCode || 500, message, responseBody, responseHeaders);

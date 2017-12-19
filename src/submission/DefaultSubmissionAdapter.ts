@@ -14,7 +14,7 @@ export class DefaultSubmissionAdapter implements ISubmissionAdapter {
 
     let isCompleted: boolean = false;
     let useSetTimeout: boolean = false;
-    function complete(mode: string, xhr: XMLHttpRequest) {
+    function complete(mode: string, xhrRequest: XMLHttpRequest) {
       function parseResponseHeaders(headerStr) {
         function trim(value) {
           return value.replace(/^[\s\uFEFF\xA0]+|[\s\uFEFF\xA0]+$/g, '');
@@ -40,9 +40,9 @@ export class DefaultSubmissionAdapter implements ISubmissionAdapter {
 
       isCompleted = true;
 
-      let message: string = xhr.statusText;
-      const responseText: string = xhr.responseText;
-      let status: number = xhr.status;
+      let message: string = xhrRequest.statusText;
+      const responseText: string = xhrRequest.responseText;
+      let status: number = xhrRequest.status;
 
       if (mode === TIMEOUT || status === 0) {
         message = 'Unable to connect to server.';
@@ -50,7 +50,7 @@ export class DefaultSubmissionAdapter implements ISubmissionAdapter {
       } else if (mode === LOADED && !status) {
         status = request.method === 'POST' ? 202 : 200;
       } else if (status < 200 || status > 299) {
-        const responseBody: any = (xhr as any).responseBody;
+        const responseBody: any = (xhrRequest as any).responseBody;
         if (!!responseBody && !!responseBody.message) {
           message = responseBody.message;
         } else if (!!responseText && responseText.indexOf('message') !== -1) {
@@ -62,31 +62,31 @@ export class DefaultSubmissionAdapter implements ISubmissionAdapter {
         }
       }
 
-      callback && callback(status || 500, message || '', responseText, parseResponseHeaders(xhr.getAllResponseHeaders && xhr.getAllResponseHeaders()));
+      callback && callback(status || 500, message || '', responseText, parseResponseHeaders(xhrRequest.getAllResponseHeaders && xhrRequest.getAllResponseHeaders()));
     }
 
-    function createRequest(userAgent: string, method: string, url: string): XMLHttpRequest {
-      let xhr: any = new XMLHttpRequest();
-      if (WITH_CREDENTIALS in xhr) {
-        xhr.open(method, url, true);
+    function createRequest(userAgent: string, method: string, uri: string): XMLHttpRequest {
+      let xmlRequest: any = new XMLHttpRequest();
+      if (WITH_CREDENTIALS in xmlRequest) {
+        xmlRequest.open(method, uri, true);
 
-        xhr.setRequestHeader('X-Exceptionless-Client', userAgent);
+        xmlRequest.setRequestHeader('X-Exceptionless-Client', userAgent);
         if (method === 'POST') {
-          xhr.setRequestHeader('Content-Type', 'application/json');
+          xmlRequest.setRequestHeader('Content-Type', 'application/json');
         }
       } else if (typeof XDomainRequest !== 'undefined') {
         useSetTimeout = true;
-        xhr = new XDomainRequest();
-        xhr.open(method, location.protocol === 'http:' ? url.replace('https:', 'http:') : url);
+        xmlRequest = new XDomainRequest();
+        xmlRequest.open(method, location.protocol === 'http:' ? uri.replace('https:', 'http:') : uri);
       } else {
-        xhr = null;
+        xmlRequest = null;
       }
 
-      if (xhr) {
-        xhr.timeout = 10000;
+      if (xmlRequest) {
+        xmlRequest.timeout = 10000;
       }
 
-      return xhr;
+      return xmlRequest;
     }
 
     const url = `${request.url}${(request.url.indexOf('?') === -1 ? '?' : '&')}access_token=${encodeURIComponent(request.apiKey)}`;

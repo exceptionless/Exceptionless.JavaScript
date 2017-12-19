@@ -123,8 +123,8 @@ export function describeStorage(name: string,
     });
 
     it('should get the oldest events', () => {
-      function getDate(baseDate: Date, offset: number) {
-        return new Date(baseDate.getTime() + (offset * 60000));
+      function getDate(baseDate: Date, dateOffset: number) {
+        return new Date(baseDate.getTime() + (dateOffset * 60000));
       }
 
       const DATE: Date = new Date();

@@ -35,12 +35,12 @@ export class EventExclusionPlugin implements IEventPlugin {
       }
     }
 
-    function getMinLogLevel(settings: object, loggerName: string = '*'): number {
-      return getLogLevel(getTypeAndSourceSetting(settings, 'log', loggerName, 'Trace') + '');
+    function getMinLogLevel(configSettings: object, loggerName: string = '*'): number {
+      return getLogLevel(getTypeAndSourceSetting(configSettings, 'log', loggerName, 'Trace') + '');
     }
 
     // tslint:disable-next-line:ban-types
-    function getTypeAndSourceSetting(settings: Object = {}, type: string, source: string, defaultValue?: string|boolean): string|boolean {
+    function getTypeAndSourceSetting(configSettings: Object = {}, type: string, source: string, defaultValue?: string | boolean): string | boolean {
       if (!type) {
         return defaultValue;
       }
@@ -48,15 +48,15 @@ export class EventExclusionPlugin implements IEventPlugin {
       const isLog = type === 'log';
       const sourcePrefix =  `@@${type}:`;
 
-      const value = settings[sourcePrefix + source];
+      const value = configSettings[sourcePrefix + source];
       if (value) {
         return !isLog ? Utils.toBoolean(value) : value;
       }
 
       // check for wildcard match
-      for (const key in settings) {
+      for (const key in configSettings) {
         if (Utils.startsWith(key.toLowerCase(), sourcePrefix.toLowerCase()) && Utils.isMatch(source, [key.substring(sourcePrefix.length)])) {
-          return !isLog ? Utils.toBoolean(settings[key]) : settings[key];
+          return !isLog ? Utils.toBoolean(configSettings[key]) : configSettings[key];
         }
       }
 

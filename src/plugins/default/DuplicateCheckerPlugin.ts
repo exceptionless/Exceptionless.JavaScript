@@ -24,19 +24,19 @@ export class DuplicateCheckerPlugin implements IEventPlugin {
   }
 
   public run(context: EventPluginContext, next?: () => void): void {
-    function getHashCode(error: IInnerError): number {
-      let hashCode = 0;
-      while (error) {
-        if (error.message && error.message.length) {
-          hashCode += (hashCode * 397) ^ Utils.getHashCode(error.message);
+    function getHashCode(e: IInnerError): number {
+      let hash = 0;
+      while (e) {
+        if (e.message && e.message.length) {
+          hash += (hash * 397) ^ Utils.getHashCode(e.message);
         }
-        if (error.stack_trace && error.stack_trace.length) {
-          hashCode += (hashCode * 397) ^ Utils.getHashCode(JSON.stringify(error.stack_trace));
+        if (e.stack_trace && e.stack_trace.length) {
+          hash += (hash * 397) ^ Utils.getHashCode(JSON.stringify(e.stack_trace));
         }
-        error = error.inner;
+        e = e.inner;
       }
 
-      return hashCode;
+      return hash;
     }
 
     const error = context.event.data['@error'];

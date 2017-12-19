@@ -7,11 +7,11 @@ import nodestacktrace = require('stack-trace');
 
 export class NodeErrorParser implements IErrorParser {
   public parse(context: EventPluginContext, exception: Error): IError {
-    function getStackFrames(stackFrames: any[]): IStackFrame[] {
-      const frames: IStackFrame[] = [];
+    function getStackFrames(frames: any[]): IStackFrame[] {
+      const result: IStackFrame[] = [];
 
-      for (const frame of stackFrames) {
-        frames.push({
+      for (const frame of frames) {
+        result.push({
           name: frame.getMethodName() || frame.getFunctionName(),
           // parameters: frame.args,
           file_name: frame.getFileName(),
@@ -24,7 +24,7 @@ export class NodeErrorParser implements IErrorParser {
         });
       }
 
-      return frames;
+      return result;
     }
 
     if (!nodestacktrace) {

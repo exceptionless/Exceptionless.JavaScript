@@ -24,6 +24,7 @@
     "no-default-export": true,
     "no-empty": false,
     "no-empty-interface": true,
+    "no-implicit-dependencies": false,
     "no-string-throw": true,
     "no-switch-case-fall-through": true,
     "no-unused-expression": false,

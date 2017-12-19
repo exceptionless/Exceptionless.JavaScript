@@ -138,12 +138,12 @@ export class ExceptionlessClient {
    * @param callback
    */
   public submitEvent(event: IEvent, pluginContextData?: ContextData, callback?: (context: EventPluginContext) => void): void {
-    function cancelled(context: EventPluginContext) {
-      if (!!context) {
-        context.cancelled = true;
+    function cancelled(eventPluginContext: EventPluginContext) {
+      if (!!eventPluginContext) {
+        eventPluginContext.cancelled = true;
       }
 
-      return !!callback && callback(context);
+      return !!callback && callback(eventPluginContext);
     }
 
     const context = new EventPluginContext(this, event, pluginContextData);

@@ -15,7 +15,7 @@ export function createFixture() {
     parse: (c: EventPluginContext, exception: Error) => ({
       type: exception.name,
       message: exception.message,
-      stack_trace: ( exception as any).testStack || null
+      stack_trace: (exception as any).testStack || null
     })
   };
   client = {

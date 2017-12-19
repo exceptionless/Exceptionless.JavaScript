@@ -45,7 +45,7 @@ describe('DefaultEventQueue', () => {
     config.queue.process();
 
     config.queue.onEventsPosted((events: IEvent[], response: SubmissionResponse) => {
-      expect(( config.queue as any)._suspendProcessingUntil).to.be.undefined;
+      expect((config.queue as any)._suspendProcessingUntil).to.be.undefined;
 
       expect(config.storage.queue.get().length).to.equal(0);
     });
@@ -67,7 +67,7 @@ describe('DefaultEventQueue', () => {
     expect(config.storage.queue.get().length).to.equal(1);
 
     setTimeout(() => {
-      if (!( config.queue as any)._suspendProcessingUntil) {
+      if (!(config.queue as any)._suspendProcessingUntil) {
         expect(config.storage.queue.get().length).to.equal(0);
       } else {
         expect(config.storage.queue.get().length).to.equal(1);
