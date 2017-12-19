@@ -34,7 +34,7 @@ export class NodeSubmissionAdapter implements ISubmissionAdapter {
       };
     }
 
-    const protocol: any = (parsedHost.protocol === 'https' ? https : http);
+    const protocol: any = (parsedHost.protocol === 'https:' ? https : http);
     const clientRequest: http.ClientRequest = protocol.request(options, (response: http.IncomingMessage) => {
       let body = '';
       response.setEncoding('utf8');
