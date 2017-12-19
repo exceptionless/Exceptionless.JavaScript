@@ -1,9 +1,9 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+var child = require("child_process");
 var http = require("http");
 var https = require("https");
 var url = require("url");
-var child = require("child_process");
 var stream = require("stream");
 var string_decoder_1 = require("string_decoder");
 var NodeSubmissionAdapter = (function () {
@@ -31,7 +31,7 @@ var NodeSubmissionAdapter = (function () {
                 'Content-Length': Buffer.byteLength(request.data)
             };
         }
-        var protocol = (parsedHost.protocol === 'https' ? https : http);
+        var protocol = (parsedHost.protocol === 'https:' ? https : http);
         var clientRequest = protocol.request(options, function (response) {
             var body = '';
             response.setEncoding('utf8');

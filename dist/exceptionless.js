@@ -1361,7 +1361,7 @@ var HeartbeatPlugin = (function () {
         if (heartbeatInterval === void 0) { heartbeatInterval = 30000; }
         this.priority = 100;
         this.name = 'HeartbeatPlugin';
-        this._interval = heartbeatInterval;
+        this._interval = heartbeatInterval >= 30000 ? heartbeatInterval : 60000;
     }
     HeartbeatPlugin.prototype.run = function (context, next) {
         clearInterval(this._intervalId);
@@ -2086,11 +2086,11 @@ var ExceptionlessClient = (function () {
         return new EventBuilder({ date: new Date() }, this, pluginContextData);
     };
     ExceptionlessClient.prototype.submitEvent = function (event, pluginContextData, callback) {
-        function cancelled(context) {
-            if (!!context) {
-                context.cancelled = true;
+        function cancelled(eventPluginContext) {
+            if (!!eventPluginContext) {
+                eventPluginContext.cancelled = true;
             }
-            return !!callback && callback(context);
+            return !!callback && callback(eventPluginContext);
         }
         var context = new EventPluginContext(this, event, pluginContextData);
         if (!event) {
@@ -2303,8 +2303,8 @@ var Configuration = (function () {
             if (value <= 0) {
                 value = -1;
             }
-            else if (value > 0 && value < 15000) {
-                value = 15000;
+            else if (value > 0 && value < 120000) {
+                value = 120000;
             }
             this._updateSettingsWhenIdleInterval = value;
             this.log.info("updateSettingsWhenIdleInterval: " + value);
@@ -2410,7 +2410,7 @@ var Configuration = (function () {
     };
     Object.defineProperty(Configuration.prototype, "userAgent", {
         get: function () {
-            return 'exceptionless-js/1.5.4';
+            return 'exceptionless-js/1.5.5';
         },
         enumerable: true,
         configurable: true
@@ -2668,18 +2668,18 @@ var DuplicateCheckerPlugin = (function () {
     }
     DuplicateCheckerPlugin.prototype.run = function (context, next) {
         var _this = this;
-        function getHashCode(error) {
-            var hashCode = 0;
-            while (error) {
-                if (error.message && error.message.length) {
-                    hashCode += (hashCode * 397) ^ Utils.getHashCode(error.message);
+        function getHashCode(e) {
+            var hash = 0;
+            while (e) {
+                if (e.message && e.message.length) {
+                    hash += (hash * 397) ^ Utils.getHashCode(e.message);
                 }
-                if (error.stack_trace && error.stack_trace.length) {
-                    hashCode += (hashCode * 397) ^ Utils.getHashCode(JSON.stringify(error.stack_trace));
+                if (e.stack_trace && e.stack_trace.length) {
+                    hash += (hash * 397) ^ Utils.getHashCode(JSON.stringify(e.stack_trace));
                 }
-                error = error.inner;
+                e = e.inner;
             }
-            return hashCode;
+            return hash;
         }
         var error = context.event.data['@error'];
         var hashCode = getHashCode(error);
@@ -2834,24 +2834,24 @@ var EventExclusionPlugin = (function () {
                     return -1;
             }
         }
-        function getMinLogLevel(settings, loggerName) {
+        function getMinLogLevel(configSettings, loggerName) {
             if (loggerName === void 0) { loggerName = '*'; }
-            return getLogLevel(getTypeAndSourceSetting(settings, 'log', loggerName, 'Trace') + '');
+            return getLogLevel(getTypeAndSourceSetting(configSettings, 'log', loggerName, 'Trace') + '');
         }
-        function getTypeAndSourceSetting(settings, type, source, defaultValue) {
-            if (settings === void 0) { settings = {}; }
+        function getTypeAndSourceSetting(configSettings, type, source, defaultValue) {
+            if (configSettings === void 0) { configSettings = {}; }
             if (!type) {
                 return defaultValue;
             }
             var isLog = type === 'log';
             var sourcePrefix = "@@" + type + ":";
-            var value = settings[sourcePrefix + source];
+            var value = configSettings[sourcePrefix + source];
             if (value) {
                 return !isLog ? Utils.toBoolean(value) : value;
             }
-            for (var key in settings) {
+            for (var key in configSettings) {
                 if (Utils.startsWith(key.toLowerCase(), sourcePrefix.toLowerCase()) && Utils.isMatch(source, [key.substring(sourcePrefix.length)])) {
-                    return !isLog ? Utils.toBoolean(settings[key]) : settings[key];
+                    return !isLog ? Utils.toBoolean(configSettings[key]) : configSettings[key];
                 }
             }
             return defaultValue;
@@ -3256,7 +3256,7 @@ var DefaultSubmissionAdapter = (function () {
         var WITH_CREDENTIALS = 'withCredentials';
         var isCompleted = false;
         var useSetTimeout = false;
-        function complete(mode, xhr) {
+        function complete(mode, xhrRequest) {
             function parseResponseHeaders(headerStr) {
                 function trim(value) {
                     return value.replace(/^[\s\uFEFF\xA0]+|[\s\uFEFF\xA0]+$/g, '');
@@ -3276,9 +3276,9 @@ var DefaultSubmissionAdapter = (function () {
                 return;
             }
             isCompleted = true;
-            var message = xhr.statusText;
-            var responseText = xhr.responseText;
-            var status = xhr.status;
+            var message = xhrRequest.statusText;
+            var responseText = xhrRequest.responseText;
+            var status = xhrRequest.status;
             if (mode === TIMEOUT || status === 0) {
                 message = 'Unable to connect to server.';
                 status = 0;
@@ -3287,7 +3287,7 @@ var DefaultSubmissionAdapter = (function () {
                 status = request.method === 'POST' ? 202 : 200;
             }
             else if (status < 200 || status > 299) {
-                var responseBody = xhr.responseBody;
+                var responseBody = xhrRequest.responseBody;
                 if (!!responseBody && !!responseBody.message) {
                     message = responseBody.message;
                 }
@@ -3300,29 +3300,29 @@ var DefaultSubmissionAdapter = (function () {
                     }
                 }
             }
-            callback && callback(status || 500, message || '', responseText, parseResponseHeaders(xhr.getAllResponseHeaders && xhr.getAllResponseHeaders()));
+            callback && callback(status || 500, message || '', responseText, parseResponseHeaders(xhrRequest.getAllResponseHeaders && xhrRequest.getAllResponseHeaders()));
         }
-        function createRequest(userAgent, method, url) {
-            var xhr = new XMLHttpRequest();
-            if (WITH_CREDENTIALS in xhr) {
-                xhr.open(method, url, true);
-                xhr.setRequestHeader('X-Exceptionless-Client', userAgent);
+        function createRequest(userAgent, method, uri) {
+            var xmlRequest = new XMLHttpRequest();
+            if (WITH_CREDENTIALS in xmlRequest) {
+                xmlRequest.open(method, uri, true);
+                xmlRequest.setRequestHeader('X-Exceptionless-Client', userAgent);
                 if (method === 'POST') {
-                    xhr.setRequestHeader('Content-Type', 'application/json');
+                    xmlRequest.setRequestHeader('Content-Type', 'application/json');
                 }
             }
             else if (typeof XDomainRequest !== 'undefined') {
                 useSetTimeout = true;
-                xhr = new XDomainRequest();
-                xhr.open(method, location.protocol === 'http:' ? url.replace('https:', 'http:') : url);
+                xmlRequest = new XDomainRequest();
+                xmlRequest.open(method, location.protocol === 'http:' ? uri.replace('https:', 'http:') : uri);
             }
             else {
-                xhr = null;
+                xmlRequest = null;
             }
-            if (xhr) {
-                xhr.timeout = 10000;
+            if (xmlRequest) {
+                xmlRequest.timeout = 10000;
             }
-            return xhr;
+            return xmlRequest;
         }
         var url = "" + request.url + (request.url.indexOf('?') === -1 ? '?' : '&') + "access_token=" + encodeURIComponent(request.apiKey);
         var xhr = createRequest(request.userAgent, request.method || 'POST', url);
