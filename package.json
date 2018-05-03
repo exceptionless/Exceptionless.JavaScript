@@ -67,7 +67,6 @@
     "tracekit": "0.4.5",
     "tslint": "5.9.1",
     "tsproject": "2.1.2",
-    "fsevents": "1.2.3",
     "typescript": "2.8.3",
     "typescript-formatter": "7.2.0"
   },
