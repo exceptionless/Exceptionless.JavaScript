@@ -59,13 +59,13 @@ export class Utils {
     const result: object = {};
 
     for (const key in defaultValues || {}) {
-      if (!!defaultValues[key]) {
+      if (defaultValues[key] !== undefined && defaultValues[key] !== null) {
         result[key] = defaultValues[key];
       }
     }
 
     for (const key in values || {}) {
-      if (!!values[key]) {
+      if (values[key] !== undefined && values[key] !== null) {
         result[key] = values[key];
       }
     }
