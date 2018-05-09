@@ -73,7 +73,11 @@ export class DefaultSubmissionClient implements ISubmissionClient {
   private createSubmissionCallback(config: Configuration, callback: (response: SubmissionResponse) => void) {
     return (status, message, data?, headers?) => {
       const settingsVersion: number = headers && parseInt(headers[this.configurationVersionHeader], 10);
-      SettingsManager.checkVersion(settingsVersion, config);
+      if (!isNaN(settingsVersion)) {
+        SettingsManager.checkVersion(settingsVersion, config);
+      } else {
+        config.log.error('No config version header was returned.');
+      }
 
       callback(new SubmissionResponse(status, message));
     };

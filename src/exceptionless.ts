@@ -73,8 +73,8 @@ import { Utils } from './Utils';
       defaults.serverUrl = settings.serverUrl;
     }
 
-    if (settings.includePrivateInformation) {
-      defaults.includePrivateInformation = settings.includePrivateInformation;
+    if (typeof settings.includePrivateInformation === 'string') {
+      defaults.includePrivateInformation = settings.includePrivateInformation === 'false' ? false : true;
     }
   }
 

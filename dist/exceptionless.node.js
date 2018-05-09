@@ -402,7 +402,12 @@ var DefaultSubmissionClient = (function () {
         var _this = this;
         return function (status, message, data, headers) {
             var settingsVersion = headers && parseInt(headers[_this.configurationVersionHeader], 10);
-            SettingsManager.checkVersion(settingsVersion, config);
+            if (!isNaN(settingsVersion)) {
+                SettingsManager.checkVersion(settingsVersion, config);
+            }
+            else {
+                config.log.error('No config version header was returned.');
+            }
             callback(new SubmissionResponse(status, message));
         };
     };
@@ -1084,6 +1089,7 @@ var Configuration = (function () {
             this._includeCookies = val;
             this._includePostData = val;
             this._includeQueryString = val;
+            this.log.info("includePrivateInformation: " + val);
             this.changed();
         },
         enumerable: true,

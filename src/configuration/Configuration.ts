@@ -345,6 +345,7 @@ export class Configuration implements IConfigurationSettings {
     this._includeCookies = val;
     this._includePostData = val;
     this._includeQueryString = val;
+    this.log.info(`includePrivateInformation: ${val}`);
     this.changed();
   }
 

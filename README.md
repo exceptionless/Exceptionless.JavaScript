@@ -229,6 +229,13 @@ var client = require('exceptionless.node').ExceptionlessClient.default;
 client.config.serverUrl = 'http://localhost:50000';
 ```
 
+### General Data Protection Regulation 
+By default the Exceptionless Client will report all available metadata including potential PII data. 
+You can fine tune the collection of information via Data Exclusions or turning off collection completely. 
+ 
+Please visit the [wiki](https://github.com/exceptionless/Exceptionless.JavaScript/wiki/Configuration#general-data-protection-regulation) 
+for detailed information on how to configure the client to meet your requirements. 
+
 ## Support
 
 If you need help, please contact us via in-app support, [open an issue](https://github.com/exceptionless/Exceptionless.JavaScript/issues/new) or [join our chat on gitter](https://gitter.im/exceptionless/Discuss). We’re always here to help if you have any questions!
