@@ -64,9 +64,18 @@ import { Utils } from './Utils';
 
   const defaults = Configuration.defaults;
   const settings = getDefaultsSettingsFromScriptTag();
-  if (settings && (settings.apiKey || settings.serverUrl)) {
-    defaults.apiKey = settings.apiKey;
-    defaults.serverUrl = settings.serverUrl;
+  if (settings) {
+    if (settings.apiKey) {
+      defaults.apiKey = settings.apiKey;
+    }
+
+    if (settings.serverUrl) {
+      defaults.serverUrl = settings.serverUrl;
+    }
+
+    if (settings.includePrivateInformation) {
+      defaults.includePrivateInformation = settings.includePrivateInformation;
+    }
   }
 
   defaults.errorParser = new DefaultErrorParser();

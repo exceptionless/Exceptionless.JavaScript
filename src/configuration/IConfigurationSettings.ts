@@ -14,6 +14,7 @@ export interface IConfigurationSettings {
   serverUrl?: string;
   heartbeatServerUrl?: string;
   updateSettingsWhenIdleInterval?: number;
+  includePrivateInformation?: boolean;
   environmentInfoCollector?: IEnvironmentInfoCollector;
   errorParser?: IErrorParser;
   lastReferenceIdManager?: ILastReferenceIdManager;

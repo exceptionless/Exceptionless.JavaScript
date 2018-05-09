@@ -115,6 +115,14 @@ export class Configuration implements IConfigurationSettings {
    */
   private _dataExclusions: string[] = [];
 
+  private _includePrivateInformation: boolean;
+  private _includeUserName: boolean;
+  private _includeMachineName: boolean;
+  private _includeIpAddress: boolean;
+  private _includeCookies: boolean;
+  private _includePostData: boolean;
+  private _includeQueryString: boolean;
+
   /**
    * A list of user agent patterns.
    * @type {Array}
@@ -148,6 +156,7 @@ export class Configuration implements IConfigurationSettings {
     this.serverUrl = configSettings.serverUrl;
     this.heartbeatServerUrl = configSettings.heartbeatServerUrl;
     this.updateSettingsWhenIdleInterval = configSettings.updateSettingsWhenIdleInterval;
+    this.includePrivateInformation = configSettings.includePrivateInformation;
 
     this.environmentInfoCollector = inject(configSettings.environmentInfoCollector);
     this.errorParser = inject(configSettings.errorParser);
@@ -284,6 +293,138 @@ export class Configuration implements IConfigurationSettings {
    */
   public addDataExclusions(...exclusions: string[]) {
     this._dataExclusions = Utils.addRange<string>(this._dataExclusions, ...exclusions);
+  }
+
+  /**
+   * Gets a value indicating whether to include private information about the local machine.
+   * @returns {boolean}
+   */
+  public get includePrivateInformation(): boolean {
+    return this._includePrivateInformation;
+  }
+
+  /**
+   * Sets a value indicating whether to include private information about the local machine
+   * @param value
+   */
+  public set includePrivateInformation(value: boolean) {
+    const val = value || false;
+    this._includePrivateInformation = val;
+    this.includeUserName = val;
+    this._includeMachineName = val;
+    this.includeIpAddress = val;
+    this.includeCookies = val;
+    this.includePostData = val;
+    this.includeQueryString = val;
+    this.changed();
+  }
+
+  /**
+   * Gets a value indicating whether to include User Name.
+   * @returns {boolean}
+   */
+  public get includeUserName(): boolean {
+    return this._includeUserName;
+  }
+
+  /**
+   * Sets a value indicating whether to include User Name.
+   * @param value
+   */
+  public set includeUserName(value: boolean) {
+    this._includeUserName = value || false;
+    this.changed();
+  }
+
+  /**
+   * Gets a value indicating whether to include MachineName in MachineInfo.
+   * @returns {boolean}
+   */
+  public get includeMachineName(): boolean {
+    return this._includeMachineName;
+  }
+
+  /**
+   * Sets a value indicating whether to include MachineName in MachineInfo.
+   * @param value
+   */
+  public set includeMachineName(value: boolean) {
+    this._includeMachineName = value || false;
+    this.changed();
+  }
+
+  /**
+   * Gets a value indicating whether to include Ip Addresses in MachineInfo and RequestInfo.
+   * @returns {boolean}
+   */
+  public get includeIpAddress(): boolean {
+    return this._includeIpAddress;
+  }
+
+  /**
+   * Sets a value indicating whether to include Ip Addresses in MachineInfo and RequestInfo.
+   * @param value
+   */
+  public set includeIpAddress(value: boolean) {
+    this._includeIpAddress = value || false;
+    this.changed();
+  }
+
+  /**
+   * Gets a value indicating whether to include Cookies.
+   * NOTE: DataExclusions are applied to all Cookie keys when enabled.
+   * @returns {boolean}
+   */
+  public get includeCookies(): boolean {
+    return this._includeCookies;
+  }
+
+  /**
+   * Sets a value indicating whether to include Cookies.
+   * NOTE: DataExclusions are applied to all Cookie keys when enabled.
+   * @param value
+   */
+  public set includeCookies(value: boolean) {
+    this._includeCookies = value || false;
+    this.changed();
+  }
+
+  /**
+   * Gets a value indicating whether to include Form/POST Data.
+   * NOTE: DataExclusions are only applied to Form data keys when enabled.
+   * @returns {boolean}
+   */
+  public get includePostData(): boolean {
+    return this._includePostData;
+  }
+
+  /**
+   * Sets a value indicating whether to include Form/POST Data.
+   * NOTE: DataExclusions are only applied to Form data keys when enabled.
+   * @param value
+   */
+  public set includePostData(value: boolean) {
+    this._includePostData = value || false;
+    this.changed();
+  }
+
+  /**
+   * Gets a value indicating whether to include query string information.
+   * NOTE: DataExclusions are applied to all Query String keys when enabled.
+   * @returns {boolean}
+   */
+  public get includeQueryString(): boolean {
+    return this._includeQueryString;
+  }
+
+  /**
+   * Sets a value indicating whether to include query string information.
+   * NOTE: DataExclusions are applied to all Query String keys when enabled.
+   * @param value
+   */
+  public set includeQueryString(value: boolean) {
+    this._includeQueryString = value || false;
+    this.changed();
   }
 
   /**
@@ -468,7 +609,7 @@ export class Configuration implements IConfigurationSettings {
    */
   public static get defaults() {
     if (Configuration._defaultSettings === null) {
-      Configuration._defaultSettings = {};
+      Configuration._defaultSettings = { includePrivateInformation: true };
     }
 
     return Configuration._defaultSettings;

@@ -36,8 +36,6 @@ export class NodeEnvironmentInfoCollector implements IEnvironmentInfoCollector {
       architecture: os.arch(),
       o_s_name: os.type(),
       o_s_version: os.release(),
-      ip_address: getIpAddresses(),
-      machine_name: os.hostname(),
       // install_id: '',
       runtime_version: process.version,
       data: {
@@ -47,6 +45,15 @@ export class NodeEnvironmentInfoCollector implements IEnvironmentInfoCollector {
         uptime: os.uptime()
       }
     };
+
+    const config = context.client.config;
+    if (config.includeMachineName) {
+      environmentInfo.machine_name = os.hostname();
+    }
+
+    if (config.includeIpAddress) {
+      environmentInfo.ip_address = getIpAddresses();
+    }
 
     if ((os as any).endianness) {
       environmentInfo.data.endianness = (os as any).endianness();
