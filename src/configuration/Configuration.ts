@@ -503,7 +503,7 @@ export class Configuration implements IConfigurationSettings {
    */
   public addPlugin(name: string, priority: number, pluginAction: (context: EventPluginContext, next?: () => void) => void): void;
   public addPlugin(pluginOrName: IEventPlugin | string, priority?: number, pluginAction?: (context: EventPluginContext, next?: () => void) => void): void {
-    const plugin: IEventPlugin = !!pluginAction ? { name: pluginOrName as string, priority, run: pluginAction } :  pluginOrName as IEventPlugin;
+    const plugin: IEventPlugin = !!pluginAction ? { name: pluginOrName as string, priority, run: pluginAction } : pluginOrName as IEventPlugin;
     if (!plugin || !plugin.run) {
       this.log.error('Add plugin failed: Run method not defined');
       return;

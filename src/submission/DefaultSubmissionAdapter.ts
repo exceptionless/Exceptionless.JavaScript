@@ -3,7 +3,7 @@ import { SubmissionCallback } from './SubmissionCallback';
 import { SubmissionRequest } from './SubmissionRequest';
 
 // tslint:disable-next-line:prefer-const
-declare var XDomainRequest: { new (); create(); };
+declare var XDomainRequest: { new(); create(); };
 
 export class DefaultSubmissionAdapter implements ISubmissionAdapter {
   public sendRequest(request: SubmissionRequest, callback?: SubmissionCallback, isAppExiting?: boolean) {
