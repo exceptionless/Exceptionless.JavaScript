@@ -32,7 +32,7 @@ export class DefaultSubmissionClient implements ISubmissionClient {
   }
 
   public getSettings(config: Configuration, version: number, callback: (response: SettingsResponse) => void): void {
-    const request = this.createRequest(config, 'GET', `${config.serverUrl}/api/v2/projects/config?v=${version}`);
+    const request = this.createRequest(config, 'GET', `${config.configServerUrl}/api/v2/projects/config?v=${version}`);
     const cb = (status, message, data?, headers?) => {
       if (status !== 200) {
         return callback(new SettingsResponse(false, null, -1, null, message));

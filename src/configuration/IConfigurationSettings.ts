@@ -12,6 +12,7 @@ import { ISubmissionClient } from '../submission/ISubmissionClient';
 export interface IConfigurationSettings {
   apiKey?: string;
   serverUrl?: string;
+  configServerUrl?: string;
   heartbeatServerUrl?: string;
   updateSettingsWhenIdleInterval?: number;
   includePrivateInformation?: boolean;

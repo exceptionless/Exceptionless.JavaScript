@@ -95,6 +95,13 @@ export class Configuration implements IConfigurationSettings {
   private _serverUrl: string = 'https://collector.exceptionless.io';
 
   /**
+   * The config server url that all configuration will be retrieved from.
+   * @type {string}
+   * @private
+   */
+  private _configServerUrl: string = 'https://config.exceptionless.io';
+
+  /**
    * The heartbeat server url that all heartbeats will be sent to.
    * @type {string}
    * @private
@@ -154,6 +161,7 @@ export class Configuration implements IConfigurationSettings {
     this.log = inject(configSettings.log) || new NullLog();
     this.apiKey = configSettings.apiKey;
     this.serverUrl = configSettings.serverUrl;
+    this.configServerUrl = configSettings.configServerUrl;
     this.heartbeatServerUrl = configSettings.heartbeatServerUrl;
     this.updateSettingsWhenIdleInterval = configSettings.updateSettingsWhenIdleInterval;
     this.includePrivateInformation = configSettings.includePrivateInformation;
@@ -214,8 +222,29 @@ export class Configuration implements IConfigurationSettings {
   public set serverUrl(value: string) {
     if (!!value) {
       this._serverUrl = value;
+      this._configServerUrl = value;
       this._heartbeatServerUrl = value;
       this.log.info(`serverUrl: ${value}`);
+      this.changed();
+    }
+  }
+
+  /**
+   * The config server url that all configuration will be retrieved from.
+   * @returns {string}
+   */
+  public get configServerUrl(): string {
+    return this._configServerUrl;
+  }
+
+  /**
+   * The config server url that all configuration will be retrieved from.
+   * @param value
+   */
+  public set configServerUrl(value: string) {
+    if (!!value) {
+      this._configServerUrl = value;
+      this.log.info(`configServerUrl: ${value}`);
       this.changed();
     }
   }
