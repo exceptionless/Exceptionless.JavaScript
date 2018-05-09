@@ -2530,7 +2530,7 @@ var Configuration = (function () {
     };
     Object.defineProperty(Configuration.prototype, "userAgent", {
         get: function () {
-            return 'exceptionless-universal-js/1.5.5';
+            return 'exceptionless-universal-js/1.6.0';
         },
         enumerable: true,
         configurable: true
