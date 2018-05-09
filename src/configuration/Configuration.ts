@@ -339,12 +339,12 @@ export class Configuration implements IConfigurationSettings {
   public set includePrivateInformation(value: boolean) {
     const val = value || false;
     this._includePrivateInformation = val;
-    this.includeUserName = val;
+    this._includeUserName = val;
     this._includeMachineName = val;
-    this.includeIpAddress = val;
-    this.includeCookies = val;
-    this.includePostData = val;
-    this.includeQueryString = val;
+    this._includeIpAddress = val;
+    this._includeCookies = val;
+    this._includePostData = val;
+    this._includeQueryString = val;
     this.changed();
   }
 

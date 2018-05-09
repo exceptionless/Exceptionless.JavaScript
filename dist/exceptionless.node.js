@@ -365,7 +365,7 @@ var DefaultSubmissionClient = (function () {
         return config.submissionAdapter.sendRequest(request, cb);
     };
     DefaultSubmissionClient.prototype.getSettings = function (config, version, callback) {
-        var request = this.createRequest(config, 'GET', config.serverUrl + "/api/v2/projects/config?v=" + version);
+        var request = this.createRequest(config, 'GET', config.configServerUrl + "/api/v2/projects/config?v=" + version);
         var cb = function (status, message, data, headers) {
             if (status !== 200) {
                 return callback(new SettingsResponse(false, null, -1, null, message));
@@ -464,12 +464,12 @@ var Utils = (function () {
     Utils.merge = function (defaultValues, values) {
         var result = {};
         for (var key in defaultValues || {}) {
-            if (!!defaultValues[key]) {
+            if (defaultValues[key] !== undefined && defaultValues[key] !== null) {
                 result[key] = defaultValues[key];
             }
         }
         for (var key in values || {}) {
-            if (!!values[key]) {
+            if (values[key] !== undefined && values[key] !== null) {
                 result[key] = values[key];
             }
         }
@@ -641,7 +641,7 @@ var SettingsManager = (function () {
     };
     SettingsManager.updateSettings = function (config, version) {
         var _this = this;
-        if (!config || !config.enabled) {
+        if (!config || !config.enabled || this._isUpdatingSettings) {
             return;
         }
         var unableToUpdateMessage = 'Unable to update settings';
@@ -653,26 +653,32 @@ var SettingsManager = (function () {
             version = this.getVersion(config);
         }
         config.log.info("Checking for updated settings from: v" + version + ".");
+        this._isUpdatingSettings = true;
         config.submissionClient.getSettings(config, version, function (response) {
-            if (!config || !response || !response.success || !response.settings) {
-                config.log.warn(unableToUpdateMessage + ": " + response.message);
-                return;
-            }
-            config.settings = Utils.merge(config.settings, response.settings);
-            var savedServerSettings = SettingsManager.getSavedServerSettings(config);
-            for (var key in savedServerSettings) {
-                if (response.settings[key]) {
-                    continue;
+            try {
+                if (!config || !response || !response.success || !response.settings) {
+                    config.log.warn(unableToUpdateMessage + ": " + response.message);
+                    return;
                 }
-                delete config.settings[key];
+                config.settings = Utils.merge(config.settings, response.settings);
+                var savedServerSettings = SettingsManager.getSavedServerSettings(config);
+                for (var key in savedServerSettings) {
+                    if (response.settings[key]) {
+                        continue;
+                    }
+                    delete config.settings[key];
+                }
+                var newSettings = {
+                    version: response.settingsVersion,
+                    settings: response.settings
+                };
+                config.storage.settings.save(newSettings);
+                config.log.info("Updated settings: v" + newSettings.version);
+                _this.changed(config);
             }
-            var newSettings = {
-                version: response.settingsVersion,
-                settings: response.settings
-            };
-            config.storage.settings.save(newSettings);
-            config.log.info("Updated settings: v" + newSettings.version);
-            _this.changed(config);
+            finally {
+                _this._isUpdatingSettings = false;
+            }
         });
     };
     SettingsManager.changed = function (config) {
@@ -696,6 +702,7 @@ var SettingsManager = (function () {
     };
     return SettingsManager;
 }());
+SettingsManager._isUpdatingSettings = false;
 SettingsManager._handlers = [];
 exports.SettingsManager = SettingsManager;
 var SubmissionResponse = (function () {
@@ -934,6 +941,7 @@ var Configuration = (function () {
         this.lastReferenceIdManager = new DefaultLastReferenceIdManager();
         this.settings = {};
         this._serverUrl = 'https://collector.exceptionless.io';
+        this._configServerUrl = 'https://config.exceptionless.io';
         this._heartbeatServerUrl = 'https://heartbeat.exceptionless.io';
         this._updateSettingsWhenIdleInterval = 120000;
         this._dataExclusions = [];
@@ -947,8 +955,10 @@ var Configuration = (function () {
         this.log = inject(configSettings.log) || new NullLog();
         this.apiKey = configSettings.apiKey;
         this.serverUrl = configSettings.serverUrl;
+        this.configServerUrl = configSettings.configServerUrl;
         this.heartbeatServerUrl = configSettings.heartbeatServerUrl;
         this.updateSettingsWhenIdleInterval = configSettings.updateSettingsWhenIdleInterval;
+        this.includePrivateInformation = configSettings.includePrivateInformation;
         this.environmentInfoCollector = inject(configSettings.environmentInfoCollector);
         this.errorParser = inject(configSettings.errorParser);
         this.lastReferenceIdManager = inject(configSettings.lastReferenceIdManager) || new DefaultLastReferenceIdManager();
@@ -988,8 +998,23 @@ var Configuration = (function () {
         set: function (value) {
             if (!!value) {
                 this._serverUrl = value;
+                this._configServerUrl = value;
                 this._heartbeatServerUrl = value;
                 this.log.info("serverUrl: " + value);
+                this.changed();
+            }
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Configuration.prototype, "configServerUrl", {
+        get: function () {
+            return this._configServerUrl;
+        },
+        set: function (value) {
+            if (!!value) {
+                this._configServerUrl = value;
+                this.log.info("configServerUrl: " + value);
                 this.changed();
             }
         },
@@ -1046,6 +1071,90 @@ var Configuration = (function () {
         }
         this._dataExclusions = Utils.addRange.apply(Utils, [this._dataExclusions].concat(exclusions));
     };
+    Object.defineProperty(Configuration.prototype, "includePrivateInformation", {
+        get: function () {
+            return this._includePrivateInformation;
+        },
+        set: function (value) {
+            var val = value || false;
+            this._includePrivateInformation = val;
+            this._includeUserName = val;
+            this._includeMachineName = val;
+            this._includeIpAddress = val;
+            this._includeCookies = val;
+            this._includePostData = val;
+            this._includeQueryString = val;
+            this.changed();
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Configuration.prototype, "includeUserName", {
+        get: function () {
+            return this._includeUserName;
+        },
+        set: function (value) {
+            this._includeUserName = value || false;
+            this.changed();
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Configuration.prototype, "includeMachineName", {
+        get: function () {
+            return this._includeMachineName;
+        },
+        set: function (value) {
+            this._includeMachineName = value || false;
+            this.changed();
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Configuration.prototype, "includeIpAddress", {
+        get: function () {
+            return this._includeIpAddress;
+        },
+        set: function (value) {
+            this._includeIpAddress = value || false;
+            this.changed();
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Configuration.prototype, "includeCookies", {
+        get: function () {
+            return this._includeCookies;
+        },
+        set: function (value) {
+            this._includeCookies = value || false;
+            this.changed();
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Configuration.prototype, "includePostData", {
+        get: function () {
+            return this._includePostData;
+        },
+        set: function (value) {
+            this._includePostData = value || false;
+            this.changed();
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Configuration.prototype, "includeQueryString", {
+        get: function () {
+            return this._includeQueryString;
+        },
+        set: function (value) {
+            this._includeQueryString = value || false;
+            this.changed();
+        },
+        enumerable: true,
+        configurable: true
+    });
     Object.defineProperty(Configuration.prototype, "userAgentBotPatterns", {
         get: function () {
             var patterns = this.settings['@@UserAgentBotPatterns'];
@@ -1166,7 +1275,7 @@ var Configuration = (function () {
     Object.defineProperty(Configuration, "defaults", {
         get: function () {
             if (Configuration._defaultSettings === null) {
-                Configuration._defaultSettings = {};
+                Configuration._defaultSettings = { includePrivateInformation: true };
             }
             return Configuration._defaultSettings;
         },
@@ -1895,8 +2004,6 @@ var NodeEnvironmentInfoCollector = (function () {
             architecture: os.arch(),
             o_s_name: os.type(),
             o_s_version: os.release(),
-            ip_address: getIpAddresses(),
-            machine_name: os.hostname(),
             runtime_version: process.version,
             data: {
                 loadavg: os.loadavg(),
@@ -1905,6 +2012,13 @@ var NodeEnvironmentInfoCollector = (function () {
                 uptime: os.uptime()
             }
         };
+        var config = context.client.config;
+        if (config.includeMachineName) {
+            environmentInfo.machine_name = os.hostname();
+        }
+        if (config.includeIpAddress) {
+            environmentInfo.ip_address = getIpAddresses();
+        }
         if (os.endianness) {
             environmentInfo.data.endianness = os.endianness();
         }
@@ -2015,23 +2129,32 @@ var NodeRequestInfoCollector = (function () {
         if (!context.contextData[REQUEST_KEY]) {
             return null;
         }
-        var exclusions = context.client.config.dataExclusions;
+        var config = context.client.config;
+        var exclusions = config.dataExclusions;
         var request = context.contextData[REQUEST_KEY];
         var requestInfo = {
-            client_ip_address: request.ip,
             user_agent: request.headers['user-agent'],
             is_secure: request.secure,
             http_method: request.method,
             host: request.hostname || request.host,
-            path: request.path,
-            post_data: JSON.parse(Utils.stringify(request.body || {}, exclusions)),
-            cookies: Utils.getCookies(request.headers.cookie, exclusions),
-            query_string: JSON.parse(Utils.stringify(request.params || {}, exclusions))
+            path: request.path
         };
         var host = request.headers.host;
         var port = host && parseInt(host.slice(host.indexOf(':') + 1), 10);
         if (port > 0) {
             requestInfo.port = port;
+        }
+        if (config.includeIpAddress) {
+            requestInfo.client_ip_address = request.ip;
+        }
+        if (config.includeCookies) {
+            requestInfo.cookies = Utils.getCookies(request.headers.cookie, exclusions);
+        }
+        if (config.includeQueryString) {
+            requestInfo.query_string = JSON.parse(Utils.stringify(request.params || {}, exclusions));
+        }
+        if (config.includePostData) {
+            requestInfo.post_data = JSON.parse(Utils.stringify(request.body || {}, exclusions));
         }
         return requestInfo;
     };

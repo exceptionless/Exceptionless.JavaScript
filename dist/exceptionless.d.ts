@@ -147,8 +147,10 @@ export declare class Utils {
 export interface IConfigurationSettings {
     apiKey?: string;
     serverUrl?: string;
+    configServerUrl?: string;
     heartbeatServerUrl?: string;
     updateSettingsWhenIdleInterval?: number;
+    includePrivateInformation?: boolean;
     environmentInfoCollector?: IEnvironmentInfoCollector;
     errorParser?: IErrorParser;
     lastReferenceIdManager?: ILastReferenceIdManager;
@@ -162,6 +164,7 @@ export interface IConfigurationSettings {
     queue?: IEventQueue;
 }
 export declare class SettingsManager {
+    private static _isUpdatingSettings;
     private static _handlers;
     static onChanged(handler: (config: Configuration) => void): void;
     static applySavedServerSettings(config: Configuration): void;
@@ -349,9 +352,17 @@ export declare class Configuration implements IConfigurationSettings {
     queue: IEventQueue;
     private _apiKey;
     private _serverUrl;
+    private _configServerUrl;
     private _heartbeatServerUrl;
     private _updateSettingsWhenIdleInterval;
     private _dataExclusions;
+    private _includePrivateInformation;
+    private _includeUserName;
+    private _includeMachineName;
+    private _includeIpAddress;
+    private _includeCookies;
+    private _includePostData;
+    private _includeQueryString;
     private _userAgentBotPatterns;
     private _plugins;
     private _handlers;
@@ -359,10 +370,18 @@ export declare class Configuration implements IConfigurationSettings {
     apiKey: string;
     readonly isValid: boolean;
     serverUrl: string;
+    configServerUrl: string;
     heartbeatServerUrl: string;
     updateSettingsWhenIdleInterval: number;
     readonly dataExclusions: string[];
     addDataExclusions(...exclusions: string[]): void;
+    includePrivateInformation: boolean;
+    includeUserName: boolean;
+    includeMachineName: boolean;
+    includeIpAddress: boolean;
+    includeCookies: boolean;
+    includePostData: boolean;
+    includeQueryString: boolean;
     readonly userAgentBotPatterns: string[];
     addUserAgentBotPatterns(...userAgentBotPatterns: string[]): void;
     readonly plugins: IEventPlugin[];
