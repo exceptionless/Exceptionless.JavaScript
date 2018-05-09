@@ -19,6 +19,31 @@ describe('Configuration', () => {
 
     config = new Configuration({ apiKey: null });
     expect(config.apiKey).to.equal('test');
+    expect(config.includePrivateInformation).to.true;
+    expect(config.includeUserName).to.true;
+    expect(config.includeMachineName).to.true;
+    expect(config.includeIpAddress).to.true;
+    expect(config.includeCookies).to.true;
+    expect(config.includePostData).to.true;
+    expect(config.includeQueryString).to.true;
+
+    config = new Configuration({ includePrivateInformation: false });
+    expect(config.includePrivateInformation).to.false;
+    expect(config.includeUserName).to.false;
+    expect(config.includeMachineName).to.false;
+    expect(config.includeIpAddress).to.false;
+    expect(config.includeCookies).to.false;
+    expect(config.includePostData).to.false;
+    expect(config.includeQueryString).to.false;
+
+    config.includeMachineName = true;
+    expect(config.includePrivateInformation).to.false;
+    expect(config.includeUserName).to.false;
+    expect(config.includeMachineName).to.true;
+    expect(config.includeIpAddress).to.false;
+    expect(config.includeCookies).to.false;
+    expect(config.includePostData).to.false;
+    expect(config.includeQueryString).to.false;
   });
 
   it('should not add duplicate plugin', () => {

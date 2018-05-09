@@ -8,6 +8,8 @@ interface ISettingsWithVersion {
 }
 
 export class SettingsManager {
+  private static _isUpdatingSettings: boolean = false;
+
   /**
    * A list of handlers that will be fired when the settings change.
    * @type {Array}
@@ -50,7 +52,7 @@ export class SettingsManager {
   }
 
   public static updateSettings(config: Configuration, version?: number): void {
-    if (!config || !config.enabled) {
+    if (!config || !config.enabled || this._isUpdatingSettings) {
       return;
     }
 
@@ -65,34 +67,39 @@ export class SettingsManager {
     }
 
     config.log.info(`Checking for updated settings from: v${version}.`);
+    this._isUpdatingSettings = true;
     config.submissionClient.getSettings(config, version, (response: SettingsResponse) => {
-      if (!config || !response || !response.success || !response.settings) {
-        config.log.warn(`${unableToUpdateMessage}: ${response.message}`);
-        return;
-      }
-
-      config.settings = Utils.merge(config.settings, response.settings);
-
-      // TODO: Store snapshot of settings after reading from config and attributes and use that to revert to defaults.
-      // Remove any existing server settings that are not in the new server settings.
-      const savedServerSettings = SettingsManager.getSavedServerSettings(config);
-      for (const key in savedServerSettings) {
-        if (response.settings[key]) {
-          continue;
+      try {
+        if (!config || !response || !response.success || !response.settings) {
+          config.log.warn(`${unableToUpdateMessage}: ${response.message}`);
+          return;
         }
 
-        delete config.settings[key];
+        config.settings = Utils.merge(config.settings, response.settings);
+
+        // TODO: Store snapshot of settings after reading from config and attributes and use that to revert to defaults.
+        // Remove any existing server settings that are not in the new server settings.
+        const savedServerSettings = SettingsManager.getSavedServerSettings(config);
+        for (const key in savedServerSettings) {
+          if (response.settings[key]) {
+            continue;
+          }
+
+          delete config.settings[key];
+        }
+
+        const newSettings: ISettingsWithVersion = {
+          version: response.settingsVersion,
+          settings: response.settings
+        };
+
+        config.storage.settings.save(newSettings);
+
+        config.log.info(`Updated settings: v${newSettings.version}`);
+        this.changed(config);
+      } finally {
+        this._isUpdatingSettings = false;
       }
-
-      const newSettings: ISettingsWithVersion = {
-        version: response.settingsVersion,
-        settings: response.settings
-      };
-
-      config.storage.settings.save(newSettings);
-
-      config.log.info(`Updated settings: v${newSettings.version}`);
-      this.changed(config);
     });
   }
 

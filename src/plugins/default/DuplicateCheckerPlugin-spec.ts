@@ -34,7 +34,7 @@ describe('DuplicateCheckerPlugin', () => {
       expect(contextOfSecondRun.event.count).to.equal(1);
 
       done();
-      }, 100);
+    }, 100);
 
   });
 

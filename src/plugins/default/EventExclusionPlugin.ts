@@ -46,7 +46,7 @@ export class EventExclusionPlugin implements IEventPlugin {
       }
 
       const isLog = type === 'log';
-      const sourcePrefix =  `@@${type}:`;
+      const sourcePrefix = `@@${type}:`;
 
       const value = configSettings[sourcePrefix + source];
       if (value) {

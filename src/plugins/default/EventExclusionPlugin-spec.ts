@@ -34,7 +34,7 @@ describe('EventExclusionPlugin', () => {
     it('[Trace] Test (source min level: false)', () => { expect(run('Test', 'Trace', '@@log:Test', 'false')).to.be.true; });
     it('[Trace] Test (source min level: no)', () => { expect(run('Test', 'Trace', '@@log:Test', 'no')).to.be.true; });
     it('[Trace] Test (source min level: 0)', () => { expect(run('Test', 'Trace', '@@log:Test', '0')).to.be.true; });
-    it('[Trace] Test (source min level: true)', () =>  {expect(run('Test', 'Trace', '@@log:Test', 'true')).to.be.false; });
+    it('[Trace] Test (source min level: true)', () => { expect(run('Test', 'Trace', '@@log:Test', 'true')).to.be.false; });
     it('[Trace] Test (source min level: yes)', () => { expect(run('Test', 'Trace', '@@log:Test', 'yes')).to.be.false; });
     it('[Trace] Test (source min level: 1)', () => { expect(run('Test', 'Trace', '@@log:Test', '1')).to.be.false; });
     it('[Trace] Test (source min level: Debug)', () => { expect(run('Test', 'Trace', '@@log:Test', 'Debug')).to.be.true; });
@@ -116,7 +116,7 @@ describe('EventExclusionPlugin', () => {
       }
 
       const errorParser = new DefaultErrorParser();
-      const context = new EventPluginContext(client, { type: 'error', data: { } });
+      const context = new EventPluginContext(client, { type: 'error', data: {} });
       context.event.data['@error'] = errorParser.parse(context, createException());
 
       const plugin = new EventExclusionPlugin();

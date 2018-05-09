@@ -16,7 +16,7 @@ describe('DefaultEventQueue', () => {
   });
 
   afterEach(() => {
-    const queue =  config.queue as any;
+    const queue = config.queue as any;
     clearInterval(queue._queueTimer);
     config = null;
     xhr.restore();

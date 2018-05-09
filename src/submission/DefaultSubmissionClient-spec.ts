@@ -10,7 +10,7 @@ import { SubmissionRequest } from './SubmissionRequest';
 
 class TestAdapter implements ISubmissionAdapter {
   private request;
-  private checks: Array<(request: SubmissionRequest) => void > = [];
+  private checks: Array<(request: SubmissionRequest) => void> = [];
   private callback: SubmissionCallback;
   private status = 202;
   private message = null;

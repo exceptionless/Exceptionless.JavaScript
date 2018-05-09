@@ -28,11 +28,11 @@ export class ExceptionlessClient {
   constructor(settingsOrApiKey?: IConfigurationSettings | string, serverUrl?: string) {
     this.config = typeof settingsOrApiKey === 'object'
       ? new Configuration(settingsOrApiKey)
-      : new Configuration({ apiKey:  settingsOrApiKey as string, serverUrl });
+      : new Configuration({ apiKey: settingsOrApiKey as string, serverUrl });
 
     this.updateSettingsTimer(5000);
     this.config.onChanged((config) => this.updateSettingsTimer(this._timeoutId > 0 ? 5000 : 0));
-    this.config.queue.onEventsPosted((events, response) =>  this.updateSettingsTimer());
+    this.config.queue.onEventsPosted((events, response) => this.updateSettingsTimer());
   }
 
   public createException(exception: Error): EventBuilder {

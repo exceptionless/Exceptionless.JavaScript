@@ -9,14 +9,14 @@ import { SubmissionRequest } from './SubmissionRequest';
 import { SubmissionResponse } from './SubmissionResponse';
 
 // tslint:disable-next-line:prefer-const
-declare var XDomainRequest: { new (); create(); };
+declare var XDomainRequest: { new(); create(); };
 
 export class DefaultSubmissionClient implements ISubmissionClient {
   public configurationVersionHeader: string = 'x-exceptionless-configversion';
 
   public postEvents(events: IEvent[], config: Configuration, callback: (response: SubmissionResponse) => void, isAppExiting?: boolean): void {
     const data = JSON.stringify(events);
-    const request = this.createRequest(config, 'POST',  `${config.serverUrl}/api/v2/events`, data);
+    const request = this.createRequest(config, 'POST', `${config.serverUrl}/api/v2/events`, data);
     const cb = this.createSubmissionCallback(config, callback);
 
     return config.submissionAdapter.sendRequest(request, cb, isAppExiting);
@@ -32,7 +32,7 @@ export class DefaultSubmissionClient implements ISubmissionClient {
   }
 
   public getSettings(config: Configuration, version: number, callback: (response: SettingsResponse) => void): void {
-    const request = this.createRequest(config, 'GET', `${config.serverUrl}/api/v2/projects/config?v=${version}`);
+    const request = this.createRequest(config, 'GET', `${config.configServerUrl}/api/v2/projects/config?v=${version}`);
     const cb = (status, message, data?, headers?) => {
       if (status !== 200) {
         return callback(new SettingsResponse(false, null, -1, null, message));
