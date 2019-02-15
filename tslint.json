@@ -21,6 +21,7 @@
     ],
     "no-angle-bracket-type-assertion": true,
     "no-bitwise": false,
+    "no-console": false,
     "no-default-export": true,
     "no-empty": false,
     "no-empty-interface": true,

@@ -1,32 +1,37 @@
-var fs = require("fs");
-var pkg = require('./package.json');
-var gulp = require('gulp');
-var $ = require('gulp-load-plugins')({lazy:true });
-var tsProject = require('tsproject');
-var eventStream = require('event-stream');
+const fs = require("fs");
+const pkg = require('./package.json');
+const gulp = require('gulp');
+const $ = require('gulp-load-plugins')({lazy:true });
+const tsProject = require('tsproject');
+const eventStream = require('event-stream');
 
-gulp.task('clean', function () {
-  var del = require('del');
+gulp.task('clean', function clean(done) {
+  const del = require('del');
   del.sync(['dist'], { force: true });
+  done();
 });
 
-gulp.task('typescript', function () {
-  return tsProject.src('src/tsconfig.json').pipe(gulp.dest('dist/temp'));
+gulp.task('typescript', function typescript(done) {
+  const stream = tsProject.src('src/tsconfig.json').pipe(gulp.dest('dist/temp'));
+  stream.on('finish', done);
 });
 
-gulp.task('typescript.integrations', ['typescript'], function () {
-  return tsProject.src('src/integrations/tsconfig.json').pipe(gulp.dest('dist/temp'));
+gulp.task('typescript.integrations', gulp.series('typescript', function typescriptIntegrations(done) {
+  const stream = tsProject.src('src/integrations/tsconfig.json').pipe(gulp.dest('dist/temp'));
+  stream.on('finish', done);
+}));
+
+gulp.task('typescript.node', function typescriptNode(done) {
+  const stream = tsProject.src('src/tsconfig.node.json').pipe(gulp.dest('dist/temp'));
+  stream.on('finish', done);
 });
 
-gulp.task('typescript.node', function () {
-  return tsProject.src('src/tsconfig.node.json').pipe(gulp.dest('dist/temp'));
+gulp.task('typescript.universal', function typescriptUniversal(done) {
+  const stream = tsProject.src('src/tsconfig.universal.json').pipe(gulp.dest('dist/temp'));
+  stream.on('finish', done);
 });
 
-gulp.task('typescript.universal', function () {
-  return tsProject.src('src/tsconfig.universal.json').pipe(gulp.dest('dist/temp'));
-});
-
-gulp.task('exceptionless.umd', ['typescript', 'typescript.integrations'], function () {
+gulp.task('exceptionless.umd', gulp.series('typescript.integrations', function exceptionlessUmd() {
   return gulp.src('dist/temp/src/exceptionless.js')
     .pipe($.sourcemaps.init({ loadMaps: true }))
     .pipe($.wrapUmd({
@@ -38,9 +43,9 @@ gulp.task('exceptionless.umd', ['typescript', 'typescript.integrations'], functi
     }))
     .pipe($.sourcemaps.write('.'))
     .pipe(gulp.dest('dist/temp'));
-});
+}));
 
-gulp.task('exceptionless.universal.umd', ['typescript.universal'], function () {
+gulp.task('exceptionless.universal.umd', gulp.series('typescript.universal', function universalUmd() {
   return gulp.src('dist/temp/src/exceptionless.universal.js')
     .pipe($.sourcemaps.init({ loadMaps: true }))
     .pipe($.wrapUmd({
@@ -52,19 +57,19 @@ gulp.task('exceptionless.universal.umd', ['typescript.universal'], function () {
     }))
     .pipe($.sourcemaps.write('.'))
     .pipe(gulp.dest('dist/temp'));
-});
+}));
 
-gulp.task('exceptionless', ['exceptionless.umd'], function () {
+gulp.task('exceptionless', gulp.series('exceptionless.umd', function exceptionless() {
   gulp.src('dist/temp/src/exceptionless.d.ts')
     .pipe(gulp.dest('dist'));
-  var integrations = [
+  const integrations = [
     'dist/temp/src/integrations/angular.js'
   ];
 
   gulp.src(integrations)
     .pipe(gulp.dest('dist/integrations'));
 
-  var files = [
+  const files = [
     'node_modules/tracekit/tracekit.js',
     'dist/temp/exceptionless.js'
   ];
@@ -85,23 +90,23 @@ gulp.task('exceptionless', ['exceptionless.umd'], function () {
     .pipe($.uglify({ output: { beautify: false } }))
     .pipe($.sourcemaps.write('.'))
     .pipe(gulp.dest('dist'));
-});
+}));
 
-gulp.task('exceptionless.node', ['typescript.node'], function () {
-  var files = [
+gulp.task('exceptionless.node', gulp.series('typescript.node', function node() {
+  const files = [
     'dist/temp/src/exceptionless.node.js',
     'dist/temp/src/submitSync.js'
   ];
 
-  gulp.src(files)
+  return gulp.src(files)
     .pipe($.sourcemaps.init({ loadMaps: true }))
     .pipe($.replace('exceptionless-js/1.0.0.0', 'exceptionless-node/' + pkg.version))
     .pipe($.sourcemaps.write('.'))
     .pipe(gulp.dest('dist'));
-});
+}));
 
-gulp.task('exceptionless.universal', ['exceptionless.universal.umd'], function () {
-  var files = [
+gulp.task('exceptionless.universal', gulp.series('exceptionless.universal.umd', function universal() {
+  const files = [
     'node_modules/tracekit/tracekit.js',
     'dist/temp/exceptionless.universal.js'
   ];
@@ -125,25 +130,26 @@ gulp.task('exceptionless.universal', ['exceptionless.universal.umd'], function (
     .pipe($.uglify({ output: { beautify: false } }))
     .pipe($.sourcemaps.write('.'))
     .pipe(gulp.dest('dist'));
-});
+}));
 
-gulp.task('watch', ['build'], function () {
-  gulp.watch('src/**/*.ts', ['build']);
-});
-
-gulp.task('lint', function () {
+gulp.task('lint', function lint() {
   return gulp.src(['src/**/*.ts'])
     .pipe($.tslint({ formatter: 'verbose' }))
     .pipe($.tslint.report());
 });
 
-gulp.task('build', ['clean', 'lint', 'exceptionless', 'exceptionless.node', 'exceptionless.universal']);
+gulp.task('build', gulp.series('clean', 'lint', 'exceptionless', 'exceptionless.node', 'exceptionless.universal'));
 
-gulp.task('typescript.test', function () {
-  return tsProject.src('src/tsconfig.test.json').pipe(gulp.dest('dist/temp'));
+gulp.task('watch', gulp.series('build', function watch() {
+  return gulp.watch('src/**/*.ts', gulp.series('build'));
+}));
+
+gulp.task('typescript.test', function test(done) {
+  const stream = tsProject.src('src/tsconfig.test.json').pipe(gulp.dest('dist/temp'));
+  stream.on('finish', done);
 });
 
-gulp.task('exceptionless.test.umd', ['typescript.test'], function () {
+gulp.task('exceptionless.test.umd', gulp.series('typescript.test', function testUmd(done) {
   var wrap = function(filename){
     return gulp.src(filename)
     .pipe($.sourcemaps.init({ loadMaps: true }))
@@ -156,12 +162,14 @@ gulp.task('exceptionless.test.umd', ['typescript.test'], function () {
     .pipe(gulp.dest('dist/temp'));
   };
 
-  return eventStream.merge(
+  eventStream.merge(
     wrap('dist/temp/src/exceptionless-nodespec.js'),
     wrap('dist/temp/src/exceptionless-browserspec.js'));
-});
 
-gulp.task('test-node', ['exceptionless.test.umd'], function(done) {
+  done();
+}));
+
+gulp.task('test-node', gulp.series('exceptionless.test.umd', function testNode() {
   return gulp.src('dist/temp/exceptionless-nodespec.js', { read: false })
     .pipe($.mocha({
       require: ['source-map-support/register'],
@@ -170,24 +178,21 @@ gulp.task('test-node', ['exceptionless.test.umd'], function(done) {
     .once('end', function () {
       process.exit();
     });
-});
+}));
 
-gulp.task('test-browser', ['exceptionless.test.umd'], function(){
+gulp.task('test-browser', gulp.series('exceptionless.test.umd', function testBrowser(){
   return gulp
     .src('testrunner.html')
     .pipe($.mochaPhantomjs());
-});
+}));
 
-gulp.task('test', function(){
-  // test-node calls process.exit(), so run browser tests before node tests
-  var runSequence = require('run-sequence');
-  runSequence('test-browser', 'test-node');
-});
+// test-node calls process.exit(), so run browser tests before node tests
+gulp.task('test', gulp.series('test-browser', 'test-node'));
 
-gulp.task('format', function () {
+gulp.task('format', function format() {
   return gulp.src(['src/**/*.ts'])
     .pipe($.exec('node_modules/typescript-formatter/bin/tsfmt -r <%= file.path %>'))
     .pipe($.exec.reporter());
 });
 
-gulp.task('default', ['watch', 'build', 'test']);
+gulp.task('default', gulp.series('watch', 'test'));
