@@ -1,4 +1,4 @@
-import * as exceptionless from '../../dist/exceptionless'
+import * as exceptionless from '../../dist/exceptionless';
 
 var client = exceptionless.ExceptionlessClient.default;
 client.config.serverUrl = 'http://localhost:50000';

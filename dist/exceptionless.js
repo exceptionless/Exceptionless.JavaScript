@@ -1277,8 +1277,8 @@ if (typeof define === 'function' && define.amd) {
 }(typeof window !== 'undefined' ? window : global));
 
 
-var exports, require;
 (function(root, factory) {
+  var exports, require;
   if (typeof define === 'function' && define.amd) {
     define('exceptionless', ["require","exports","TraceKit"], factory);
   } else if (typeof exports === 'object') {

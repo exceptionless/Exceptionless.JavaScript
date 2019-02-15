@@ -8,8 +8,8 @@ cjsDeps = cjsDeps ? stdDeps.concat(_.map(cjsDeps, function(dep) { return "requir
 var depNames = deps ? stdDeps.concat(_.pluck(deps, 'paramName')) : stdDeps;
 var globalDeps = deps ? stdDeps.concat(_.map(deps, function(dep) { return 'root.' + dep.globalName })) : stdDeps;
 %>
-var exports, require;
 (function(root, factory) {
+  var exports, require;
   if (typeof define === 'function' && define.amd) {
     define('<%= namespace %>', <%= amdDeps ? JSON.stringify(amdDeps) + ', ' : '[], ' %>factory);
   } else if (typeof exports === 'object') {
