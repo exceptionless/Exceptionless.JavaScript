@@ -173,11 +173,9 @@ gulp.task('test-node', gulp.series('exceptionless.test.umd', function testNode()
   return gulp.src('dist/temp/exceptionless-nodespec.js', { read: false })
     .pipe($.mocha({
       require: ['source-map-support/register'],
-      timeout: 5000
-    }))
-    .once('end', function () {
-      process.exit();
-    });
+      timeout: 5000,
+      exit: true
+    }));
 }));
 
 gulp.task('test-browser', gulp.series('exceptionless.test.umd', function testBrowser(){
@@ -186,7 +184,6 @@ gulp.task('test-browser', gulp.series('exceptionless.test.umd', function testBro
     .pipe($.mochaPhantomjs());
 }));
 
-// test-node calls process.exit(), so run browser tests before node tests
 gulp.task('test', gulp.series('test-browser', 'test-node'));
 
 gulp.task('format', function format() {
