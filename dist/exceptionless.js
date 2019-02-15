@@ -2525,7 +2525,7 @@ var Configuration = (function () {
     };
     Object.defineProperty(Configuration.prototype, "userAgent", {
         get: function () {
-            return 'exceptionless-js/1.6.0';
+            return 'exceptionless-js/1.6.1';
         },
         enumerable: true,
         configurable: true
