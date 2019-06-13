@@ -1243,7 +1243,7 @@ var Configuration = (function () {
     };
     Object.defineProperty(Configuration.prototype, "userAgent", {
         get: function () {
-            return 'exceptionless-node/1.6.1';
+            return 'exceptionless-node/1.6.2';
         },
         enumerable: true,
         configurable: true
@@ -1932,10 +1932,10 @@ var NodeFileStorage = (function (_super) {
         if (maxItems === void 0) { maxItems = 20; }
         var _this = _super.call(this, maxItems) || this;
         if (!folder) {
-            folder = Path.join(Path.dirname(require.main.filename), '.exceptionless');
+            folder = require.main && require.main.filename ? Path.join(Path.dirname(require.main.filename), '.exceptionless') : '.exceptionless';
         }
-        var subfolder = Path.join(folder, namespace);
-        _this.directory = Path.resolve(subfolder);
+        var subFolder = Path.join(folder, namespace);
+        _this.directory = Path.resolve(subFolder);
         _this.prefix = prefix;
         _this.fs = fs ? fs : Fs;
         _this.mkdir(_this.directory);
@@ -2074,10 +2074,10 @@ var NodeModuleCollector = (function () {
     }
     NodeModuleCollector.prototype.getModules = function (context) {
         var _this = this;
-        this.initialize();
-        if (!require.main) {
+        if (!require.main || !require.main.filename) {
             return [];
         }
+        this.initialize();
         var modulePath = path.dirname(require.main.filename) + '/node_modules/';
         var pathLength = modulePath.length;
         var loadedKeys = Object.keys(require.cache);
@@ -2097,12 +2097,12 @@ var NodeModuleCollector = (function () {
             return;
         }
         this.initialized = true;
-        var output = child.spawnSync('npm', ['ls', '--depth=0', '--json']).stdout;
-        if (!output) {
-            return;
-        }
         var json;
         try {
+            var output = child.spawnSync('npm', ['ls', '--depth=0', '--json']).stdout;
+            if (!output) {
+                return;
+            }
             json = JSON.parse(output.toString());
         }
         catch (e) {

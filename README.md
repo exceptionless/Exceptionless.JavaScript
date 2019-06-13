@@ -10,7 +10,7 @@ The definition of the word exceptionless is: to be without exception. Exceptionl
 ## Show me the code! ##
 
 ```html
-<script src="https://cdn.rawgit.com/exceptionless/Exceptionless.JavaScript/v1.6.1/dist/exceptionless.min.js"></script>
+<script src="https://cdn.rawgit.com/exceptionless/Exceptionless.JavaScript/v1.6.2/dist/exceptionless.min.js"></script>
 <script>
   var client = exceptionless.ExceptionlessClient.default;
   client.config.apiKey = 'API_KEY_HERE';
@@ -49,7 +49,7 @@ Use one of the following methods to install Exceptionless.js into your browser a
   Add the following script to your page:
 
   ```html
-  <script src="https://cdn.rawgit.com/exceptionless/Exceptionless.JavaScript/v1.6.1/dist/exceptionless.min.js"></script>
+  <script src="https://cdn.rawgit.com/exceptionless/Exceptionless.JavaScript/v1.6.2/dist/exceptionless.min.js"></script>
   ```
 
 - **Bower:**
@@ -229,12 +229,12 @@ var client = require('exceptionless.node').ExceptionlessClient.default;
 client.config.serverUrl = 'http://localhost:50000';
 ```
 
-### General Data Protection Regulation 
-By default the Exceptionless Client will report all available metadata including potential PII data. 
-You can fine tune the collection of information via Data Exclusions or turning off collection completely. 
- 
-Please visit the [wiki](https://github.com/exceptionless/Exceptionless.JavaScript/wiki/Configuration#general-data-protection-regulation) 
-for detailed information on how to configure the client to meet your requirements. 
+### General Data Protection Regulation
+By default the Exceptionless Client will report all available metadata including potential PII data.
+You can fine tune the collection of information via Data Exclusions or turning off collection completely.
+
+Please visit the [wiki](https://github.com/exceptionless/Exceptionless.JavaScript/wiki/Configuration#general-data-protection-regulation)
+for detailed information on how to configure the client to meet your requirements.
 
 ## Support
 
