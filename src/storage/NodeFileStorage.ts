@@ -12,11 +12,11 @@ export class NodeFileStorage extends KeyValueStorageBase {
     super(maxItems);
 
     if (!folder) {
-      folder = Path.join(Path.dirname(require.main.filename), '.exceptionless');
+      folder = require.main && require.main.filename ? Path.join(Path.dirname(require.main.filename), '.exceptionless') : '.exceptionless';
     }
 
-    const subfolder = Path.join(folder, namespace);
-    this.directory = Path.resolve(subfolder);
+    const subFolder = Path.join(folder, namespace);
+    this.directory = Path.resolve(subFolder);
     this.prefix = prefix;
     this.fs = fs ? fs : Fs;
 

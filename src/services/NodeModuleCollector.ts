@@ -11,11 +11,11 @@ export class NodeModuleCollector implements IModuleCollector {
   private installedModules: { [id: string]: IModule } = {};
 
   public getModules(context: EventPluginContext): IModule[] {
-    this.initialize();
-
-    if (!require.main) {
+    if (!require.main || !require.main.filename) {
       return [];
     }
+
+    this.initialize();
 
     const modulePath = path.dirname(require.main.filename) + '/node_modules/';
     const pathLength = modulePath.length;
@@ -41,14 +41,13 @@ export class NodeModuleCollector implements IModuleCollector {
 
     this.initialized = true;
 
-    const output = child.spawnSync('npm', ['ls', '--depth=0', '--json']).stdout;
-
-    if (!output) {
-      return;
-    }
-
     let json;
     try {
+      const output = child.spawnSync('npm', ['ls', '--depth=0', '--json']).stdout;
+      if (!output) {
+        return;
+      }
+
       json = JSON.parse(output.toString());
     } catch (e) {
       return;
