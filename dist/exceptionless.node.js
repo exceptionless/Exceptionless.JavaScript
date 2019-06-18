@@ -1243,7 +1243,7 @@ var Configuration = (function () {
     };
     Object.defineProperty(Configuration.prototype, "userAgent", {
         get: function () {
-            return 'exceptionless-node/1.6.2';
+            return 'exceptionless-node/1.6.3';
         },
         enumerable: true,
         configurable: true

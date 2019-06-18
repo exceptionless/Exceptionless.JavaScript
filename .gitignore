@@ -1,5 +1,6 @@
 .DS_Store
 .idea
+.git
 node_modules
 jspm_packages
 public
