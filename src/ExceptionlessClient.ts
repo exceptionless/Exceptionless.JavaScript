@@ -114,14 +114,14 @@ export class ExceptionlessClient {
   }
 
   public submitSessionEnd(sessionIdOrUserId: string): void {
-    if (sessionIdOrUserId) {
+    if (sessionIdOrUserId && this.config.enabled && this.config.isValid) {
       this.config.log.info(`Submitting session end: ${sessionIdOrUserId}`);
       this.config.submissionClient.sendHeartbeat(sessionIdOrUserId, true, this.config);
     }
   }
 
   public submitSessionHeartbeat(sessionIdOrUserId: string): void {
-    if (sessionIdOrUserId) {
+    if (sessionIdOrUserId && this.config.enabled && this.config.isValid) {
       this.config.log.info(`Submitting session heartbeat: ${sessionIdOrUserId}`);
       this.config.submissionClient.sendHeartbeat(sessionIdOrUserId, false, this.config);
     }
@@ -151,7 +151,7 @@ export class ExceptionlessClient {
       return cancelled(context);
     }
 
-    if (!this.config.enabled) {
+    if (!this.config.enabled || !this.config.isValid) {
       this.config.log.info('Event submission is currently disabled.');
       return cancelled(context);
     }
@@ -198,7 +198,7 @@ export class ExceptionlessClient {
    * @param callback The submission response.
    */
   public updateUserEmailAndDescription(referenceId: string, email: string, description: string, callback?: (response: SubmissionResponse) => void) {
-    if (!referenceId || !email || !description || !this.config.enabled) {
+    if (!referenceId || !email || !description || !this.config.enabled || !this.config.isValid) {
       return !!callback && callback(new SubmissionResponse(500, 'cancelled'));
     }
 
