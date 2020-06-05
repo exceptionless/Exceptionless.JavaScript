@@ -1,9 +1,9 @@
 # Exceptionless.JavaScript
 [![Build status](https://ci.appveyor.com/api/projects/status/ahu7u4tvls56wqqu/branch/master?svg=true)](https://ci.appveyor.com/project/Exceptionless/exceptionless-javascript)
-[![Slack Status](https://slack.exceptionless.com/badge.svg)](https://slack.exceptionless.com)
+[![Discord](https://img.shields.io/discord/715744504891703319)](https://discord.gg/6HxgFCx)
 [![NPM version](https://img.shields.io/npm/v/exceptionless.svg)](https://www.npmjs.org/package/exceptionless)
 [![Bower version](https://img.shields.io/bower/v/exceptionless.svg)](http://bower.io/search/?q=exceptionless)
-[![Donate](https://img.shields.io/badge/donorbox-donate-blue.svg)](https://donorbox.org/exceptionless)
+[![Donate](https://img.shields.io/badge/donorbox-donate-blue.svg)](https://donorbox.org/exceptionless?recurring=true)
 
 The definition of the word exceptionless is: to be without exception. Exceptionless.js provides real-time error reporting for your JavaScript applications in the browser or in Node.js. It organizes the gathered information into simple actionable data that will help your app become exceptionless!
 
