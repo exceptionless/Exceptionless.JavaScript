@@ -276,4 +276,4 @@ During development, you can use relative paths to require Exceptionless, e.g. `r
 
 Thanks to all the people who have contributed!
 
-[![contributors](https://contributors-img.web.app/image?repo=exceptionless/exceptionless.net)](https://github.com/exceptionless/exceptionless.net/graphs/contributors)
+[![contributors](https://contributors-img.web.app/image?repo=exceptionless/Exceptionless.JavaScript)](https://github.com/exceptionless/Exceptionless.JavaScript/graphs/contributors)
