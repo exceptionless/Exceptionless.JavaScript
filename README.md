@@ -1,5 +1,6 @@
 # Exceptionless.JavaScript
-[![Build status](https://ci.appveyor.com/api/projects/status/ahu7u4tvls56wqqu/branch/master?svg=true)](https://ci.appveyor.com/project/Exceptionless/exceptionless-javascript)
+
+[![Build status](https://github.com/Exceptionless/Exceptionless.JavaScript/workflows/Build/badge.svg)](https://github.com/Exceptionless/Exceptionless.JavaScript/actions)
 [![Discord](https://img.shields.io/discord/715744504891703319)](https://discord.gg/6HxgFCx)
 [![NPM version](https://img.shields.io/npm/v/exceptionless.svg)](https://www.npmjs.org/package/exceptionless)
 [![Bower version](https://img.shields.io/bower/v/exceptionless.svg)](http://bower.io/search/?q=exceptionless)
@@ -7,7 +8,7 @@
 
 The definition of the word exceptionless is: to be without exception. Exceptionless.js provides real-time error reporting for your JavaScript applications in the browser or in Node.js. It organizes the gathered information into simple actionable data that will help your app become exceptionless!
 
-## Show me the code! ##
+## Show me the code!
 
 ```html
 <script src="https://cdn.rawgit.com/exceptionless/Exceptionless.JavaScript/v1.6.3/dist/exceptionless.min.js"></script>
@@ -42,6 +43,7 @@ try {
 You can install Exceptionless.js either in your browser application using Bower or a `script` tag, or you can use the Node Package Manager (npm) to install the Node.js package.
 
 #### Browser application
+
 Use one of the following methods to install Exceptionless.js into your browser application:
 
 - **CDN:**
@@ -64,6 +66,7 @@ Use one of the following methods to install Exceptionless.js into your browser a
 In either case, we recommend placing the `script` tag at the very beginning of your page.
 
 #### Node.js
+
 Use this method to install Exceptionless.js into your Node application:
 
 1. Install the package by running `npm install exceptionless --save`.
@@ -74,10 +77,12 @@ Use this method to install Exceptionless.js into your Node application:
   ```
 
 ### Configuring the client
+
 In order to use Exceptionless.js, the `apiKey` setting has to be configured first.
 You can configure the `ExceptionlessClient` class using one of the following ways:
 
 #### Browser application
+
 - You can configure the `apiKey` as part of the script tag. This will be applied to all new instances of the `ExceptionlessClient` class:
 
   ```html
@@ -105,6 +110,7 @@ You can configure the `ExceptionlessClient` class using one of the following way
   ```
 
 #### Node.js
+
 - You can set the `apiKey` on the default `ExceptionlessClient` instance:
 
   ```javascript
@@ -129,6 +135,7 @@ You can configure the `ExceptionlessClient` class using one of the following way
   ```
 
 ### Submitting Events and Errors
+
 Once configured, Exceptionless.js will automatically submit any unhandled exceptions that happen in your application to the Exceptionless server. The following sections will show you how to manually submit different event types as well as customize the data that is sent:
 
 #### Submitting Events
@@ -159,6 +166,7 @@ client.createNotFound('/somepage').addTags('Exceptionless').submit();
 // Submit a custom event type
 client.submitEvent({ message = 'Low Fuel', type = 'racecar', source = 'Fuel System' });
 ```
+
 #### Manually submitting Errors
 
 In addition to automatically sending all unhandled exceptions, you may want to manually send exceptions to the service. You can do so by using code like this:
@@ -215,6 +223,7 @@ try {
 The Exceptionless client can also be configured to send data to your self hosted instance. This is configured by setting the `serverUrl` setting to point to your Exceptionless instance:
 
 #### Browser
+
 You can set the `serverUrl` on the default `ExceptionlessClient` instance:
 
 ```javascript
@@ -222,6 +231,7 @@ exceptionless.ExceptionlessClient.default.config.serverUrl = 'http://localhost:5
 ```
 
 #### Node.js
+
 You can set the `serverUrl` on the default `ExceptionlessClient` instance:
 
 ```javascript
@@ -230,6 +240,7 @@ client.config.serverUrl = 'http://localhost:50000';
 ```
 
 ### General Data Protection Regulation
+
 By default the Exceptionless Client will report all available metadata including potential PII data.
 You can fine tune the collection of information via Data Exclusions or turning off collection completely.
 
@@ -249,7 +260,6 @@ If you find a bug or want to contribute a feature, feel free to create a pull re
   ```sh
   git clone https://github.com/exceptionless/Exceptionless.JavaScript.git
   ```
-
 2. Install [Node.js](https://nodejs.org). Node is used for building and testing purposes.
 
 3. Install [tsd](https://github.com/DefinitelyTyped/tsd) and [gulp](http://gulpjs.com) and the development dependencies using [npm](https://www.npmjs.com).
