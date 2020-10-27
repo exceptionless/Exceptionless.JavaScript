@@ -4,6 +4,7 @@ const gulp = require('gulp');
 const $ = require('gulp-load-plugins')({lazy:true });
 const tsProject = require('tsproject');
 const eventStream = require('event-stream');
+const mochaHeadless = require('mocha-headless-chrome');
 
 gulp.task('clean', function clean(done) {
   const del = require('del');
@@ -178,17 +179,20 @@ gulp.task('test-node', gulp.series('exceptionless.test.umd', function testNode()
     }));
 }));
 
-gulp.task('test-browser', gulp.series('exceptionless.test.umd', function testBrowser(){
-  return gulp
-    .src('testrunner.html')
-    .pipe($.mochaPhantomjs());
+gulp.task('test-browser', gulp.series('exceptionless.test.umd', function testBrowser(done) {
+  mochaHeadless.runner({
+    timeout: 5000,
+    file: 'testrunner.html'
+  }).then(function (result) {
+    done();
+  });
 }));
 
 gulp.task('test', gulp.series('test-browser', 'test-node'));
 
 gulp.task('format', function format() {
   return gulp.src(['src/**/*.ts'])
-    .pipe($.exec('node_modules/typescript-formatter/bin/tsfmt -r <%= file.path %>'))
+    .pipe($.exec(file => `node_modules/typescript-formatter/bin/tsfmt -r ${file.path}`))
     .pipe($.exec.reporter());
 });
 

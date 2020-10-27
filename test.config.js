@@ -8,10 +8,6 @@ require.config({
 });
 
 require(['../dist/temp/exceptionless-browserspec'], function () {
-  if (typeof mochaPhantomJS !== "undefined") {
-    mochaPhantomJS.run();
-  } else {
-    console.log('running mocha');
-    mocha.run();
-  }
+  console.log('running mocha');
+  mocha.run();
 });
