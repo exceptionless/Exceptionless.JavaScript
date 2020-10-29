@@ -10,7 +10,7 @@ export class DefaultModuleCollector implements IModuleCollector {
     }
 
     const modules: IModule[] = [];
-    const scripts: NodeListOf<HTMLScriptElement> = document.getElementsByTagName('script');
+    const scripts: HTMLCollectionOf<HTMLScriptElement> = document.getElementsByTagName('script');
     if (scripts && scripts.length > 0) {
       for (let index = 0; index < scripts.length; index++) {
         if (scripts[index].src) {
