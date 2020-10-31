@@ -64,6 +64,7 @@
     "source-map-support": "0.5.12",
     "systemjs": "3.1.6",
     "tracekit": "0.4.5",
+    "ts2js": "^3.0.0-beta.16",
     "tslint": "5.17.0",
     "tsproject": "4.0.0-beta.2",
     "typescript": "4.0.5",
