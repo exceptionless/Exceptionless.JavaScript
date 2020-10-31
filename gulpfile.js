@@ -2,7 +2,7 @@ const fs = require("fs");
 const pkg = require('./package.json');
 const gulp = require('gulp');
 const $ = require('gulp-load-plugins')({lazy:true });
-const tsProject = require('tsproject');
+const { TsProject } = require('tsproject');
 const eventStream = require('event-stream');
 const mochaHeadless = require('mocha-headless-chrome');
 
@@ -13,22 +13,22 @@ gulp.task('clean', function clean(done) {
 });
 
 gulp.task('typescript', function typescript(done) {
-  const stream = tsProject.src('src/tsconfig.json').pipe(gulp.dest('dist/temp'));
+  const stream = TsProject.src('src/tsconfig.json').pipe(gulp.dest('dist/temp'));
   stream.on('finish', done);
 });
 
 gulp.task('typescript.integrations', gulp.series('typescript', function typescriptIntegrations(done) {
-  const stream = tsProject.src('src/integrations/tsconfig.json').pipe(gulp.dest('dist/temp'));
+  const stream = TsProject.src('src/integrations/tsconfig.json').pipe(gulp.dest('dist/temp'));
   stream.on('finish', done);
 }));
 
 gulp.task('typescript.node', function typescriptNode(done) {
-  const stream = tsProject.src('src/tsconfig.node.json').pipe(gulp.dest('dist/temp'));
+  const stream = TsProject.src('src/tsconfig.node.json').pipe(gulp.dest('dist/temp'));
   stream.on('finish', done);
 });
 
 gulp.task('typescript.universal', function typescriptUniversal(done) {
-  const stream = tsProject.src('src/tsconfig.universal.json').pipe(gulp.dest('dist/temp'));
+  const stream = TsProject.src('src/tsconfig.universal.json').pipe(gulp.dest('dist/temp'));
   stream.on('finish', done);
 });
 
@@ -146,7 +146,7 @@ gulp.task('watch', gulp.series('build', function watch() {
 }));
 
 gulp.task('typescript.test', function test(done) {
-  const stream = tsProject.src('src/tsconfig.test.json').pipe(gulp.dest('dist/temp'));
+  const stream = TsProject.src('src/tsconfig.test.json').pipe(gulp.dest('dist/temp'));
   stream.on('finish', done);
 });
 
