@@ -1291,16 +1291,27 @@ if (!exports) { var exports = {}; }
 
 "use strict";
 var __extends = (this && this.__extends) || (function () {
-    var extendStatics = Object.setPrototypeOf ||
-        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
     return function (d, b) {
         extendStatics(d, b);
         function __() { this.constructor = d; }
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
+var __spreadArrays = (this && this.__spreadArrays) || function () {
+    for (var s = 0, i = 0, il = arguments.length; i < il; i++) s += arguments[i].length;
+    for (var r = Array(s), k = 0, i = 0; i < il; i++)
+        for (var a = arguments[i], j = 0, jl = a.length; j < jl; j++, k++)
+            r[k] = a[j];
+    return r;
+};
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.NodeSubmissionAdapter = exports.NodeFileStorageProvider = exports.NodeRequestInfoCollector = exports.NodeModuleCollector = exports.NodeErrorParser = exports.NodeEnvironmentInfoCollector = exports.NodeFileStorage = exports.DefaultSubmissionAdapter = exports.BrowserStorageProvider = exports.DefaultRequestInfoCollector = exports.DefaultModuleCollector = exports.DefaultErrorParser = exports.BrowserStorage = exports.KeyValueStorageBase = exports.InMemoryStorage = exports.SubmissionMethodPlugin = exports.RequestInfoPlugin = exports.ModuleInfoPlugin = exports.EventExclusionPlugin = exports.ErrorPlugin = exports.EnvironmentInfoPlugin = exports.DuplicateCheckerPlugin = exports.ConfigurationDefaultsPlugin = exports.EventBuilder = exports.SettingsResponse = exports.Configuration = exports.ContextData = exports.ExceptionlessClient = exports.SubmissionResponse = exports.SettingsManager = exports.Utils = exports.DefaultSubmissionClient = exports.InMemoryStorageProvider = exports.DefaultEventQueue = exports.EventPluginManager = exports.EventPluginContext = exports.ReferenceIdPlugin = exports.HeartbeatPlugin = exports.NullLog = exports.ConsoleLog = exports.DefaultLastReferenceIdManager = void 0;
 if (typeof process !== 'undefined') {
 var os = require("os");
 var nodestacktrace = require("stack-trace");
@@ -1409,7 +1420,7 @@ var EventPluginContext = (function () {
         get: function () {
             return this.client.config.log;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     return EventPluginContext;
@@ -1998,10 +2009,10 @@ var SettingsManager = (function () {
         }
         return { version: 0, settings: {} };
     };
+    SettingsManager._isUpdatingSettings = false;
+    SettingsManager._handlers = [];
     return SettingsManager;
 }());
-SettingsManager._isUpdatingSettings = false;
-SettingsManager._handlers = [];
 exports.SettingsManager = SettingsManager;
 var SubmissionResponse = (function () {
     function SubmissionResponse(statusCode, message) {
@@ -2094,13 +2105,13 @@ var ExceptionlessClient = (function () {
         this.createSessionStart().submit(callback);
     };
     ExceptionlessClient.prototype.submitSessionEnd = function (sessionIdOrUserId) {
-        if (sessionIdOrUserId) {
+        if (sessionIdOrUserId && this.config.enabled && this.config.isValid) {
             this.config.log.info("Submitting session end: " + sessionIdOrUserId);
             this.config.submissionClient.sendHeartbeat(sessionIdOrUserId, true, this.config);
         }
     };
     ExceptionlessClient.prototype.submitSessionHeartbeat = function (sessionIdOrUserId) {
-        if (sessionIdOrUserId) {
+        if (sessionIdOrUserId && this.config.enabled && this.config.isValid) {
             this.config.log.info("Submitting session heartbeat: " + sessionIdOrUserId);
             this.config.submissionClient.sendHeartbeat(sessionIdOrUserId, false, this.config);
         }
@@ -2119,7 +2130,7 @@ var ExceptionlessClient = (function () {
         if (!event) {
             return cancelled(context);
         }
-        if (!this.config.enabled) {
+        if (!this.config.enabled || !this.config.isValid) {
             this.config.log.info('Event submission is currently disabled.');
             return cancelled(context);
         }
@@ -2150,7 +2161,7 @@ var ExceptionlessClient = (function () {
     };
     ExceptionlessClient.prototype.updateUserEmailAndDescription = function (referenceId, email, description, callback) {
         var _this = this;
-        if (!referenceId || !email || !description || !this.config.enabled) {
+        if (!referenceId || !email || !description || !this.config.enabled || !this.config.isValid) {
             return !!callback && callback(new SubmissionResponse(500, 'cancelled'));
         }
         var userDescription = { email_address: email, description: description };
@@ -2185,12 +2196,12 @@ var ExceptionlessClient = (function () {
             }
             return ExceptionlessClient._instance;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
+    ExceptionlessClient._instance = null;
     return ExceptionlessClient;
 }());
-ExceptionlessClient._instance = null;
 exports.ExceptionlessClient = ExceptionlessClient;
 var ContextData = (function () {
     function ContextData() {
@@ -2204,7 +2215,7 @@ var ContextData = (function () {
         get: function () {
             return !!this['@@_Exception'];
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     ContextData.prototype.getException = function () {
@@ -2217,7 +2228,7 @@ var ContextData = (function () {
         get: function () {
             return !!this['@@_IsUnhandledError'];
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     ContextData.prototype.setSubmissionMethod = function (method) {
@@ -2279,14 +2290,14 @@ var Configuration = (function () {
             this.log.info("apiKey: " + this._apiKey);
             this.changed();
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Configuration.prototype, "isValid", {
         get: function () {
             return !!this.apiKey && this.apiKey.length >= 10;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Configuration.prototype, "serverUrl", {
@@ -2302,7 +2313,7 @@ var Configuration = (function () {
                 this.changed();
             }
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Configuration.prototype, "configServerUrl", {
@@ -2316,7 +2327,7 @@ var Configuration = (function () {
                 this.changed();
             }
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Configuration.prototype, "heartbeatServerUrl", {
@@ -2330,7 +2341,7 @@ var Configuration = (function () {
                 this.changed();
             }
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Configuration.prototype, "updateSettingsWhenIdleInterval", {
@@ -2351,7 +2362,7 @@ var Configuration = (function () {
             this.log.info("updateSettingsWhenIdleInterval: " + value);
             this.changed();
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Configuration.prototype, "dataExclusions", {
@@ -2359,7 +2370,7 @@ var Configuration = (function () {
             var exclusions = this.settings['@@DataExclusions'];
             return this._dataExclusions.concat(exclusions && exclusions.split(',') || []);
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Configuration.prototype.addDataExclusions = function () {
@@ -2367,7 +2378,7 @@ var Configuration = (function () {
         for (var _i = 0; _i < arguments.length; _i++) {
             exclusions[_i] = arguments[_i];
         }
-        this._dataExclusions = Utils.addRange.apply(Utils, [this._dataExclusions].concat(exclusions));
+        this._dataExclusions = Utils.addRange.apply(Utils, __spreadArrays([this._dataExclusions], exclusions));
     };
     Object.defineProperty(Configuration.prototype, "includePrivateInformation", {
         get: function () {
@@ -2385,7 +2396,7 @@ var Configuration = (function () {
             this.log.info("includePrivateInformation: " + val);
             this.changed();
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Configuration.prototype, "includeUserName", {
@@ -2396,7 +2407,7 @@ var Configuration = (function () {
             this._includeUserName = value || false;
             this.changed();
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Configuration.prototype, "includeMachineName", {
@@ -2407,7 +2418,7 @@ var Configuration = (function () {
             this._includeMachineName = value || false;
             this.changed();
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Configuration.prototype, "includeIpAddress", {
@@ -2418,7 +2429,7 @@ var Configuration = (function () {
             this._includeIpAddress = value || false;
             this.changed();
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Configuration.prototype, "includeCookies", {
@@ -2429,7 +2440,7 @@ var Configuration = (function () {
             this._includeCookies = value || false;
             this.changed();
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Configuration.prototype, "includePostData", {
@@ -2440,7 +2451,7 @@ var Configuration = (function () {
             this._includePostData = value || false;
             this.changed();
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Configuration.prototype, "includeQueryString", {
@@ -2451,7 +2462,7 @@ var Configuration = (function () {
             this._includeQueryString = value || false;
             this.changed();
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Configuration.prototype, "userAgentBotPatterns", {
@@ -2459,7 +2470,7 @@ var Configuration = (function () {
             var patterns = this.settings['@@UserAgentBotPatterns'];
             return this._userAgentBotPatterns.concat(patterns && patterns.split(',') || []);
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Configuration.prototype.addUserAgentBotPatterns = function () {
@@ -2467,7 +2478,7 @@ var Configuration = (function () {
         for (var _i = 0; _i < arguments.length; _i++) {
             userAgentBotPatterns[_i] = arguments[_i];
         }
-        this._userAgentBotPatterns = Utils.addRange.apply(Utils, [this._userAgentBotPatterns].concat(userAgentBotPatterns));
+        this._userAgentBotPatterns = Utils.addRange.apply(Utils, __spreadArrays([this._userAgentBotPatterns], userAgentBotPatterns));
     };
     Object.defineProperty(Configuration.prototype, "plugins", {
         get: function () {
@@ -2475,7 +2486,7 @@ var Configuration = (function () {
                 return (p1.priority < p2.priority) ? -1 : (p1.priority > p2.priority) ? 1 : 0;
             });
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Configuration.prototype.addPlugin = function (pluginOrName, priority, pluginAction) {
@@ -2538,7 +2549,7 @@ var Configuration = (function () {
         get: function () {
             return 'exceptionless-universal-js/1.6.3';
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Configuration.prototype.useSessions = function (sendHeartbeats, heartbeatInterval) {
@@ -2578,12 +2589,12 @@ var Configuration = (function () {
             }
             return Configuration._defaultSettings;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
+    Configuration._defaultSettings = null;
     return Configuration;
 }());
-Configuration._defaultSettings = null;
 exports.Configuration = Configuration;
 var SettingsResponse = (function () {
     function SettingsResponse(success, settings, settingsVersion, exception, message) {
@@ -2695,7 +2706,7 @@ var EventBuilder = (function () {
         for (var _i = 0; _i < arguments.length; _i++) {
             tags[_i] = arguments[_i];
         }
-        this.target.tags = Utils.addRange.apply(Utils, [this.target.tags].concat(tags));
+        this.target.tags = Utils.addRange.apply(Utils, __spreadArrays([this.target.tags], tags));
         return this;
     };
     EventBuilder.prototype.setProperty = function (name, value, maxDepth, excludedPropertyNames) {
@@ -2777,9 +2788,9 @@ var ConfigurationDefaultsPlugin = (function () {
 exports.ConfigurationDefaultsPlugin = ConfigurationDefaultsPlugin;
 var DuplicateCheckerPlugin = (function () {
     function DuplicateCheckerPlugin(getCurrentTime, interval) {
+        var _this = this;
         if (getCurrentTime === void 0) { getCurrentTime = function () { return Date.now(); }; }
         if (interval === void 0) { interval = 30000; }
-        var _this = this;
         this.priority = 1010;
         this.name = 'DuplicateCheckerPlugin';
         this._mergedEvents = [];
@@ -3171,7 +3182,7 @@ var KeyValueStorageBase = (function () {
     KeyValueStorageBase.prototype.ensureIndex = function () {
         if (!this.items) {
             this.items = this.createIndex();
-            this.lastTimestamp = Math.max.apply(Math, [0].concat(this.items)) + 1;
+            this.lastTimestamp = Math.max.apply(Math, __spreadArrays([0], this.items)) + 1;
         }
     };
     KeyValueStorageBase.prototype.safeDelete = function (key) {

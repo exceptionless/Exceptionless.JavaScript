@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.NodeSubmissionAdapter = void 0;
 var child = require("child_process");
 var http = require("http");
 var https = require("https");
