@@ -1,10 +1,11 @@
 const fs = require("fs");
 const pkg = require('./package.json');
 const gulp = require('gulp');
-const $ = require('gulp-load-plugins')({lazy:true });
-const tsProject = require('tsproject');
+const $ = require('gulp-load-plugins')({ lazy: true });
+const eslint = require('gulp-eslint');
 const eventStream = require('event-stream');
 const mochaHeadless = require('mocha-headless-chrome');
+const tsProject = require('tsproject');
 
 gulp.task('clean', function clean(done) {
   const del = require('del');
@@ -135,8 +136,8 @@ gulp.task('exceptionless.universal', gulp.series('exceptionless.universal.umd', 
 
 gulp.task('lint', function lint() {
   return gulp.src(['src/**/*.ts'])
-    .pipe($.tslint({ formatter: 'verbose' }))
-    .pipe($.tslint.report());
+    .pipe(eslint())
+    .pipe(eslint.format());
 });
 
 gulp.task('build', gulp.series('clean', 'lint', 'exceptionless', 'exceptionless.node', 'exceptionless.universal'));
