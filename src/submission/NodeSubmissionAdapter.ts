@@ -6,6 +6,7 @@ import child = require('child_process');
 import http = require('http');
 import https = require('https');
 import url = require('url');
+import { IncomingHttpHeaders } from "http";
 
 export class NodeSubmissionAdapter implements ISubmissionAdapter {
   public sendRequest(request: SubmissionRequest, callback?: SubmissionCallback, isAppExiting?: boolean) {
@@ -46,7 +47,7 @@ export class NodeSubmissionAdapter implements ISubmissionAdapter {
     clientRequest.end(request.data);
   }
 
-  private complete(response: http.IncomingMessage, responseBody: string, responseHeaders: object, callback: SubmissionCallback): void {
+  private complete(response: http.IncomingMessage, responseBody: string, responseHeaders: IncomingHttpHeaders, callback: SubmissionCallback): void {
     let message: string;
     if (response.statusCode === 0) {
       message = 'Unable to connect to server.';

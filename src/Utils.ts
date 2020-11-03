@@ -1,5 +1,5 @@
 export class Utils {
-  public static addRange<T>(target: T[], ...values: T[]) {
+  public static addRange<T>(target: T[], ...values: T[]): T[] {
     if (!target) {
       target = [];
     }
@@ -32,8 +32,8 @@ export class Utils {
     return hash;
   }
 
-  public static getCookies(cookies: string, exclusions?: string[]): object {
-    const result: object = {};
+  public static getCookies(cookies: string, exclusions?: string[]): Record<string, string> {
+    const result: Record<string, string> = {};
 
     const parts: string[] = (cookies || '').split('; ');
     for (const part of parts) {
@@ -54,9 +54,8 @@ export class Utils {
     return s4() + s4() + '-' + s4() + '-' + s4() + '-' + s4() + '-' + s4() + s4() + s4();
   }
 
-  // tslint:disable-next-line:ban-types
-  public static merge(defaultValues: Object, values: Object) {
-    const result: object = {};
+  public static merge(defaultValues: any, values: any) {
+    const result: any = {};
 
     for (const key in defaultValues || {}) {
       if (defaultValues[key] !== undefined && defaultValues[key] !== null) {
@@ -78,7 +77,7 @@ export class Utils {
       return null;
     }
 
-    const versionRegex = /(v?((\d+)\.(\d+)(\.(\d+))?)(?:-([\dA-Za-z\-]+(?:\.[\dA-Za-z\-]+)*))?(?:\+([\dA-Za-z\-]+(?:\.[\dA-Za-z\-]+)*))?)/;
+    const versionRegex = /(v?((\d+)\.(\d+)(\.(\d+))?)(?:-([\dA-Za-z-]+(?:\.[\dA-Za-z-]+)*))?(?:\+([\dA-Za-z-]+(?:\.[\dA-Za-z-]+)*))?)/;
     const matches = versionRegex.exec(source);
     if (matches && matches.length > 0) {
       return matches[0];
@@ -87,7 +86,7 @@ export class Utils {
     return null;
   }
 
-  public static parseQueryString(query: string, exclusions?: string[]) {
+  public static parseQueryString(query: string, exclusions?: string[]): Record<string, string> {
     if (!query || query.length === 0) {
       return null;
     }
@@ -97,7 +96,7 @@ export class Utils {
       return null;
     }
 
-    const result: object = {};
+    const result: Record<string, string> = {};
     for (const pair of pairs) {
       const parts = pair.split('=');
       if (!Utils.isMatch(parts[0], exclusions)) {
@@ -161,7 +160,7 @@ export class Utils {
     });
   }
 
-  public static isEmpty(input: object) {
+  public static isEmpty(input: Record<string, unknown>) {
     return input === null || (typeof (input) === 'object' && Object.keys(input).length === 0);
   }
 
@@ -174,7 +173,7 @@ export class Utils {
   }
 
   /**
-   * Stringifys an object with optional exclusions and max depth.
+   * Stringifies an object with optional exclusions and max depth.
    * @param data The data object to add.
    * @param exclusions Any property names that should be excluded.
    * @param maxDepth The max depth of the object to include.
@@ -187,7 +186,7 @@ export class Utils {
           return;
         }
 
-        if (typeof value === 'object' && !!value) {
+        if (typeof value === 'object' && value) {
           if (cache.indexOf(value) !== -1) {
             // Circular reference found, discard key
             return;
@@ -202,7 +201,6 @@ export class Utils {
 
     if (({}).toString.call(data) === '[object Object]') {
       const flattened = {};
-      /* tslint:disable:forin */
       for (const prop in data) {
         const value = data[prop];
         if (value === data) {
@@ -210,7 +208,6 @@ export class Utils {
         }
         flattened[prop] = data[prop];
       }
-      /* tslint:enable:forin */
 
       return stringifyImpl(flattened, exclusions);
     }

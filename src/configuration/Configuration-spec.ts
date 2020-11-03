@@ -1,5 +1,4 @@
 import { expect } from 'chai';
-import { EventPluginContext } from '../plugins/EventPluginContext';
 import { Configuration } from './Configuration';
 
 describe('Configuration', () => {
@@ -53,8 +52,8 @@ describe('Configuration', () => {
       config.removePlugin(config.plugins[0]);
     }
 
-    config.addPlugin('test', 20, (context: EventPluginContext) => { });
-    config.addPlugin('test', 20, (context: EventPluginContext) => { });
+    config.addPlugin('test', 20, () => { });
+    config.addPlugin('test', 20, () => { });
     expect(config.plugins.length).to.equal(1);
   });
 
@@ -65,7 +64,7 @@ describe('Configuration', () => {
       config.removePlugin(config.plugins[0]);
     }
 
-    config.addPlugin(null, null, (context: EventPluginContext) => { });
+    config.addPlugin(null, null, () => { });
     expect(config.plugins.length).to.equal(1);
     expect(config.plugins[0].name).not.to.equal(null);
     expect(config.plugins[0].priority).to.equal(0);
@@ -78,9 +77,9 @@ describe('Configuration', () => {
       config.removePlugin(config.plugins[0]);
     }
 
-    config.addPlugin('3', 3, (context: EventPluginContext) => { });
-    config.addPlugin('1', 1, (context: EventPluginContext) => { });
-    config.addPlugin('2', 2, (context: EventPluginContext) => { });
+    config.addPlugin('3', 3, () => { });
+    config.addPlugin('1', 1, () => { });
+    config.addPlugin('2', 2, () => { });
     expect(config.plugins.length).to.equal(3);
     expect(config.plugins[0].priority).to.equal(1);
     expect(config.plugins[1].priority).to.equal(2);

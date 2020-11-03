@@ -12,7 +12,7 @@ export class EnvironmentInfoPlugin implements IEventPlugin {
     const collector = context.client.config.environmentInfoCollector;
     if (!context.event.data[ENVIRONMENT_KEY] && collector) {
       const environmentInfo: IEnvironmentInfo = collector.getEnvironmentInfo(context);
-      if (!!environmentInfo) {
+      if (environmentInfo) {
         context.event.data[ENVIRONMENT_KEY] = environmentInfo;
       }
     }

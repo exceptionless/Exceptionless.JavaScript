@@ -24,14 +24,12 @@ describe('ErrorPlugin', () => {
   const target = new ErrorPlugin();
   let contextData: ContextData;
   let context: EventPluginContext;
-  let client: any;
   let event: IEvent;
 
   beforeEach(() => {
     ({
       contextData,
       context,
-      client,
       event
     } = createFixture());
   });

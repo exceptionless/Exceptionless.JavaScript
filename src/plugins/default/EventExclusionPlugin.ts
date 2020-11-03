@@ -35,12 +35,11 @@ export class EventExclusionPlugin implements IEventPlugin {
       }
     }
 
-    function getMinLogLevel(configSettings: object, loggerName: string = '*'): number {
+    function getMinLogLevel(configSettings: Record<string, string>, loggerName: string = '*'): number {
       return getLogLevel(getTypeAndSourceSetting(configSettings, 'log', loggerName, 'Trace') + '');
     }
 
-    // tslint:disable-next-line:ban-types
-    function getTypeAndSourceSetting(configSettings: Object = {}, type: string, source: string, defaultValue?: string | boolean): string | boolean {
+    function getTypeAndSourceSetting(configSettings: Record<string, string> = {}, type: string, source: string, defaultValue?: string | boolean): string | boolean {
       if (!type) {
         return defaultValue;
       }

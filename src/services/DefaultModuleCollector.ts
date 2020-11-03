@@ -1,10 +1,9 @@
 import { IModule } from '../models/IModule';
-import { EventPluginContext } from '../plugins/EventPluginContext';
 import { Utils } from '../Utils';
 import { IModuleCollector } from './IModuleCollector';
 
 export class DefaultModuleCollector implements IModuleCollector {
-  public getModules(context: EventPluginContext): IModule[] {
+  public getModules(): IModule[] {
     if (!document || !document.getElementsByTagName) {
       return null;
     }
@@ -19,7 +18,7 @@ export class DefaultModuleCollector implements IModuleCollector {
             name: scripts[index].src.split('?')[0],
             version: Utils.parseVersion(scripts[index].src)
           });
-        } else if (!!scripts[index].innerHTML) {
+        } else if (scripts[index].innerHTML) {
           modules.push({
             module_id: index,
             name: 'Script Tag',

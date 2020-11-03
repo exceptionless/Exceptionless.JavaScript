@@ -46,7 +46,7 @@ export class Configuration implements IConfigurationSettings {
    *
    * @type {{}}
    */
-  public defaultData: object = {};
+  public defaultData: Record<string, unknown> = {};
 
   /**
    * Whether the client is currently enabled or not. If it is disabled,
@@ -74,7 +74,7 @@ export class Configuration implements IConfigurationSettings {
    * Contains a dictionary of custom settings that can be used to control
    * the client and will be automatically updated from the server.
    */
-  public settings: object = {};
+  public settings: Record<string, string> = {};
 
   public storage: IStorageProvider;
 
@@ -204,7 +204,7 @@ export class Configuration implements IConfigurationSettings {
    * @returns {boolean}
    */
   public get isValid(): boolean {
-    return !!this.apiKey && this.apiKey.length >= 10;
+    return this.apiKey && this.apiKey.length >= 10;
   }
 
   /**
@@ -220,7 +220,7 @@ export class Configuration implements IConfigurationSettings {
    * @param value
    */
   public set serverUrl(value: string) {
-    if (!!value) {
+    if (value) {
       this._serverUrl = value;
       this._configServerUrl = value;
       this._heartbeatServerUrl = value;
@@ -242,7 +242,7 @@ export class Configuration implements IConfigurationSettings {
    * @param value
    */
   public set configServerUrl(value: string) {
-    if (!!value) {
+    if (value) {
       this._configServerUrl = value;
       this.log.info(`configServerUrl: ${value}`);
       this.changed();
@@ -262,7 +262,7 @@ export class Configuration implements IConfigurationSettings {
    * @param value
    */
   public set heartbeatServerUrl(value: string) {
-    if (!!value) {
+    if (value) {
       this._heartbeatServerUrl = value;
       this.log.info(`heartbeatServerUrl: ${value}`);
       this.changed();
@@ -504,7 +504,7 @@ export class Configuration implements IConfigurationSettings {
    */
   public addPlugin(name: string, priority: number, pluginAction: (context: EventPluginContext, next?: () => void) => void): void;
   public addPlugin(pluginOrName: IEventPlugin | string, priority?: number, pluginAction?: (context: EventPluginContext, next?: () => void) => void): void {
-    const plugin: IEventPlugin = !!pluginAction ? { name: pluginOrName as string, priority, run: pluginAction } : pluginOrName as IEventPlugin;
+    const plugin: IEventPlugin = pluginAction ? { name: pluginOrName as string, priority, run: pluginAction } : pluginOrName as IEventPlugin;
     if (!plugin || !plugin.run) {
       this.log.error('Add plugin failed: Run method not defined');
       return;
@@ -563,7 +563,7 @@ export class Configuration implements IConfigurationSettings {
    * @param version
    */
   public setVersion(version: string): void {
-    if (!!version) {
+    if (version) {
       this.defaultData['@version'] = version;
     }
   }
@@ -618,8 +618,8 @@ export class Configuration implements IConfigurationSettings {
     this.log = new ConsoleLog();
   }
 
-  public onChanged(handler: (config: Configuration) => void) {
-    !!handler && this._handlers.push(handler);
+  public onChanged(handler: (config: Configuration) => void): void {
+    handler && this._handlers.push(handler);
   }
 
   private changed() {

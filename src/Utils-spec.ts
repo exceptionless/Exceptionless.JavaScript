@@ -3,7 +3,7 @@ import { Utils } from './Utils';
 
 describe('Utils', () => {
   it('should add range', () => {
-    let target: string[];
+    let target: string[] = undefined;
     expect(Utils.addRange(target)).to.eql([]);
     expect(target).to.be.undefined;
 
@@ -16,7 +16,7 @@ describe('Utils', () => {
   });
 
   describe('stringify', () => {
-    const user: any = {
+    const user = {
       id: 1,
       name: 'Blake',
       password: '123456',

@@ -19,7 +19,7 @@ describe('ExceptionlessClient', () => {
 
     const client = new ExceptionlessClient('LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw', 'http://localhost:50000');
     expect(client.config.lastReferenceIdManager.getLast()).to.be.null;
-    client.submitException(error, (context: EventPluginContext) => {
+    client.submitException(error, () => {
       expect(client.config.lastReferenceIdManager.getLast()).to.be.null;
     });
 

@@ -6,11 +6,11 @@ export abstract class KeyValueStorageBase implements IStorage {
   private items: number[];
   private lastTimestamp: number = 0;
 
-  constructor(maxItems) {
+  constructor(maxItems: number) {
     this.maxItems = maxItems;
   }
 
-  public save(value: any, single?: boolean): number {
+  public save(value: any): number {
     if (!value) {
       return null;
     }
@@ -89,6 +89,7 @@ export abstract class KeyValueStorageBase implements IStorage {
   private safeDelete(key: string): void {
     try {
       this.delete(key);
+    // eslint-disable-next-line no-empty
     } catch (error) {
     }
   }

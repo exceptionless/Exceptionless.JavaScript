@@ -2,10 +2,11 @@ import { ISubmissionAdapter } from './ISubmissionAdapter';
 import { SubmissionCallback } from './SubmissionCallback';
 import { SubmissionRequest } from './SubmissionRequest';
 
-// tslint:disable-next-line:prefer-const
+// eslint-disable-next-line no-var
 declare var XDomainRequest: { new(); create(); };
 
 export class DefaultSubmissionAdapter implements ISubmissionAdapter {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   public sendRequest(request: SubmissionRequest, callback?: SubmissionCallback, isAppExiting?: boolean) {
     // TODO: Handle sending events when app is exiting with send beacon.
     const TIMEOUT: string = 'timeout';  // optimization for minifier.
@@ -15,13 +16,13 @@ export class DefaultSubmissionAdapter implements ISubmissionAdapter {
     let isCompleted: boolean = false;
     let useSetTimeout: boolean = false;
     function complete(mode: string, xhrRequest: XMLHttpRequest) {
-      function parseResponseHeaders(headerStr) {
-        function trim(value) {
+      function parseResponseHeaders(headerStr: string) {
+        function trim(value: string) {
           return value.replace(/^[\s\uFEFF\xA0]+|[\s\uFEFF\xA0]+$/g, '');
         }
 
-        const headers = {};
-        const headerPairs = (headerStr || '').split('\u000d\u000a');
+        const headers: Record<string, string> = {};
+        const headerPairs: string[] = (headerStr || '').split('\u000d\u000a');
         for (const headerPair of headerPairs) {
           // Can't use split() here because it does the wrong thing
           // if the header value has the string ": " in it.
@@ -51,9 +52,9 @@ export class DefaultSubmissionAdapter implements ISubmissionAdapter {
         status = request.method === 'POST' ? 202 : 200;
       } else if (status < 200 || status > 299) {
         const responseBody: any = (xhrRequest as any).responseBody;
-        if (!!responseBody && !!responseBody.message) {
+        if (responseBody && responseBody.message) {
           message = responseBody.message;
-        } else if (!!responseText && responseText.indexOf('message') !== -1) {
+        } else if (responseText && responseText.indexOf('message') !== -1) {
           try {
             message = JSON.parse(responseText).message;
           } catch (e) {

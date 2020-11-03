@@ -1,5 +1,4 @@
 import { IModule } from '../models/IModule';
-import { EventPluginContext } from '../plugins/EventPluginContext';
 import { IModuleCollector } from './IModuleCollector';
 
 import child = require('child_process');
@@ -10,7 +9,7 @@ export class NodeModuleCollector implements IModuleCollector {
   private initialized: boolean = false;
   private installedModules: { [id: string]: IModule } = {};
 
-  public getModules(context: EventPluginContext): IModule[] {
+  public getModules(): IModule[] {
     if (!require.main || !require.main.filename) {
       return [];
     }

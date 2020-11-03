@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { ILog } from './ILog';
 
 export class NullLog implements ILog {

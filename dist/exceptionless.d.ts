@@ -96,7 +96,7 @@ export interface IErrorParser {
     parse(context: EventPluginContext, exception: Error): IError;
 }
 export interface IModuleCollector {
-    getModules(context: EventPluginContext): IModule[];
+    getModules(): IModule[];
 }
 export interface IRequestInfoCollector {
     getRequestInfo(context: EventPluginContext): IRequestInfo;
@@ -131,14 +131,14 @@ export interface ISubmissionClient {
 export declare class Utils {
     static addRange<T>(target: T[], ...values: T[]): T[];
     static getHashCode(source: string): number;
-    static getCookies(cookies: string, exclusions?: string[]): object;
+    static getCookies(cookies: string, exclusions?: string[]): Record<string, string>;
     static guid(): string;
-    static merge(defaultValues: Object, values: Object): object;
+    static merge(defaultValues: any, values: any): any;
     static parseVersion(source: string): string;
-    static parseQueryString(query: string, exclusions?: string[]): object;
+    static parseQueryString(query: string, exclusions?: string[]): Record<string, string>;
     static randomNumber(): number;
     static isMatch(input: string, patterns: string[], ignoreCase?: boolean): boolean;
-    static isEmpty(input: object): boolean;
+    static isEmpty(input: Record<string, unknown>): boolean;
     static startsWith(input: string, prefix: string): boolean;
     static endsWith(input: string, suffix: string): boolean;
     static stringify(data: any, exclusions?: string[], maxDepth?: number): string;
@@ -325,7 +325,7 @@ export interface IStorage {
     remove(timestamp: number): void;
     clear(): void;
 }
-export declare type SubmissionCallback = (status: number, message: string, data?: string, headers?: object) => void;
+export declare type SubmissionCallback = (status: number, message: string, data?: string, headers?: any) => void;
 export interface SubmissionRequest {
     apiKey: string;
     userAgent: string;
@@ -336,7 +336,7 @@ export interface SubmissionRequest {
 export declare class Configuration implements IConfigurationSettings {
     private static _defaultSettings;
     defaultTags: string[];
-    defaultData: object;
+    defaultData: Record<string, unknown>;
     enabled: boolean;
     environmentInfoCollector: IEnvironmentInfoCollector;
     errorParser: IErrorParser;
@@ -347,7 +347,7 @@ export declare class Configuration implements IConfigurationSettings {
     submissionBatchSize: number;
     submissionAdapter: ISubmissionAdapter;
     submissionClient: ISubmissionClient;
-    settings: object;
+    settings: Record<string, string>;
     storage: IStorageProvider;
     queue: IEventQueue;
     private _apiKey;
@@ -442,13 +442,13 @@ export declare class EventBuilder {
     setUserIdentity(identity: string): EventBuilder;
     setUserIdentity(identity: string, name: string): EventBuilder;
     setUserDescription(emailAddress: string, description: string): EventBuilder;
-    setManualStackingInfo(signatureData: any, title?: string): this;
+    setManualStackingInfo(signatureData: any, title?: string): EventBuilder;
     setManualStackingKey(manualStackingKey: string, title?: string): EventBuilder;
     setValue(value: number): EventBuilder;
     addTags(...tags: string[]): EventBuilder;
     setProperty(name: string, value: any, maxDepth?: number, excludedPropertyNames?: string[]): EventBuilder;
     markAsCritical(critical: boolean): EventBuilder;
-    addRequestInfo(request: object): EventBuilder;
+    addRequestInfo(request: IRequestInfo): EventBuilder;
     submit(callback?: (context: EventPluginContext) => void): void;
     private isValidIdentifier;
 }
@@ -512,15 +512,15 @@ export declare class InMemoryStorage implements IStorage {
     clear(): void;
 }
 export interface IClientConfiguration {
-    settings: object;
+    settings: Record<string, string>;
     version: number;
 }
 export declare abstract class KeyValueStorageBase implements IStorage {
     private maxItems;
     private items;
     private lastTimestamp;
-    constructor(maxItems: any);
-    save(value: any, single?: boolean): number;
+    constructor(maxItems: number);
+    save(value: any): number;
     get(limit?: number): IStorageItem[];
     remove(timestamp: number): void;
     clear(): void;
@@ -549,7 +549,7 @@ export declare class DefaultErrorParser implements IErrorParser {
     parse(context: EventPluginContext, exception: Error): IError;
 }
 export declare class DefaultModuleCollector implements IModuleCollector {
-    getModules(context: EventPluginContext): IModule[];
+    getModules(): IModule[];
 }
 export declare class DefaultRequestInfoCollector implements IRequestInfoCollector {
     getRequestInfo(context: EventPluginContext): IRequestInfo;

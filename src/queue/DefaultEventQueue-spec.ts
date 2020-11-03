@@ -2,7 +2,6 @@ import { expect } from 'chai';
 import * as sinon from 'sinon';
 import { Configuration } from '../configuration/Configuration';
 import { IEvent } from '../models/IEvent';
-import { SubmissionResponse } from '../submission/SubmissionResponse';
 
 describe('DefaultEventQueue', () => {
 
@@ -44,9 +43,8 @@ describe('DefaultEventQueue', () => {
     expect(config.storage.queue.get().length).to.equal(1);
     config.queue.process();
 
-    config.queue.onEventsPosted((events: IEvent[], response: SubmissionResponse) => {
+    config.queue.onEventsPosted(() => {
       expect((config.queue as any)._suspendProcessingUntil).to.be.undefined;
-
       expect(config.storage.queue.get().length).to.equal(0);
     });
   });

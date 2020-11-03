@@ -140,7 +140,7 @@ describe('EventPluginManager', () => {
       client.config.removePlugin(client.config.plugins[0]);
     }
 
-    client.config.addPlugin('1', 1, (ctx: EventPluginContext, next?: () => void) => {
+    client.config.addPlugin('1', 1, () => {
       setTimeout(done, 25);
     });
 
@@ -149,7 +149,7 @@ describe('EventPluginManager', () => {
       expect(false).to.equal(true);
     });
 
-    EventPluginManager.run(context, (ctx?: EventPluginContext) => {
+    EventPluginManager.run(context, () => {
       // Fail this test as this callback should not be called.
       expect(false).to.equal(true);
     });
@@ -172,12 +172,12 @@ describe('EventPluginManager', () => {
 
     expect(client.config.plugins[0].name).to.equal('1');
     expect(client.config.plugins.length).to.equal(1);
-    EventPluginManager.run(context, (ctx?: EventPluginContext) => {
+    EventPluginManager.run(context, () => {
       expect(client.config.plugins[0].name).to.equal('1');
     });
     expect(client.config.plugins.length).to.equal(1);
 
-    EventPluginManager.run(context, (ctx?: EventPluginContext) => {
+    EventPluginManager.run(context, () => {
       expect(client.config.plugins[0].name).to.equal('1');
     });
     expect(client.config.plugins.length).to.equal(1);

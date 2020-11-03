@@ -10,8 +10,8 @@ export class ModuleInfoPlugin implements IEventPlugin {
     const ERROR_KEY: string = '@error'; // optimization for minifier.
 
     const collector = context.client.config.moduleCollector;
-    if (context.event.data[ERROR_KEY] && !context.event.data['@error'].modules && !!collector) {
-      const modules: IModule[] = collector.getModules(context);
+    if (context.event.data[ERROR_KEY] && !context.event.data['@error'].modules && collector) {
+      const modules: IModule[] = collector.getModules();
       if (modules && modules.length > 0) {
         context.event.data[ERROR_KEY].modules = modules;
       }

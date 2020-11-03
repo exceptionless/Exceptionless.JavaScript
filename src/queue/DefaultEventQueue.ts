@@ -75,7 +75,7 @@ export class DefaultEventQueue implements IEventQueue {
     this.ensureQueueTimer();
 
     const timestamp = config.storage.queue.save(event);
-    const logText = `type=${event.type} ${!!event.reference_id ? 'refid=' + event.reference_id : ''}`;
+    const logText = `type=${event.type} ${event.reference_id ? 'refid=' + event.reference_id : ''}`;
     if (timestamp) {
       log.info(`Enqueuing event: ${timestamp} ${logText}`);
     } else {
@@ -148,7 +148,7 @@ export class DefaultEventQueue implements IEventQueue {
   }
 
   public onEventsPosted(handler: (events: IEvent[], response: SubmissionResponse) => void): void {
-    !!handler && this._handlers.push(handler);
+    handler && this._handlers.push(handler);
   }
 
   private eventsPosted(events: IEvent[], response: SubmissionResponse) {

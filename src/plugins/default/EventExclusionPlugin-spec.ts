@@ -22,7 +22,7 @@ describe('EventExclusionPlugin', () => {
       const plugin = new EventExclusionPlugin();
       plugin.run(context);
 
-      return !!context.cancelled;
+      return context.cancelled;
     }
 
     it('<null>', () => { expect(run(null, null, null, null)).to.be.false; });
@@ -60,7 +60,7 @@ describe('EventExclusionPlugin', () => {
       const plugin = new EventExclusionPlugin();
       plugin.run(context);
 
-      return !!context.cancelled;
+      return context.cancelled;
     }
 
     it('<null>', () => { expect(run(null, null, null, null)).to.be.false; });
@@ -72,7 +72,7 @@ describe('EventExclusionPlugin', () => {
   });
 
   describe('should exclude source type', () => {
-    function run(type: string, source: string, settingKey: string, settingValue: string | boolean): boolean {
+    function run(type: string, source: string, settingKey: string, settingValue: string): boolean {
       const client = new ExceptionlessClient('LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw', 'http://localhost:50000');
       if (settingKey) {
         client.config.settings[settingKey] = settingValue;
@@ -82,18 +82,18 @@ describe('EventExclusionPlugin', () => {
       const plugin = new EventExclusionPlugin();
       plugin.run(context);
 
-      return !!context.cancelled;
+      return context.cancelled;
     }
 
     it('<null>', () => { expect(run(null, null, null, null)).to.be.false; });
     it('<null>', () => { expect(run('usage', null, null, null)).to.be.false; });
     it('<null>', () => { expect(run('usage', 'test', null, null)).to.be.false; });
-    it('<null>', () => { expect(run('usage', 'test', '@@usage:Test', true)).to.be.false; });
-    it('<null>', () => { expect(run('usage', 'test', '@@usage:Test', false)).to.be.true; });
-    it('<null>', () => { expect(run('usage', 'test', '@@usage:*', false)).to.be.true; });
-    it('<null>', () => { expect(run('404', '/unknown', '@@404:*', false)).to.be.true; });
-    it('<null>', () => { expect(run('404', '/unknown', '@@404:/unknown', false)).to.be.true; });
-    it('<null>', () => { expect(run('404', '/unknown', '@@404:/unknown', true)).to.be.false; });
+    it('<null>', () => { expect(run('usage', 'test', '@@usage:Test', true + '')).to.be.false; });
+    it('<null>', () => { expect(run('usage', 'test', '@@usage:Test', false + '')).to.be.true; });
+    it('<null>', () => { expect(run('usage', 'test', '@@usage:*', false + '')).to.be.true; });
+    it('<null>', () => { expect(run('404', '/unknown', '@@404:*', false + '')).to.be.true; });
+    it('<null>', () => { expect(run('404', '/unknown', '@@404:/unknown', false + '')).to.be.true; });
+    it('<null>', () => { expect(run('404', '/unknown', '@@404:/unknown', true + '')).to.be.false; });
   });
 
   describe('should exclude exception type:', () => {
@@ -112,7 +112,7 @@ describe('EventExclusionPlugin', () => {
     function run(settingKey: string): boolean {
       const client = new ExceptionlessClient('LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw', 'http://localhost:50000');
       if (settingKey) {
-        client.config.settings[settingKey] = false;
+        client.config.settings[settingKey] = false + '';
       }
 
       const errorParser = new DefaultErrorParser();
@@ -122,7 +122,7 @@ describe('EventExclusionPlugin', () => {
       const plugin = new EventExclusionPlugin();
       plugin.run(context);
 
-      return !!context.cancelled;
+      return context.cancelled;
     }
 
     it('<null>', () => { expect(run(null)).to.be.false; });
