@@ -9,11 +9,6 @@
   "bundles": {
     "exceptionless-nodespec": {
       "files": [
-        "../node_modules/@types/mocha/index.d.ts",
-        "../node_modules/@types/chai/index.d.ts",
-        "../node_modules/@types/node/index.d.ts",
-        "../node_modules/@types/stack-trace/index.d.ts",
-
         "exceptionless.node.ts",
 
         "**/*-spec.ts",
@@ -22,9 +17,6 @@
     },
     "exceptionless-browserspec": {
       "files": [
-        "../node_modules/@types/mocha/index.d.ts",
-        "../node_modules/@types/chai/index.d.ts",
-
         "exceptionless.ts",
 
         "**/*-spec.ts",

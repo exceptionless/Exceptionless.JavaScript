@@ -8,19 +8,10 @@
   },
   "bundles": {
     "exceptionless.universal": {
-      "files": [
-        "../node_modules/@types/node/index.d.ts",
-        "../node_modules/@types/stack-trace/index.d.ts",
-
-        "exceptionless.universal.ts"
-      ]
+      "files": ["exceptionless.universal.ts"]
     },
     "submitSync": {
-      "files": [
-        "../node_modules/@types/node/index.d.ts",
-
-        "submitSync.ts"
-      ]
+      "files": ["submitSync.ts"]
     }
   }
 }
