@@ -54,8 +54,8 @@ export class Utils {
     return s4() + s4() + '-' + s4() + '-' + s4() + '-' + s4() + '-' + s4() + s4() + s4();
   }
 
-  public static merge(defaultValues: any, values: any) {
-    const result: any = {};
+  public static merge<T>(defaultValues: T, values: T): T {
+    const result = {};
 
     for (const key in defaultValues || {}) {
       if (defaultValues[key] !== undefined && defaultValues[key] !== null) {
@@ -69,7 +69,7 @@ export class Utils {
       }
     }
 
-    return result;
+    return <T>result;
   }
 
   public static parseVersion(source: string): string {

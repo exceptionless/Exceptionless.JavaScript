@@ -1,0 +1,10 @@
+{
+  "recommendations": [
+    "dbaeumer.vscode-eslint",
+    "hbenl.vscode-mocha-test-adapter",
+    "hbenl.vscode-test-explorer",
+    "juancasanova.awesometypescriptproblemmatcher",
+    "ryanluker.vscode-coverage-gutters",
+    "streetsidesoftware.code-spell-checker"
+  ]
+}
