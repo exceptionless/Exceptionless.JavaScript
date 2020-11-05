@@ -14,7 +14,11 @@
   "scripts": {
     "start": "gulp",
     "build": "gulp build",
-    "test": "mocha --colors --require ts-node/register --recursive \"./src/**/*-spec.ts\" --exit"
+    "test": "mocha --colors --require ts-node/register \"./src/**/*-spec.ts\" --exit"
+  },
+  "mocha": {
+    "spec": "src/**/*-spec.ts",
+    "require": "ts-node/register"
   },
   "keywords": [
     "exceptionless",

@@ -1,6 +1,6 @@
 import { expect } from 'chai';
 import { beforeEach, describe, it } from 'mocha';
-import { Configuration } from "../../configuration/Configuration";
+import { Configuration } from '../../configuration/Configuration';
 import { ExceptionlessClient } from '../../ExceptionlessClient';
 import { IEvent } from '../../models/IEvent';
 import { DefaultErrorParser } from '../../services/DefaultErrorParser';
@@ -83,23 +83,23 @@ describe('EventExclusionPlugin', () => {
 
   describe('should respect min log levels settings order', () => {
     const plugin = new EventExclusionPlugin();
-    let settings: Record<string, string> = { "@@log:": "Info", "@@log:*": "Debug" };
+    let settings: Record<string, string> = { '@@log:': 'Info', '@@log:*': 'Debug' };
 
     it('<null> (global min level: debug)', () => { expect(plugin.getMinLogLevel(settings, null)).to.be.equal(1); });
     it('<empty> (source min level: info)', () => { expect(plugin.getMinLogLevel(settings, '')).to.be.equal(2); });
     it('* (global min level: debug)', () => { expect(plugin.getMinLogLevel(settings, '*')).to.be.equal(1); });
 
-    settings = { "@@log:*": "Debug", "@@log:": "Info" };
+    settings = { '@@log:*': 'Debug', '@@log:': 'Info' };
     it('<empty> (source min level: info)', () => { expect(plugin.getMinLogLevel(settings, '')).to.be.equal(2); });
     it('* (global min level: debug)', () => { expect(plugin.getMinLogLevel(settings, '*')).to.be.equal(1); });
 
     settings = {
-      "@@log:*": "Fatal",
-      "@@log:": "Debug",
-      "@@log:abc*": "Off",
-      "@@log:abc.de*": "Debug",
-      "@@log:abc.def*": "Info",
-      "@@log:abc.def.ghi": "Trace"
+      '@@log:*': 'Fatal',
+      '@@log:': 'Debug',
+      '@@log:abc*': 'Off',
+      '@@log:abc.de*': 'Debug',
+      '@@log:abc.def*': 'Info',
+      '@@log:abc.def.ghi': 'Trace'
     };
 
     it('<null> (global min level: fatal)', () => { expect(plugin.getMinLogLevel(settings, null)).to.be.equal(5); });
@@ -109,9 +109,9 @@ describe('EventExclusionPlugin', () => {
     it('abc.def.ghi (source min level: trace)', () => { expect(plugin.getMinLogLevel(settings, 'abc.def.ghi')).to.be.equal(0); });
 
     settings = {
-      "@@log:abc.def.ghi": "Trace",
-      "@@log:abc.def*": "Info",
-      "@@log:abc*": "Off"
+      '@@log:abc.def.ghi': 'Trace',
+      '@@log:abc.def*': 'Info',
+      '@@log:abc*': 'Off'
     };
 
     it('abc (source min level: off)', () => { expect(plugin.getMinLogLevel(settings, 'abc')).to.be.equal(6); });
