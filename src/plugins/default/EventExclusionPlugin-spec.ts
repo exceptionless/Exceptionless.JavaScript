@@ -1,14 +1,24 @@
 import { expect } from 'chai';
+import { beforeEach, describe, it } from 'mocha';
+import { Configuration } from "../../configuration/Configuration";
 import { ExceptionlessClient } from '../../ExceptionlessClient';
 import { IEvent } from '../../models/IEvent';
 import { DefaultErrorParser } from '../../services/DefaultErrorParser';
 import { EventPluginContext } from '../EventPluginContext';
 import { EventExclusionPlugin } from './EventExclusionPlugin';
 
+beforeEach(() => {
+  Configuration.defaults.updateSettingsWhenIdleInterval = -1;
+});
+
 describe('EventExclusionPlugin', () => {
   describe('should exclude log levels', () => {
     function run(source: string, level: string, settingKey: string, settingValue: string): boolean {
-      const client = new ExceptionlessClient('LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw', 'http://localhost:50000');
+      const client = new ExceptionlessClient({
+        apiKey: 'LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw',
+        serverUrl: 'http://localhost:50000'
+      });
+
       if (settingKey) {
         client.config.settings[settingKey] = settingValue;
       }
@@ -45,7 +55,11 @@ describe('EventExclusionPlugin', () => {
 
   describe('should exclude log levels with info default:', () => {
     function run(source: string, level: string, settingKey: string, settingValue: string): boolean {
-      const client = new ExceptionlessClient('LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw', 'http://localhost:50000');
+      const client = new ExceptionlessClient({
+        apiKey: 'LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw',
+        serverUrl: 'http://localhost:50000'
+      });
+
       client.config.settings['@@log:*'] = 'Info';
       if (settingKey) {
         client.config.settings[settingKey] = settingValue;
@@ -73,7 +87,11 @@ describe('EventExclusionPlugin', () => {
 
   describe('should exclude source type', () => {
     function run(type: string, source: string, settingKey: string, settingValue: string): boolean {
-      const client = new ExceptionlessClient('LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw', 'http://localhost:50000');
+      const client = new ExceptionlessClient({
+        apiKey: 'LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw',
+        serverUrl: 'http://localhost:50000'
+      });
+
       if (settingKey) {
         client.config.settings[settingKey] = settingValue;
       }
@@ -88,12 +106,12 @@ describe('EventExclusionPlugin', () => {
     it('<null>', () => { expect(run(null, null, null, null)).to.be.false; });
     it('<null>', () => { expect(run('usage', null, null, null)).to.be.false; });
     it('<null>', () => { expect(run('usage', 'test', null, null)).to.be.false; });
-    it('<null>', () => { expect(run('usage', 'test', '@@usage:Test', true + '')).to.be.false; });
-    it('<null>', () => { expect(run('usage', 'test', '@@usage:Test', false + '')).to.be.true; });
-    it('<null>', () => { expect(run('usage', 'test', '@@usage:*', false + '')).to.be.true; });
-    it('<null>', () => { expect(run('404', '/unknown', '@@404:*', false + '')).to.be.true; });
-    it('<null>', () => { expect(run('404', '/unknown', '@@404:/unknown', false + '')).to.be.true; });
-    it('<null>', () => { expect(run('404', '/unknown', '@@404:/unknown', true + '')).to.be.false; });
+    it('<null>', () => { expect(run('usage', 'test', '@@usage:Test', 'true')).to.be.false; });
+    it('<null>', () => { expect(run('usage', 'test', '@@usage:Test', 'false')).to.be.true; });
+    it('<null>', () => { expect(run('usage', 'test', '@@usage:*', 'false')).to.be.true; });
+    it('<null>', () => { expect(run('404', '/unknown', '@@404:*', 'false')).to.be.true; });
+    it('<null>', () => { expect(run('404', '/unknown', '@@404:/unknown', 'false')).to.be.true; });
+    it('<null>', () => { expect(run('404', '/unknown', '@@404:/unknown', 'true')).to.be.false; });
   });
 
   describe('should exclude exception type:', () => {
@@ -110,9 +128,13 @@ describe('EventExclusionPlugin', () => {
     }
 
     function run(settingKey: string): boolean {
-      const client = new ExceptionlessClient('LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw', 'http://localhost:50000');
+      const client = new ExceptionlessClient({
+        apiKey: 'LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw',
+        serverUrl: 'http://localhost:50000'
+      });
+
       if (settingKey) {
-        client.config.settings[settingKey] = false + '';
+        client.config.settings[settingKey] = 'false';
       }
 
       const errorParser = new DefaultErrorParser();

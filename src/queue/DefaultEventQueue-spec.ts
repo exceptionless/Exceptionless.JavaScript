@@ -1,10 +1,10 @@
 import { expect } from 'chai';
+import { afterEach, beforeEach, describe, it } from 'mocha';
 import * as sinon from 'sinon';
 import { Configuration } from '../configuration/Configuration';
 import { IEvent } from '../models/IEvent';
 
 describe('DefaultEventQueue', () => {
-
   let config: Configuration;
   let xhr: any;
 

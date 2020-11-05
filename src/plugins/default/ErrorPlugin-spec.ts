@@ -3,6 +3,7 @@ import { ContextData } from '../ContextData';
 import { EventPluginContext } from '../EventPluginContext';
 
 import { expect } from 'chai';
+import { beforeEach, describe, it } from 'mocha';
 import { ErrorPlugin } from './ErrorPlugin';
 import { CapturedExceptions } from './ErrorPlugin-spec-exceptions';
 import { createFixture } from './EventPluginTestFixture';

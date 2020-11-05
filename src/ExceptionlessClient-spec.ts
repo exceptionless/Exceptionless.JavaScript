@@ -1,13 +1,16 @@
 import { expect } from 'chai';
-import * as sinon from 'sinon';
+import { afterEach, beforeEach, describe, it } from 'mocha';
+import { SinonFakeXMLHttpRequestStatic, useFakeXMLHttpRequest } from 'sinon';
+import { Configuration } from "./configuration/Configuration";
 import { ExceptionlessClient } from './ExceptionlessClient';
 import { EventPluginContext } from './plugins/EventPluginContext';
 
 describe('ExceptionlessClient', () => {
-  let xhr: any;
+  let xhr: SinonFakeXMLHttpRequestStatic;
 
   beforeEach(() => {
-    xhr = sinon.useFakeXMLHttpRequest();
+    Configuration.defaults.updateSettingsWhenIdleInterval = -1;
+    xhr = useFakeXMLHttpRequest();
   });
 
   afterEach(() => {
@@ -15,10 +18,14 @@ describe('ExceptionlessClient', () => {
   });
 
   it('should use event reference ids', (done) => {
-    const error = createException();
+    const client = new ExceptionlessClient({
+      apiKey: 'LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw',
+      serverUrl: 'http://localhost:50000'
+    });
 
-    const client = new ExceptionlessClient('LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw', 'http://localhost:50000');
     expect(client.config.lastReferenceIdManager.getLast()).to.be.null;
+
+    const error = createException();
     client.submitException(error, () => {
       expect(client.config.lastReferenceIdManager.getLast()).to.be.null;
     });
@@ -40,7 +47,11 @@ describe('ExceptionlessClient', () => {
   });
 
   it('should accept null source', () => {
-    const client = new ExceptionlessClient('LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw', 'http://localhost:50000');
+    const client = new ExceptionlessClient({
+      apiKey: 'LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw',
+      serverUrl: 'http://localhost:50000'
+    });
+
     const builder = client.createLog(null, 'Unit Test message', 'Trace');
 
     expect(builder.target.source).to.be.undefined;
@@ -49,7 +60,11 @@ describe('ExceptionlessClient', () => {
   });
 
   it('should accept source and message', () => {
-    const client = new ExceptionlessClient('LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw', 'http://localhost:50000');
+    const client = new ExceptionlessClient({
+      apiKey: 'LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw',
+      serverUrl: 'http://localhost:50000'
+    });
+
     const builder = client.createLog('ExceptionlessClient', 'Unit Test message');
 
     expect(builder.target.source).to.equal('ExceptionlessClient');
@@ -58,7 +73,10 @@ describe('ExceptionlessClient', () => {
   });
 
   it('should accept source and message and level', () => {
-    const client = new ExceptionlessClient('LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw', 'http://localhost:50000');
+    const client = new ExceptionlessClient({
+      apiKey: 'LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw',
+      serverUrl: 'http://localhost:50000'
+    });
     const builder = client.createLog('source', 'Unit Test message', 'Info');
 
     expect(builder.target.source).to.equal('source');

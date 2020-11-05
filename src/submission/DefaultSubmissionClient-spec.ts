@@ -1,4 +1,5 @@
 import { expect } from 'chai';
+import { beforeEach, describe, it } from 'mocha';
 import { Configuration } from '../configuration/Configuration';
 import { IEvent } from '../models/IEvent';
 import { IUserDescription } from '../models/IUserDescription';
@@ -9,19 +10,19 @@ import { SubmissionCallback } from './SubmissionCallback';
 import { SubmissionRequest } from './SubmissionRequest';
 
 class TestAdapter implements ISubmissionAdapter {
-  private request;
+  private request: SubmissionRequest;
   private checks: Array<(request: SubmissionRequest) => void> = [];
   private callback: SubmissionCallback;
-  private status = 202;
-  private message = null;
-  private data;
-  private headers;
+  private status: number = 202;
+  private message: string = null;
+  private data: string;
+  private headers: Record<string, string>;
 
   constructor(check: (request: SubmissionRequest) => void) {
     this.checks.push(check);
   }
 
-  public withResponse(status: number, message: string, data?: string, headers?: any) {
+  public withResponse(status: number, message: string, data?: string, headers?: Record<string, string>) {
     this.status = status;
     this.message = message;
     this.data = data;
@@ -55,7 +56,7 @@ class TestAdapter implements ISubmissionAdapter {
 }
 
 describe('DefaultSubmissionClient', () => {
-  let adapter: TestAdapter;
+  let submissionAdapter: TestAdapter;
   let config: Configuration;
   let submissionClient: ISubmissionClient;
 
@@ -64,23 +65,22 @@ describe('DefaultSubmissionClient', () => {
     const serverUrl = 'http://localhost:50000';
 
     submissionClient = new DefaultSubmissionClient();
-
-    config = new Configuration({
-      apiKey,
-      serverUrl
-    });
-
-    adapter = new TestAdapter((r) => {
+    submissionAdapter = new TestAdapter((r) => {
       expect(r.apiKey).to.equal(apiKey);
     });
 
-    config.submissionAdapter = adapter;
+    config = new Configuration({
+      apiKey,
+      serverUrl,
+      submissionClient,
+      submissionAdapter
+    });
   });
 
   it('should submit events', (done) => {
     const events = [{ type: 'log', message: 'From js client', reference_id: '123454321' }];
 
-    adapter.withCheck((r) => {
+    submissionAdapter.withCheck((r) => {
       expect(r.data).to.equal(JSON.stringify(events));
       expect(r.method).to.equal('POST');
       expect(r.url).to.equal(`${config.serverUrl}/api/v2/events`);
@@ -88,7 +88,7 @@ describe('DefaultSubmissionClient', () => {
 
     submissionClient.postEvents(events, config, () => done());
 
-    adapter.done();
+    submissionAdapter.done();
   });
 
   it('should submit invalid object data', (done) => {
@@ -99,15 +99,14 @@ describe('DefaultSubmissionClient', () => {
       }
     }];
 
-    adapter.withCheck((r) => {
+    submissionAdapter.withCheck((r) => {
       expect(r.data).to.equal(JSON.stringify(events));
       expect(r.method).to.equal('POST');
       expect(r.url).to.equal(`${config.serverUrl}/api/v2/events`);
     });
 
     submissionClient.postEvents(events, config, () => done());
-
-    adapter.done();
+    submissionAdapter.done();
   });
 
   it('should submit user description', (done) => {
@@ -116,19 +115,18 @@ describe('DefaultSubmissionClient', () => {
       description: 'unit test'
     };
 
-    adapter.withCheck((r) => {
+    submissionAdapter.withCheck((r) => {
       expect(r.data).to.equal(JSON.stringify(description));
       expect(r.method).to.equal('POST');
       expect(r.url).to.equal(`${config.serverUrl}/api/v2/events/by-ref/123454321/user-description`);
     });
 
     submissionClient.postUserDescription('123454321', description, config, () => done());
-
-    adapter.done();
+    submissionAdapter.done();
   });
 
   it('should get project settings', (done) => {
-    adapter.withResponse(200, null, JSON.stringify({ version: 1 }));
+    submissionAdapter.withResponse(200, null, JSON.stringify({ version: 1 }));
 
     submissionClient.getSettings(config, 0, (response) => {
       expect(response.success).to.be.true;
@@ -139,6 +137,6 @@ describe('DefaultSubmissionClient', () => {
       done();
     });
 
-    adapter.done();
+    submissionAdapter.done();
   });
 });

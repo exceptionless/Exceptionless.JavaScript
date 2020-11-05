@@ -79,7 +79,7 @@ export class ExceptionlessClient {
       builder = builder.setMessage(sourceOrMessage);
 
       try {
-        // TODO: Look into using https: //www.stevefenton.co.uk/Content/Blog/Date/201304/Blog/Obtaining-A-Class-Name-At-Runtime-In-TypeScript/
+        // TODO: Look into using https://www.stevefenton.co.uk/Content/Blog/Date/201304/Blog/Obtaining-A-Class-Name-At-Runtime-In-TypeScript/
         const caller: any = this.createLog.caller;
         builder = builder.setSource(caller && caller.caller && caller.caller.name);
       } catch (e) {
@@ -221,19 +221,20 @@ export class ExceptionlessClient {
   }
 
   private updateSettingsTimer(initialDelay?: number) {
-    this.config.log.info(`Updating settings timer with delay: ${initialDelay}`);
-
     this._timeoutId = clearTimeout(this._timeoutId);
     this._timeoutId = clearInterval(this._intervalId);
 
     const interval = this.config.updateSettingsWhenIdleInterval;
     if (interval > 0) {
+      this.config.log.info(`Update settings every ${interval}ms (${initialDelay}ms delay)`);
       const updateSettings = () => SettingsManager.updateSettings(this.config);
       if (initialDelay > 0) {
         this._timeoutId = setTimeout(updateSettings, initialDelay);
       }
 
       this._intervalId = setInterval(updateSettings, interval);
+    } else {
+      this.config.log.info("Turning off update settings");
     }
   }
 

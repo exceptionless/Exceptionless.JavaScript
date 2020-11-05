@@ -14,7 +14,7 @@
   "scripts": {
     "start": "gulp",
     "build": "gulp build",
-    "test": "gulp test"
+    "test": "mocha --colors --require ts-node/register --recursive \"./src/**/*-spec.ts\" --exit"
   },
   "keywords": [
     "exceptionless",
@@ -45,7 +45,6 @@
     "es5-shim": "4.5.14",
     "es6-shim": "0.35.6",
     "eslint": "7.12.1",
-    "event-stream": "4.0.1",
     "gulp": "4.0.2",
     "gulp-concat": "2.6.1",
     "gulp-eslint": "6.0.0",
@@ -57,7 +56,6 @@
     "gulp-uglify": "3.0.2",
     "gulp-wrap-umd": "0.2.1",
     "jshint": "2.12.0",
-    "mocha-headless-chrome": "3.1.0",
     "mock-fs": "4.13.0",
     "path": "0.12.7",
     "requirejs": "2.3.6",
@@ -67,6 +65,7 @@
     "source-map-support": "0.5.19",
     "systemjs": "6.7.1",
     "tracekit": "0.4.5",
+    "ts-node": "9.0.0",
     "tsproject": "4.0.0-beta.3",
     "typescript": "4.0.5",
     "typescript-formatter": "7.2.2"

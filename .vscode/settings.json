@@ -6,6 +6,7 @@
     "configversion",
     "systemjs",
     "tracekit",
+    "tsfmt",
     "tsproject"
 ]
 }
