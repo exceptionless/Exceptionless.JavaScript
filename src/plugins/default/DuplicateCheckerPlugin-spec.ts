@@ -32,7 +32,6 @@ describe('DuplicateCheckerPlugin', () => {
     const contextOfSecondRun = run(exception);
     expect(contextOfSecondRun.cancelled).to.be.true;
     setTimeout(() => {
-
       expect(contextOfSecondRun.event.count).to.equal(1);
 
       done();

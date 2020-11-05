@@ -21,7 +21,7 @@ describe('EventPluginManager', () => {
     expect(context.event.source).to.be.undefined;
     expect(context.event.geo).to.be.undefined;
 
-    expect(client.config.plugins).not.to.equal(null);
+    expect(client.config.plugins).not.to.be.null;
     while (client.config.plugins.length > 0) {
       client.config.removePlugin(client.config.plugins[0]);
     }
@@ -60,7 +60,7 @@ describe('EventPluginManager', () => {
     });
 
     const context = new EventPluginContext(client, {}, new ContextData());
-    expect(client.config.plugins).not.to.equal(null);
+    expect(client.config.plugins).not.to.be.null;
     while (client.config.plugins.length > 0) {
       client.config.removePlugin(client.config.plugins[0]);
     }
@@ -75,11 +75,11 @@ describe('EventPluginManager', () => {
 
     client.config.addPlugin('2', 2, () => {
       // Fail this test as this plugin should not be called.
-      expect(false).to.equal(true);
+      expect(false).to.be.true;
     });
 
     EventPluginManager.run(context, (ctx?: EventPluginContext) => {
-      expect(ctx.cancelled).to.equal(true);
+      expect(ctx.cancelled).to.be.true;
       done();
       done = () => { };
     });
@@ -92,7 +92,7 @@ describe('EventPluginManager', () => {
     });
     const context = new EventPluginContext(client, {}, new ContextData());
 
-    expect(client.config.plugins).not.to.equal(null);
+    expect(client.config.plugins).not.to.be.null;
     while (client.config.plugins.length > 0) {
       client.config.removePlugin(client.config.plugins[0]);
     }
@@ -103,11 +103,11 @@ describe('EventPluginManager', () => {
 
     client.config.addPlugin('2', 2, () => {
       // Fail this test as this plugin should not be called.
-      expect(false).to.equal(true);
+      expect(false).to.be.true;
     });
 
     EventPluginManager.run(context, (ctx?: EventPluginContext) => {
-      expect(ctx.cancelled).to.equal(true);
+      expect(ctx.cancelled).to.be.true;
       done();
     });
   });
@@ -119,7 +119,7 @@ describe('EventPluginManager', () => {
     });
     const context = new EventPluginContext(client, {}, new ContextData());
 
-    expect(client.config.plugins).not.to.equal(null);
+    expect(client.config.plugins).not.to.be.null;
     while (client.config.plugins.length > 0) {
       client.config.removePlugin(client.config.plugins[0]);
     }
@@ -141,11 +141,11 @@ describe('EventPluginManager', () => {
 
     client.config.addPlugin('2', 2, () => {
       // Fail this test as this plugin should not be called.
-      expect(false).to.equal(true);
+      expect(false).to.be.true;
     });
 
     EventPluginManager.run(context, (ctx?: EventPluginContext) => {
-      expect(ctx.cancelled).to.equal(true);
+      expect(ctx.cancelled).to.be.true;
       done();
     });
   });
@@ -157,7 +157,7 @@ describe('EventPluginManager', () => {
     });
     const context = new EventPluginContext(client, {}, new ContextData());
 
-    expect(client.config.plugins).not.to.equal(null);
+    expect(client.config.plugins).not.to.be.null;
     while (client.config.plugins.length > 0) {
       client.config.removePlugin(client.config.plugins[0]);
     }
@@ -168,12 +168,12 @@ describe('EventPluginManager', () => {
 
     client.config.addPlugin('2', 2, () => {
       // Fail this test as this plugin should not be called.
-      expect(false).to.equal(true);
+      expect(false).to.be.true;
     });
 
     EventPluginManager.run(context, () => {
       // Fail this test as this callback should not be called.
-      expect(false).to.equal(true);
+      expect(false).to.be.true;
     });
   });
 
@@ -184,7 +184,7 @@ describe('EventPluginManager', () => {
     });
     const context = new EventPluginContext(client, {}, new ContextData());
 
-    expect(client.config.plugins).not.to.equal(null);
+    expect(client.config.plugins).not.to.be.null;
     while (client.config.plugins.length > 0) {
       client.config.removePlugin(client.config.plugins[0]);
     }

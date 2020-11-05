@@ -5,15 +5,15 @@ import { Utils } from './Utils';
 describe('Utils', () => {
   it('should add range', () => {
     let target: string[] = undefined;
-    expect(Utils.addRange(target)).to.eql([]);
+    expect(Utils.addRange(target)).to.deep.equal([]);
     expect(target).to.be.undefined;
 
-    expect(Utils.addRange(target, '1', '2')).to.eql(['1', '2']);
-    expect(Utils.addRange(target, '1', '2')).to.eql(['1', '2']);
+    expect(Utils.addRange(target, '1', '2')).to.deep.equal(['1', '2']);
+    expect(Utils.addRange(target, '1', '2')).to.deep.equal(['1', '2']);
 
     target = ['3'];
-    expect(Utils.addRange(target, '1', '2')).to.eql(['3', '1', '2']);
-    expect(target).to.eql(['3', '1', '2']);
+    expect(Utils.addRange(target, '1', '2')).to.deep.equal(['3', '1', '2']);
+    expect(target).to.deep.equal(['3', '1', '2']);
   });
 
   describe('stringify', () => {
@@ -125,7 +125,7 @@ describe('Utils', () => {
       };
 
       const result = JSON.parse(Utils.stringify(bar));
-      expect(result).to.eql(expected);
+      expect(result).to.deep.equal(expected);
     });
 
     describe('with exclude pattern', () => {
@@ -159,7 +159,7 @@ describe('Utils', () => {
     expect(Utils.parseVersion('https://cdnjs.cloudflare.com/ajax/libs/Base64/0.3.0/base64.min.js')).to.equal('0.3.0');
     expect(Utils.parseVersion('https://cdnjs.cloudflare.com/ajax/libs/angular-google-maps/2.1.0-X.10/angular-google-maps.min.js')).to.equal('2.1.0-X.10');
     expect(Utils.parseVersion('https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/2.1.8-M1/swagger-ui.min.js')).to.equal('2.1.8-M1');
-    expect(Utils.parseVersion('https://cdnjs.cloudflare.com/BLAH/BLAH.min.js')).to.equal(null);
+    expect(Utils.parseVersion('https://cdnjs.cloudflare.com/BLAH/BLAH.min.js')).to.be.null;
   });
 
   describe('isMatch', () => {
