@@ -39,6 +39,8 @@ describe('EventExclusionPlugin', () => {
     it('[Off] Test', () => expect(run('Test', 'Off', null, null)).to.be.true);
     it('[Trace] <null> (source min level: Off', () => expect(run(null, 'Trace', '@@log:', 'Off')).to.be.false);
     it('[Trace] <null> (global min level: Off', () => expect(run(null, 'Trace', '@@log:*', 'Off')).to.be.true);
+    it('[Trace] <undefined> (source min level: Off', () => expect(run(undefined, 'Trace', '@@log:', 'Off')).to.be.false);
+    it('[Trace] <undefined> (global min level: Off', () => expect(run(undefined, 'Trace', '@@log:*', 'Off')).to.be.true);
     it('[Trace] <empty> (source min level: Off', () => expect(run('', 'Trace', '@@log:', 'Off')).to.be.true); // Becomes Global Log Level
     it('[Trace] <empty> (global min level: Off', () => expect(run('', 'Trace', '@@log:*', 'Off')).to.be.true);
     it('[Trace] Test (source min level: false)', () => expect(run('Test', 'Trace', '@@log:Test', 'false')).to.be.true);
@@ -81,19 +83,27 @@ describe('EventExclusionPlugin', () => {
     it('[Debug] Test (source min level: Debug)', () => expect(run('Test', 'Debug', '@@log:Test', 'Debug')).to.be.false);
   });
 
-  describe('should respect min log levels settings order', () => {
+  describe('should resolve null and undefined log source levels in reverse settings order', () => {
     const plugin = new EventExclusionPlugin();
-    let settings: Record<string, string> = { '@@log:': 'Info', '@@log:*': 'Debug' };
+    const settings: Record<string, string> = { '@@log:': 'Info', '@@log:*': 'Debug' };
 
-    it('<null> (global min level: debug)', () => expect(plugin.getMinLogLevel(settings, null)).to.be.equal(1));
+    it('<null> (global min level: info)', () => expect(plugin.getMinLogLevel(settings, null)).to.be.equal(2));
+    it('<undefined> (global min level: info)', () => expect(plugin.getMinLogLevel(settings, undefined)).to.be.equal(2));
     it('<empty> (source min level: info)', () => expect(plugin.getMinLogLevel(settings, '')).to.be.equal(2));
     it('* (global min level: debug)', () => expect(plugin.getMinLogLevel(settings, '*')).to.be.equal(1));
+  });
 
-    settings = { '@@log:*': 'Debug', '@@log:': 'Info' };
+  describe('should resolve log source levels and respect settings order', () => {
+    const plugin = new EventExclusionPlugin();
+    const settings = { '@@log:*': 'Debug', '@@log:': 'Info' };
+
     it('<empty> (source min level: info)', () => expect(plugin.getMinLogLevel(settings, '')).to.be.equal(2));
     it('* (global min level: debug)', () => expect(plugin.getMinLogLevel(settings, '*')).to.be.equal(1));
+  });
 
-    settings = {
+  describe('should respect min log levels settings order with global settings', () => {
+    const plugin = new EventExclusionPlugin();
+    const settings = {
       '@@log:*': 'Fatal',
       '@@log:': 'Debug',
       '@@log:abc*': 'Off',
@@ -107,8 +117,11 @@ describe('EventExclusionPlugin', () => {
     it('abc (source min level: off)', () => expect(plugin.getMinLogLevel(settings, 'abc')).to.be.equal(6));
     it('abc.def (source min level: info)', () => expect(plugin.getMinLogLevel(settings, 'abc.def')).to.be.equal(2));
     it('abc.def.ghi (source min level: trace)', () => expect(plugin.getMinLogLevel(settings, 'abc.def.ghi')).to.be.equal(0));
+  });
 
-    settings = {
+  describe('should respect min log levels settings order', () => {
+    const plugin = new EventExclusionPlugin();
+    const settings = {
       '@@log:abc.def.ghi': 'Trace',
       '@@log:abc.def*': 'Info',
       '@@log:abc*': 'Off'
@@ -144,6 +157,8 @@ describe('EventExclusionPlugin', () => {
     it('404=/unknown on', () => expect(run('404', '/unknown', '@@404:/unknown', 'true')).to.be.false);
     it('404=/unknown off', () => expect(run('404', '/unknown', '@@404:/unknown', 'false')).to.be.true);
     it('404=<null> off', () => expect(run('404', null, '@@404:*', 'false')).to.be.true);
+    it('404=<undefined> empty off', () => expect(run('404', undefined, '@@404:', 'false')).to.be.true);
+    it('404=<undefined> global off', () => expect(run('404', undefined, '@@404:*', 'false')).to.be.true);
     it('404=<null> empty off', () => expect(run('404', null, '@@404:', 'false')).to.be.true);
     it('404=<empty> off', () => expect(run('404', '', '@@404:', 'false')).to.be.true);
   });
