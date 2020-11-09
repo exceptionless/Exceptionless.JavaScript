@@ -133,7 +133,7 @@ export declare class Utils {
     static getHashCode(source: string): number;
     static getCookies(cookies: string, exclusions?: string[]): Record<string, string>;
     static guid(): string;
-    static merge(defaultValues: any, values: any): any;
+    static merge<T>(defaultValues: T, values: T): T;
     static parseVersion(source: string): string;
     static parseQueryString(query: string, exclusions?: string[]): Record<string, string>;
     static randomNumber(): number;
@@ -485,6 +485,9 @@ export declare class EventExclusionPlugin implements IEventPlugin {
     priority: number;
     name: string;
     run(context: EventPluginContext, next?: () => void): void;
+    getLogLevel(level: string): number;
+    getMinLogLevel(configSettings: Record<string, string>, source: any): number;
+    private getTypeAndSourceSetting;
 }
 export declare class ModuleInfoPlugin implements IEventPlugin {
     priority: number;

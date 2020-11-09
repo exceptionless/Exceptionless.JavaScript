@@ -119,6 +119,7 @@ var ReferenceIdPlugin = (function () {
 exports.ReferenceIdPlugin = ReferenceIdPlugin;
 var EventPluginContext = (function () {
     function EventPluginContext(client, event, contextData) {
+        this.cancelled = false;
         this.client = client;
         this.event = event;
         this.contextData = contextData ? contextData : new ContextData();
@@ -525,7 +526,7 @@ var Utils = (function () {
     };
     Utils.isMatch = function (input, patterns, ignoreCase) {
         if (ignoreCase === void 0) { ignoreCase = true; }
-        if (!input || typeof input !== 'string') {
+        if (typeof input !== 'string') {
             return false;
         }
         var trim = /^[\s\uFEFF\xA0]+|[\s\uFEFF\xA0]+$/g;
@@ -534,8 +535,16 @@ var Utils = (function () {
             if (typeof pattern !== 'string') {
                 return false;
             }
-            pattern = (ignoreCase ? pattern.toLowerCase() : pattern).replace(trim, '');
-            if (pattern.length <= 0) {
+            if (pattern) {
+                pattern = (ignoreCase ? pattern.toLowerCase() : pattern).replace(trim, '');
+            }
+            if (!pattern) {
+                return input === undefined || input === null;
+            }
+            if (pattern === '*') {
+                return true;
+            }
+            if (input === undefined || input === null) {
                 return false;
             }
             var startsWithWildcard = pattern[0] === '*';
@@ -884,16 +893,19 @@ var ExceptionlessClient = (function () {
     };
     ExceptionlessClient.prototype.updateSettingsTimer = function (initialDelay) {
         var _this = this;
-        this.config.log.info("Updating settings timer with delay: " + initialDelay);
         this._timeoutId = clearTimeout(this._timeoutId);
         this._timeoutId = clearInterval(this._intervalId);
         var interval = this.config.updateSettingsWhenIdleInterval;
         if (interval > 0) {
+            this.config.log.info("Update settings every " + interval + "ms (" + initialDelay + "ms delay)");
             var updateSettings = function () { return SettingsManager.updateSettings(_this.config); };
             if (initialDelay > 0) {
                 this._timeoutId = setTimeout(updateSettings, initialDelay);
             }
             this._intervalId = setInterval(updateSettings, interval);
+        }
+        else {
+            this.config.log.info("Turning off update settings");
         }
     };
     Object.defineProperty(ExceptionlessClient, "default", {
@@ -1652,61 +1664,13 @@ var EventExclusionPlugin = (function () {
         this.name = 'EventExclusionPlugin';
     }
     EventExclusionPlugin.prototype.run = function (context, next) {
-        function getLogLevel(level) {
-            switch ((level || '').toLowerCase().trim()) {
-                case 'trace':
-                case 'true':
-                case '1':
-                case 'yes':
-                    return 0;
-                case 'debug':
-                    return 1;
-                case 'info':
-                    return 2;
-                case 'warn':
-                    return 3;
-                case 'error':
-                    return 4;
-                case 'fatal':
-                    return 5;
-                case 'off':
-                case 'false':
-                case '0':
-                case 'no':
-                    return 6;
-                default:
-                    return -1;
-            }
-        }
-        function getMinLogLevel(configSettings, loggerName) {
-            if (loggerName === void 0) { loggerName = '*'; }
-            return getLogLevel(getTypeAndSourceSetting(configSettings, 'log', loggerName, 'Trace') + '');
-        }
-        function getTypeAndSourceSetting(configSettings, type, source, defaultValue) {
-            if (configSettings === void 0) { configSettings = {}; }
-            if (!type) {
-                return defaultValue;
-            }
-            var isLog = type === 'log';
-            var sourcePrefix = "@@" + type + ":";
-            var value = configSettings[sourcePrefix + source];
-            if (value) {
-                return !isLog ? Utils.toBoolean(value) : value;
-            }
-            for (var key in configSettings) {
-                if (Utils.startsWith(key.toLowerCase(), sourcePrefix.toLowerCase()) && Utils.isMatch(source, [key.substring(sourcePrefix.length)])) {
-                    return !isLog ? Utils.toBoolean(configSettings[key]) : configSettings[key];
-                }
-            }
-            return defaultValue;
-        }
         var ev = context.event;
         var log = context.log;
         var settings = context.client.config.settings;
         if (ev.type === 'log') {
-            var minLogLevel = getMinLogLevel(settings, ev.source);
-            var logLevel = getLogLevel(ev.data['@level']);
-            if (logLevel >= 0 && (logLevel > 5 || logLevel < minLogLevel)) {
+            var minLogLevel = this.getMinLogLevel(settings, ev.source);
+            var logLevel = this.getLogLevel(ev.data['@level']);
+            if (logLevel !== -1 && (logLevel === 6 || logLevel < minLogLevel)) {
                 log.info('Cancelling log event due to minimum log level.');
                 context.cancelled = true;
             }
@@ -1714,18 +1678,74 @@ var EventExclusionPlugin = (function () {
         else if (ev.type === 'error') {
             var error = ev.data['@error'];
             while (!context.cancelled && error) {
-                if (getTypeAndSourceSetting(settings, ev.type, error.type, true) === false) {
+                if (this.getTypeAndSourceSetting(settings, ev.type, error.type, true) === false) {
                     log.info("Cancelling error from excluded exception type: " + error.type);
                     context.cancelled = true;
                 }
                 error = error.inner;
             }
         }
-        else if (getTypeAndSourceSetting(settings, ev.type, ev.source, true) === false) {
+        else if (this.getTypeAndSourceSetting(settings, ev.type, ev.source, true) === false) {
             log.info("Cancelling event from excluded type: " + ev.type + " and source: " + ev.source);
             context.cancelled = true;
         }
         next && next();
+    };
+    EventExclusionPlugin.prototype.getLogLevel = function (level) {
+        switch ((level || '').toLowerCase().trim()) {
+            case 'trace':
+            case 'true':
+            case '1':
+            case 'yes':
+                return 0;
+            case 'debug':
+                return 1;
+            case 'info':
+                return 2;
+            case 'warn':
+                return 3;
+            case 'error':
+                return 4;
+            case 'fatal':
+                return 5;
+            case 'off':
+            case 'false':
+            case '0':
+            case 'no':
+                return 6;
+            default:
+                return -1;
+        }
+    };
+    EventExclusionPlugin.prototype.getMinLogLevel = function (configSettings, source) {
+        return this.getLogLevel(this.getTypeAndSourceSetting(configSettings, 'log', source, 'other') + '');
+    };
+    EventExclusionPlugin.prototype.getTypeAndSourceSetting = function (configSettings, type, source, defaultValue) {
+        if (configSettings === void 0) { configSettings = {}; }
+        if (!type) {
+            return defaultValue;
+        }
+        if (!source) {
+            source = '';
+        }
+        var isLog = type === 'log';
+        var sourcePrefix = "@@" + type + ":";
+        var value = configSettings[sourcePrefix + source];
+        if (value) {
+            return isLog ? value : Utils.toBoolean(value);
+        }
+        var sortedKeys = Object.keys(configSettings).sort(function (a, b) { return b.length - a.length || a.localeCompare(b); });
+        for (var index in sortedKeys) {
+            var key = sortedKeys[index];
+            if (!Utils.startsWith(key.toLowerCase(), sourcePrefix)) {
+                continue;
+            }
+            var cleanKey = key.substring(sourcePrefix.length);
+            if (Utils.isMatch(source, [cleanKey])) {
+                return isLog ? configSettings[key] : Utils.toBoolean(configSettings[key]);
+            }
+        }
+        return defaultValue;
     };
     return EventExclusionPlugin;
 }());

@@ -17,6 +17,7 @@ import { IModuleCollector } from '../services/IModuleCollector';
 import { IRequestInfoCollector } from '../services/IRequestInfoCollector';
 import { InMemoryStorageProvider } from '../storage/InMemoryStorageProvider';
 import { IStorageProvider } from '../storage/IStorageProvider';
+import { DefaultSubmissionClient } from "../submission/DefaultSubmissionClient";
 import { ISubmissionAdapter } from '../submission/ISubmissionAdapter';
 import { ISubmissionClient } from '../submission/ISubmissionClient';
 import { Utils } from '../Utils';
@@ -172,7 +173,7 @@ export class Configuration implements IConfigurationSettings {
     this.requestInfoCollector = inject(configSettings.requestInfoCollector);
     this.submissionBatchSize = inject(configSettings.submissionBatchSize) || 50;
     this.submissionAdapter = inject(configSettings.submissionAdapter);
-    this.submissionClient = inject(configSettings.submissionClient);
+    this.submissionClient = inject(configSettings.submissionClient) || new DefaultSubmissionClient();
     this.storage = inject(configSettings.storage) || new InMemoryStorageProvider();
     this.queue = inject(configSettings.queue) || new DefaultEventQueue(this);
 
