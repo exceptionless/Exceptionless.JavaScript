@@ -17,7 +17,7 @@ import { IModuleCollector } from '../services/IModuleCollector';
 import { IRequestInfoCollector } from '../services/IRequestInfoCollector';
 import { InMemoryStorageProvider } from '../storage/InMemoryStorageProvider';
 import { IStorageProvider } from '../storage/IStorageProvider';
-import { DefaultSubmissionClient } from "../submission/DefaultSubmissionClient";
+import { DefaultSubmissionClient } from '../submission/DefaultSubmissionClient';
 import { ISubmissionAdapter } from '../submission/ISubmissionAdapter';
 import { ISubmissionClient } from '../submission/ISubmissionClient';
 import { Utils } from '../Utils';
