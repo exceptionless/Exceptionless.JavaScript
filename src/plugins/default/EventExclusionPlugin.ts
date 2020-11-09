@@ -16,7 +16,7 @@ export class EventExclusionPlugin implements IEventPlugin {
       const minLogLevel = this.getMinLogLevel(settings, ev.source);
       const logLevel = this.getLogLevel(ev.data['@level']);
 
-      if (logLevel >= 0 && (logLevel > 5 || logLevel < minLogLevel)) {
+      if (logLevel !== -1 && (logLevel === 6 || logLevel < minLogLevel)) {
         log.info('Cancelling log event due to minimum log level.');
         context.cancelled = true;
       }
@@ -65,27 +65,39 @@ export class EventExclusionPlugin implements IEventPlugin {
     }
   }
 
-  public getMinLogLevel(configSettings: Record<string, string>, loggerName: string = '*'): number {
-    return this.getLogLevel(this.getTypeAndSourceSetting(configSettings, 'log', loggerName, 'Trace') + '');
+  public getMinLogLevel(configSettings: Record<string, string>, source): number {
+    return this.getLogLevel(this.getTypeAndSourceSetting(configSettings, 'log', source, 'other') + '');
   }
 
-  private getTypeAndSourceSetting(configSettings: Record<string, string> = {}, type: string, source: string, defaultValue?: string | boolean): string | boolean {
+  private getTypeAndSourceSetting(configSettings: Record<string, string> = {}, type: string, source: string, defaultValue: string | boolean): string | boolean {
     if (!type) {
       return defaultValue;
     }
 
-    const isLog = type === 'log';
-    const sourcePrefix = `@@${type}:`;
-
-    const value = configSettings[sourcePrefix + source];
-    if (value) {
-      return !isLog ? Utils.toBoolean(value) : value;
+    if (!source) {
+      source = '';
     }
 
-    // check for wildcard match
-    for (const key in configSettings) {
-      if (Utils.startsWith(key.toLowerCase(), sourcePrefix.toLowerCase()) && Utils.isMatch(source, [key.substring(sourcePrefix.length)])) {
-        return !isLog ? Utils.toBoolean(configSettings[key]) : configSettings[key];
+    const isLog: boolean = type === 'log';
+    const sourcePrefix: string = `@@${type}:`;
+
+    const value: string = configSettings[sourcePrefix + source];
+    if (value) {
+      return isLog ? value: Utils.toBoolean(value);
+    }
+
+    // sort object keys longest first, then alphabetically.
+    const sortedKeys = Object.keys(configSettings).sort((a, b) => b.length - a.length || a.localeCompare(b));
+    for (const index in sortedKeys) {
+      const key: string = sortedKeys[index];
+      if (!Utils.startsWith(key.toLowerCase(), sourcePrefix)) {
+        continue;
+      }
+
+      // check for wildcard match
+      const cleanKey: string = key.substring(sourcePrefix.length);
+      if (Utils.isMatch(source, [cleanKey])) {
+        return isLog ? configSettings[key] : Utils.toBoolean(configSettings[key]);
       }
     }
 

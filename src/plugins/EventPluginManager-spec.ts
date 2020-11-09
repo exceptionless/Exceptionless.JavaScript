@@ -45,7 +45,7 @@ describe('EventPluginManager', () => {
     });
 
     EventPluginManager.run(context, (ctx?: EventPluginContext) => {
-      expect(ctx.cancelled).to.be.undefined;
+      expect(ctx.cancelled).to.be.false;
       expect(ctx.event.source).to.equal('plugin 1');
       expect(ctx.event.geo).to.equal('43.5775,88.4472');
 

@@ -36,10 +36,9 @@ describe('EventExclusionPlugin', () => {
     it('[Trace] Test', () => expect(run('Test', 'Trace', null, null)).to.be.false);
     it('[Off] Test', () => expect(run('Test', 'Off', null, null)).to.be.true);
     it('[Abc] Test', () => expect(run('Test', 'Abc', null, null)).to.be.false);
-    it('[Off] Test', () => expect(run('Test', 'Off', null, null)).to.be.true);
-    it('[Trace] <null> (source min level: Off', () => expect(run(null, 'Trace', '@@log:', 'Off')).to.be.false);
+    it('[Trace] <null> (source min level: Off', () => expect(run(null, 'Trace', '@@log:', 'Off')).to.be.true);
     it('[Trace] <null> (global min level: Off', () => expect(run(null, 'Trace', '@@log:*', 'Off')).to.be.true);
-    it('[Trace] <undefined> (source min level: Off', () => expect(run(undefined, 'Trace', '@@log:', 'Off')).to.be.false);
+    it('[Trace] <undefined> (source min level: Off', () => expect(run(undefined, 'Trace', '@@log:', 'Off')).to.be.true);
     it('[Trace] <undefined> (global min level: Off', () => expect(run(undefined, 'Trace', '@@log:*', 'Off')).to.be.true);
     it('[Trace] <empty> (source min level: Off', () => expect(run('', 'Trace', '@@log:', 'Off')).to.be.true); // Becomes Global Log Level
     it('[Trace] <empty> (global min level: Off', () => expect(run('', 'Trace', '@@log:*', 'Off')).to.be.true);
@@ -101,6 +100,19 @@ describe('EventExclusionPlugin', () => {
     it('* (global min level: debug)', () => expect(plugin.getMinLogLevel(settings, '*')).to.be.equal(1));
   });
 
+  describe('should fallback to global log level setting', () => {
+    const plugin = new EventExclusionPlugin();
+    const settings = {
+      '@@log:*': 'Fatal',
+    };
+
+    it('<undefined> (source min level: off)', () => expect(plugin.getMinLogLevel(settings, undefined)).to.be.equal(5));
+    it('<null> (source min level: off)', () => expect(plugin.getMinLogLevel(settings, null)).to.be.equal(5));
+    it('<empty> (source min level: off)', () => expect(plugin.getMinLogLevel(settings, '')).to.be.equal(5));
+    it('* (source min level: off)', () => expect(plugin.getMinLogLevel(settings, '*')).to.be.equal(5));
+    it('abc (source min level: off)', () => expect(plugin.getMinLogLevel(settings, 'abc')).to.be.equal(5));
+  });
+
   describe('should respect min log levels settings order with global settings', () => {
     const plugin = new EventExclusionPlugin();
     const settings = {
@@ -112,10 +124,13 @@ describe('EventExclusionPlugin', () => {
       '@@log:abc.def.ghi': 'Trace'
     };
 
-    it('<null> (global min level: fatal)', () => expect(plugin.getMinLogLevel(settings, null)).to.be.equal(5));
+    it('<undefined> (source min level: debug)', () => expect(plugin.getMinLogLevel(settings, undefined)).to.be.equal(1));
+    it('<null> (source min level: debug)', () => expect(plugin.getMinLogLevel(settings, null)).to.be.equal(1));
     it('<empty> (source min level: debug)', () => expect(plugin.getMinLogLevel(settings, '')).to.be.equal(1));
+    it('fallback (global min level: debug)', () => expect(plugin.getMinLogLevel(settings, 'fallback')).to.be.equal(5));
     it('abc (source min level: off)', () => expect(plugin.getMinLogLevel(settings, 'abc')).to.be.equal(6));
     it('abc.def (source min level: info)', () => expect(plugin.getMinLogLevel(settings, 'abc.def')).to.be.equal(2));
+    it('abc.def.random (source min level: info)', () => expect(plugin.getMinLogLevel(settings, 'abc.def.random')).to.be.equal(2));
     it('abc.def.ghi (source min level: trace)', () => expect(plugin.getMinLogLevel(settings, 'abc.def.ghi')).to.be.equal(0));
   });
 

@@ -117,7 +117,7 @@ export class Utils {
    * @param pattern The pattern to check, supports wild cards (*).
    */
   public static isMatch(input: string, patterns: string[], ignoreCase: boolean = true): boolean {
-    if (!input || typeof input !== 'string') {
+    if (typeof input !== 'string') {
       return false;
     }
 
@@ -129,8 +129,19 @@ export class Utils {
         return false;
       }
 
-      pattern = (ignoreCase ? pattern.toLowerCase() : pattern).replace(trim, '');
-      if (pattern.length <= 0) {
+      if (pattern) {
+        pattern = (ignoreCase ? pattern.toLowerCase() : pattern).replace(trim, '')
+      }
+
+      if (!pattern) {
+        return input === undefined || input === null;
+      }
+
+      if (pattern === '*') {
+        return true;
+      }
+
+      if (input === undefined || input === null) {
         return false;
       }
 
