@@ -3,6 +3,7 @@
 "files.insertFinalNewline": true,
 "typescript.tsdk": "./node_modules/typescript/lib",
 "cSpell.words": [
+    "Exceptionless",
     "bootstrapcdn",
     "configversion",
     "maxcdn",

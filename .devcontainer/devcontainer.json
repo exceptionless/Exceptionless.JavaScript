@@ -1,5 +1,5 @@
 {
-  "name": "Exceptionless.JavaScript"
+  "name": "Exceptionless.JavaScript",
   "image": "mcr.microsoft.com/vscode/devcontainers/typescript-node:latest",
   "extensions": [
     "dbaeumer.vscode-eslint",
