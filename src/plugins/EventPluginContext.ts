@@ -4,7 +4,7 @@ import { IEvent } from '../models/IEvent';
 import { ContextData } from './ContextData';
 
 export class EventPluginContext {
-  public cancelled: boolean;
+  public cancelled: boolean = false;
   public client: ExceptionlessClient;
   public event: IEvent;
   public contextData: ContextData;

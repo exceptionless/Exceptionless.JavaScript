@@ -1,5 +1,6 @@
 // Update once ts issue is fixed: https://github.com/Microsoft/TypeScript/issues/2192
 // import * as exceptionless from '../../dist/exceptionless'
+// eslint-disable-next-line no-var
 declare var exceptionless;
 
 angular.module('exceptionless', [])
@@ -37,6 +38,7 @@ angular.module('exceptionless', [])
             // Needed to support angular-mocks.
             $delegate[property].logs = [];
           }
+          // eslint-disable-next-line prefer-spread
           previousFn.apply(null, args);
           if (args[0] && args[0].length > 0) {
             $ExceptionlessClient.submitLog(null, args[0], logLevel);

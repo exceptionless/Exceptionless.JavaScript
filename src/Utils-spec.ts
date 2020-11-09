@@ -1,22 +1,23 @@
 import { expect } from 'chai';
+import { describe, it } from 'mocha';
 import { Utils } from './Utils';
 
 describe('Utils', () => {
   it('should add range', () => {
-    let target: string[];
-    expect(Utils.addRange(target)).to.eql([]);
+    let target: string[] = undefined;
+    expect(Utils.addRange(target)).to.deep.equal([]);
     expect(target).to.be.undefined;
 
-    expect(Utils.addRange(target, '1', '2')).to.eql(['1', '2']);
-    expect(Utils.addRange(target, '1', '2')).to.eql(['1', '2']);
+    expect(Utils.addRange(target, '1', '2')).to.deep.equal(['1', '2']);
+    expect(Utils.addRange(target, '1', '2')).to.deep.equal(['1', '2']);
 
     target = ['3'];
-    expect(Utils.addRange(target, '1', '2')).to.eql(['3', '1', '2']);
-    expect(target).to.eql(['3', '1', '2']);
+    expect(Utils.addRange(target, '1', '2')).to.deep.equal(['3', '1', '2']);
+    expect(target).to.deep.equal(['3', '1', '2']);
   });
 
   describe('stringify', () => {
-    const user: any = {
+    const user = {
       id: 1,
       name: 'Blake',
       password: '123456',
@@ -68,11 +69,11 @@ describe('Utils', () => {
     });
 
     it('circular reference', () => {
-      const afoo: any = { a: 'foo' };
-      afoo.b = afoo;
+      const aFoo: any = { a: 'foo' };
+      aFoo.b = aFoo;
 
-      expect(Utils.stringify(afoo)).to.equal('{"a":"foo"}');
-      expect(Utils.stringify([{ one: afoo, two: afoo }])).to.equal('[{"one":{"a":"foo"}}]');
+      expect(Utils.stringify(aFoo)).to.equal('{"a":"foo"}');
+      expect(Utils.stringify([{ one: aFoo, two: aFoo }])).to.equal('[{"one":{"a":"foo"}}]');
     });
 
     it.skip('deep circular reference', () => {
@@ -124,7 +125,7 @@ describe('Utils', () => {
       };
 
       const result = JSON.parse(Utils.stringify(bar));
-      expect(result).to.eql(expected);
+      expect(result).to.deep.equal(expected);
     });
 
     describe('with exclude pattern', () => {
@@ -158,7 +159,7 @@ describe('Utils', () => {
     expect(Utils.parseVersion('https://cdnjs.cloudflare.com/ajax/libs/Base64/0.3.0/base64.min.js')).to.equal('0.3.0');
     expect(Utils.parseVersion('https://cdnjs.cloudflare.com/ajax/libs/angular-google-maps/2.1.0-X.10/angular-google-maps.min.js')).to.equal('2.1.0-X.10');
     expect(Utils.parseVersion('https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/2.1.8-M1/swagger-ui.min.js')).to.equal('2.1.8-M1');
-    expect(Utils.parseVersion('https://cdnjs.cloudflare.com/BLAH/BLAH.min.js')).to.equal(null);
+    expect(Utils.parseVersion('https://cdnjs.cloudflare.com/BLAH/BLAH.min.js')).to.be.null;
   });
 
   describe('isMatch', () => {
@@ -244,8 +245,8 @@ describe('Utils', () => {
       expect(Utils.startsWith('@@log:*', '@@log:')).to.be.true;
     });
 
-    it('input: test prefix: nopattern', () => {
-      expect(Utils.startsWith('test', 'nopattern')).to.be.false;
+    it('input: test prefix: noPattern', () => {
+      expect(Utils.startsWith('test', 'noPattern')).to.be.false;
     });
   });
 
@@ -266,8 +267,8 @@ describe('Utils', () => {
       expect(Utils.endsWith('@@log:*', 'log:*')).to.be.true;
     });
 
-    it('input: test suffix: nopattern', () => {
-      expect(Utils.endsWith('test', 'nopattern')).to.be.false;
+    it('input: test suffix: noPattern', () => {
+      expect(Utils.endsWith('test', 'noPattern')).to.be.false;
     });
   });
 

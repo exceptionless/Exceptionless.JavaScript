@@ -1,10 +1,10 @@
+/* eslint-disable @typescript-eslint/no-var-requires */
 const fs = require("fs");
 const pkg = require('./package.json');
 const gulp = require('gulp');
-const $ = require('gulp-load-plugins')({lazy:true });
+const $ = require('gulp-load-plugins')({ lazy: true });
+const eslint = require('gulp-eslint');
 const tsProject = require('tsproject');
-const eventStream = require('event-stream');
-const mochaHeadless = require('mocha-headless-chrome');
 
 gulp.task('clean', function clean(done) {
   const del = require('del');
@@ -112,7 +112,7 @@ gulp.task('exceptionless.universal', gulp.series('exceptionless.universal.umd', 
     'dist/temp/exceptionless.universal.js'
   ];
 
-  // NOTE: This is really hacky to replace require statements based on order..... but we need to ensure they are excluded for requirejs.
+  // HACK: We need to replace require statements based on order..... but we need to ensure they are excluded for requirejs.
   gulp.src(files)
     .pipe($.sourcemaps.init({ loadMaps: true }))
     .pipe($.concat('exceptionless.universal.js'))
@@ -135,8 +135,8 @@ gulp.task('exceptionless.universal', gulp.series('exceptionless.universal.umd', 
 
 gulp.task('lint', function lint() {
   return gulp.src(['src/**/*.ts'])
-    .pipe($.tslint({ formatter: 'verbose' }))
-    .pipe($.tslint.report());
+    .pipe(eslint())
+    .pipe(eslint.format());
 });
 
 gulp.task('build', gulp.series('clean', 'lint', 'exceptionless', 'exceptionless.node', 'exceptionless.universal'));
@@ -145,55 +145,10 @@ gulp.task('watch', gulp.series('build', function watch() {
   return gulp.watch('src/**/*.ts', gulp.series('build'));
 }));
 
-gulp.task('typescript.test', function test(done) {
-  const stream = tsProject.src('src/tsconfig.test.json').pipe(gulp.dest('dist/temp'));
-  stream.on('finish', done);
-});
-
-gulp.task('exceptionless.test.umd', gulp.series('typescript.test', function testUmd(done) {
-  var wrap = function(filename){
-    return gulp.src(filename)
-    .pipe($.sourcemaps.init({ loadMaps: true }))
-    .pipe($.wrapUmd({
-      exports: 'exports',
-      globalName: 'exceptionless',
-      namespace: 'exceptionless'
-    }))
-    .pipe($.sourcemaps.write('.'))
-    .pipe(gulp.dest('dist/temp'));
-  };
-
-  eventStream.merge(
-    wrap('dist/temp/src/exceptionless-nodespec.js'),
-    wrap('dist/temp/src/exceptionless-browserspec.js'));
-
-  done();
-}));
-
-gulp.task('test-node', gulp.series('exceptionless.test.umd', function testNode() {
-  return gulp.src('dist/temp/exceptionless-nodespec.js', { read: false })
-    .pipe($.mocha({
-      require: ['source-map-support/register'],
-      timeout: 5000,
-      exit: true
-    }));
-}));
-
-gulp.task('test-browser', gulp.series('exceptionless.test.umd', function testBrowser(done) {
-  mochaHeadless.runner({
-    timeout: 5000,
-    file: 'testrunner.html'
-  }).then(function (result) {
-    done();
-  });
-}));
-
-gulp.task('test', gulp.series('test-browser', 'test-node'));
-
 gulp.task('format', function format() {
   return gulp.src(['src/**/*.ts'])
     .pipe($.exec(file => `node_modules/typescript-formatter/bin/tsfmt -r ${file.path}`))
     .pipe($.exec.reporter());
 });
 
-gulp.task('default', gulp.series('watch', 'test'));
+gulp.task('default', gulp.series('watch'));

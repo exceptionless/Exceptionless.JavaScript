@@ -1,4 +1,5 @@
 import { expect } from 'chai';
+import { beforeEach, describe, it } from 'mocha';
 import { IEvent } from '../models/IEvent';
 import { InMemoryStorage } from './InMemoryStorage';
 import { IStorage } from './IStorage';
@@ -8,10 +9,12 @@ describeStorage('InMemoryStorage', (maxItems = 250) => {
   return new InMemoryStorage(maxItems);
 });
 
-export function describeStorage(name: string,
-                                storageFactory: (maxItems?: number) => IStorage,
-                                beforeEachCallback?: () => void,
-                                recreateStorage: boolean = false) {
+export function describeStorage(
+  name: string,
+  storageFactory: (maxItems?: number) => IStorage,
+  beforeEachCallback?: () => void,
+  recreateStorage: boolean = false
+) {
   describe(name, () => {
     if (beforeEachCallback) {
       beforeEach(beforeEachCallback);
@@ -61,20 +64,20 @@ export function describeStorage(name: string,
       storage.remove(ts1);
       expect(storage.get().length).to.equal(5);
 
-      expect(storage.get()[0].value).to.eql(event2);
+      expect(storage.get()[0].value).to.deep.equal(event2);
       storage.remove(ts2);
       expect(storage.get().length).to.equal(4);
 
       let events = storage.get(2);
       expect(events.length).to.equal(2);
-      expect(events[0].value).not.to.equal(events[1].value);
+      expect(events[0].value).not.to.deep.equal(events[1].value);
       storage.remove(events[0].timestamp);
       storage.remove(events[1].timestamp);
       expect(storage.get().length).to.equal(2);
 
       events = storage.get();
       expect(events.length).to.equal(2);
-      expect(events[0].value).not.to.equal(events[1].value);
+      expect(events[0].value).not.to.deep.equal(events[1].value);
     });
 
     it('should clear all events', () => {
@@ -148,7 +151,7 @@ export function describeStorage(name: string,
       while (events && events.length > 0) {
         expect(2).to.equal(events.length);
         for (let ei = 0; ei < 2; ei++) {
-          expect(getDate(DATE, offset++)).to.eql(events[ei].value.date);
+          expect(getDate(DATE, offset++)).to.deep.equal(events[ei].value.date);
           storage.remove(events[ei].timestamp);
         }
 

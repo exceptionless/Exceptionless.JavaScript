@@ -37,7 +37,7 @@ export class DefaultErrorParser implements IErrorParser {
 
     const TRACEKIT_STACK_TRACE_KEY: string = '@@_TraceKit.StackTrace'; // optimization for minifier.
 
-    const stackTrace: TraceKit.StackTrace = !!context.contextData[TRACEKIT_STACK_TRACE_KEY]
+    const stackTrace: TraceKit.StackTrace = context.contextData[TRACEKIT_STACK_TRACE_KEY]
       ? context.contextData[TRACEKIT_STACK_TRACE_KEY]
       : TraceKit.computeStackTrace(exception, 25);
 

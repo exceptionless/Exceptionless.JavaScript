@@ -19,7 +19,7 @@ export class NodeErrorParser implements IErrorParser {
           column: frame.getColumnNumber() || 0,
           declaring_type: frame.getTypeName(),
           data: {
-            is_native: frame.isNative() || (!!frame.filename && frame.filename[0] !== '/' && frame.filename[0] !== '.')
+            is_native: frame.isNative() || (frame.filename && frame.filename[0] !== '/' && frame.filename[0] !== '.')
           }
         });
       }

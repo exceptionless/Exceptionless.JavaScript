@@ -17,8 +17,8 @@ export class SettingsManager {
    */
   private static _handlers: Array<(config: Configuration) => void> = [];
 
-  public static onChanged(handler: (config: Configuration) => void) {
-    !!handler && this._handlers.push(handler);
+  public static onChanged(handler: (config: Configuration) => void): void {
+    handler && this._handlers.push(handler);
   }
 
   public static applySavedServerSettings(config: Configuration): void {

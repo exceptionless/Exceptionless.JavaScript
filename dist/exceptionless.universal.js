@@ -1291,16 +1291,27 @@ if (!exports) { var exports = {}; }
 
 "use strict";
 var __extends = (this && this.__extends) || (function () {
-    var extendStatics = Object.setPrototypeOf ||
-        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
     return function (d, b) {
         extendStatics(d, b);
         function __() { this.constructor = d; }
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
+var __spreadArrays = (this && this.__spreadArrays) || function () {
+    for (var s = 0, i = 0, il = arguments.length; i < il; i++) s += arguments[i].length;
+    for (var r = Array(s), k = 0, i = 0; i < il; i++)
+        for (var a = arguments[i], j = 0, jl = a.length; j < jl; j++, k++)
+            r[k] = a[j];
+    return r;
+};
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.NodeSubmissionAdapter = exports.NodeFileStorageProvider = exports.NodeRequestInfoCollector = exports.NodeModuleCollector = exports.NodeErrorParser = exports.NodeEnvironmentInfoCollector = exports.NodeFileStorage = exports.DefaultSubmissionAdapter = exports.BrowserStorageProvider = exports.DefaultRequestInfoCollector = exports.DefaultModuleCollector = exports.DefaultErrorParser = exports.BrowserStorage = exports.KeyValueStorageBase = exports.InMemoryStorage = exports.SubmissionMethodPlugin = exports.RequestInfoPlugin = exports.ModuleInfoPlugin = exports.EventExclusionPlugin = exports.ErrorPlugin = exports.EnvironmentInfoPlugin = exports.DuplicateCheckerPlugin = exports.ConfigurationDefaultsPlugin = exports.EventBuilder = exports.SettingsResponse = exports.Configuration = exports.ContextData = exports.ExceptionlessClient = exports.SubmissionResponse = exports.SettingsManager = exports.Utils = exports.DefaultSubmissionClient = exports.InMemoryStorageProvider = exports.DefaultEventQueue = exports.EventPluginManager = exports.EventPluginContext = exports.ReferenceIdPlugin = exports.HeartbeatPlugin = exports.NullLog = exports.ConsoleLog = exports.DefaultLastReferenceIdManager = void 0;
 if (typeof process !== 'undefined') {
 var os = require("os");
 var nodestacktrace = require("stack-trace");
@@ -1401,6 +1412,7 @@ var ReferenceIdPlugin = (function () {
 exports.ReferenceIdPlugin = ReferenceIdPlugin;
 var EventPluginContext = (function () {
     function EventPluginContext(client, event, contextData) {
+        this.cancelled = false;
         this.client = client;
         this.event = event;
         this.contextData = contextData ? contextData : new ContextData();
@@ -1409,7 +1421,7 @@ var EventPluginContext = (function () {
         get: function () {
             return this.client.config.log;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     return EventPluginContext;
@@ -1430,18 +1442,18 @@ var EventPluginManager = (function () {
                     context.cancelled = true;
                     context.log.error("Error running plugin '" + plugin.name + "': " + ex.message + ". Discarding Event.");
                 }
-                if (context.cancelled && !!callback) {
+                if (context.cancelled && callback) {
                     callback(context);
                 }
             };
         };
         var plugins = context.client.config.plugins;
         var wrappedPlugins = [];
-        if (!!callback) {
+        if (callback) {
             wrappedPlugins[plugins.length] = wrap({ name: 'cb', priority: 9007199254740992, run: callback }, null);
         }
         for (var index = plugins.length - 1; index > -1; index--) {
-            wrappedPlugins[index] = wrap(plugins[index], !!callback || (index < plugins.length - 1) ? wrappedPlugins[index + 1] : null);
+            wrappedPlugins[index] = wrap(plugins[index], callback || (index < plugins.length - 1) ? wrappedPlugins[index + 1] : null);
         }
         wrappedPlugins[0]();
     };
@@ -1482,7 +1494,7 @@ var DefaultEventQueue = (function () {
         }
         this.ensureQueueTimer();
         var timestamp = config.storage.queue.save(event);
-        var logText = "type=" + event.type + " " + (!!event.reference_id ? 'refid=' + event.reference_id : '');
+        var logText = "type=" + event.type + " " + (event.reference_id ? 'refid=' + event.reference_id : '');
         if (timestamp) {
             log.info("Enqueuing event: " + timestamp + " " + logText);
         }
@@ -1544,7 +1556,7 @@ var DefaultEventQueue = (function () {
         }
     };
     DefaultEventQueue.prototype.onEventsPosted = function (handler) {
-        !!handler && this._handlers.push(handler);
+        handler && this._handlers.push(handler);
     };
     DefaultEventQueue.prototype.eventsPosted = function (events, response) {
         var handlers = this._handlers;
@@ -1659,7 +1671,7 @@ var DefaultSubmissionClient = (function () {
     };
     DefaultSubmissionClient.prototype.getSettings = function (config, version, callback) {
         var request = this.createRequest(config, 'GET', config.configServerUrl + "/api/v2/projects/config?v=" + version);
-        var cb = function (status, message, data, headers) {
+        var cb = function (status, message, data) {
             if (status !== 200) {
                 return callback(new SettingsResponse(false, null, -1, null, message));
             }
@@ -1777,7 +1789,7 @@ var Utils = (function () {
         if (!source) {
             return null;
         }
-        var versionRegex = /(v?((\d+)\.(\d+)(\.(\d+))?)(?:-([\dA-Za-z\-]+(?:\.[\dA-Za-z\-]+)*))?(?:\+([\dA-Za-z\-]+(?:\.[\dA-Za-z\-]+)*))?)/;
+        var versionRegex = /(v?((\d+)\.(\d+)(\.(\d+))?)(?:-([\dA-Za-z-]+(?:\.[\dA-Za-z-]+)*))?(?:\+([\dA-Za-z-]+(?:\.[\dA-Za-z-]+)*))?)/;
         var matches = versionRegex.exec(source);
         if (matches && matches.length > 0) {
             return matches[0];
@@ -1807,7 +1819,7 @@ var Utils = (function () {
     };
     Utils.isMatch = function (input, patterns, ignoreCase) {
         if (ignoreCase === void 0) { ignoreCase = true; }
-        if (!input || typeof input !== 'string') {
+        if (typeof input !== 'string') {
             return false;
         }
         var trim = /^[\s\uFEFF\xA0]+|[\s\uFEFF\xA0]+$/g;
@@ -1816,8 +1828,16 @@ var Utils = (function () {
             if (typeof pattern !== 'string') {
                 return false;
             }
-            pattern = (ignoreCase ? pattern.toLowerCase() : pattern).replace(trim, '');
-            if (pattern.length <= 0) {
+            if (pattern) {
+                pattern = (ignoreCase ? pattern.toLowerCase() : pattern).replace(trim, '');
+            }
+            if (!pattern) {
+                return input === undefined || input === null;
+            }
+            if (pattern === '*') {
+                return true;
+            }
+            if (input === undefined || input === null) {
                 return false;
             }
             var startsWithWildcard = pattern[0] === '*';
@@ -1856,7 +1876,7 @@ var Utils = (function () {
                 if (Utils.isMatch(key, excludedKeys)) {
                     return;
                 }
-                if (typeof value === 'object' && !!value) {
+                if (typeof value === 'object' && value) {
                     if (cache.indexOf(value) !== -1) {
                         return;
                     }
@@ -1911,7 +1931,7 @@ var SettingsManager = (function () {
     function SettingsManager() {
     }
     SettingsManager.onChanged = function (handler) {
-        !!handler && this._handlers.push(handler);
+        handler && this._handlers.push(handler);
     };
     SettingsManager.applySavedServerSettings = function (config) {
         if (!config || !config.isValid) {
@@ -1998,10 +2018,10 @@ var SettingsManager = (function () {
         }
         return { version: 0, settings: {} };
     };
+    SettingsManager._isUpdatingSettings = false;
+    SettingsManager._handlers = [];
     return SettingsManager;
 }());
-SettingsManager._isUpdatingSettings = false;
-SettingsManager._handlers = [];
 exports.SettingsManager = SettingsManager;
 var SubmissionResponse = (function () {
     function SubmissionResponse(statusCode, message) {
@@ -2032,8 +2052,8 @@ var ExceptionlessClient = (function () {
             ? new Configuration(settingsOrApiKey)
             : new Configuration({ apiKey: settingsOrApiKey, serverUrl: serverUrl });
         this.updateSettingsTimer(5000);
-        this.config.onChanged(function (config) { return _this.updateSettingsTimer(_this._timeoutId > 0 ? 5000 : 0); });
-        this.config.queue.onEventsPosted(function (events, response) { return _this.updateSettingsTimer(); });
+        this.config.onChanged(function () { return _this.updateSettingsTimer(_this._timeoutId > 0 ? 5000 : 0); });
+        this.config.queue.onEventsPosted(function () { return _this.updateSettingsTimer(); });
     }
     ExceptionlessClient.prototype.createException = function (exception) {
         var pluginContextData = new ContextData();
@@ -2094,13 +2114,13 @@ var ExceptionlessClient = (function () {
         this.createSessionStart().submit(callback);
     };
     ExceptionlessClient.prototype.submitSessionEnd = function (sessionIdOrUserId) {
-        if (sessionIdOrUserId) {
+        if (sessionIdOrUserId && this.config.enabled && this.config.isValid) {
             this.config.log.info("Submitting session end: " + sessionIdOrUserId);
             this.config.submissionClient.sendHeartbeat(sessionIdOrUserId, true, this.config);
         }
     };
     ExceptionlessClient.prototype.submitSessionHeartbeat = function (sessionIdOrUserId) {
-        if (sessionIdOrUserId) {
+        if (sessionIdOrUserId && this.config.enabled && this.config.isValid) {
             this.config.log.info("Submitting session heartbeat: " + sessionIdOrUserId);
             this.config.submissionClient.sendHeartbeat(sessionIdOrUserId, false, this.config);
         }
@@ -2110,16 +2130,16 @@ var ExceptionlessClient = (function () {
     };
     ExceptionlessClient.prototype.submitEvent = function (event, pluginContextData, callback) {
         function cancelled(eventPluginContext) {
-            if (!!eventPluginContext) {
+            if (eventPluginContext) {
                 eventPluginContext.cancelled = true;
             }
-            return !!callback && callback(eventPluginContext);
+            return callback && callback(eventPluginContext);
         }
         var context = new EventPluginContext(this, event, pluginContextData);
         if (!event) {
             return cancelled(context);
         }
-        if (!this.config.enabled) {
+        if (!this.config.enabled || !this.config.isValid) {
             this.config.log.info('Event submission is currently disabled.');
             return cancelled(context);
         }
@@ -2145,20 +2165,20 @@ var ExceptionlessClient = (function () {
                     config.lastReferenceIdManager.setLast(ev.reference_id);
                 }
             }
-            !!callback && callback(ctx);
+            callback && callback(ctx);
         });
     };
     ExceptionlessClient.prototype.updateUserEmailAndDescription = function (referenceId, email, description, callback) {
         var _this = this;
-        if (!referenceId || !email || !description || !this.config.enabled) {
-            return !!callback && callback(new SubmissionResponse(500, 'cancelled'));
+        if (!referenceId || !email || !description || !this.config.enabled || !this.config.isValid) {
+            return callback && callback(new SubmissionResponse(500, 'cancelled'));
         }
         var userDescription = { email_address: email, description: description };
         this.config.submissionClient.postUserDescription(referenceId, userDescription, this.config, function (response) {
             if (!response.success) {
                 _this.config.log.error("Failed to submit user email and description for event '" + referenceId + "': " + response.statusCode + " " + response.message);
             }
-            !!callback && callback(response);
+            callback && callback(response);
         });
     };
     ExceptionlessClient.prototype.getLastReferenceId = function () {
@@ -2166,16 +2186,19 @@ var ExceptionlessClient = (function () {
     };
     ExceptionlessClient.prototype.updateSettingsTimer = function (initialDelay) {
         var _this = this;
-        this.config.log.info("Updating settings timer with delay: " + initialDelay);
         this._timeoutId = clearTimeout(this._timeoutId);
         this._timeoutId = clearInterval(this._intervalId);
         var interval = this.config.updateSettingsWhenIdleInterval;
         if (interval > 0) {
+            this.config.log.info("Update settings every " + interval + "ms (" + initialDelay + "ms delay)");
             var updateSettings = function () { return SettingsManager.updateSettings(_this.config); };
             if (initialDelay > 0) {
                 this._timeoutId = setTimeout(updateSettings, initialDelay);
             }
             this._intervalId = setInterval(updateSettings, interval);
+        }
+        else {
+            this.config.log.info("Turning off update settings");
         }
     };
     Object.defineProperty(ExceptionlessClient, "default", {
@@ -2185,12 +2208,12 @@ var ExceptionlessClient = (function () {
             }
             return ExceptionlessClient._instance;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
+    ExceptionlessClient._instance = null;
     return ExceptionlessClient;
 }());
-ExceptionlessClient._instance = null;
 exports.ExceptionlessClient = ExceptionlessClient;
 var ContextData = (function () {
     function ContextData() {
@@ -2204,7 +2227,7 @@ var ContextData = (function () {
         get: function () {
             return !!this['@@_Exception'];
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     ContextData.prototype.getException = function () {
@@ -2217,7 +2240,7 @@ var ContextData = (function () {
         get: function () {
             return !!this['@@_IsUnhandledError'];
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     ContextData.prototype.setSubmissionMethod = function (method) {
@@ -2279,14 +2302,14 @@ var Configuration = (function () {
             this.log.info("apiKey: " + this._apiKey);
             this.changed();
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Configuration.prototype, "isValid", {
         get: function () {
-            return !!this.apiKey && this.apiKey.length >= 10;
+            return this.apiKey && this.apiKey.length >= 10;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Configuration.prototype, "serverUrl", {
@@ -2294,7 +2317,7 @@ var Configuration = (function () {
             return this._serverUrl;
         },
         set: function (value) {
-            if (!!value) {
+            if (value) {
                 this._serverUrl = value;
                 this._configServerUrl = value;
                 this._heartbeatServerUrl = value;
@@ -2302,7 +2325,7 @@ var Configuration = (function () {
                 this.changed();
             }
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Configuration.prototype, "configServerUrl", {
@@ -2310,13 +2333,13 @@ var Configuration = (function () {
             return this._configServerUrl;
         },
         set: function (value) {
-            if (!!value) {
+            if (value) {
                 this._configServerUrl = value;
                 this.log.info("configServerUrl: " + value);
                 this.changed();
             }
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Configuration.prototype, "heartbeatServerUrl", {
@@ -2324,13 +2347,13 @@ var Configuration = (function () {
             return this._heartbeatServerUrl;
         },
         set: function (value) {
-            if (!!value) {
+            if (value) {
                 this._heartbeatServerUrl = value;
                 this.log.info("heartbeatServerUrl: " + value);
                 this.changed();
             }
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Configuration.prototype, "updateSettingsWhenIdleInterval", {
@@ -2351,7 +2374,7 @@ var Configuration = (function () {
             this.log.info("updateSettingsWhenIdleInterval: " + value);
             this.changed();
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Configuration.prototype, "dataExclusions", {
@@ -2359,7 +2382,7 @@ var Configuration = (function () {
             var exclusions = this.settings['@@DataExclusions'];
             return this._dataExclusions.concat(exclusions && exclusions.split(',') || []);
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Configuration.prototype.addDataExclusions = function () {
@@ -2367,7 +2390,7 @@ var Configuration = (function () {
         for (var _i = 0; _i < arguments.length; _i++) {
             exclusions[_i] = arguments[_i];
         }
-        this._dataExclusions = Utils.addRange.apply(Utils, [this._dataExclusions].concat(exclusions));
+        this._dataExclusions = Utils.addRange.apply(Utils, __spreadArrays([this._dataExclusions], exclusions));
     };
     Object.defineProperty(Configuration.prototype, "includePrivateInformation", {
         get: function () {
@@ -2385,7 +2408,7 @@ var Configuration = (function () {
             this.log.info("includePrivateInformation: " + val);
             this.changed();
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Configuration.prototype, "includeUserName", {
@@ -2396,7 +2419,7 @@ var Configuration = (function () {
             this._includeUserName = value || false;
             this.changed();
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Configuration.prototype, "includeMachineName", {
@@ -2407,7 +2430,7 @@ var Configuration = (function () {
             this._includeMachineName = value || false;
             this.changed();
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Configuration.prototype, "includeIpAddress", {
@@ -2418,7 +2441,7 @@ var Configuration = (function () {
             this._includeIpAddress = value || false;
             this.changed();
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Configuration.prototype, "includeCookies", {
@@ -2429,7 +2452,7 @@ var Configuration = (function () {
             this._includeCookies = value || false;
             this.changed();
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Configuration.prototype, "includePostData", {
@@ -2440,7 +2463,7 @@ var Configuration = (function () {
             this._includePostData = value || false;
             this.changed();
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Configuration.prototype, "includeQueryString", {
@@ -2451,7 +2474,7 @@ var Configuration = (function () {
             this._includeQueryString = value || false;
             this.changed();
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Configuration.prototype, "userAgentBotPatterns", {
@@ -2459,7 +2482,7 @@ var Configuration = (function () {
             var patterns = this.settings['@@UserAgentBotPatterns'];
             return this._userAgentBotPatterns.concat(patterns && patterns.split(',') || []);
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Configuration.prototype.addUserAgentBotPatterns = function () {
@@ -2467,7 +2490,7 @@ var Configuration = (function () {
         for (var _i = 0; _i < arguments.length; _i++) {
             userAgentBotPatterns[_i] = arguments[_i];
         }
-        this._userAgentBotPatterns = Utils.addRange.apply(Utils, [this._userAgentBotPatterns].concat(userAgentBotPatterns));
+        this._userAgentBotPatterns = Utils.addRange.apply(Utils, __spreadArrays([this._userAgentBotPatterns], userAgentBotPatterns));
     };
     Object.defineProperty(Configuration.prototype, "plugins", {
         get: function () {
@@ -2475,11 +2498,11 @@ var Configuration = (function () {
                 return (p1.priority < p2.priority) ? -1 : (p1.priority > p2.priority) ? 1 : 0;
             });
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Configuration.prototype.addPlugin = function (pluginOrName, priority, pluginAction) {
-        var plugin = !!pluginAction ? { name: pluginOrName, priority: priority, run: pluginAction } : pluginOrName;
+        var plugin = pluginAction ? { name: pluginOrName, priority: priority, run: pluginAction } : pluginOrName;
         if (!plugin || !plugin.run) {
             this.log.error('Add plugin failed: Run method not defined');
             return;
@@ -2518,7 +2541,7 @@ var Configuration = (function () {
         }
     };
     Configuration.prototype.setVersion = function (version) {
-        if (!!version) {
+        if (version) {
             this.defaultData['@version'] = version;
         }
     };
@@ -2538,7 +2561,7 @@ var Configuration = (function () {
         get: function () {
             return 'exceptionless-universal-js/1.6.3';
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Configuration.prototype.useSessions = function (sendHeartbeats, heartbeatInterval) {
@@ -2557,7 +2580,7 @@ var Configuration = (function () {
         this.log = new ConsoleLog();
     };
     Configuration.prototype.onChanged = function (handler) {
-        !!handler && this._handlers.push(handler);
+        handler && this._handlers.push(handler);
     };
     Configuration.prototype.changed = function () {
         var handlers = this._handlers;
@@ -2578,12 +2601,12 @@ var Configuration = (function () {
             }
             return Configuration._defaultSettings;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
+    Configuration._defaultSettings = null;
     return Configuration;
 }());
-Configuration._defaultSettings = null;
 exports.Configuration = Configuration;
 var SettingsResponse = (function () {
     function SettingsResponse(success, settings, settingsVersion, exception, message) {
@@ -2609,13 +2632,13 @@ var EventBuilder = (function () {
         this.pluginContextData = pluginContextData || new ContextData();
     }
     EventBuilder.prototype.setType = function (type) {
-        if (!!type) {
+        if (type) {
             this.target.type = type;
         }
         return this;
     };
     EventBuilder.prototype.setSource = function (source) {
-        if (!!source) {
+        if (source) {
             this.target.source = source;
         }
         return this;
@@ -2638,7 +2661,7 @@ var EventBuilder = (function () {
         return this;
     };
     EventBuilder.prototype.setMessage = function (message) {
-        if (!!message) {
+        if (message) {
             this.target.message = message;
         }
         return this;
@@ -2685,7 +2708,7 @@ var EventBuilder = (function () {
         return this;
     };
     EventBuilder.prototype.setValue = function (value) {
-        if (!!value) {
+        if (value) {
             this.target.value = value;
         }
         return this;
@@ -2695,7 +2718,7 @@ var EventBuilder = (function () {
         for (var _i = 0; _i < arguments.length; _i++) {
             tags[_i] = arguments[_i];
         }
-        this.target.tags = Utils.addRange.apply(Utils, [this.target.tags].concat(tags));
+        this.target.tags = Utils.addRange.apply(Utils, __spreadArrays([this.target.tags], tags));
         return this;
     };
     EventBuilder.prototype.setProperty = function (name, value, maxDepth, excludedPropertyNames) {
@@ -2718,7 +2741,7 @@ var EventBuilder = (function () {
         return this;
     };
     EventBuilder.prototype.addRequestInfo = function (request) {
-        if (!!request) {
+        if (request) {
             this.pluginContextData['@request'] = request;
         }
         return this;
@@ -2757,13 +2780,13 @@ var ConfigurationDefaultsPlugin = (function () {
         var defaultTags = config.defaultTags || [];
         for (var _i = 0, defaultTags_1 = defaultTags; _i < defaultTags_1.length; _i++) {
             var tag = defaultTags_1[_i];
-            if (!!tag && context.event.tags.indexOf(tag) < 0) {
+            if (tag && context.event.tags.indexOf(tag) < 0) {
                 context.event.tags.push(tag);
             }
         }
         var defaultData = config.defaultData || {};
         for (var key in defaultData) {
-            if (!!defaultData[key]) {
+            if (defaultData[key]) {
                 var result = JSON.parse(Utils.stringify(defaultData[key], config.dataExclusions));
                 if (!Utils.isEmpty(result)) {
                     context.event.data[key] = result;
@@ -2777,9 +2800,9 @@ var ConfigurationDefaultsPlugin = (function () {
 exports.ConfigurationDefaultsPlugin = ConfigurationDefaultsPlugin;
 var DuplicateCheckerPlugin = (function () {
     function DuplicateCheckerPlugin(getCurrentTime, interval) {
+        var _this = this;
         if (getCurrentTime === void 0) { getCurrentTime = function () { return Date.now(); }; }
         if (interval === void 0) { interval = 30000; }
-        var _this = this;
         this.priority = 1010;
         this.name = 'DuplicateCheckerPlugin';
         this._mergedEvents = [];
@@ -2867,7 +2890,7 @@ var EnvironmentInfoPlugin = (function () {
         var collector = context.client.config.environmentInfoCollector;
         if (!context.event.data[ENVIRONMENT_KEY] && collector) {
             var environmentInfo = collector.getEnvironmentInfo(context);
-            if (!!environmentInfo) {
+            if (environmentInfo) {
                 context.event.data[ENVIRONMENT_KEY] = environmentInfo;
             }
         }
@@ -2902,7 +2925,7 @@ var ErrorPlugin = (function () {
             'stacktrace'
         ];
         var exception = context.contextData.getException();
-        if (!!exception) {
+        if (exception) {
             context.event.type = 'error';
             if (!context.event.data[ERROR_KEY]) {
                 var config = context.client.config;
@@ -2911,7 +2934,7 @@ var ErrorPlugin = (function () {
                     throw new Error('No error parser was defined.');
                 }
                 var result = parser.parse(context, exception);
-                if (!!result) {
+                if (result) {
                     var additionalData = JSON.parse(Utils.stringify(exception, config.dataExclusions.concat(ignoredProperties)));
                     if (!Utils.isEmpty(additionalData)) {
                         if (!result.data) {
@@ -2934,61 +2957,13 @@ var EventExclusionPlugin = (function () {
         this.name = 'EventExclusionPlugin';
     }
     EventExclusionPlugin.prototype.run = function (context, next) {
-        function getLogLevel(level) {
-            switch ((level || '').toLowerCase().trim()) {
-                case 'trace':
-                case 'true':
-                case '1':
-                case 'yes':
-                    return 0;
-                case 'debug':
-                    return 1;
-                case 'info':
-                    return 2;
-                case 'warn':
-                    return 3;
-                case 'error':
-                    return 4;
-                case 'fatal':
-                    return 5;
-                case 'off':
-                case 'false':
-                case '0':
-                case 'no':
-                    return 6;
-                default:
-                    return -1;
-            }
-        }
-        function getMinLogLevel(configSettings, loggerName) {
-            if (loggerName === void 0) { loggerName = '*'; }
-            return getLogLevel(getTypeAndSourceSetting(configSettings, 'log', loggerName, 'Trace') + '');
-        }
-        function getTypeAndSourceSetting(configSettings, type, source, defaultValue) {
-            if (configSettings === void 0) { configSettings = {}; }
-            if (!type) {
-                return defaultValue;
-            }
-            var isLog = type === 'log';
-            var sourcePrefix = "@@" + type + ":";
-            var value = configSettings[sourcePrefix + source];
-            if (value) {
-                return !isLog ? Utils.toBoolean(value) : value;
-            }
-            for (var key in configSettings) {
-                if (Utils.startsWith(key.toLowerCase(), sourcePrefix.toLowerCase()) && Utils.isMatch(source, [key.substring(sourcePrefix.length)])) {
-                    return !isLog ? Utils.toBoolean(configSettings[key]) : configSettings[key];
-                }
-            }
-            return defaultValue;
-        }
         var ev = context.event;
         var log = context.log;
         var settings = context.client.config.settings;
         if (ev.type === 'log') {
-            var minLogLevel = getMinLogLevel(settings, ev.source);
-            var logLevel = getLogLevel(ev.data['@level']);
-            if (logLevel >= 0 && (logLevel > 5 || logLevel < minLogLevel)) {
+            var minLogLevel = this.getMinLogLevel(settings, ev.source);
+            var logLevel = this.getLogLevel(ev.data['@level']);
+            if (logLevel !== -1 && (logLevel === 6 || logLevel < minLogLevel)) {
                 log.info('Cancelling log event due to minimum log level.');
                 context.cancelled = true;
             }
@@ -2996,18 +2971,74 @@ var EventExclusionPlugin = (function () {
         else if (ev.type === 'error') {
             var error = ev.data['@error'];
             while (!context.cancelled && error) {
-                if (getTypeAndSourceSetting(settings, ev.type, error.type, true) === false) {
+                if (this.getTypeAndSourceSetting(settings, ev.type, error.type, true) === false) {
                     log.info("Cancelling error from excluded exception type: " + error.type);
                     context.cancelled = true;
                 }
                 error = error.inner;
             }
         }
-        else if (getTypeAndSourceSetting(settings, ev.type, ev.source, true) === false) {
+        else if (this.getTypeAndSourceSetting(settings, ev.type, ev.source, true) === false) {
             log.info("Cancelling event from excluded type: " + ev.type + " and source: " + ev.source);
             context.cancelled = true;
         }
         next && next();
+    };
+    EventExclusionPlugin.prototype.getLogLevel = function (level) {
+        switch ((level || '').toLowerCase().trim()) {
+            case 'trace':
+            case 'true':
+            case '1':
+            case 'yes':
+                return 0;
+            case 'debug':
+                return 1;
+            case 'info':
+                return 2;
+            case 'warn':
+                return 3;
+            case 'error':
+                return 4;
+            case 'fatal':
+                return 5;
+            case 'off':
+            case 'false':
+            case '0':
+            case 'no':
+                return 6;
+            default:
+                return -1;
+        }
+    };
+    EventExclusionPlugin.prototype.getMinLogLevel = function (configSettings, source) {
+        return this.getLogLevel(this.getTypeAndSourceSetting(configSettings, 'log', source, 'other') + '');
+    };
+    EventExclusionPlugin.prototype.getTypeAndSourceSetting = function (configSettings, type, source, defaultValue) {
+        if (configSettings === void 0) { configSettings = {}; }
+        if (!type) {
+            return defaultValue;
+        }
+        if (!source) {
+            source = '';
+        }
+        var isLog = type === 'log';
+        var sourcePrefix = "@@" + type + ":";
+        var value = configSettings[sourcePrefix + source];
+        if (value) {
+            return isLog ? value : Utils.toBoolean(value);
+        }
+        var sortedKeys = Object.keys(configSettings).sort(function (a, b) { return b.length - a.length || a.localeCompare(b); });
+        for (var index in sortedKeys) {
+            var key = sortedKeys[index];
+            if (!Utils.startsWith(key.toLowerCase(), sourcePrefix)) {
+                continue;
+            }
+            var cleanKey = key.substring(sourcePrefix.length);
+            if (Utils.isMatch(source, [cleanKey])) {
+                return isLog ? configSettings[key] : Utils.toBoolean(configSettings[key]);
+            }
+        }
+        return defaultValue;
     };
     return EventExclusionPlugin;
 }());
@@ -3020,8 +3051,8 @@ var ModuleInfoPlugin = (function () {
     ModuleInfoPlugin.prototype.run = function (context, next) {
         var ERROR_KEY = '@error';
         var collector = context.client.config.moduleCollector;
-        if (context.event.data[ERROR_KEY] && !context.event.data['@error'].modules && !!collector) {
-            var modules = collector.getModules(context);
+        if (context.event.data[ERROR_KEY] && !context.event.data['@error'].modules && collector) {
+            var modules = collector.getModules();
             if (modules && modules.length > 0) {
                 context.event.data[ERROR_KEY].modules = modules;
             }
@@ -3040,9 +3071,9 @@ var RequestInfoPlugin = (function () {
         var REQUEST_KEY = '@request';
         var config = context.client.config;
         var collector = config.requestInfoCollector;
-        if (!context.event.data[REQUEST_KEY] && !!collector) {
+        if (!context.event.data[REQUEST_KEY] && collector) {
             var requestInfo = collector.getRequestInfo(context);
-            if (!!requestInfo) {
+            if (requestInfo) {
                 if (Utils.isMatch(requestInfo.user_agent, config.userAgentBotPatterns)) {
                     context.log.info('Cancelling event as the request user agent matches a known bot pattern');
                     context.cancelled = true;
@@ -3064,7 +3095,7 @@ var SubmissionMethodPlugin = (function () {
     }
     SubmissionMethodPlugin.prototype.run = function (context, next) {
         var submissionMethod = context.contextData.getSubmissionMethod();
-        if (!!submissionMethod) {
+        if (submissionMethod) {
             context.event.data['@submission_method'] = submissionMethod;
         }
         next && next();
@@ -3114,7 +3145,7 @@ var KeyValueStorageBase = (function () {
         this.lastTimestamp = 0;
         this.maxItems = maxItems;
     }
-    KeyValueStorageBase.prototype.save = function (value, single) {
+    KeyValueStorageBase.prototype.save = function (value) {
         if (!value) {
             return null;
         }
@@ -3171,7 +3202,7 @@ var KeyValueStorageBase = (function () {
     KeyValueStorageBase.prototype.ensureIndex = function () {
         if (!this.items) {
             this.items = this.createIndex();
-            this.lastTimestamp = Math.max.apply(Math, [0].concat(this.items)) + 1;
+            this.lastTimestamp = Math.max.apply(Math, __spreadArrays([0], this.items)) + 1;
         }
     };
     KeyValueStorageBase.prototype.safeDelete = function (key) {
@@ -3291,7 +3322,7 @@ var DefaultErrorParser = (function () {
             return frames;
         }
         var TRACEKIT_STACK_TRACE_KEY = '@@_TraceKit.StackTrace';
-        var stackTrace = !!context.contextData[TRACEKIT_STACK_TRACE_KEY]
+        var stackTrace = context.contextData[TRACEKIT_STACK_TRACE_KEY]
             ? context.contextData[TRACEKIT_STACK_TRACE_KEY]
             : TraceKit.computeStackTrace(exception, 25);
         if (!stackTrace) {
@@ -3310,7 +3341,7 @@ exports.DefaultErrorParser = DefaultErrorParser;
 var DefaultModuleCollector = (function () {
     function DefaultModuleCollector() {
     }
-    DefaultModuleCollector.prototype.getModules = function (context) {
+    DefaultModuleCollector.prototype.getModules = function () {
         if (!document || !document.getElementsByTagName) {
             return null;
         }
@@ -3325,7 +3356,7 @@ var DefaultModuleCollector = (function () {
                         version: Utils.parseVersion(scripts[index].src)
                     });
                 }
-                else if (!!scripts[index].innerHTML) {
+                else if (scripts[index].innerHTML) {
                     modules.push({
                         module_id: index,
                         name: 'Script Tag',
@@ -3419,10 +3450,10 @@ var DefaultSubmissionAdapter = (function () {
             }
             else if (status < 200 || status > 299) {
                 var responseBody = xhrRequest.responseBody;
-                if (!!responseBody && !!responseBody.message) {
+                if (responseBody && responseBody.message) {
                     message = responseBody.message;
                 }
-                else if (!!responseText && responseText.indexOf('message') !== -1) {
+                else if (responseText && responseText.indexOf('message') !== -1) {
                     try {
                         message = JSON.parse(responseText).message;
                     }
@@ -3605,7 +3636,7 @@ var NodeErrorParser = (function () {
                     column: frame.getColumnNumber() || 0,
                     declaring_type: frame.getTypeName(),
                     data: {
-                        is_native: frame.isNative() || (!!frame.filename && frame.filename[0] !== '/' && frame.filename[0] !== '.')
+                        is_native: frame.isNative() || (frame.filename && frame.filename[0] !== '/' && frame.filename[0] !== '.')
                     }
                 });
             }
@@ -3629,7 +3660,7 @@ var NodeModuleCollector = (function () {
         this.initialized = false;
         this.installedModules = {};
     }
-    NodeModuleCollector.prototype.getModules = function (context) {
+    NodeModuleCollector.prototype.getModules = function () {
         var _this = this;
         if (!require.main || !require.main.filename) {
             return [];

@@ -12,9 +12,9 @@ export class RequestInfoPlugin implements IEventPlugin {
 
     const config = context.client.config;
     const collector = config.requestInfoCollector;
-    if (!context.event.data[REQUEST_KEY] && !!collector) {
+    if (!context.event.data[REQUEST_KEY] && collector) {
       const requestInfo: IRequestInfo = collector.getRequestInfo(context);
-      if (!!requestInfo) {
+      if (requestInfo) {
         if (Utils.isMatch(requestInfo.user_agent, config.userAgentBotPatterns)) {
           context.log.info('Cancelling event as the request user agent matches a known bot pattern');
           context.cancelled = true;

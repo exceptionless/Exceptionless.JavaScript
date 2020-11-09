@@ -31,8 +31,8 @@ export class ExceptionlessClient {
       : new Configuration({ apiKey: settingsOrApiKey as string, serverUrl });
 
     this.updateSettingsTimer(5000);
-    this.config.onChanged((config) => this.updateSettingsTimer(this._timeoutId > 0 ? 5000 : 0));
-    this.config.queue.onEventsPosted((events, response) => this.updateSettingsTimer());
+    this.config.onChanged(() => this.updateSettingsTimer(this._timeoutId > 0 ? 5000 : 0));
+    this.config.queue.onEventsPosted(() => this.updateSettingsTimer());
   }
 
   public createException(exception: Error): EventBuilder {
@@ -79,7 +79,7 @@ export class ExceptionlessClient {
       builder = builder.setMessage(sourceOrMessage);
 
       try {
-        // TODO: Look into using https: //www.stevefenton.co.uk/Content/Blog/Date/201304/Blog/Obtaining-A-Class-Name-At-Runtime-In-TypeScript/
+        // TODO: Look into using https://www.stevefenton.co.uk/Content/Blog/Date/201304/Blog/Obtaining-A-Class-Name-At-Runtime-In-TypeScript/
         const caller: any = this.createLog.caller;
         builder = builder.setSource(caller && caller.caller && caller.caller.name);
       } catch (e) {
@@ -139,11 +139,11 @@ export class ExceptionlessClient {
    */
   public submitEvent(event: IEvent, pluginContextData?: ContextData, callback?: (context: EventPluginContext) => void): void {
     function cancelled(eventPluginContext: EventPluginContext) {
-      if (!!eventPluginContext) {
+      if (eventPluginContext) {
         eventPluginContext.cancelled = true;
       }
 
-      return !!callback && callback(eventPluginContext);
+      return callback && callback(eventPluginContext);
     }
 
     const context = new EventPluginContext(this, event, pluginContextData);
@@ -186,7 +186,7 @@ export class ExceptionlessClient {
         }
       }
 
-      !!callback && callback(ctx);
+      callback && callback(ctx);
     });
   }
 
@@ -199,7 +199,7 @@ export class ExceptionlessClient {
    */
   public updateUserEmailAndDescription(referenceId: string, email: string, description: string, callback?: (response: SubmissionResponse) => void) {
     if (!referenceId || !email || !description || !this.config.enabled || !this.config.isValid) {
-      return !!callback && callback(new SubmissionResponse(500, 'cancelled'));
+      return callback && callback(new SubmissionResponse(500, 'cancelled'));
     }
 
     const userDescription: IUserDescription = { email_address: email, description };
@@ -208,7 +208,7 @@ export class ExceptionlessClient {
         this.config.log.error(`Failed to submit user email and description for event '${referenceId}': ${response.statusCode} ${response.message}`);
       }
 
-      !!callback && callback(response);
+      callback && callback(response);
     });
   }
 
@@ -221,19 +221,20 @@ export class ExceptionlessClient {
   }
 
   private updateSettingsTimer(initialDelay?: number) {
-    this.config.log.info(`Updating settings timer with delay: ${initialDelay}`);
-
     this._timeoutId = clearTimeout(this._timeoutId);
     this._timeoutId = clearInterval(this._intervalId);
 
     const interval = this.config.updateSettingsWhenIdleInterval;
     if (interval > 0) {
+      this.config.log.info(`Update settings every ${interval}ms (${initialDelay}ms delay)`);
       const updateSettings = () => SettingsManager.updateSettings(this.config);
       if (initialDelay > 0) {
         this._timeoutId = setTimeout(updateSettings, initialDelay);
       }
 
       this._intervalId = setInterval(updateSettings, interval);
+    } else {
+      this.config.log.info("Turning off update settings");
     }
   }
 

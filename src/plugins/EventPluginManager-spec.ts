@@ -1,17 +1,27 @@
 import { expect } from 'chai';
+import { beforeEach, describe, it } from 'mocha';
+import { Configuration } from "../configuration/Configuration";
 import { ExceptionlessClient } from '../ExceptionlessClient';
 import { ContextData } from './ContextData';
 import { EventPluginContext } from './EventPluginContext';
 import { EventPluginManager } from './EventPluginManager';
 
+beforeEach(() => {
+  Configuration.defaults.updateSettingsWhenIdleInterval = -1;
+});
+
 describe('EventPluginManager', () => {
   it('should add items to the event.', (done) => {
-    const client = new ExceptionlessClient({ apiKey: 'LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw', serverUrl: 'http://localhost:50000' });
+    const client = new ExceptionlessClient({
+      apiKey: 'LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw',
+      serverUrl: 'http://localhost:50000'
+    });
+
     const context = new EventPluginContext(client, {}, new ContextData());
     expect(context.event.source).to.be.undefined;
     expect(context.event.geo).to.be.undefined;
 
-    expect(client.config.plugins).not.to.equal(null);
+    expect(client.config.plugins).not.to.be.null;
     while (client.config.plugins.length > 0) {
       client.config.removePlugin(client.config.plugins[0]);
     }
@@ -35,7 +45,7 @@ describe('EventPluginManager', () => {
     });
 
     EventPluginManager.run(context, (ctx?: EventPluginContext) => {
-      expect(ctx.cancelled).to.be.undefined;
+      expect(ctx.cancelled).to.be.false;
       expect(ctx.event.source).to.equal('plugin 1');
       expect(ctx.event.geo).to.equal('43.5775,88.4472');
 
@@ -44,10 +54,13 @@ describe('EventPluginManager', () => {
   });
 
   it('setting cancel should stop plugin execution.', (done) => {
-    const client = new ExceptionlessClient({ apiKey: 'LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw', serverUrl: 'http://localhost:50000' });
-    const context = new EventPluginContext(client, {}, new ContextData());
+    const client = new ExceptionlessClient({
+      apiKey: 'LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw',
+      serverUrl: 'http://localhost:50000'
+    });
 
-    expect(client.config.plugins).not.to.equal(null);
+    const context = new EventPluginContext(client, {}, new ContextData());
+    expect(client.config.plugins).not.to.be.null;
     while (client.config.plugins.length > 0) {
       client.config.removePlugin(client.config.plugins[0]);
     }
@@ -62,21 +75,24 @@ describe('EventPluginManager', () => {
 
     client.config.addPlugin('2', 2, () => {
       // Fail this test as this plugin should not be called.
-      expect(false).to.equal(true);
+      expect(false).to.be.true;
     });
 
     EventPluginManager.run(context, (ctx?: EventPluginContext) => {
-      expect(ctx.cancelled).to.equal(true);
+      expect(ctx.cancelled).to.be.true;
       done();
       done = () => { };
     });
   });
 
   it('throwing error should stop plugin execution.', (done) => {
-    const client = new ExceptionlessClient({ apiKey: 'LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw', serverUrl: 'http://localhost:50000' });
+    const client = new ExceptionlessClient({
+      apiKey: 'LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw',
+      serverUrl: 'http://localhost:50000'
+    });
     const context = new EventPluginContext(client, {}, new ContextData());
 
-    expect(client.config.plugins).not.to.equal(null);
+    expect(client.config.plugins).not.to.be.null;
     while (client.config.plugins.length > 0) {
       client.config.removePlugin(client.config.plugins[0]);
     }
@@ -87,20 +103,23 @@ describe('EventPluginManager', () => {
 
     client.config.addPlugin('2', 2, () => {
       // Fail this test as this plugin should not be called.
-      expect(false).to.equal(true);
+      expect(false).to.be.true;
     });
 
     EventPluginManager.run(context, (ctx?: EventPluginContext) => {
-      expect(ctx.cancelled).to.equal(true);
+      expect(ctx.cancelled).to.be.true;
       done();
     });
   });
 
   it('throwing async error should stop plugin execution.', (done) => {
-    const client = new ExceptionlessClient({ apiKey: 'LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw', serverUrl: 'http://localhost:50000' });
+    const client = new ExceptionlessClient({
+      apiKey: 'LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw',
+      serverUrl: 'http://localhost:50000'
+    });
     const context = new EventPluginContext(client, {}, new ContextData());
 
-    expect(client.config.plugins).not.to.equal(null);
+    expect(client.config.plugins).not.to.be.null;
     while (client.config.plugins.length > 0) {
       client.config.removePlugin(client.config.plugins[0]);
     }
@@ -122,44 +141,50 @@ describe('EventPluginManager', () => {
 
     client.config.addPlugin('2', 2, () => {
       // Fail this test as this plugin should not be called.
-      expect(false).to.equal(true);
+      expect(false).to.be.true;
     });
 
     EventPluginManager.run(context, (ctx?: EventPluginContext) => {
-      expect(ctx.cancelled).to.equal(true);
+      expect(ctx.cancelled).to.be.true;
       done();
     });
   });
 
   it('should cancel via timeout.', (done) => {
-    const client = new ExceptionlessClient({ apiKey: 'LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw', serverUrl: 'http://localhost:50000' });
+    const client = new ExceptionlessClient({
+      apiKey: 'LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw',
+      serverUrl: 'http://localhost:50000'
+    });
     const context = new EventPluginContext(client, {}, new ContextData());
 
-    expect(client.config.plugins).not.to.equal(null);
+    expect(client.config.plugins).not.to.be.null;
     while (client.config.plugins.length > 0) {
       client.config.removePlugin(client.config.plugins[0]);
     }
 
-    client.config.addPlugin('1', 1, (ctx: EventPluginContext, next?: () => void) => {
+    client.config.addPlugin('1', 1, () => {
       setTimeout(done, 25);
     });
 
     client.config.addPlugin('2', 2, () => {
       // Fail this test as this plugin should not be called.
-      expect(false).to.equal(true);
+      expect(false).to.be.true;
     });
 
-    EventPluginManager.run(context, (ctx?: EventPluginContext) => {
+    EventPluginManager.run(context, () => {
       // Fail this test as this callback should not be called.
-      expect(false).to.equal(true);
+      expect(false).to.be.true;
     });
   });
 
   it('should ensure config plugins are not wrapped.', () => {
-    const client = new ExceptionlessClient({ apiKey: 'LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw', serverUrl: 'http://localhost:50000' });
+    const client = new ExceptionlessClient({
+      apiKey: 'LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw',
+      serverUrl: 'http://localhost:50000'
+    });
     const context = new EventPluginContext(client, {}, new ContextData());
 
-    expect(client.config.plugins).not.to.equal(null);
+    expect(client.config.plugins).not.to.be.null;
     while (client.config.plugins.length > 0) {
       client.config.removePlugin(client.config.plugins[0]);
     }
@@ -172,12 +197,12 @@ describe('EventPluginManager', () => {
 
     expect(client.config.plugins[0].name).to.equal('1');
     expect(client.config.plugins.length).to.equal(1);
-    EventPluginManager.run(context, (ctx?: EventPluginContext) => {
+    EventPluginManager.run(context, () => {
       expect(client.config.plugins[0].name).to.equal('1');
     });
     expect(client.config.plugins.length).to.equal(1);
 
-    EventPluginManager.run(context, (ctx?: EventPluginContext) => {
+    EventPluginManager.run(context, () => {
       expect(client.config.plugins[0].name).to.equal('1');
     });
     expect(client.config.plugins.length).to.equal(1);

@@ -28,7 +28,7 @@ export class ErrorPlugin implements IEventPlugin {
     ];
 
     const exception = context.contextData.getException();
-    if (!!exception) {
+    if (exception) {
       context.event.type = 'error';
 
       if (!context.event.data[ERROR_KEY]) {
@@ -39,7 +39,7 @@ export class ErrorPlugin implements IEventPlugin {
         }
 
         const result = parser.parse(context, exception);
-        if (!!result) {
+        if (result) {
           const additionalData = JSON.parse(Utils.stringify(exception, config.dataExclusions.concat(ignoredProperties)));
           if (!Utils.isEmpty(additionalData)) {
             if (!result.data) {

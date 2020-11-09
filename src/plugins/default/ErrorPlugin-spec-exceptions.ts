@@ -1,4 +1,4 @@
-export let CapturedExceptions: any = {};
+export const CapturedExceptions: any = {};
 
 CapturedExceptions.OPERA_854 = {
   'message': 'Statement on line 44: Type mismatch (usually a non-object value used where an object is required)\n' +

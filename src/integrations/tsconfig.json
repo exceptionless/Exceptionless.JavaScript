@@ -6,19 +6,11 @@
     "target": "es5"
   },
   "files": [
-      "../../node_modules/@types/angular/index.d.ts",
-      "../../node_modules/@types/angular-mocks/index.d.ts",
-      "../../node_modules/@types/angular-mocks/mocks.d.ts",
-      "../../node_modules/@types/jquery/index.d.ts",
     "angular.ts"
   ],
   "bundles": {
     "angular": {
       "files": [
-        "../../node_modules/@types/angular/index.d.ts",
-        "../../node_modules/@types/angular-mocks/index.d.ts",
-        "../../node_modules/@types/angular-mocks/mocks.d.ts",
-        "../../node_modules/@types/jquery/index.d.ts",
         "angular.ts"
       ]
     }

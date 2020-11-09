@@ -10,15 +10,14 @@ export class ConfigurationDefaultsPlugin implements IEventPlugin {
     const config = context.client.config;
     const defaultTags: string[] = config.defaultTags || [];
     for (const tag of defaultTags) {
-      if (!!tag && context.event.tags.indexOf(tag) < 0) {
+      if (tag && context.event.tags.indexOf(tag) < 0) {
         context.event.tags.push(tag);
       }
     }
 
-    // tslint:disable-next-line:ban-types
-    const defaultData: Object = config.defaultData || {};
+    const defaultData: Record<string, unknown> = config.defaultData || {};
     for (const key in defaultData) {
-      if (!!defaultData[key]) {
+      if (defaultData[key]) {
         const result = JSON.parse(Utils.stringify(defaultData[key], config.dataExclusions));
         if (!Utils.isEmpty(result)) {
           context.event.data[key] = result;

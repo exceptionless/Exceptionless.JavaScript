@@ -1,20 +1,27 @@
 {
-  "version": "0.1.0",
+  "version": "0.2.0",
   "configurations": [
     {
       "name": "Test",
       "request": "launch",
-      "type": "node",
+      "type": "pwa-node",
       "program": "${workspaceRoot}/node_modules/.bin/_mocha",
       "args": [
-        "${workspaceRoot}/dist/temp/exceptionless-spec.js"
+        "--colors",
+        "-u", "tdd",
+        "--timeout", "999999",
+        "${workspaceFolder}/src/**/*-spec.ts"
       ],
       "runtimeArgs": [
-        "--nolazy"
+        "--require",
+        "ts-node/register"
       ],
-      "sourceMaps": false,
-      "cwd": "${workspaceRoot}",
-      "outDir": "${workspaceRoot}/dist"
+      "internalConsoleOptions": "openOnSessionStart",
+      "sourceMaps": true,
+      "resolveSourceMapLocations": [
+        "${workspaceFolder}/**",
+        "!**/node_modules/**"
+      ]
     },
     {
       "name": "Express",
@@ -26,7 +33,6 @@
       ],
       "sourceMaps": true,
       "cwd": "${workspaceRoot}",
-      "outDir": "${workspaceRoot}/dist"
     },
     {
       "name": "Attach",
@@ -34,7 +40,6 @@
       "type": "node",
       "port": 5858,
       "sourceMaps": true,
-      "outDir": "${workspaceRoot}/dist/"
     }
   ]
 }

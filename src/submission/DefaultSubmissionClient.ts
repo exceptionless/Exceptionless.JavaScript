@@ -8,9 +8,6 @@ import { SettingsResponse } from './SettingsResponse';
 import { SubmissionRequest } from './SubmissionRequest';
 import { SubmissionResponse } from './SubmissionResponse';
 
-// tslint:disable-next-line:prefer-const
-declare var XDomainRequest: { new(); create(); };
-
 export class DefaultSubmissionClient implements ISubmissionClient {
   public configurationVersionHeader: string = 'x-exceptionless-configversion';
 
@@ -33,7 +30,7 @@ export class DefaultSubmissionClient implements ISubmissionClient {
 
   public getSettings(config: Configuration, version: number, callback: (response: SettingsResponse) => void): void {
     const request = this.createRequest(config, 'GET', `${config.configServerUrl}/api/v2/projects/config?v=${version}`);
-    const cb = (status, message, data?, headers?) => {
+    const cb = (status, message, data?) => {
       if (status !== 200) {
         return callback(new SettingsResponse(false, null, -1, null, message));
       }

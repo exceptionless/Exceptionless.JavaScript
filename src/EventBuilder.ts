@@ -1,6 +1,7 @@
 import { ExceptionlessClient } from './ExceptionlessClient';
 import { IEvent } from './models/IEvent';
 import { IManualStackingInfo } from './models/IManualStackingInfo';
+import { IRequestInfo } from "./models/IRequestInfo";
 import { IUserInfo } from './models/IUserInfo';
 import { ContextData } from './plugins/ContextData';
 import { EventPluginContext } from './plugins/EventPluginContext';
@@ -20,7 +21,7 @@ export class EventBuilder {
   }
 
   public setType(type: string): EventBuilder {
-    if (!!type) {
+    if (type) {
       this.target.type = type;
     }
 
@@ -28,7 +29,7 @@ export class EventBuilder {
   }
 
   public setSource(source: string): EventBuilder {
-    if (!!source) {
+    if (source) {
       this.target.source = source;
     }
 
@@ -64,7 +65,7 @@ export class EventBuilder {
   }
 
   public setMessage(message: string): EventBuilder {
-    if (!!message) {
+    if (message) {
       this.target.message = message;
     }
 
@@ -119,7 +120,7 @@ export class EventBuilder {
    * @param title An optional title for the stacking information.
    * @returns {EventBuilder}
    */
-  public setManualStackingInfo(signatureData: any, title?: string) {
+  public setManualStackingInfo(signatureData: any, title?: string): EventBuilder {
     if (signatureData) {
       const stack: IManualStackingInfo = { signature_data: signatureData };
       if (title) {
@@ -148,7 +149,7 @@ export class EventBuilder {
   }
 
   public setValue(value: number): EventBuilder {
-    if (!!value) {
+    if (value) {
       this.target.value = value;
     }
 
@@ -193,8 +194,8 @@ export class EventBuilder {
     return this;
   }
 
-  public addRequestInfo(request: object): EventBuilder {
-    if (!!request) {
+  public addRequestInfo(request: IRequestInfo): EventBuilder {
+    if (request) {
       this.pluginContextData['@request'] = request;
     }
 

@@ -23,7 +23,7 @@ export class EventPluginManager {
           context.log.error(`Error running plugin '${plugin.name}': ${ex.message}. Discarding Event.`);
         }
 
-        if (context.cancelled && !!callback) {
+        if (context.cancelled && callback) {
           callback(context);
         }
       };
@@ -31,12 +31,12 @@ export class EventPluginManager {
 
     const plugins: IEventPlugin[] = context.client.config.plugins; // optimization for minifier.
     const wrappedPlugins: Array<() => void> = [];
-    if (!!callback) {
+    if (callback) {
       wrappedPlugins[plugins.length] = wrap({ name: 'cb', priority: 9007199254740992, run: callback }, null);
     }
 
     for (let index = plugins.length - 1; index > -1; index--) {
-      wrappedPlugins[index] = wrap(plugins[index], !!callback || (index < plugins.length - 1) ? wrappedPlugins[index + 1] : null);
+      wrappedPlugins[index] = wrap(plugins[index], callback || (index < plugins.length - 1) ? wrappedPlugins[index + 1] : null);
     }
 
     wrappedPlugins[0]();

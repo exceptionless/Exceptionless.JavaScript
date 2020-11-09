@@ -41,16 +41,16 @@ export class NodeFileStorage extends KeyValueStorageBase {
     this.fs.unlinkSync(key);
   }
 
-  public getKey(timestamp) {
+  public getKey(timestamp): string {
     return Path.join(this.directory, `${this.prefix}${timestamp}.json`);
   }
 
-  public getTimestamp(key) {
+  public getTimestamp(key: string) {
     return parseInt(Path.basename(key, '.json')
       .substr(this.prefix.length), 10);
   }
 
-  private mkdir(path) {
+  private mkdir(path: string) {
     const dirs = path.split(Path.sep);
     let root = '';
 

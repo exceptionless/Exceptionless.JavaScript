@@ -20,7 +20,7 @@ export declare class ConsoleLog implements ILog {
     info(message: string): void;
     warn(message: string): void;
     error(message: string): void;
-    private log(level, message);
+    private log;
 }
 export declare class NullLog implements ILog {
     trace(message: string): void;
@@ -52,7 +52,7 @@ export declare class EventPluginContext {
     event: IEvent;
     contextData: ContextData;
     constructor(client: ExceptionlessClient, event: IEvent, contextData?: ContextData);
-    readonly log: ILog;
+    get log(): ILog;
 }
 export declare class EventPluginManager {
     static run(context: EventPluginContext, callback: (context?: EventPluginContext) => void): void;
@@ -75,13 +75,13 @@ export declare class DefaultEventQueue implements IEventQueue {
     process(isAppExiting?: boolean): void;
     suspendProcessing(durationInMinutes?: number, discardFutureQueuedItems?: boolean, clearQueue?: boolean): void;
     onEventsPosted(handler: (events: IEvent[], response: SubmissionResponse) => void): void;
-    private eventsPosted(events, response);
-    private areQueuedItemsDiscarded();
-    private ensureQueueTimer();
-    private isQueueProcessingSuspended();
-    private onProcessQueue();
-    private processSubmissionResponse(response, events);
-    private removeEvents(events);
+    private eventsPosted;
+    private areQueuedItemsDiscarded;
+    private ensureQueueTimer;
+    private isQueueProcessingSuspended;
+    private onProcessQueue;
+    private processSubmissionResponse;
+    private removeEvents;
 }
 export interface IEventQueue {
     enqueue(event: IEvent): void;
@@ -96,7 +96,7 @@ export interface IErrorParser {
     parse(context: EventPluginContext, exception: Error): IError;
 }
 export interface IModuleCollector {
-    getModules(context: EventPluginContext): IModule[];
+    getModules(): IModule[];
 }
 export interface IRequestInfoCollector {
     getRequestInfo(context: EventPluginContext): IRequestInfo;
@@ -116,8 +116,8 @@ export declare class DefaultSubmissionClient implements ISubmissionClient {
     postUserDescription(referenceId: string, description: IUserDescription, config: Configuration, callback: (response: SubmissionResponse) => void): void;
     getSettings(config: Configuration, version: number, callback: (response: SettingsResponse) => void): void;
     sendHeartbeat(sessionIdOrUserId: string, closeSession: boolean, config: Configuration): void;
-    private createRequest(config, method, url, data?);
-    private createSubmissionCallback(config, callback);
+    private createRequest;
+    private createSubmissionCallback;
 }
 export interface ISubmissionAdapter {
     sendRequest(request: SubmissionRequest, callback?: SubmissionCallback, isAppExiting?: boolean): void;
@@ -131,14 +131,14 @@ export interface ISubmissionClient {
 export declare class Utils {
     static addRange<T>(target: T[], ...values: T[]): T[];
     static getHashCode(source: string): number;
-    static getCookies(cookies: string, exclusions?: string[]): object;
+    static getCookies(cookies: string, exclusions?: string[]): Record<string, string>;
     static guid(): string;
-    static merge(defaultValues: Object, values: Object): object;
+    static merge<T>(defaultValues: T, values: T): T;
     static parseVersion(source: string): string;
-    static parseQueryString(query: string, exclusions?: string[]): object;
+    static parseQueryString(query: string, exclusions?: string[]): Record<string, string>;
     static randomNumber(): number;
     static isMatch(input: string, patterns: string[], ignoreCase?: boolean): boolean;
-    static isEmpty(input: object): boolean;
+    static isEmpty(input: Record<string, unknown>): boolean;
     static startsWith(input: string, prefix: string): boolean;
     static endsWith(input: string, suffix: string): boolean;
     static stringify(data: any, exclusions?: string[], maxDepth?: number): string;
@@ -171,8 +171,8 @@ export declare class SettingsManager {
     static getVersion(config: Configuration): number;
     static checkVersion(version: number, config: Configuration): void;
     static updateSettings(config: Configuration, version?: number): void;
-    private static changed(config);
-    private static getSavedServerSettings(config);
+    private static changed;
+    private static getSavedServerSettings;
 }
 export interface IEvent {
     type?: string;
@@ -228,15 +228,15 @@ export declare class ExceptionlessClient {
     submitEvent(event: IEvent, pluginContextData?: ContextData, callback?: (context: EventPluginContext) => void): void;
     updateUserEmailAndDescription(referenceId: string, email: string, description: string, callback?: (response: SubmissionResponse) => void): void;
     getLastReferenceId(): string;
-    private updateSettingsTimer(initialDelay?);
-    static readonly default: ExceptionlessClient;
+    private updateSettingsTimer;
+    static get default(): ExceptionlessClient;
 }
 export declare class ContextData {
     setException(exception: Error): void;
-    readonly hasException: boolean;
+    get hasException(): boolean;
     getException(): Error;
     markAsUnhandledError(): void;
-    readonly isUnhandledError: boolean;
+    get isUnhandledError(): boolean;
     setSubmissionMethod(method: string): void;
     getSubmissionMethod(): string;
 }
@@ -325,7 +325,7 @@ export interface IStorage {
     remove(timestamp: number): void;
     clear(): void;
 }
-export declare type SubmissionCallback = (status: number, message: string, data?: string, headers?: object) => void;
+export declare type SubmissionCallback = (status: number, message: string, data?: string, headers?: any) => void;
 export interface SubmissionRequest {
     apiKey: string;
     userAgent: string;
@@ -336,7 +336,7 @@ export interface SubmissionRequest {
 export declare class Configuration implements IConfigurationSettings {
     private static _defaultSettings;
     defaultTags: string[];
-    defaultData: object;
+    defaultData: Record<string, unknown>;
     enabled: boolean;
     environmentInfoCollector: IEnvironmentInfoCollector;
     errorParser: IErrorParser;
@@ -347,7 +347,7 @@ export declare class Configuration implements IConfigurationSettings {
     submissionBatchSize: number;
     submissionAdapter: ISubmissionAdapter;
     submissionClient: ISubmissionClient;
-    settings: object;
+    settings: Record<string, string>;
     storage: IStorageProvider;
     queue: IEventQueue;
     private _apiKey;
@@ -367,24 +367,36 @@ export declare class Configuration implements IConfigurationSettings {
     private _plugins;
     private _handlers;
     constructor(configSettings?: IConfigurationSettings);
-    apiKey: string;
-    readonly isValid: boolean;
-    serverUrl: string;
-    configServerUrl: string;
-    heartbeatServerUrl: string;
-    updateSettingsWhenIdleInterval: number;
-    readonly dataExclusions: string[];
+    get apiKey(): string;
+    set apiKey(value: string);
+    get isValid(): boolean;
+    get serverUrl(): string;
+    set serverUrl(value: string);
+    get configServerUrl(): string;
+    set configServerUrl(value: string);
+    get heartbeatServerUrl(): string;
+    set heartbeatServerUrl(value: string);
+    get updateSettingsWhenIdleInterval(): number;
+    set updateSettingsWhenIdleInterval(value: number);
+    get dataExclusions(): string[];
     addDataExclusions(...exclusions: string[]): void;
-    includePrivateInformation: boolean;
-    includeUserName: boolean;
-    includeMachineName: boolean;
-    includeIpAddress: boolean;
-    includeCookies: boolean;
-    includePostData: boolean;
-    includeQueryString: boolean;
-    readonly userAgentBotPatterns: string[];
+    get includePrivateInformation(): boolean;
+    set includePrivateInformation(value: boolean);
+    get includeUserName(): boolean;
+    set includeUserName(value: boolean);
+    get includeMachineName(): boolean;
+    set includeMachineName(value: boolean);
+    get includeIpAddress(): boolean;
+    set includeIpAddress(value: boolean);
+    get includeCookies(): boolean;
+    set includeCookies(value: boolean);
+    get includePostData(): boolean;
+    set includePostData(value: boolean);
+    get includeQueryString(): boolean;
+    set includeQueryString(value: boolean);
+    get userAgentBotPatterns(): string[];
     addUserAgentBotPatterns(...userAgentBotPatterns: string[]): void;
-    readonly plugins: IEventPlugin[];
+    get plugins(): IEventPlugin[];
     addPlugin(plugin: IEventPlugin): void;
     addPlugin(name: string, priority: number, pluginAction: (context: EventPluginContext, next?: () => void) => void): void;
     removePlugin(plugin: IEventPlugin): void;
@@ -392,14 +404,14 @@ export declare class Configuration implements IConfigurationSettings {
     setUserIdentity(userInfo: IUserInfo): void;
     setUserIdentity(identity: string): void;
     setUserIdentity(identity: string, name: string): void;
-    readonly userAgent: string;
+    get userAgent(): string;
     useSessions(sendHeartbeats?: boolean, heartbeatInterval?: number): void;
     useReferenceIds(): void;
     useLocalStorage(): void;
     useDebugLogger(): void;
     onChanged(handler: (config: Configuration) => void): void;
-    private changed();
-    static readonly defaults: IConfigurationSettings;
+    private changed;
+    static get defaults(): IConfigurationSettings;
 }
 export interface IUserDescription {
     email_address?: string;
@@ -430,15 +442,15 @@ export declare class EventBuilder {
     setUserIdentity(identity: string): EventBuilder;
     setUserIdentity(identity: string, name: string): EventBuilder;
     setUserDescription(emailAddress: string, description: string): EventBuilder;
-    setManualStackingInfo(signatureData: any, title?: string): this;
+    setManualStackingInfo(signatureData: any, title?: string): EventBuilder;
     setManualStackingKey(manualStackingKey: string, title?: string): EventBuilder;
     setValue(value: number): EventBuilder;
     addTags(...tags: string[]): EventBuilder;
     setProperty(name: string, value: any, maxDepth?: number, excludedPropertyNames?: string[]): EventBuilder;
     markAsCritical(critical: boolean): EventBuilder;
-    addRequestInfo(request: object): EventBuilder;
+    addRequestInfo(request: IRequestInfo): EventBuilder;
     submit(callback?: (context: EventPluginContext) => void): void;
-    private isValidIdentifier(value);
+    private isValidIdentifier;
 }
 export interface IManualStackingInfo {
     title?: string;
@@ -473,6 +485,9 @@ export declare class EventExclusionPlugin implements IEventPlugin {
     priority: number;
     name: string;
     run(context: EventPluginContext, next?: () => void): void;
+    getLogLevel(level: string): number;
+    getMinLogLevel(configSettings: Record<string, string>, source: any): number;
+    private getTypeAndSourceSetting;
 }
 export declare class ModuleInfoPlugin implements IEventPlugin {
     priority: number;
@@ -500,15 +515,15 @@ export declare class InMemoryStorage implements IStorage {
     clear(): void;
 }
 export interface IClientConfiguration {
-    settings: object;
+    settings: Record<string, string>;
     version: number;
 }
 export declare abstract class KeyValueStorageBase implements IStorage {
     private maxItems;
     private items;
     private lastTimestamp;
-    constructor(maxItems: any);
-    save(value: any, single?: boolean): number;
+    constructor(maxItems: number);
+    save(value: any): number;
     get(limit?: number): IStorageItem[];
     remove(timestamp: number): void;
     clear(): void;
@@ -518,9 +533,9 @@ export declare abstract class KeyValueStorageBase implements IStorage {
     protected abstract delete(key: string): any;
     protected abstract getKey(timestamp: number): string;
     protected abstract getTimestamp(key: string): number;
-    private ensureIndex();
-    private safeDelete(key);
-    private createIndex();
+    private ensureIndex;
+    private safeDelete;
+    private createIndex;
 }
 export declare class BrowserStorage extends KeyValueStorageBase {
     private prefix;
@@ -537,7 +552,7 @@ export declare class DefaultErrorParser implements IErrorParser {
     parse(context: EventPluginContext, exception: Error): IError;
 }
 export declare class DefaultModuleCollector implements IModuleCollector {
-    getModules(context: EventPluginContext): IModule[];
+    getModules(): IModule[];
 }
 export declare class DefaultRequestInfoCollector implements IRequestInfoCollector {
     getRequestInfo(context: EventPluginContext): IRequestInfo;

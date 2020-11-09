@@ -1,5 +1,7 @@
 import { expect } from 'chai';
+import { beforeEach, describe, it } from 'mocha';
 import { ExceptionlessClient } from '../../ExceptionlessClient';
+import { DefaultErrorParser } from "../../services/DefaultErrorParser";
 import { EventPluginContext } from '../EventPluginContext';
 import { DuplicateCheckerPlugin } from './DuplicateCheckerPlugin';
 
@@ -14,7 +16,7 @@ describe('DuplicateCheckerPlugin', () => {
   });
 
   function run(exception: Error) {
-    const errorParser = client.config.errorParser;
+    const errorParser = client.config.errorParser || new DefaultErrorParser();
     const context = new EventPluginContext(client, { type: 'error', data: {} });
     context.event.data['@error'] = errorParser.parse(context, exception);
 
@@ -30,7 +32,6 @@ describe('DuplicateCheckerPlugin', () => {
     const contextOfSecondRun = run(exception);
     expect(contextOfSecondRun.cancelled).to.be.true;
     setTimeout(() => {
-
       expect(contextOfSecondRun.event.count).to.equal(1);
 
       done();

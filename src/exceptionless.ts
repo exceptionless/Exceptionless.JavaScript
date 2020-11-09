@@ -18,7 +18,6 @@ import { Utils } from './Utils';
     }
 
     const scripts = document.getElementsByTagName('script');
-    // tslint:disable-next-line:prefer-for-of
     for (let index = 0; index < scripts.length; index++) {
       if (scripts[index].src && scripts[index].src.indexOf('/exceptionless') > -1) {
         return Utils.parseQueryString(scripts[index].src.split('?').pop());
@@ -97,5 +96,4 @@ import { Utils } from './Utils';
   (Error as any).stackTraceLimit = Infinity;
 })();
 
-// tslint:disable-next-line:prefer-const
-declare var $;
+//declare var $;

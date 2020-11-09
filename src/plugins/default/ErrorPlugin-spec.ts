@@ -3,6 +3,7 @@ import { ContextData } from '../ContextData';
 import { EventPluginContext } from '../EventPluginContext';
 
 import { expect } from 'chai';
+import { beforeEach, describe, it } from 'mocha';
 import { ErrorPlugin } from './ErrorPlugin';
 import { CapturedExceptions } from './ErrorPlugin-spec-exceptions';
 import { createFixture } from './EventPluginTestFixture';
@@ -24,14 +25,12 @@ describe('ErrorPlugin', () => {
   const target = new ErrorPlugin();
   let contextData: ContextData;
   let context: EventPluginContext;
-  let client: any;
   let event: IEvent;
 
   beforeEach(() => {
     ({
       contextData,
       context,
-      client,
       event
     } = createFixture());
   });
