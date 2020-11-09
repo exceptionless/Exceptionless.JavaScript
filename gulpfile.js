@@ -151,4 +151,4 @@ gulp.task('format', function format() {
     .pipe($.exec.reporter());
 });
 
-gulp.task('default', 'watch');
+gulp.task('default', gulp.series('watch'));

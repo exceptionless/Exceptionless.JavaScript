@@ -69,11 +69,11 @@ describe('Utils', () => {
     });
 
     it('circular reference', () => {
-      const afoo: any = { a: 'foo' };
-      afoo.b = afoo;
+      const aFoo: any = { a: 'foo' };
+      aFoo.b = aFoo;
 
-      expect(Utils.stringify(afoo)).to.equal('{"a":"foo"}');
-      expect(Utils.stringify([{ one: afoo, two: afoo }])).to.equal('[{"one":{"a":"foo"}}]');
+      expect(Utils.stringify(aFoo)).to.equal('{"a":"foo"}');
+      expect(Utils.stringify([{ one: aFoo, two: aFoo }])).to.equal('[{"one":{"a":"foo"}}]');
     });
 
     it.skip('deep circular reference', () => {
@@ -245,8 +245,8 @@ describe('Utils', () => {
       expect(Utils.startsWith('@@log:*', '@@log:')).to.be.true;
     });
 
-    it('input: test prefix: nopattern', () => {
-      expect(Utils.startsWith('test', 'nopattern')).to.be.false;
+    it('input: test prefix: noPattern', () => {
+      expect(Utils.startsWith('test', 'noPattern')).to.be.false;
     });
   });
 
@@ -267,8 +267,8 @@ describe('Utils', () => {
       expect(Utils.endsWith('@@log:*', 'log:*')).to.be.true;
     });
 
-    it('input: test suffix: nopattern', () => {
-      expect(Utils.endsWith('test', 'nopattern')).to.be.false;
+    it('input: test suffix: noPattern', () => {
+      expect(Utils.endsWith('test', 'noPattern')).to.be.false;
     });
   });
 
