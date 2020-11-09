@@ -1,0 +1,14 @@
+{
+  "name": "Exceptionless.JavaScript"
+  "image": "mcr.microsoft.com/vscode/devcontainers/typescript-node:latest",
+  "extensions": [
+    "dbaeumer.vscode-eslint",
+    "hbenl.vscode-mocha-test-adapter",
+    "hbenl.vscode-test-explorer",
+    "juancasanova.awesometypescriptproblemmatcher",
+    "ryanluker.vscode-coverage-gutters",
+    "streetsidesoftware.code-spell-checker"
+  ],
+  "forwardPorts": [3000],
+  "postCreateCommand": "npm install",
+}
