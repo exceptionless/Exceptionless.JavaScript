@@ -139,7 +139,7 @@ gulp.task('lint', function lint() {
     .pipe(eslint.format());
 });
 
-gulp.task('build', gulp.series('clean', 'lint', 'exceptionless', 'exceptionless.node', 'exceptionless.universal'));
+gulp.task('build', gulp.series('clean', 'lint', 'exceptionless.node', 'exceptionless.universal', 'exceptionless'));
 
 gulp.task('watch', gulp.series('build', function watch() {
   return gulp.watch('src/**/*.ts', gulp.series('build'));
