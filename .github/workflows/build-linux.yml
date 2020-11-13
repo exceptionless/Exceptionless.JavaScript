@@ -16,6 +16,6 @@ jobs:
       - name: NPM install with caching
         uses: bahmutov/npm-install@v1.1.0
       - name: Build
-        run: gulp build
+        run: npm run build
       - name: Run Tests
-        run: gulp test
+        run: npm run test
