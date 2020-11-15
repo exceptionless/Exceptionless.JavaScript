@@ -24,7 +24,7 @@ describe('DefaultEventQueue', () => {
   function getConfiguration(): Configuration {
     const result: Configuration = new Configuration({
       apiKey: 'LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw',
-      serverUrl: 'http://localhost:50000'
+      serverUrl: 'http://localhost:5000'
     });
 
     expect(result.storage.queue.get().length).to.equal(0);

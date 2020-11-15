@@ -20,7 +20,7 @@ describe('ExceptionlessClient', () => {
   it('should use event reference ids', (done) => {
     const client = new ExceptionlessClient({
       apiKey: 'LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw',
-      serverUrl: 'http://localhost:50000'
+      serverUrl: 'http://localhost:5000'
     });
 
     expect(client.config.lastReferenceIdManager.getLast()).to.be.null;
@@ -49,7 +49,7 @@ describe('ExceptionlessClient', () => {
   it('should accept null source', () => {
     const client = new ExceptionlessClient({
       apiKey: 'LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw',
-      serverUrl: 'http://localhost:50000'
+      serverUrl: 'http://localhost:5000'
     });
 
     const builder = client.createLog(null, 'Unit Test message', 'Trace');
@@ -62,7 +62,7 @@ describe('ExceptionlessClient', () => {
   it('should accept source and message', () => {
     const client = new ExceptionlessClient({
       apiKey: 'LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw',
-      serverUrl: 'http://localhost:50000'
+      serverUrl: 'http://localhost:5000'
     });
 
     const builder = client.createLog('ExceptionlessClient', 'Unit Test message');
@@ -75,7 +75,7 @@ describe('ExceptionlessClient', () => {
   it('should accept source and message and level', () => {
     const client = new ExceptionlessClient({
       apiKey: 'LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw',
-      serverUrl: 'http://localhost:50000'
+      serverUrl: 'http://localhost:5000'
     });
     const builder = client.createLog('source', 'Unit Test message', 'Info');
 
@@ -85,20 +85,20 @@ describe('ExceptionlessClient', () => {
   });
 
   it('should allow construction via apiKey and serverUrl parameters', () => {
-    const client = new ExceptionlessClient('LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw', 'http://localhost:50000');
+    const client = new ExceptionlessClient('LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw', 'http://localhost:5000');
 
     expect(client.config.apiKey).to.equal('LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw');
-    expect(client.config.serverUrl).to.equal('http://localhost:50000');
+    expect(client.config.serverUrl).to.equal('http://localhost:5000');
   });
 
   it('should allow construction via a configuration object', () => {
     const client = new ExceptionlessClient({
       apiKey: 'LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw',
-      serverUrl: 'http://localhost:50000'
+      serverUrl: 'http://localhost:5000'
     });
 
     expect(client.config.apiKey).to.equal('LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw');
-    expect(client.config.serverUrl).to.equal('http://localhost:50000');
+    expect(client.config.serverUrl).to.equal('http://localhost:5000');
   });
 
   function createException() {

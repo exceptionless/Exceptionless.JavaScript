@@ -100,11 +100,11 @@ You can configure the `ExceptionlessClient` class using one of the following way
   ```javascript
   var client = new exceptionless.ExceptionlessClient('API_KEY_HERE');
   // or with an api key and server url
-  var client = new exceptionless.ExceptionlessClient('API_KEY_HERE', 'http://localhost:50000');
+  var client = new exceptionless.ExceptionlessClient('API_KEY_HERE', 'http://localhost:5000');
   // or with a configuration object
   var client = new exceptionless.ExceptionlessClient({
     apiKey: 'API_KEY_HERE',
-    serverUrl: 'http://localhost:50000',
+    serverUrl: 'http://localhost:5000',
     submissionBatchSize: 100
   });
   ```
@@ -125,11 +125,11 @@ You can configure the `ExceptionlessClient` class using one of the following way
 
   var client = new exceptionless.ExceptionlessClient('API_KEY_HERE');
   // or with an api key and server url
-  var client = new exceptionless.ExceptionlessClient('API_KEY_HERE', 'http://localhost:50000');
+  var client = new exceptionless.ExceptionlessClient('API_KEY_HERE', 'http://localhost:5000');
   // or with a configuration object
   var client = new exceptionless.ExceptionlessClient({
     apiKey: 'API_KEY_HERE',
-    serverUrl: 'http://localhost:50000',
+    serverUrl: 'http://localhost:5000',
     submissionBatchSize: 100
   });
   ```
@@ -227,7 +227,7 @@ The Exceptionless client can also be configured to send data to your self hosted
 You can set the `serverUrl` on the default `ExceptionlessClient` instance:
 
 ```javascript
-exceptionless.ExceptionlessClient.default.config.serverUrl = 'http://localhost:50000';
+exceptionless.ExceptionlessClient.default.config.serverUrl = 'http://localhost:5000';
 ```
 
 #### Node.js
@@ -236,7 +236,7 @@ You can set the `serverUrl` on the default `ExceptionlessClient` instance:
 
 ```javascript
 var client = require('exceptionless.node').ExceptionlessClient.default;
-client.config.serverUrl = 'http://localhost:50000';
+client.config.serverUrl = 'http://localhost:5000';
 ```
 
 ### General Data Protection Regulation

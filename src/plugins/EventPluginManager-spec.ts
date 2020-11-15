@@ -14,7 +14,7 @@ describe('EventPluginManager', () => {
   it('should add items to the event.', (done) => {
     const client = new ExceptionlessClient({
       apiKey: 'LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw',
-      serverUrl: 'http://localhost:50000'
+      serverUrl: 'http://localhost:5000'
     });
 
     const context = new EventPluginContext(client, {}, new ContextData());
@@ -56,7 +56,7 @@ describe('EventPluginManager', () => {
   it('setting cancel should stop plugin execution.', (done) => {
     const client = new ExceptionlessClient({
       apiKey: 'LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw',
-      serverUrl: 'http://localhost:50000'
+      serverUrl: 'http://localhost:5000'
     });
 
     const context = new EventPluginContext(client, {}, new ContextData());
@@ -88,7 +88,7 @@ describe('EventPluginManager', () => {
   it('throwing error should stop plugin execution.', (done) => {
     const client = new ExceptionlessClient({
       apiKey: 'LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw',
-      serverUrl: 'http://localhost:50000'
+      serverUrl: 'http://localhost:5000'
     });
     const context = new EventPluginContext(client, {}, new ContextData());
 
@@ -115,7 +115,7 @@ describe('EventPluginManager', () => {
   it('throwing async error should stop plugin execution.', (done) => {
     const client = new ExceptionlessClient({
       apiKey: 'LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw',
-      serverUrl: 'http://localhost:50000'
+      serverUrl: 'http://localhost:5000'
     });
     const context = new EventPluginContext(client, {}, new ContextData());
 
@@ -153,7 +153,7 @@ describe('EventPluginManager', () => {
   it('should cancel via timeout.', (done) => {
     const client = new ExceptionlessClient({
       apiKey: 'LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw',
-      serverUrl: 'http://localhost:50000'
+      serverUrl: 'http://localhost:5000'
     });
     const context = new EventPluginContext(client, {}, new ContextData());
 
@@ -180,7 +180,7 @@ describe('EventPluginManager', () => {
   it('should ensure config plugins are not wrapped.', () => {
     const client = new ExceptionlessClient({
       apiKey: 'LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw',
-      serverUrl: 'http://localhost:50000'
+      serverUrl: 'http://localhost:5000'
     });
     const context = new EventPluginContext(client, {}, new ContextData());
 

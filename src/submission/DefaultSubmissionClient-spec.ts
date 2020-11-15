@@ -62,7 +62,7 @@ describe('DefaultSubmissionClient', () => {
 
   beforeEach(() => {
     const apiKey = 'LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw';
-    const serverUrl = 'http://localhost:50000';
+    const serverUrl = 'http://localhost:5000';
 
     submissionClient = new DefaultSubmissionClient();
     submissionAdapter = new TestAdapter((r) => {

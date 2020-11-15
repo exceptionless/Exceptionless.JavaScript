@@ -11,7 +11,7 @@ describe('DuplicateCheckerPlugin', () => {
   let plugin: DuplicateCheckerPlugin;
 
   beforeEach(() => {
-    client = new ExceptionlessClient('LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw', 'http://localhost:50000');
+    client = new ExceptionlessClient('LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw', 'http://localhost:5000');
     plugin = new DuplicateCheckerPlugin(() => now, 50);
   });
 
