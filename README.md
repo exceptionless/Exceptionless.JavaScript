@@ -11,7 +11,7 @@ The definition of the word exceptionless is: to be without exception. Exceptionl
 ## Show me the code!
 
 ```html
-<script src="https://cdn.rawgit.com/exceptionless/Exceptionless.JavaScript/v1.6.3/dist/exceptionless.min.js"></script>
+<script src="https://cdn.rawgit.com/exceptionless/Exceptionless.JavaScript/v1.6.4/dist/exceptionless.min.js"></script>
 <script>
   var client = exceptionless.ExceptionlessClient.default;
   client.config.apiKey = 'API_KEY_HERE';
@@ -51,7 +51,7 @@ Use one of the following methods to install Exceptionless.js into your browser a
   Add the following script to your page:
 
   ```html
-  <script src="https://cdn.rawgit.com/exceptionless/Exceptionless.JavaScript/v1.6.3/dist/exceptionless.min.js"></script>
+  <script src="https://cdn.rawgit.com/exceptionless/Exceptionless.JavaScript/v1.6.4/dist/exceptionless.min.js"></script>
   ```
 
 - **Bower:**
@@ -244,12 +244,12 @@ client.config.serverUrl = 'http://localhost:5000';
 By default the Exceptionless Client will report all available metadata including potential PII data.
 You can fine tune the collection of information via Data Exclusions or turning off collection completely.
 
-Please visit the [wiki](https://github.com/exceptionless/Exceptionless.JavaScript/wiki/Configuration#general-data-protection-regulation)
+Please visit the [docs](https://exceptionless.com/docs/clients/javascript/client-configuration/#general-data-protection-regulation)
 for detailed information on how to configure the client to meet your requirements.
 
 ## Support
 
-If you need help, please contact us via in-app support, [open an issue](https://github.com/exceptionless/Exceptionless.JavaScript/issues/new) or [join our chat on gitter](https://gitter.im/exceptionless/Discuss). We’re always here to help if you have any questions!
+If you need help, please contact us via in-app support, [open an issue](https://github.com/exceptionless/Exceptionless.JavaScript/issues/new) or [join our chat on Discord](https://discord.gg/6HxgFCx). We’re always here to help if you have any questions!
 
 ## Contributing
 
@@ -257,28 +257,28 @@ If you find a bug or want to contribute a feature, feel free to create a pull re
 
 1. Clone this repository:
 
-  ```sh
-  git clone https://github.com/exceptionless/Exceptionless.JavaScript.git
-  ```
+    ```sh
+    git clone https://github.com/exceptionless/Exceptionless.JavaScript.git
+    ```
+
 2. Install [Node.js](https://nodejs.org). Node is used for building and testing purposes.
+3. Install [gulp](http://gulpjs.com) and the development dependencies using [npm](https://www.npmjs.com).
 
-3. Install [tsd](https://github.com/DefinitelyTyped/tsd) and [gulp](http://gulpjs.com) and the development dependencies using [npm](https://www.npmjs.com).
-
-  ```sh
-  npm install
-  ```
+    ```sh
+    npm install
+    ```
 
 4. Build the project by running the following gulp command.
 
-  ```sh
-  npm run build
-  ```
+    ```sh
+    npm run build
+    ```
 
 5. Test the project by running the following gulp command.
 
-  ```sh
-  npm run test
-  ```
+    ```sh
+    npm run test
+    ```
 
 During development, you can use relative paths to require Exceptionless, e.g. `require('./dist/exceptionless.node.js')` when you are running Node.js from the git root directory.
 
