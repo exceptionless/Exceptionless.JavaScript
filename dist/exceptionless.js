@@ -1286,7 +1286,7 @@ if (typeof define === 'function' && define.amd) {
   } else {
     root.exceptionless = factory(require, exports, root.TraceKit);
   }
-}(this, function(require, exports, TraceKit) {
+}(typeof window !== 'undefined' ? window : global, function(require, exports, TraceKit) {
 if (!exports) { var exports = {}; }
 
 "use strict";
@@ -2179,7 +2179,7 @@ var ExceptionlessClient = (function () {
         this._timeoutId = clearInterval(this._intervalId);
         var interval = this.config.updateSettingsWhenIdleInterval;
         if (interval > 0) {
-            this.config.log.info("Update settings every " + interval + "ms (" + initialDelay + "ms delay)");
+            this.config.log.info("Update settings every " + interval + "ms (" + (initialDelay || 0) + "ms delay)");
             var updateSettings = function () { return SettingsManager.updateSettings(_this.config); };
             if (initialDelay > 0) {
                 this._timeoutId = setTimeout(updateSettings, initialDelay);

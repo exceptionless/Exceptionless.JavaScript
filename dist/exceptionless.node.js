@@ -897,7 +897,7 @@ var ExceptionlessClient = (function () {
         this._timeoutId = clearInterval(this._intervalId);
         var interval = this.config.updateSettingsWhenIdleInterval;
         if (interval > 0) {
-            this.config.log.info("Update settings every " + interval + "ms (" + initialDelay + "ms delay)");
+            this.config.log.info("Update settings every " + interval + "ms (" + (initialDelay || 0) + "ms delay)");
             var updateSettings = function () { return SettingsManager.updateSettings(_this.config); };
             if (initialDelay > 0) {
                 this._timeoutId = setTimeout(updateSettings, initialDelay);

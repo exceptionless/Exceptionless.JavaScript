@@ -17,7 +17,7 @@ var globalDeps = deps ? stdDeps.concat(_.map(deps, function(dep) { return 'root.
   } else {
     root.<%= namespace %> = factory(<%= globalDeps.join(', ') %>);
   }
-}(this, function(<%= depNames.join(', ') %>) {
+}(typeof window !== 'undefined' ? window : global, function(<%= depNames.join(', ') %>) {
 if (!exports) { var exports = {}; }
 <% if (exports) { %>
 <%= contents %>
