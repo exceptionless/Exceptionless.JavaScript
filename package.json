@@ -1,16 +1,13 @@
 {
-  "name": "exceptionless",
-  "version": "1.6.4",
+  "name": "exceptionless-monorepo",
   "description": "JavaScript client for Exceptionless",
-  "license": "Apache-2.0",
-  "browser": "dist/exceptionless.js",
-  "browserify": "dist/exceptionless.universal.js",
-  "webpack": "dist/exceptionless.universal.js",
-  "main": "dist/exceptionless.node.js",
-  "jspm": {
-    "main": "dist/exceptionless.js"
+  "author": {
+    "name": "exceptionless",
+    "url": "https://exceptionless.com"
   },
-  "typings": "dist/exceptionless.d.ts",
+  "version": "2.0.0",
+  "private": true,
+  "license": "Apache-2.0",
   "scripts": {
     "start": "gulp",
     "build": "gulp build",
@@ -32,6 +29,10 @@
     "url": "git://github.com/exceptionless/Exceptionless.JavaScript.git",
     "type": "git"
   },
+  "workspaces": [
+    "./packages/*"
+  ],
+
   "devDependencies": {
     "@types/angular": "1.8.0",
     "@types/angular-mocks": "1.7.0",

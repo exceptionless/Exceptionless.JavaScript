@@ -1,6 +1,6 @@
 import { DefaultLastReferenceIdManager } from '../lastReferenceIdManager/DefaultLastReferenceIdManager';
 import { ILastReferenceIdManager } from '../lastReferenceIdManager/ILastReferenceIdManager';
-import { ConsoleLog } from '../logging/ConsoleLog';
+import { ConsoleLog } from '../../../browser/src/logging/ConsoleLog';
 import { ILog } from '../logging/ILog';
 import { NullLog } from '../logging/NullLog';
 import { IUserInfo } from '../models/IUserInfo';
