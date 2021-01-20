@@ -1,6 +1,6 @@
-import { IEnvironmentInfo } from '../../../core/src/models/IEnvironmentInfo';
-import { EventPluginContext } from '../../../core/src/plugins/EventPluginContext';
-import { IEnvironmentInfoCollector } from '../../../core/src/services/IEnvironmentInfoCollector';
+import { IEnvironmentInfo } from '@exceptionless/core/models/IEnvironmentInfo';
+import { EventPluginContext } from '@exceptionless/core/plugins/EventPluginContext';
+import { IEnvironmentInfoCollector } from '@exceptionless/core/services/IEnvironmentInfoCollector';
 
 import os = require('os');
 

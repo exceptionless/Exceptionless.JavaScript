@@ -1,6 +1,6 @@
-import { Configuration } from '../../core/src/configuration/Configuration';
-import { SettingsManager } from '../../core/src/configuration/SettingsManager';
-import { ExceptionlessClient } from '../../core/src/ExceptionlessClient';
+import { Configuration } from '@exceptionless/core/configuration/Configuration';
+import { SettingsManager } from '@exceptionless/core/configuration/SettingsManager';
+import { ExceptionlessClient } from '@exceptionless/core/ExceptionlessClient';
 import { NodeEnvironmentInfoCollector } from './services/NodeEnvironmentInfoCollector';
 import { NodeErrorParser } from './services/NodeErrorParser';
 import { NodeModuleCollector } from './services/NodeModuleCollector';

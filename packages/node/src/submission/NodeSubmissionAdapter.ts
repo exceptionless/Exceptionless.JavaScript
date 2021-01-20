@@ -1,6 +1,6 @@
-import { ISubmissionAdapter } from '../../../core/src/submission/ISubmissionAdapter';
-import { SubmissionCallback } from '../../../core/src/submission/SubmissionCallback';
-import { SubmissionRequest } from '../../../core/src/submission/SubmissionRequest';
+import { ISubmissionAdapter } from '@exceptionless/core/submission/ISubmissionAdapter';
+import { SubmissionCallback } from '@exceptionless/core/submission/SubmissionCallback';
+import { SubmissionRequest } from '@exceptionless/core/submission/SubmissionRequest';
 
 import child = require('child_process');
 import http = require('http');

@@ -1,15 +1,15 @@
 import * as TraceKit from 'TraceKit';
-import { Configuration } from '../../core/src/configuration/Configuration';
-import { IConfigurationSettings } from '../../core/src/configuration/IConfigurationSettings';
-import { SettingsManager } from '../../core/src/configuration/SettingsManager';
-import { ExceptionlessClient } from '../../core/src/ExceptionlessClient';
+import { Configuration } from '@exceptionless/core/configuration/Configuration';
+import { IConfigurationSettings } from '@exceptionless/core/configuration/IConfigurationSettings';
+import { SettingsManager } from '@exceptionless/core/configuration/SettingsManager';
+import { ExceptionlessClient } from '@exceptionless/core/ExceptionlessClient';
 import { DefaultErrorParser } from './services/DefaultErrorParser';
-import { DefaultModuleCollector } from '../../core/src/services/DefaultModuleCollector';
+import { DefaultModuleCollector } from '@exceptionless/core/services/DefaultModuleCollector';
 import { DefaultRequestInfoCollector } from './services/DefaultRequestInfoCollector';
 import { BrowserStorage } from './storage/BrowserStorage';
 import { BrowserStorageProvider } from './storage/BrowserStorageProvider';
 import { DefaultSubmissionAdapter } from './submission/DefaultSubmissionAdapter';
-import { Utils } from '../../core/src/Utils';
+import { Utils } from '@exceptionless/core/Utils';
 
 (function init() {
   function getDefaultsSettingsFromScriptTag(): IConfigurationSettings {

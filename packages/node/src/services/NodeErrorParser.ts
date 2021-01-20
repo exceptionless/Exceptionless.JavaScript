@@ -1,7 +1,7 @@
-import { IError } from '../../../core/src/models/IError';
-import { IStackFrame } from '../../../core/src/models/IStackFrame';
-import { EventPluginContext } from '../../../core/src/plugins/EventPluginContext';
-import { IErrorParser } from '../../../core/src/services/IErrorParser';
+import { IError } from '@exceptionless/core/models/IError';
+import { IStackFrame } from '@exceptionless/core/models/IStackFrame';
+import { EventPluginContext } from '@exceptionless/core/plugins/EventPluginContext';
+import { IErrorParser } from '@exceptionless/core/services/IErrorParser';
 
 import nodestacktrace = require('stack-trace');
 

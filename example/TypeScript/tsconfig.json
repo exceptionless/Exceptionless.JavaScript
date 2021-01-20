@@ -4,17 +4,5 @@
     "removeComments": true,
     "sourceMap": false,
     "target": "es5"
-  },
-  "files": [
-    "../../dist/exceptionless.d.ts",
-    "index.ts"
-  ],
-  "bundles": {
-    "angular": {
-      "files": [
-        "../../dist/exceptionless.d.ts",
-        "index.ts"
-      ]
-    }
   }
 }
