@@ -4,15 +4,5 @@
     "removeComments": true,
     "sourceMap": false,
     "target": "es5"
-  },
-  "files": [
-    "angular.ts"
-  ],
-  "bundles": {
-    "angular": {
-      "files": [
-        "angular.ts"
-      ]
-    }
   }
 }

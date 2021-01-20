@@ -1,18 +1,15 @@
 {
     "compilerOptions": {
         "baseUrl": "packages",
-        "declaration": true,
-        "module": "commonjs",
-        "removeComments": true,
-        "sourceMap": true,
-        "target": "es5",
-        "types": [
-            "node"
-        ],
         "paths": {
             "@exceptionless/*": [
                 "*/src"
             ]
-        }
+        },
+        "declaration": true,
+        "module": "commonjs",
+        "removeComments": true,
+        "sourceMap": true,
+        "target": "es5"
     }
 }

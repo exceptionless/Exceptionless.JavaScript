@@ -1,6 +1,6 @@
 import { BrowserStorage } from './BrowserStorage';
-import { IStorage } from '../../../core/src/storage/IStorage';
-import { IStorageProvider } from '../../../core/src/storage/IStorageProvider';
+import { IStorage } from '@exceptionless/core/storage/IStorage';
+import { IStorageProvider } from '@exceptionless/core/storage/IStorageProvider';
 
 export class BrowserStorageProvider implements IStorageProvider {
   public queue: IStorage;

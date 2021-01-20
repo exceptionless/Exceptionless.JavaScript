@@ -1,5 +1,5 @@
-import { IStorage } from '../../../core/src/storage/IStorage';
-import { IStorageProvider } from '../../../core/src/storage/IStorageProvider';
+import { IStorage } from '@exceptionless/core/storage/IStorage';
+import { IStorageProvider } from '@exceptionless/core/storage/IStorageProvider';
 import { NodeFileStorage } from './NodeFileStorage';
 
 export class NodeFileStorageProvider implements IStorageProvider {

@@ -1,5 +1,5 @@
-import { IModule } from '../../../core/src/models/IModule';
-import { IModuleCollector } from '../../../core/src/services/IModuleCollector';
+import { IModule } from '@exceptionless/core/models/IModule';
+import { IModuleCollector } from '@exceptionless/core/services/IModuleCollector';
 
 import child = require('child_process');
 import path = require('path');

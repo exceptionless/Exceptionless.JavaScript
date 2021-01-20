@@ -1,5 +1,5 @@
 {
-  "name": "@exceptionless/core",
+  "name": "@exceptionless/node-submit-syn",
   "version": "2.0.0-pre",
   "description": "JavaScript client for Exceptionless",
   "author": {
@@ -12,7 +12,8 @@
     "feature",
     "logging",
     "tracking",
-    "reporting"
+    "reporting",
+    "node"
   ],
   "repository": {
     "url": "git://github.com/exceptionless/Exceptionless.JavaScript.git",
@@ -31,5 +32,18 @@
     "lint": "eslint --cache --ext .js,.ts src/",
     "build": "tsc -b",
     "dev": "tsc -b -w --preserveWatchOutput"
+  },
+  "devDependencies": {
+    "@types/node": "14.14.7",
+    "@types/chai": "4.2.14",
+    "@types/mocha": "8.0.4",
+    "@types/mock-fs": "4.13.0",
+    "@types/sinon": "9.0.8",
+    "chai": "4.2.0",
+    "mock-fs": "4.13.0",
+    "sinon": "9.2.1"
+  },
+  "dependencies": {
+    "@exceptionless/node": "2.0.0-pre"
   }
 }

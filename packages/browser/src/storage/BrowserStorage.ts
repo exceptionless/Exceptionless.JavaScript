@@ -1,4 +1,4 @@
-import { KeyValueStorageBase } from '../../../core/src/storage/KeyValueStorageBase';
+import { KeyValueStorageBase } from '@exceptionless/core/storage/KeyValueStorageBase';
 
 export class BrowserStorage extends KeyValueStorageBase {
   private prefix: string;

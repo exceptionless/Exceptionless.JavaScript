@@ -1,81 +1,31 @@
 {
-  "name": "exceptionless-monorepo",
-  "description": "JavaScript client for Exceptionless",
-  "author": {
-    "name": "exceptionless",
-    "url": "https://exceptionless.com"
-  },
-  "version": "2.0.0",
+  "name": "@exceptionless/monorepo",
   "private": true,
+  "version": "2.0.0",
   "license": "Apache-2.0",
   "scripts": {
-    "start": "gulp",
-    "build": "gulp build",
-    "test": "mocha --colors --require ts-node/register \"./src/**/*-spec.ts\" --exit"
-  },
-  "mocha": {
-    "spec": "src/**/*-spec.ts",
-    "require": "ts-node/register"
-  },
-  "keywords": [
-    "exceptionless",
-    "error",
-    "feature",
-    "logging",
-    "tracking",
-    "reporting"
-  ],
-  "repository": {
-    "url": "git://github.com/exceptionless/Exceptionless.JavaScript.git",
-    "type": "git"
+    "init": "npm ci && npm run build",
+    "rebuild": "npm run clean && npm run build",
+    "build": "lage build --scope @exceptionless/* --no-cache --verbose --no-deps",
+    "clean": "rimraf dist packages/*/dist examples/*/dist",
+    "lint": "lage run lint",
+    "test": "lage run test"
   },
   "workspaces": [
     "./packages/*"
   ],
-
   "devDependencies": {
-    "@types/angular": "1.8.0",
-    "@types/angular-mocks": "1.7.0",
-    "@types/chai": "4.2.14",
-    "@types/jquery": "3.5.4",
-    "@types/mocha": "8.0.4",
-    "@types/mock-fs": "4.13.0",
-    "@types/node": "14.14.7",
-    "@types/sinon": "9.0.8",
-    "@types/stack-trace": "0.0.29",
-    "@typescript-eslint/eslint-plugin": "4.7.0",
-    "@typescript-eslint/parser": "4.7.0",
-    "chai": "4.2.0",
-    "del": "6.0.0",
-    "es5-shim": "4.5.14",
-    "es6-shim": "0.35.6",
-    "eslint": "7.13.0",
-    "gulp": "4.0.2",
-    "gulp-concat": "2.6.1",
-    "gulp-eslint": "6.0.0",
-    "gulp-exec": "5.0.0",
-    "gulp-load-plugins": "2.0.5",
-    "gulp-mocha": "7.0.2",
-    "gulp-replace": "1.0.0",
-    "gulp-sourcemaps": "3.0.0",
-    "gulp-uglify": "3.0.2",
-    "gulp-wrap-umd": "0.2.1",
-    "jshint": "2.12.0",
-    "mock-fs": "4.13.0",
-    "path": "0.12.7",
-    "requirejs": "2.3.6",
-    "rewire": "5.0.0",
+    "@typescript-eslint/eslint-plugin": "4.14.0",
+    "@typescript-eslint/parser": "4.14.0",
+    "eslint": "7.18.0",
+    "eslint-plugin-import": "2.22.1",
+    "eslint-plugin-jsdoc": "31.0.8",
+    "eslint-plugin-mocha": "8.0.0",
+    "lage": "0.27.0",
     "rimraf": "3.0.2",
-    "sinon": "9.2.1",
     "source-map-support": "0.5.19",
-    "systemjs": "6.7.1",
-    "tracekit": "0.4.5",
-    "ts-node": "9.0.0",
-    "tsproject": "4.0.0-rc.2",
-    "typescript": "4.0.5",
+    "ts-node": "9.1.1",
+    "typescript": "4.1.3",
     "typescript-formatter": "7.2.2"
-  },
-  "dependencies": {
-    "stack-trace": "0.0.10"
   }
 }
