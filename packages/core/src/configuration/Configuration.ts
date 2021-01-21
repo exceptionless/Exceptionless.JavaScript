@@ -1,6 +1,5 @@
 import { DefaultLastReferenceIdManager } from '../lastReferenceIdManager/DefaultLastReferenceIdManager';
 import { ILastReferenceIdManager } from '../lastReferenceIdManager/ILastReferenceIdManager';
-import { ConsoleLog } from '../../../browser/src/logging/ConsoleLog';
 import { ILog } from '../logging/ILog';
 import { NullLog } from '../logging/NullLog';
 import { IUserInfo } from '../models/IUserInfo';
@@ -615,7 +614,8 @@ export class Configuration implements IConfigurationSettings {
 
   // TODO: Support a min log level.
   public useDebugLogger(): void {
-    this.log = new ConsoleLog();
+    // TODO: Inject a debug logger.
+    //this.log = new ConsoleLog();
   }
 
   public onChanged(handler: (config: Configuration) => void): void {
