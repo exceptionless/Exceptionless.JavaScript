@@ -1,11 +1,11 @@
 import { expect } from 'chai';
 import { beforeEach, describe, it } from 'mocha';
-import { Configuration } from '../../../src/configuration/Configuration';
-import { ExceptionlessClient } from '../../../src/ExceptionlessClient';
-import { IEvent } from '../../../src/models/IEvent';
-import { DefaultErrorParser } from '../../../../browser/src/services/DefaultErrorParser';
-import { EventPluginContext } from '../../../src/plugins/EventPluginContext';
-import { EventExclusionPlugin } from '../../../src/plugins/default/EventExclusionPlugin';
+import { Configuration } from 'src/configuration/Configuration';
+import { ExceptionlessClient } from 'src/ExceptionlessClient';
+import { IEvent } from 'src/models/IEvent';
+import { EventPluginContext } from 'src/plugins/EventPluginContext';
+import { EventExclusionPlugin } from 'src/plugins/default/EventExclusionPlugin';
+import { IInnerError } from "src/models/IInnerError";
 
 beforeEach(() => {
   Configuration.defaults.updateSettingsWhenIdleInterval = -1;
@@ -179,18 +179,6 @@ describe('EventExclusionPlugin', () => {
   });
 
   describe('should exclude exception type', () => {
-    function createException() {
-      function throwError() {
-        throw new ReferenceError('This is a test');
-      }
-
-      try {
-        throwError();
-      } catch (e) {
-        return e;
-      }
-    }
-
     function run(settingKey: string): boolean {
       const client = new ExceptionlessClient();
 
@@ -198,9 +186,16 @@ describe('EventExclusionPlugin', () => {
         client.config.settings[settingKey] = 'false';
       }
 
-      const errorParser = new DefaultErrorParser();
-      const context = new EventPluginContext(client, { type: 'error', data: {} });
-      context.event.data['@error'] = errorParser.parse(context, createException());
+      const context = new EventPluginContext(client, {
+        type: 'error',
+        data: {
+          '@error': <IInnerError>{
+            type: 'ReferenceError',
+            message: 'This is a test',
+            stack_trace: []
+          }
+        }
+      });
 
       const plugin = new EventExclusionPlugin();
       plugin.run(context);

@@ -1,9 +1,10 @@
 import { expect } from 'chai';
 import { beforeEach, describe, it } from 'mocha';
-import { ExceptionlessClient } from '../../../src/ExceptionlessClient';
-import { DefaultErrorParser } from "../../../../browser/src/services/DefaultErrorParser";
-import { EventPluginContext } from '../../../src/plugins/EventPluginContext';
-import { DuplicateCheckerPlugin } from '../../../src/plugins/default/DuplicateCheckerPlugin';
+import { ExceptionlessClient } from 'src/ExceptionlessClient';
+import { EventPluginContext } from 'src/plugins/EventPluginContext';
+import { DuplicateCheckerPlugin } from 'src/plugins/default/DuplicateCheckerPlugin';
+import { IInnerError } from "src/models/IInnerError";
+import { IStackFrame } from "src/models/IStackFrame";
 
 describe('DuplicateCheckerPlugin', () => {
   let now: number = 0;
@@ -15,13 +16,20 @@ describe('DuplicateCheckerPlugin', () => {
     plugin = new DuplicateCheckerPlugin(() => now, 50);
   });
 
-  function run(exception: Error) {
-    const errorParser = client.config.errorParser || new DefaultErrorParser();
-    const context = new EventPluginContext(client, { type: 'error', data: {} });
-    context.event.data['@error'] = errorParser.parse(context, exception);
+  function run(stackTrace?: IStackFrame[]) {
+    // TODO: Generate unique stack traces based on test data.
+    const context = new EventPluginContext(client, {
+      type: 'error',
+      data: {
+        '@error': <IInnerError>{
+          type: 'ReferenceError',
+          message: 'This is a test',
+          stack_trace: stackTrace
+        }
+      }
+    });
 
     plugin.run(context);
-
     return context;
   }
 
@@ -36,7 +44,6 @@ describe('DuplicateCheckerPlugin', () => {
 
       done();
     }, 100);
-
   });
 
   it('should ignore error without stack', () => {
