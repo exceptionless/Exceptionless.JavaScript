@@ -1,10 +1,44 @@
 import { expect } from 'chai';
 import { beforeEach, describe, it } from 'mocha';
-import { ExceptionlessClient } from 'src/ExceptionlessClient';
-import { EventPluginContext } from 'src/plugins/EventPluginContext';
-import { DuplicateCheckerPlugin } from 'src/plugins/default/DuplicateCheckerPlugin';
-import { IInnerError } from "src/models/IInnerError";
-import { IStackFrame } from "src/models/IStackFrame";
+import { ExceptionlessClient } from '../../../src/ExceptionlessClient';
+import { EventPluginContext } from '../../../src/plugins/EventPluginContext';
+import { DuplicateCheckerPlugin } from '../../../src/plugins/default/DuplicateCheckerPlugin';
+import { IInnerError } from "../../../src/models/IInnerError";
+import { IStackFrame } from "../../../src/models/IStackFrame";
+
+const Exception1StackTrace = [
+  {
+    file_name: "index.js",
+    line_number: 0,
+    column: 50,
+    is_signature_target: true,
+    name: "createException",
+  },
+  {
+    file_name: "index.js",
+    line_number: 5,
+    column: 25,
+    is_signature_target: false,
+    name: "throwError",
+  }
+];
+
+const Exception2StackTrace = [
+  {
+    file_name: "index.js",
+    line_number: 0,
+    column: 50,
+    is_signature_target: true,
+    name: "createException2",
+  },
+  {
+    file_name: "index.js",
+    line_number: 5,
+    column: 25,
+    is_signature_target: false,
+    name: "throwError2",
+  }
+];
 
 describe('DuplicateCheckerPlugin', () => {
   let now: number = 0;
@@ -34,10 +68,9 @@ describe('DuplicateCheckerPlugin', () => {
   }
 
   it('should ignore duplicate within window', (done) => {
-    const exception = createException();
-    run(exception);
+    run(Exception1StackTrace);
 
-    const contextOfSecondRun = run(exception);
+    const contextOfSecondRun = run(Exception1StackTrace);
     expect(contextOfSecondRun.cancelled).to.be.true;
     setTimeout(() => {
       expect(contextOfSecondRun.event.count).to.equal(1);
@@ -47,51 +80,23 @@ describe('DuplicateCheckerPlugin', () => {
   });
 
   it('should ignore error without stack', () => {
-    const exception = new ReferenceError('This is a test');
-    delete exception.stack;
-
-    run(exception);
-    const contextOfSecondRun = run(exception);
+    run();
+    const contextOfSecondRun = run();
     expect(contextOfSecondRun.cancelled).to.be.true;
   });
 
   it('shouldn\'t ignore different stack within window', () => {
-    const exception1 = createException();
-    run(exception1);
-    const exception2 = createException2();
-    const contextOfSecondRun = run(exception2);
+    run(Exception1StackTrace);
+    const contextOfSecondRun = run(Exception2StackTrace);
 
     expect(contextOfSecondRun.cancelled).not.to.be.true;
   });
 
   it('shouldn\'t ignore duplicate after window', () => {
-    const exception = createException();
-    run(exception);
+    run(Exception1StackTrace);
 
     now = 3000;
-    const contextOfSecondRun = run(exception);
+    const contextOfSecondRun = run(Exception1StackTrace);
     expect(contextOfSecondRun.cancelled).not.to.be.true;
   });
 });
-
-function createException() {
-  function throwError() {
-    throw new ReferenceError('This is a test');
-  }
-  try {
-    throwError();
-  } catch (e) {
-    return e;
-  }
-}
-
-function createException2() {
-  function throwError2() {
-    throw new ReferenceError('This is a test');
-  }
-  try {
-    throwError2();
-  } catch (e) {
-    return e;
-  }
-}

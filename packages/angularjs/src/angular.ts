@@ -1,10 +1,10 @@
-// Update once ts issue is fixed: https://github.com/Microsoft/TypeScript/issues/2192
-// import * as exceptionless from '../../dist/exceptionless'
+import angular from 'angular';
+import 'angular-mocks';
+import { ExceptionlessClient } from '@exceptionless/core/ExceptionlessClient';
 // eslint-disable-next-line no-var
-declare var exceptionless;
 
 angular.module('exceptionless', [])
-  .constant('$ExceptionlessClient', exceptionless.ExceptionlessClient.default)
+  .constant('$ExceptionlessClient', ExceptionlessClient.default)
   .factory('exceptionlessHttpInterceptor', ['$location', '$q', '$ExceptionlessClient', ($location, $q, $ExceptionlessClient) => {
     return {
       responseError: function responseError(response) {

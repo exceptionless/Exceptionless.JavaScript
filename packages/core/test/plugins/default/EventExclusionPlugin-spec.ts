@@ -1,11 +1,11 @@
 import { expect } from 'chai';
 import { beforeEach, describe, it } from 'mocha';
-import { Configuration } from 'src/configuration/Configuration';
-import { ExceptionlessClient } from 'src/ExceptionlessClient';
-import { IEvent } from 'src/models/IEvent';
-import { EventPluginContext } from 'src/plugins/EventPluginContext';
-import { EventExclusionPlugin } from 'src/plugins/default/EventExclusionPlugin';
-import { IInnerError } from "src/models/IInnerError";
+import { Configuration } from '../../../src/configuration/Configuration';
+import { ExceptionlessClient } from '../../../src/ExceptionlessClient';
+import { IEvent } from '../../../src/models/IEvent';
+import { EventPluginContext } from '../../../src/plugins/EventPluginContext';
+import { EventExclusionPlugin } from '../../../src/plugins/default/EventExclusionPlugin';
+import { IInnerError } from "../../../src/models/IInnerError";
 
 beforeEach(() => {
   Configuration.defaults.updateSettingsWhenIdleInterval = -1;
