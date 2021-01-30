@@ -6,3 +6,4 @@ jspm_packages
 public
 /dist/temp
 example/exceptionless.js
+dist

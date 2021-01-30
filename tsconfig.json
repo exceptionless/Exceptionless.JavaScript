@@ -1,8 +1,13 @@
 {
     "compilerOptions": {
-        "baseUrl": "packages",
+        "baseUrl": ".",
         "paths": {
-            "@exceptionless/*": ["*/src"]
+          "@exceptionless/angularjs/*": ["packages/angularjs/src/*"],
+          "@exceptionless/browser/*": ["packages/browser/src/*"],
+          "@exceptionless/core/*": ["packages/core/src/*"],
+          "@exceptionless/node/*": ["packages/node/src/*"],
+          "@exceptionless/node-submit-sync/*": ["packages/node-submit-sync/src/*"],
+          "@exceptionless/universal/*": ["packages/universal/src/*"]
         },
         "declaration": true,
         "module": "commonjs",

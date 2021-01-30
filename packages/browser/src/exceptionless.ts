@@ -4,7 +4,7 @@ import { IConfigurationSettings } from '@exceptionless/core/configuration/IConfi
 import { SettingsManager } from '@exceptionless/core/configuration/SettingsManager';
 import { ExceptionlessClient } from '@exceptionless/core/ExceptionlessClient';
 import { DefaultErrorParser } from './services/DefaultErrorParser';
-import { DefaultModuleCollector } from '@exceptionless/core/services/DefaultModuleCollector';
+import { DefaultModuleCollector } from './services/DefaultModuleCollector';
 import { DefaultRequestInfoCollector } from './services/DefaultRequestInfoCollector';
 import { BrowserStorage } from './storage/BrowserStorage';
 import { BrowserStorageProvider } from './storage/BrowserStorageProvider';
