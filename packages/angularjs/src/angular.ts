@@ -1,8 +1,6 @@
-import angular from 'angular';
-import 'angular-mocks';
 import { ExceptionlessClient } from '@exceptionless/core/ExceptionlessClient';
-// eslint-disable-next-line no-var
 
+let angular: ng.IAngularStatic;
 angular.module('exceptionless', [])
   .constant('$ExceptionlessClient', ExceptionlessClient.default)
   .factory('exceptionlessHttpInterceptor', ['$location', '$q', '$ExceptionlessClient', ($location, $q, $ExceptionlessClient) => {
@@ -34,7 +32,7 @@ angular.module('exceptionless', [])
       function decorateRegularCall(property, logLevel) {
         const previousFn = $delegate[property];
         return $delegate[property] = (...args) => {
-          if (angular.mock) {
+          if ((<any>angular).mock) {
             // Needed to support angular-mocks.
             $delegate[property].logs = [];
           }
