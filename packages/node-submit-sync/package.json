@@ -1,5 +1,5 @@
 {
-  "name": "@exceptionless/node-submit-syn",
+  "name": "@exceptionless/node-submit-sync",
   "version": "2.0.0-pre",
   "description": "JavaScript client for Exceptionless",
   "author": {
