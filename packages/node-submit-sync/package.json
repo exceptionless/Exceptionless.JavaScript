@@ -29,9 +29,11 @@
   "typings": "dist/index.d.ts",
   "type": "module",
   "scripts": {
-    "lint": "eslint --cache --ext .js,.ts src/",
+    "lint": "eslint --cache --ext .ts src/",
     "build": "tsc -b",
-    "dev": "tsc -b -w --preserveWatchOutput"
+    "build:cjs": "tsc -p tsconfig.cjs.json",
+    "build:esm": "tsc -p tsconfig.esm.json",
+    "build:watch": "tsc -p tsconfig.esm.json -w --preserveWatchOutput"
   },
   "devDependencies": {
     "@types/node": "14.14.7",

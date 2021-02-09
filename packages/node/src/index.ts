@@ -1,6 +1,6 @@
 import { Configuration } from '@exceptionless/core/configuration/Configuration';
-import { SettingsManager } from '@exceptionless/core/configuration/SettingsManager';
 import { ExceptionlessClient } from '@exceptionless/core/ExceptionlessClient';
+import { SettingsManager } from '@exceptionless/core/configuration/SettingsManager';
 import { NodeEnvironmentInfoCollector } from './services/NodeEnvironmentInfoCollector';
 import { NodeErrorParser } from './services/NodeErrorParser';
 import { NodeModuleCollector } from './services/NodeModuleCollector';
@@ -8,7 +8,7 @@ import { NodeRequestInfoCollector } from './services/NodeRequestInfoCollector';
 import { NodeFileStorageProvider } from './storage/NodeFileStorageProvider';
 import { NodeSubmissionAdapter } from './submission/NodeSubmissionAdapter';
 
-(function init() {
+function init() {
   if (typeof process === 'undefined') {
     return;
   }
@@ -92,4 +92,7 @@ import { NodeSubmissionAdapter } from './submission/NodeSubmissionAdapter';
   });
 
   (Error as any).stackTraceLimit = Infinity;
-})();
+}
+
+init();
+export { Configuration, ExceptionlessClient, init, SettingsManager };

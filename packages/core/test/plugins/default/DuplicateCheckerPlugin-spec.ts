@@ -1,10 +1,10 @@
 import { expect } from 'chai';
 import { beforeEach, describe, it } from 'mocha';
-import { ExceptionlessClient } from '../../../src/ExceptionlessClient';
-import { EventPluginContext } from '../../../src/plugins/EventPluginContext';
-import { DuplicateCheckerPlugin } from '../../../src/plugins/default/DuplicateCheckerPlugin';
-import { IInnerError } from "../../../src/models/IInnerError";
-import { IStackFrame } from "../../../src/models/IStackFrame";
+import { ExceptionlessClient } from '@exceptionless/core/ExceptionlessClient';
+import { EventPluginContext } from '@exceptionless/core/plugins/EventPluginContext';
+import { DuplicateCheckerPlugin } from '@exceptionless/core/plugins/default/DuplicateCheckerPlugin';
+import { IInnerError } from "@exceptionless/core/models/IInnerError";
+import { IStackFrame } from "@exceptionless/core/models/IStackFrame";
 
 const Exception1StackTrace = [
   {
