@@ -1,8 +1,8 @@
 import { IModule } from '@exceptionless/core/models/IModule';
 import { IModuleCollector } from '@exceptionless/core/services/IModuleCollector';
 
-import child = require('child_process');
-import path = require('path');
+import * as child from 'child_process'
+import * as path from 'path'
 
 export class NodeModuleCollector implements IModuleCollector {
 

@@ -2,7 +2,7 @@ import { IEnvironmentInfo } from '@exceptionless/core/models/IEnvironmentInfo';
 import { EventPluginContext } from '@exceptionless/core/plugins/EventPluginContext';
 import { IEnvironmentInfoCollector } from '@exceptionless/core/services/IEnvironmentInfoCollector';
 
-import os = require('os');
+import * as os from 'os'
 
 export class NodeEnvironmentInfoCollector implements IEnvironmentInfoCollector {
   public getEnvironmentInfo(context: EventPluginContext): IEnvironmentInfo {

@@ -2,8 +2,8 @@ import { IError } from '@exceptionless/core/models/IError';
 import { IStackFrame } from '@exceptionless/core/models/IStackFrame';
 import { EventPluginContext } from '@exceptionless/core/plugins/EventPluginContext';
 import { IErrorParser } from '@exceptionless/core/services/IErrorParser';
+import { parse } from 'stack-trace'
 
-import nodestacktrace = require('stack-trace');
 
 export class NodeErrorParser implements IErrorParser {
   public parse(context: EventPluginContext, exception: Error): IError {
@@ -27,11 +27,11 @@ export class NodeErrorParser implements IErrorParser {
       return result;
     }
 
-    if (!nodestacktrace) {
+    if (!parse) {
       throw new Error('Unable to load the stack trace library.');
     }
 
-    const stackFrames = nodestacktrace.parse(exception) || [];
+    const stackFrames = parse(exception) || [];
     return {
       type: exception.name || 'Error',
       message: exception.message,

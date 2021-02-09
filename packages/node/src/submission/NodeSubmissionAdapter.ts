@@ -2,10 +2,11 @@ import { ISubmissionAdapter } from '@exceptionless/core/submission/ISubmissionAd
 import { SubmissionCallback } from '@exceptionless/core/submission/SubmissionCallback';
 import { SubmissionRequest } from '@exceptionless/core/submission/SubmissionRequest';
 
-import child = require('child_process');
-import http = require('http');
-import https = require('https');
-import url = require('url');
+import * as child from 'child_process'
+import * as http from 'http'
+import * as https from 'https'
+import * as url from 'url'
+
 import { IncomingHttpHeaders } from "http";
 
 export class NodeSubmissionAdapter implements ISubmissionAdapter {
