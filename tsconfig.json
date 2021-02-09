@@ -1,19 +1,27 @@
 {
-    "compilerOptions": {
-        "baseUrl": ".",
-        "paths": {
-          "@exceptionless/angularjs/*": ["packages/angularjs/src/*"],
-          "@exceptionless/browser/*": ["packages/browser/src/*"],
-          "@exceptionless/core/*": ["packages/core/src/*"],
-          "@exceptionless/node/*": ["packages/node/src/*"],
-          "@exceptionless/node-submit-sync/*": ["packages/node-submit-sync/src/*"],
-          "@exceptionless/universal/*": ["packages/universal/src/*"]
-        },
-        "declaration": true,
-        "module": "commonjs",
-        "moduleResolution": "node",
-        "removeComments": true,
-        "sourceMap": true,
-        "target": "es5"
-    }
+  "compilerOptions": {
+    "baseUrl": ".",
+    "declaration": true,
+    "declarationMap": true,
+    "downlevelIteration": true,
+    "inlineSources": true,
+    "importHelpers": true,
+    "lib": ["ES2015"],
+    "module": "CommonJS",
+    "moduleResolution": "Node",
+    "noImplicitReturns": true,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+    "paths": {
+      "@exceptionless/angularjs/*": ["packages/angularjs/src/*"],
+      "@exceptionless/browser/*": ["packages/browser/src/*"],
+      "@exceptionless/core/*": ["packages/core/src/*"],
+      "@exceptionless/node/*": ["packages/node/src/*"],
+      "@exceptionless/node-submit-sync/*": ["packages/node-submit-sync/src/*"]
+    },
+    "pretty": true,
+    "skipLibCheck": true,
+    "sourceMap": true,
+    "target": "ES5"
+  }
 }

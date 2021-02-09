@@ -1,6 +1,6 @@
 import * as mockFs from 'mock-fs';
-import { NodeFileStorage } from '../../src/storage/NodeFileStorage';
-import { describeStorage } from '../../../core/test/storage/Storage-spec';
+import { NodeFileStorage } from '@exceptionless/node/storage/NodeFileStorage';
+import { describeStorage } from '@exceptionless/core/test/storage/Storage-spec';
 
 let mockedFs;
 

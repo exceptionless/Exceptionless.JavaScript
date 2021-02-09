@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
-import { Configuration } from '../../src/configuration/Configuration';
-import { SettingsManager } from '../../src/configuration/SettingsManager';
+import { Configuration } from '@exceptionless/core/configuration/Configuration';
+import { SettingsManager } from '@exceptionless/core/configuration/SettingsManager';
 
 describe('SettingsManager', () => {
   it('should call changed handler', (done) => {

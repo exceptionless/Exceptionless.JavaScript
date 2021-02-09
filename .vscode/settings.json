@@ -4,13 +4,12 @@
 "typescript.tsdk": "./node_modules/typescript/lib",
 "cSpell.words": [
     "Exceptionless",
+    "angularjs",
     "bootstrapcdn",
     "configversion",
     "lage",
     "maxcdn",
-    "systemjs",
     "tracekit",
-    "tsfmt",
     "tsproject"
 ]
 }

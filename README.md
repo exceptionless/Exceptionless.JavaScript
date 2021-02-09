@@ -95,7 +95,7 @@ You can configure the `ExceptionlessClient` class using one of the following way
   exceptionless.ExceptionlessClient.default.config.apiKey = 'API_KEY_HERE';
   ```
 
-- You can create a new instance of the `ExceptionlessClient` class and specify the `apiKey`, `serverUrl` or [configuration object](https://github.com/exceptionless/Exceptionless.JavaScript/blob/master/src/configuration/IConfigurationSettings.ts):
+- You can create a new instance of the `ExceptionlessClient` class and specify the `apiKey`, `serverUrl` or [configuration object](https://github.com/exceptionless/Exceptionless.JavaScript/blob/master/packages/core/src/configuration/IConfigurationSettings.ts):
 
   ```javascript
   var client = new exceptionless.ExceptionlessClient('API_KEY_HERE');
@@ -118,7 +118,7 @@ You can configure the `ExceptionlessClient` class using one of the following way
   client.config.apiKey = 'API_KEY_HERE';
   ```
 
-- You can create a new instance of the `ExceptionlessClient` class and specify the `apiKey`, `serverUrl` or [configuration object](https://github.com/exceptionless/Exceptionless.JavaScript/blob/master/src/configuration/IConfigurationSettings.ts):
+- You can create a new instance of the `ExceptionlessClient` class and specify the `apiKey`, `serverUrl` or [configuration object](https://github.com/exceptionless/Exceptionless.JavaScript/blob/master/packages/core/src/configuration/IConfigurationSettings.ts):
 
   ```javascript
   var exceptionless = require('exceptionless');
@@ -186,7 +186,7 @@ try {
 
 #### Sending Additional Information
 
-You can easily include additional information in your error reports using the fluent [event builder API](https://github.com/exceptionless/Exceptionless.JavaScript/blob/master/src/EventBuilder.ts).
+You can easily include additional information in your error reports using the fluent [event builder API](https://github.com/exceptionless/Exceptionless.JavaScript/blob/master/packages/core/src/EventBuilder.ts).
 
 ```javascript
 // Browser

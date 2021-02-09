@@ -1,9 +1,9 @@
 import { expect } from 'chai';
 import { afterEach, beforeEach, describe, it } from 'mocha';
 import { SinonFakeXMLHttpRequestStatic, useFakeXMLHttpRequest } from 'sinon';
-import { Configuration } from "../src/configuration/Configuration";
-import { ExceptionlessClient } from '../src/ExceptionlessClient';
-import { EventPluginContext } from '../src/plugins/EventPluginContext';
+import { Configuration } from "@exceptionless/core/configuration/Configuration";
+import { ExceptionlessClient } from '@exceptionless/core/ExceptionlessClient';
+import { EventPluginContext } from '@exceptionless/core/plugins/EventPluginContext';
 
 describe('ExceptionlessClient', () => {
   let xhr: SinonFakeXMLHttpRequestStatic;

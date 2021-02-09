@@ -7,3 +7,13 @@ public
 /dist/temp
 example/exceptionless.js
 dist
+
+packages/node/.eslintcache
+
+packages/angularjs/.eslintcache
+
+packages/browser/.eslintcache
+
+packages/core/.eslintcache
+
+packages/node-submit-sync/.eslintcache

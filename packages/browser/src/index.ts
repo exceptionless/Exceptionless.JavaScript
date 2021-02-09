@@ -11,7 +11,7 @@ import { BrowserStorageProvider } from './storage/BrowserStorageProvider';
 import { DefaultSubmissionAdapter } from './submission/DefaultSubmissionAdapter';
 import { Utils } from '@exceptionless/core/Utils';
 
-(function init() {
+function init() {
   function getDefaultsSettingsFromScriptTag(): IConfigurationSettings {
     if (!document || !document.getElementsByTagName) {
       return null;
@@ -94,6 +94,8 @@ import { Utils } from '@exceptionless/core/Utils';
   // }
 
   (Error as any).stackTraceLimit = Infinity;
-})();
-
+}
 //declare var $;
+
+init();
+export { Configuration, ExceptionlessClient, init, SettingsManager };

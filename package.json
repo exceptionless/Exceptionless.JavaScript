@@ -1,13 +1,14 @@
 {
   "name": "@exceptionless/monorepo",
   "private": true,
-  "version": "2.0.0",
+  "version": "2.0.0-pre",
   "license": "Apache-2.0",
   "scripts": {
-    "init": "npm ci && npm run build",
-    "rebuild": "npm run clean && npm run build",
-    "build": "lage build --scope @exceptionless/* --no-cache --verbose --no-deps",
     "clean": "rimraf dist packages/*/dist examples/*/dist",
+    "build": "lage build --scope @exceptionless/* --no-cache --verbose --no-deps",
+    "build:cjs": "lage build:cjs --scope @exceptionless/* --no-cache --verbose --no-deps",
+    "build:esm": "lage build:esm --scope @exceptionless/* --no-cache --verbose --no-deps",
+    "build:watch": "lage run build:watch --scope @exceptionless/* --no-cache --verbose --no-deps",
     "lint": "lage run lint",
     "test": "lage run test"
   },
@@ -15,13 +16,13 @@
     "packages/*"
   ],
   "devDependencies": {
-    "@typescript-eslint/eslint-plugin": "4.14.0",
-    "@typescript-eslint/parser": "4.14.0",
-    "eslint": "7.18.0",
+    "@typescript-eslint/eslint-plugin": "4.15.0",
+    "@typescript-eslint/parser": "4.15.0",
+    "eslint": "7.19.0",
     "eslint-plugin-import": "2.22.1",
-    "eslint-plugin-jsdoc": "31.0.8",
+    "eslint-plugin-jsdoc": "31.6.1",
     "eslint-plugin-mocha": "8.0.0",
-    "lage": "0.27.0",
+    "lage": "0.29.0",
     "rimraf": "3.0.2",
     "source-map-support": "0.5.19",
     "ts-node": "9.1.1",

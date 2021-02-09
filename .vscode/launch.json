@@ -10,7 +10,7 @@
         "--colors",
         "-u", "tdd",
         "--timeout", "999999",
-        "${workspaceFolder}/src/**/*-spec.ts"
+        "${workspaceFolder}/packages/**/*-spec.ts"
       ],
       "runtimeArgs": [
         "--require",
