@@ -1,15 +1,21 @@
 // Place your settings in this file to overwrite default and user settings.
 {
-"files.insertFinalNewline": true,
-"typescript.tsdk": "./node_modules/typescript/lib",
-"cSpell.words": [
-    "Exceptionless",
-    "angularjs",
-    "bootstrapcdn",
-    "configversion",
-    "lage",
-    "maxcdn",
-    "tracekit",
-    "tsproject"
-]
+  "editor.formatOnSave": true,
+  "files.insertFinalNewline": true,
+  "prettier.eslintIntegration": true,
+  "typescript.tsdk": "./node_modules/typescript/lib",
+  "cSpell.words": [
+      "Exceptionless",
+      "angularjs",
+      "bootstrapcdn",
+      "configversion",
+      "lage",
+      "maxcdn",
+      "tracekit",
+      "tsproject"
+  ],
+  "eslint.validate": [
+    "javascript",
+    "typescript"
+  ]
 }

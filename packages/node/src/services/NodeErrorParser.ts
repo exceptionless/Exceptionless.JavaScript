@@ -1,7 +1,10 @@
-import { IError } from '@exceptionless/core/models/IError';
-import { IStackFrame } from '@exceptionless/core/models/IStackFrame';
-import { EventPluginContext } from '@exceptionless/core/plugins/EventPluginContext';
-import { IErrorParser } from '@exceptionless/core/services/IErrorParser';
+import {
+  EventPluginContext,
+  IError,
+  IErrorParser,
+  IStackFrame
+} from '@exceptionless/core';
+
 import { parse } from 'stack-trace'
 
 

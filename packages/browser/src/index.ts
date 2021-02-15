@@ -1,15 +1,19 @@
+import {
+  IConfigurationSettings,
+  Utils,
+  ExceptionlessClient,
+  Configuration,
+  SettingsManager
+} from "@exceptionless/core";
+
 import * as TraceKit from 'TraceKit';
-import { Configuration } from '@exceptionless/core/configuration/Configuration';
-import { IConfigurationSettings } from '@exceptionless/core/configuration/IConfigurationSettings';
-import { SettingsManager } from '@exceptionless/core/configuration/SettingsManager';
-import { ExceptionlessClient } from '@exceptionless/core/ExceptionlessClient';
+
 import { DefaultErrorParser } from './services/DefaultErrorParser';
 import { DefaultModuleCollector } from './services/DefaultModuleCollector';
 import { DefaultRequestInfoCollector } from './services/DefaultRequestInfoCollector';
 import { BrowserStorage } from './storage/BrowserStorage';
 import { BrowserStorageProvider } from './storage/BrowserStorageProvider';
 import { DefaultSubmissionAdapter } from './submission/DefaultSubmissionAdapter';
-import { Utils } from '@exceptionless/core/Utils';
 
 function init() {
   function getDefaultsSettingsFromScriptTag(): IConfigurationSettings {
@@ -98,4 +102,4 @@ function init() {
 //declare var $;
 
 init();
-export { Configuration, ExceptionlessClient, init, SettingsManager };
+export { ExceptionlessClient };

@@ -1,7 +1,9 @@
-import { IRequestInfo } from '@exceptionless/core/models/IRequestInfo';
-import { EventPluginContext } from '@exceptionless/core/plugins/EventPluginContext';
-import { Utils } from '@exceptionless/core/Utils';
-import { IRequestInfoCollector } from '@exceptionless/core/services/IRequestInfoCollector';
+import {
+  EventPluginContext,
+  IRequestInfo,
+  IRequestInfoCollector,
+  Utils
+} from '@exceptionless/core';
 
 export class NodeRequestInfoCollector implements IRequestInfoCollector {
   public getRequestInfo(context: EventPluginContext): IRequestInfo {

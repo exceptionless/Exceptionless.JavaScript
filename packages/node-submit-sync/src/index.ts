@@ -1,5 +1,5 @@
-import { NodeSubmissionAdapter } from '@exceptionless/node/submission/NodeSubmissionAdapter';
-import { SubmissionRequest } from '@exceptionless/core/submission/SubmissionRequest';
+import { SubmissionRequest } from '@exceptionless/core';
+import { NodeSubmissionAdapter } from '@exceptionless/node';
 
 import * as stream from 'stream';
 import { StringDecoder } from 'string_decoder';

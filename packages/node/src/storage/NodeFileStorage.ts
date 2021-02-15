@@ -1,4 +1,4 @@
-import { KeyValueStorageBase } from '@exceptionless/core/storage/KeyValueStorageBase';
+import { KeyValueStorageBase } from '@exceptionless/core';
 
 import * as Fs from 'fs';
 import * as Path from 'path';

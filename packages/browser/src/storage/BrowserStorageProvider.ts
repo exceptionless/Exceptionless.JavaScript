@@ -1,6 +1,9 @@
+import {
+  IStorage,
+  IStorageProvider
+} from '@exceptionless/core';
+
 import { BrowserStorage } from './BrowserStorage';
-import { IStorage } from '@exceptionless/core/storage/IStorage';
-import { IStorageProvider } from '@exceptionless/core/storage/IStorageProvider';
 
 export class BrowserStorageProvider implements IStorageProvider {
   public queue: IStorage;

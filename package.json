@@ -10,23 +10,24 @@
     "build:esm": "lage build:esm --scope @exceptionless/* --no-cache --verbose --no-deps",
     "build:watch": "lage run build:watch --scope @exceptionless/* --no-cache --verbose --no-deps",
     "lint": "lage run lint",
+    "lint:fix": "lage run lint:fix",
     "test": "lage run test"
   },
   "workspaces": [
     "packages/*"
   ],
   "devDependencies": {
-    "@typescript-eslint/eslint-plugin": "4.15.0",
-    "@typescript-eslint/parser": "4.15.0",
-    "eslint": "7.19.0",
+    "@typescript-eslint/eslint-plugin": "4.15.1",
+    "@typescript-eslint/parser": "4.15.1",
+    "eslint": "7.20.0",
     "eslint-plugin-import": "2.22.1",
-    "eslint-plugin-jsdoc": "31.6.1",
+    "eslint-plugin-jsdoc": "32.0.0",
     "eslint-plugin-mocha": "8.0.0",
     "lage": "0.29.0",
     "rimraf": "3.0.2",
     "source-map-support": "0.5.19",
     "ts-node": "9.1.1",
-    "typescript": "4.1.3",
+    "typescript": "4.1.5",
     "typescript-formatter": "7.2.2"
   }
 }

@@ -10,5 +10,4 @@ export class InMemoryStorageProvider implements IStorageProvider {
     this.queue = new InMemoryStorage(maxQueueItems);
     this.settings = new InMemoryStorage(1);
   }
-
 }

@@ -1,9 +1,12 @@
+import {
+  EventPluginContext,
+  IError,
+  IErrorParser,
+  IParameter,
+  IStackFrame
+} from '@exceptionless/core';
+
 import * as TraceKit from 'TraceKit';
-import { IError } from '@exceptionless/core/models/IError';
-import { IParameter } from '@exceptionless/core/models/IParameter';
-import { IStackFrame } from '@exceptionless/core/models/IStackFrame';
-import { EventPluginContext } from '@exceptionless/core/plugins/EventPluginContext';
-import { IErrorParser } from '@exceptionless/core/services/IErrorParser';
 
 export class DefaultErrorParser implements IErrorParser {
   public parse(context: EventPluginContext, exception: Error): IError {

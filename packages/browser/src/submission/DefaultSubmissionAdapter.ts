@@ -1,6 +1,8 @@
-import { ISubmissionAdapter } from '@exceptionless/core/submission/ISubmissionAdapter';
-import { SubmissionCallback } from '@exceptionless/core/submission/SubmissionCallback';
-import { SubmissionRequest } from '@exceptionless/core/submission/SubmissionRequest';
+import {
+  ISubmissionAdapter,
+  SubmissionCallback,
+  SubmissionRequest
+} from '@exceptionless/core';
 
 // eslint-disable-next-line no-var
 declare var XDomainRequest: { new(); create(); };

@@ -1,13 +1,15 @@
 import { expect } from 'chai';
 import { beforeEach, describe, it } from 'mocha';
-import { Configuration } from '@exceptionless/core/configuration/Configuration';
-import { IEvent } from '@exceptionless/core/models/IEvent';
-import { IUserDescription } from '@exceptionless/core/models/IUserDescription';
-import { DefaultSubmissionClient } from '@exceptionless/core/submission/DefaultSubmissionClient';
-import { ISubmissionAdapter } from '@exceptionless/core/submission/ISubmissionAdapter';
-import { ISubmissionClient } from '@exceptionless/core/submission/ISubmissionClient';
-import { SubmissionCallback } from '@exceptionless/core/submission/SubmissionCallback';
-import { SubmissionRequest } from '@exceptionless/core/submission/SubmissionRequest';
+import {
+  Configuration,
+  DefaultSubmissionClient,
+  IEvent,
+  ISubmissionAdapter,
+  ISubmissionClient,
+  IUserDescription,
+  SubmissionCallback,
+  SubmissionRequest
+} from '@exceptionless/core';
 
 class TestAdapter implements ISubmissionAdapter {
   private request: SubmissionRequest;

@@ -1,10 +1,10 @@
-import { IEvent } from '@exceptionless/core/models/IEvent';
-import { ContextData } from '@exceptionless/core/plugins/ContextData';
-import { EventPluginContext } from '@exceptionless/core/plugins/EventPluginContext';
+import { IEvent } from '../../../src/models/IEvent';
+import { ContextData } from '../../../src/plugins/ContextData';
+import { EventPluginContext } from '../../../src/plugins/EventPluginContext';
 
 import { expect } from 'chai';
 import { beforeEach, describe, it } from 'mocha';
-import { ErrorPlugin } from '@exceptionless/core/plugins/default/ErrorPlugin';
+import { ErrorPlugin } from '../../../src/plugins/default/ErrorPlugin';
 import { CapturedExceptions } from './ErrorPlugin-spec-exceptions';
 import { createFixture } from './EventPluginTestFixture';
 

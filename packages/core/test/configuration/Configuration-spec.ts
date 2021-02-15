@@ -1,6 +1,6 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
-import { Configuration } from '@exceptionless/core/configuration/Configuration';
+import { Configuration } from '../../src/configuration/Configuration';
 
 describe('Configuration', () => {
   it('should override configuration defaults', () => {

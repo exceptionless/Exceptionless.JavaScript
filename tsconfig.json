@@ -1,9 +1,10 @@
 {
   "compilerOptions": {
-    "baseUrl": ".",
     "declaration": true,
     "declarationMap": true,
     "downlevelIteration": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
     "inlineSources": true,
     "importHelpers": true,
     "lib": ["ES2015"],
@@ -12,16 +13,11 @@
     "noImplicitReturns": true,
     "noUnusedLocals": false,
     "noUnusedParameters": false,
-    "paths": {
-      "@exceptionless/angularjs/*": ["packages/angularjs/src/*"],
-      "@exceptionless/browser/*": ["packages/browser/src/*"],
-      "@exceptionless/core/*": ["packages/core/src/*"],
-      "@exceptionless/node/*": ["packages/node/src/*"],
-      "@exceptionless/node-submit-sync/*": ["packages/node-submit-sync/src/*"]
-    },
     "pretty": true,
+    "resolveJsonModule": true,
     "skipLibCheck": true,
     "sourceMap": true,
+    "strict": false,
     "target": "ES5"
   }
 }
