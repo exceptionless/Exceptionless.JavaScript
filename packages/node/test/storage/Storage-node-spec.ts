@@ -1,6 +1,7 @@
-import * as mockFs from 'mock-fs';
-import { NodeFileStorage } from '@exceptionless/node/storage/NodeFileStorage';
+import mock from 'mock-fs';
 import { describeStorage } from '@exceptionless/core/test/storage/Storage-spec';
+
+import { NodeFileStorage } from '../../src/storage/NodeFileStorage';
 
 let mockedFs;
 
@@ -9,7 +10,7 @@ const nodeFileStorageFactory = (maxItems?) => {
 };
 
 const nodeFileStorageInitializer = () => {
-  mockedFs = mockFs({
+  mockedFs = mock({
     fileStorage: {}
   });
 };

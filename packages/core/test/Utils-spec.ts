@@ -1,6 +1,6 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
-import { Utils } from '@exceptionless/core/Utils';
+import { Utils } from '../src/Utils';
 
 describe('Utils', () => {
   it('should add range', () => {

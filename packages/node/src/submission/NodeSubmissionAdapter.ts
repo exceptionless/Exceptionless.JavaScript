@@ -1,6 +1,8 @@
-import { ISubmissionAdapter } from '@exceptionless/core/submission/ISubmissionAdapter';
-import { SubmissionCallback } from '@exceptionless/core/submission/SubmissionCallback';
-import { SubmissionRequest } from '@exceptionless/core/submission/SubmissionRequest';
+import {
+  ISubmissionAdapter,
+  SubmissionCallback,
+  SubmissionRequest
+} from '@exceptionless/core';
 
 import * as child from 'child_process'
 import * as http from 'http'

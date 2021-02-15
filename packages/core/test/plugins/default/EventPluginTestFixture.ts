@@ -1,7 +1,7 @@
-import { IEvent } from '@exceptionless/core/models/IEvent';
-import { IErrorParser } from '@exceptionless/core/services/IErrorParser';
-import { ContextData } from '@exceptionless/core/plugins/ContextData';
-import { EventPluginContext } from '@exceptionless/core/plugins/EventPluginContext';
+import { IEvent } from '../../../src/models/IEvent';
+import { IErrorParser } from '../../../src/services/IErrorParser';
+import { ContextData } from '../../../src/plugins/ContextData';
+import { EventPluginContext } from '../../../src/plugins/EventPluginContext';
 
 // TODO: This should use the real object instances and inject the error parser.
 export function createFixture(): { contextData: ContextData, context: EventPluginContext, client: any, event: IEvent } {

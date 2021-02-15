@@ -1,8 +1,8 @@
 import { expect } from 'chai';
 import { afterEach, beforeEach, describe, it } from 'mocha';
 import * as sinon from 'sinon';
-import { Configuration } from '@exceptionless/core/configuration/Configuration';
-import { IEvent } from '@exceptionless/core/models/IEvent';
+import { Configuration } from '../../src/configuration/Configuration';
+import { IEvent } from '../../src/models/IEvent';
 
 describe('DefaultEventQueue', () => {
   let config: Configuration;

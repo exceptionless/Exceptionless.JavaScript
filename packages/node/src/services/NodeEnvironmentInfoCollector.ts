@@ -1,6 +1,8 @@
-import { IEnvironmentInfo } from '@exceptionless/core/models/IEnvironmentInfo';
-import { EventPluginContext } from '@exceptionless/core/plugins/EventPluginContext';
-import { IEnvironmentInfoCollector } from '@exceptionless/core/services/IEnvironmentInfoCollector';
+import {
+  IEnvironmentInfo,
+  IEnvironmentInfoCollector,
+  EventPluginContext
+} from '@exceptionless/core';
 
 import * as os from 'os'
 

@@ -1,9 +1,9 @@
 import { expect } from 'chai';
 import { beforeEach, describe, it } from 'mocha';
-import { IEvent } from '@exceptionless/core/models/IEvent';
-import { InMemoryStorage } from '@exceptionless/core/storage/InMemoryStorage';
-import { IStorage } from '@exceptionless/core/storage/IStorage';
-import { IStorageItem } from '@exceptionless/core/storage/IStorageItem';
+import { IEvent } from '../../src/models/IEvent';
+import { InMemoryStorage } from '../../src/storage/InMemoryStorage';
+import { IStorage } from '../../src/storage/IStorage';
+import { IStorageItem } from '../../src/storage/IStorageItem';
 
 describeStorage('InMemoryStorage', (maxItems = 250) => {
   return new InMemoryStorage(maxItems);

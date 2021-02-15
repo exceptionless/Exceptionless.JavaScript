@@ -1,6 +1,9 @@
-import { Configuration } from '@exceptionless/core/configuration/Configuration';
-import { ExceptionlessClient } from '@exceptionless/core/ExceptionlessClient';
-import { SettingsManager } from '@exceptionless/core/configuration/SettingsManager';
+import {
+  Configuration,
+  ExceptionlessClient,
+  SettingsManager
+} from '@exceptionless/core';
+
 import { NodeEnvironmentInfoCollector } from './services/NodeEnvironmentInfoCollector';
 import { NodeErrorParser } from './services/NodeErrorParser';
 import { NodeModuleCollector } from './services/NodeModuleCollector';
@@ -95,4 +98,4 @@ function init() {
 }
 
 init();
-export { Configuration, ExceptionlessClient, init, SettingsManager };
+export { ExceptionlessClient, NodeSubmissionAdapter };

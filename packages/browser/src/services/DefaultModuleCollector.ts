@@ -1,6 +1,8 @@
-import { IModule } from '@exceptionless/core/models/IModule';
-import { Utils } from '@exceptionless/core/Utils';
-import { IModuleCollector } from '@exceptionless/core/services/IModuleCollector';
+import {
+  IModule,
+  IModuleCollector,
+  Utils
+} from '@exceptionless/core';
 
 export class DefaultModuleCollector implements IModuleCollector {
   public getModules(): IModule[] {

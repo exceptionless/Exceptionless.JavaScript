@@ -1,4 +1,4 @@
-import { ExceptionlessClient } from '@exceptionless/core/ExceptionlessClient';
+import { ExceptionlessClient } from '@exceptionless/core';
 
 let angular: ng.IAngularStatic;
 angular.module('exceptionless', [])

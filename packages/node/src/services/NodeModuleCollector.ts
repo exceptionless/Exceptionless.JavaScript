@@ -1,5 +1,7 @@
-import { IModule } from '@exceptionless/core/models/IModule';
-import { IModuleCollector } from '@exceptionless/core/services/IModuleCollector';
+import {
+  IModule,
+  IModuleCollector
+} from '@exceptionless/core';
 
 import * as child from 'child_process'
 import * as path from 'path'
