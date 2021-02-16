@@ -24,17 +24,15 @@
   },
   "private": true,
   "license": "Apache-2.0",
-  "main": "dist/esm/index.js",
+  "main": "dist/cjs/index.js",
   "module": "dist/esm/index.js",
-  "types": "dist/index.d.ts",
-  "typings": "dist/index.d.ts",
-  "type": "module",
+  "types": "dist/esm/index.d.ts",
   "scripts": {
     "lint": "eslint --cache --ext .ts",
     "lint:fix": "eslint --fix",
-    "build": "tsc -b",
+    "build": "npm run build:esm && npm run build:cjs",
     "build:cjs": "tsc -p tsconfig.cjs.json",
-    "build:esm": "tsc -p tsconfig.esm.json",
+    "build:esm": "tsc -p tsconfig.json",
     "build:watch": "tsc -p tsconfig.esm.json -w --preserveWatchOutput"
   },
   "devDependencies": {

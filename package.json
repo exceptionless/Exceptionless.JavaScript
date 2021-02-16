@@ -4,7 +4,7 @@
   "version": "2.0.0-pre",
   "license": "Apache-2.0",
   "scripts": {
-    "clean": "rimraf dist packages/*/dist examples/*/dist",
+    "clean": "rimraf packages/*/dist examples/*/dist",
     "build": "lage build --scope @exceptionless/* --no-cache --verbose --no-deps",
     "build:cjs": "lage build:cjs --scope @exceptionless/* --no-cache --verbose --no-deps",
     "build:esm": "lage build:esm --scope @exceptionless/* --no-cache --verbose --no-deps",

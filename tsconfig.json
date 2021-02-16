@@ -8,7 +8,7 @@
     "inlineSources": true,
     "importHelpers": true,
     "lib": ["ES2015"],
-    "module": "CommonJS",
+    "module": "ES6",
     "moduleResolution": "Node",
     "noImplicitReturns": true,
     "noUnusedLocals": false,
@@ -18,6 +18,6 @@
     "skipLibCheck": true,
     "sourceMap": true,
     "strict": false,
-    "target": "ES5"
+    "target": "ES2015"
   }
 }

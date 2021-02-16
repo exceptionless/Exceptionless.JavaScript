@@ -1,7 +1,9 @@
 {
-  "extends": "../../tsconfig.json",
+  "extends": "../../tsconfig.cjs.json",
   "compilerOptions": {
-    "outDir": "dist/cjs"
+    "outDir": "dist/cjs",
+    "rootDir": "src"
   },
-  "include": ["src"]
+  "include": ["src"],
+  "types": ["angular", "angular-mock"]
 }
