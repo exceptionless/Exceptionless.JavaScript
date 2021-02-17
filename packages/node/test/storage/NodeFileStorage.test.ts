@@ -1,6 +1,6 @@
-import { describeStorage } from '../../../core/test/storage/InMemoryStorage.test';
-import { IStorage } from "../../../core/src/storage/IStorage";
-import { NodeFileStorage } from '../../src/storage/NodeFileStorage';
+import { describeStorage } from '../../../core/test/storage/InMemoryStorage.test.js';
+import { IStorage } from "../../../core/src/storage/IStorage.js";
+import { NodeFileStorage } from '../../src/storage/NodeFileStorage.js';
 
 import * as fs from 'fs';
 

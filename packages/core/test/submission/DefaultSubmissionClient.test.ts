@@ -1,10 +1,10 @@
-import { Configuration } from "../../src/configuration/Configuration";
-import { IEvent } from "../../src/models/IEvent";
-import { IUserDescription } from "../../src/models/IUserDescription";
-import { DefaultSubmissionClient } from "../../src/submission/DefaultSubmissionClient";
-import { ISubmissionClient } from "../../src/submission/ISubmissionClient";
+import { Configuration } from "../../src/configuration/Configuration.js";
+import { IEvent } from "../../src/models/IEvent.js";
+import { IUserDescription } from "../../src/models/IUserDescription.js";
+import { DefaultSubmissionClient } from "../../src/submission/DefaultSubmissionClient.js";
+import { ISubmissionClient } from "../../src/submission/ISubmissionClient.js";
 
-import { TestSubmissionAdapter } from "./TestSubmissionAdapter";
+import { TestSubmissionAdapter } from "./TestSubmissionAdapter.js";
 
 describe('DefaultSubmissionClient', () => {
   let submissionAdapter: TestSubmissionAdapter;

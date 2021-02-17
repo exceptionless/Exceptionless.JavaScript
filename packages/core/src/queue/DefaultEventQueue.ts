@@ -1,9 +1,9 @@
-import { Configuration } from '../configuration/Configuration';
-import { ILog } from '../logging/ILog';
-import { IEvent } from '../models/IEvent';
-import { IEventQueue } from '../queue/IEventQueue';
-import { IStorageItem } from '../storage/IStorageItem';
-import { SubmissionResponse } from '../submission/SubmissionResponse';
+import { Configuration } from '../configuration/Configuration.js';
+import { ILog } from '../logging/ILog.js';
+import { IEvent } from '../models/IEvent.js';
+import { IEventQueue } from '../queue/IEventQueue.js';
+import { IStorageItem } from '../storage/IStorageItem.js';
+import { SubmissionResponse } from '../submission/SubmissionResponse.js';
 
 export class DefaultEventQueue implements IEventQueue {
   /**

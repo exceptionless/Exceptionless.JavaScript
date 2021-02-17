@@ -1,6 +1,6 @@
-import { IEnvironmentInfo } from '../../models/IEnvironmentInfo';
-import { EventPluginContext } from '../EventPluginContext';
-import { IEventPlugin } from '../IEventPlugin';
+import { IEnvironmentInfo } from '../../models/IEnvironmentInfo.js';
+import { EventPluginContext } from '../EventPluginContext.js';
+import { IEventPlugin } from '../IEventPlugin.js';
 
 export class EnvironmentInfoPlugin implements IEventPlugin {
   public priority: number = 80;

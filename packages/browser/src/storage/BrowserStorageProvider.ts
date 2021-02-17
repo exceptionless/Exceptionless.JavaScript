@@ -3,7 +3,7 @@ import {
   IStorageProvider
 } from '@exceptionless/core';
 
-import { BrowserStorage } from './BrowserStorage';
+import { BrowserStorage } from './BrowserStorage.js';
 
 export class BrowserStorageProvider implements IStorageProvider {
   public queue: IStorage;

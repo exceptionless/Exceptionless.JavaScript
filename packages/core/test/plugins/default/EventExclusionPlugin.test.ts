@@ -1,9 +1,9 @@
-import { Configuration } from "../../../src/configuration/Configuration";
-import { ExceptionlessClient } from "../../../src/ExceptionlessClient";
-import { IEvent } from "../../../src/models/IEvent";
-import { IInnerError } from "../../../src/models/IInnerError";
-import { EventExclusionPlugin } from "../../../src/plugins/default/EventExclusionPlugin";
-import { EventPluginContext } from "../../../src/plugins/EventPluginContext";
+import { Configuration } from "../../../src/configuration/Configuration.js";
+import { ExceptionlessClient } from "../../../src/ExceptionlessClient.js";
+import { IEvent } from "../../../src/models/IEvent.js";
+import { IInnerError } from "../../../src/models/IInnerError.js";
+import { EventExclusionPlugin } from "../../../src/plugins/default/EventExclusionPlugin.js";
+import { EventPluginContext } from "../../../src/plugins/EventPluginContext.js";
 
 beforeEach(() => {
   Configuration.defaults.updateSettingsWhenIdleInterval = -1;

@@ -1,6 +1,6 @@
-import { SettingsResponse } from '../submission/SettingsResponse';
-import { Utils } from '../Utils';
-import { Configuration } from './Configuration';
+import { SettingsResponse } from '../submission/SettingsResponse.js';
+import { Configuration } from './Configuration.js';
+import { Utils } from '../Utils.js';
 
 interface ISettingsWithVersion {
   version: number;

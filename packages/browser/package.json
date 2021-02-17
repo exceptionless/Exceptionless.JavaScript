@@ -24,8 +24,13 @@
   },
   "private": true,
   "license": "Apache-2.0",
-  "module": "dist/index.js",
+  "type": "module",
+  "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "exports": {
+    ".": "./dist/index.js",
+    "./package.json": "./package.json"
+  },
   "scripts": {
     "lint": "eslint --cache --ext .ts",
     "lint:fix": "eslint --fix",

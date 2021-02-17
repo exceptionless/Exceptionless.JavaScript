@@ -1,6 +1,6 @@
-import { ISubmissionAdapter } from "../../src/submission/ISubmissionAdapter";
-import { SubmissionCallback } from "../../src/submission/SubmissionCallback";
-import { SubmissionRequest } from "../../src/submission/SubmissionRequest";
+import { ISubmissionAdapter } from "../../src/submission/ISubmissionAdapter.js";
+import { SubmissionCallback } from "../../src/submission/SubmissionCallback.js";
+import { SubmissionRequest } from "../../src/submission/SubmissionRequest.js";
 
 export class InMemorySubmissionAdapter implements ISubmissionAdapter {
   private status: number = 202;

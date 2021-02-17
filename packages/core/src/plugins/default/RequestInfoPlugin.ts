@@ -1,7 +1,7 @@
-import { IRequestInfo } from '../../models/IRequestInfo';
-import { Utils } from '../../Utils';
-import { EventPluginContext } from '../EventPluginContext';
-import { IEventPlugin } from '../IEventPlugin';
+import { IRequestInfo } from '../../models/IRequestInfo.js';
+import { Utils } from '../../Utils.js';
+import { EventPluginContext } from '../EventPluginContext.js';
+import { IEventPlugin } from '../IEventPlugin.js';
 
 export class RequestInfoPlugin implements IEventPlugin {
   public priority: number = 70;

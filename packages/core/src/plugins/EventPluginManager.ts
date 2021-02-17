@@ -1,14 +1,14 @@
-import { Configuration } from '../configuration/Configuration';
-import { ConfigurationDefaultsPlugin } from './default/ConfigurationDefaultsPlugin';
-import { DuplicateCheckerPlugin } from './default/DuplicateCheckerPlugin';
-import { EnvironmentInfoPlugin } from './default/EnvironmentInfoPlugin';
-import { ErrorPlugin } from './default/ErrorPlugin';
-import { EventExclusionPlugin } from './default/EventExclusionPlugin';
-import { ModuleInfoPlugin } from './default/ModuleInfoPlugin';
-import { RequestInfoPlugin } from './default/RequestInfoPlugin';
-import { SubmissionMethodPlugin } from './default/SubmissionMethodPlugin';
-import { EventPluginContext } from './EventPluginContext';
-import { IEventPlugin } from './IEventPlugin';
+import { Configuration } from '../configuration/Configuration.js';
+import { ConfigurationDefaultsPlugin } from './default/ConfigurationDefaultsPlugin.js';
+import { DuplicateCheckerPlugin } from './default/DuplicateCheckerPlugin.js';
+import { EnvironmentInfoPlugin } from './default/EnvironmentInfoPlugin.js';
+import { ErrorPlugin } from './default/ErrorPlugin.js';
+import { EventExclusionPlugin } from './default/EventExclusionPlugin.js';
+import { ModuleInfoPlugin } from './default/ModuleInfoPlugin.js';
+import { RequestInfoPlugin } from './default/RequestInfoPlugin.js';
+import { SubmissionMethodPlugin } from './default/SubmissionMethodPlugin.js';
+import { EventPluginContext } from './EventPluginContext.js';
+import { IEventPlugin } from './IEventPlugin.js';
 
 export class EventPluginManager {
   public static run(context: EventPluginContext, callback: (context?: EventPluginContext) => void): void {

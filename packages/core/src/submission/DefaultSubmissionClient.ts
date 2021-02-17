@@ -1,12 +1,12 @@
-import { Configuration } from '../configuration/Configuration';
-import { SettingsManager } from '../configuration/SettingsManager';
-import { IClientConfiguration } from '../models/IClientConfiguration';
-import { IEvent } from '../models/IEvent';
-import { IUserDescription } from '../models/IUserDescription';
-import { ISubmissionClient } from './ISubmissionClient';
-import { SettingsResponse } from './SettingsResponse';
-import { SubmissionRequest } from './SubmissionRequest';
-import { SubmissionResponse } from './SubmissionResponse';
+import { Configuration } from '../configuration/Configuration.js';
+import { SettingsManager } from '../configuration/SettingsManager.js';
+import { IClientConfiguration } from '../models/IClientConfiguration.js';
+import { IEvent } from '../models/IEvent.js';
+import { IUserDescription } from '../models/IUserDescription.js';
+import { ISubmissionClient } from './ISubmissionClient.js';
+import { SettingsResponse } from './SettingsResponse.js';
+import { SubmissionRequest } from './SubmissionRequest.js';
+import { SubmissionResponse } from './SubmissionResponse.js';
 
 export class DefaultSubmissionClient implements ISubmissionClient {
   public configurationVersionHeader: string = 'x-exceptionless-configversion';

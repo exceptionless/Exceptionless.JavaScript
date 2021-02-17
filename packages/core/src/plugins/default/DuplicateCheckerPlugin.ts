@@ -1,7 +1,7 @@
-import { IInnerError } from '../../models/IInnerError';
-import { Utils } from '../../Utils';
-import { EventPluginContext } from '../EventPluginContext';
-import { IEventPlugin } from '../IEventPlugin';
+import { IInnerError } from '../../models/IInnerError.js';
+import { Utils } from '../../Utils.js';
+import { EventPluginContext } from '../EventPluginContext.js';
+import { IEventPlugin } from '../IEventPlugin.js';
 
 export class DuplicateCheckerPlugin implements IEventPlugin {
   public priority: number = 1010;

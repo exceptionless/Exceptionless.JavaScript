@@ -1,4 +1,4 @@
-import { IStorageItem } from './IStorageItem';
+import { IStorageItem } from './IStorageItem.js';
 
 export interface IStorage {
   save(value: any): number;

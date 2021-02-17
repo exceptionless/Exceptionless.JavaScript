@@ -1,6 +1,6 @@
-import { Utils } from '../../Utils';
-import { EventPluginContext } from '../EventPluginContext';
-import { IEventPlugin } from '../IEventPlugin';
+import { Utils } from '../../Utils.js';
+import { EventPluginContext } from '../EventPluginContext.js';
+import { IEventPlugin } from '../IEventPlugin.js';
 
 export class ErrorPlugin implements IEventPlugin {
   public priority: number = 30;
