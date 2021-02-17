@@ -1,6 +1,6 @@
-import { IUserInfo } from '../../models/IUserInfo';
-import { EventPluginContext } from '../EventPluginContext';
-import { IEventPlugin } from '../IEventPlugin';
+import { IUserInfo } from '../../models/IUserInfo.js';
+import { EventPluginContext } from '../EventPluginContext.js';
+import { IEventPlugin } from '../IEventPlugin.js';
 
 export class HeartbeatPlugin implements IEventPlugin {
   public priority: number = 100;

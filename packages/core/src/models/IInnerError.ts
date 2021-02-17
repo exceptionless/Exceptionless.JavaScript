@@ -1,5 +1,5 @@
-import { IMethod } from './IMethod';
-import { IStackFrame } from './IStackFrame';
+import { IMethod } from './IMethod.js';
+import { IStackFrame } from './IStackFrame.js';
 
 export interface IInnerError {
   message?: string;

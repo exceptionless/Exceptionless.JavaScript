@@ -1,13 +1,13 @@
-import { ILastReferenceIdManager } from '../lastReferenceIdManager/ILastReferenceIdManager';
-import { ILog } from '../logging/ILog';
-import { IEventQueue } from '../queue/IEventQueue';
-import { IEnvironmentInfoCollector } from '../services/IEnvironmentInfoCollector';
-import { IErrorParser } from '../services/IErrorParser';
-import { IModuleCollector } from '../services/IModuleCollector';
-import { IRequestInfoCollector } from '../services/IRequestInfoCollector';
-import { IStorageProvider } from '../storage/IStorageProvider';
-import { ISubmissionAdapter } from '../submission/ISubmissionAdapter';
-import { ISubmissionClient } from '../submission/ISubmissionClient';
+import { ILastReferenceIdManager } from '../lastReferenceIdManager/ILastReferenceIdManager.js';
+import { ILog } from '../logging/ILog.js';
+import { IEventQueue } from '../queue/IEventQueue.js';
+import { IEnvironmentInfoCollector } from '../services/IEnvironmentInfoCollector.js';
+import { IErrorParser } from '../services/IErrorParser.js';
+import { IModuleCollector } from '../services/IModuleCollector.js';
+import { IRequestInfoCollector } from '../services/IRequestInfoCollector.js';
+import { IStorageProvider } from '../storage/IStorageProvider.js';
+import { ISubmissionAdapter } from '../submission/ISubmissionAdapter.js';
+import { ISubmissionClient } from '../submission/ISubmissionClient.js';
 
 export interface IConfigurationSettings {
   apiKey?: string;

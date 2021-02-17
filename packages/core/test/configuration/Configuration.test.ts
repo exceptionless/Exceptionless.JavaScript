@@ -1,4 +1,4 @@
-import { Configuration } from '../../src/configuration/Configuration';
+import { Configuration } from '../../src/configuration/Configuration.js';
 
 describe('Configuration', () => {
   test('should override configuration defaults', () => {

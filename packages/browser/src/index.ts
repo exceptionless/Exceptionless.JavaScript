@@ -8,12 +8,12 @@ import {
 
 import * as TraceKit from 'TraceKit';
 
-import { DefaultErrorParser } from './services/DefaultErrorParser';
-import { DefaultModuleCollector } from './services/DefaultModuleCollector';
-import { DefaultRequestInfoCollector } from './services/DefaultRequestInfoCollector';
-import { BrowserStorage } from './storage/BrowserStorage';
-import { BrowserStorageProvider } from './storage/BrowserStorageProvider';
-import { DefaultSubmissionAdapter } from './submission/DefaultSubmissionAdapter';
+import { DefaultErrorParser } from './services/DefaultErrorParser.js';
+import { DefaultModuleCollector } from './services/DefaultModuleCollector.js';
+import { DefaultRequestInfoCollector } from './services/DefaultRequestInfoCollector.js';
+import { BrowserStorage } from './storage/BrowserStorage.js';
+import { BrowserStorageProvider } from './storage/BrowserStorageProvider.js';
+import { DefaultSubmissionAdapter } from './submission/DefaultSubmissionAdapter.js';
 
 function init() {
   function getDefaultsSettingsFromScriptTag(): IConfigurationSettings {

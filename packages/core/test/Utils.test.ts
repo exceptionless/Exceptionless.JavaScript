@@ -1,4 +1,4 @@
-import { Utils } from "../src/Utils";
+import { Utils } from "../src/Utils.js";
 
 describe('Utils', () => {
   test('should add range', () => {

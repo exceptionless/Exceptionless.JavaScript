@@ -1,5 +1,5 @@
-import { Configuration } from '../../src/configuration/Configuration';
-import { SettingsManager } from "../../src/configuration/SettingsManager";
+import { Configuration } from '../../src/configuration/Configuration.js';
+import { SettingsManager } from "../../src/configuration/SettingsManager.js";
 
 describe('SettingsManager', () => {
   test('should call changed handler', (done) => {

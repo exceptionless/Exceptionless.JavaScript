@@ -1,4 +1,4 @@
-import { IParameter } from './IParameter';
+import { IParameter } from './IParameter.js';
 
 export interface IMethod {
   data?: any;

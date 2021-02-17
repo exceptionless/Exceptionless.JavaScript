@@ -1,9 +1,9 @@
 
 
-import { Configuration } from "../src/configuration/Configuration";
-import { ExceptionlessClient } from "../src/ExceptionlessClient";
-import { EventPluginContext } from "../src/plugins/EventPluginContext";
-import { InMemorySubmissionAdapter } from "./submission/InMemorySubmissionAdapter";
+import { Configuration } from "../src/configuration/Configuration.js";
+import { ExceptionlessClient } from "../src/ExceptionlessClient.js";
+import { EventPluginContext } from "../src/plugins/EventPluginContext.js";
+import { InMemorySubmissionAdapter } from "./submission/InMemorySubmissionAdapter.js";
 
 describe('ExceptionlessClient', () => {
   beforeEach(() => {

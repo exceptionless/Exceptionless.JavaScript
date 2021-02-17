@@ -1,10 +1,10 @@
-import { ContextData } from "../../../src/plugins/ContextData";
-import { ErrorPlugin } from "../../../src/plugins/default/ErrorPlugin";
-import { EventPluginContext } from "../../../src/plugins/EventPluginContext";
-import { IEvent } from "../../../src/models/IEvent";
+import { ContextData } from "../../../src/plugins/ContextData.js";
+import { ErrorPlugin } from "../../../src/plugins/default/ErrorPlugin.js";
+import { EventPluginContext } from "../../../src/plugins/EventPluginContext.js";
+import { IEvent } from "../../../src/models/IEvent.js";
 
-import { CapturedExceptions } from './exceptions';
-import { createFixture } from './EventPluginTestFixture';
+import { CapturedExceptions } from './exceptions.js';
+import { createFixture } from './EventPluginTestFixture.js';
 
 function BaseTestError() {
   this.name = 'NotImplementedError';

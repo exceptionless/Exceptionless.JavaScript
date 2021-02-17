@@ -4,12 +4,12 @@ import {
   SettingsManager
 } from '@exceptionless/core';
 
-import { NodeEnvironmentInfoCollector } from './services/NodeEnvironmentInfoCollector';
-import { NodeErrorParser } from './services/NodeErrorParser';
-import { NodeModuleCollector } from './services/NodeModuleCollector';
-import { NodeRequestInfoCollector } from './services/NodeRequestInfoCollector';
-import { NodeFileStorageProvider } from './storage/NodeFileStorageProvider';
-import { NodeSubmissionAdapter } from './submission/NodeSubmissionAdapter';
+import { NodeEnvironmentInfoCollector } from './services/NodeEnvironmentInfoCollector.js';
+import { NodeErrorParser } from './services/NodeErrorParser.js';
+import { NodeModuleCollector } from './services/NodeModuleCollector.js';
+import { NodeRequestInfoCollector } from './services/NodeRequestInfoCollector.js';
+import { NodeFileStorageProvider } from './storage/NodeFileStorageProvider.js';
+import { NodeSubmissionAdapter } from './submission/NodeSubmissionAdapter.js';
 
 function init() {
   if (typeof process === 'undefined') {

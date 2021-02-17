@@ -1,7 +1,7 @@
-import { Configuration } from "../../src/configuration/Configuration";
-import { IEvent } from "../../src/models/IEvent";
+import { Configuration } from "../../src/configuration/Configuration.js";
+import { IEvent } from "../../src/models/IEvent.js";
 
-import { InMemorySubmissionAdapter } from "../submission/InMemorySubmissionAdapter";
+import { InMemorySubmissionAdapter } from "../submission/InMemorySubmissionAdapter.js";
 
 describe('DefaultEventQueue', () => {
   let config: Configuration;

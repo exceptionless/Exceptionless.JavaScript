@@ -1,5 +1,5 @@
-import { EventPluginContext } from '../EventPluginContext';
-import { IEventPlugin } from '../IEventPlugin';
+import { EventPluginContext } from '../EventPluginContext.js';
+import { IEventPlugin } from '../IEventPlugin.js';
 
 export class SubmissionMethodPlugin implements IEventPlugin {
   public priority: number = 100;

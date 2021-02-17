@@ -1,4 +1,4 @@
-import { IMethod } from './IMethod';
+import { IMethod } from './IMethod.js';
 
 export interface IStackFrame extends IMethod {
   file_name?: string;

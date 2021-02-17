@@ -1,13 +1,13 @@
-import { Configuration } from './configuration/Configuration';
-import { IConfigurationSettings } from './configuration/IConfigurationSettings';
-import { SettingsManager } from './configuration/SettingsManager';
-import { EventBuilder } from './EventBuilder';
-import { IEvent } from './models/IEvent';
-import { IUserDescription } from './models/IUserDescription';
-import { ContextData } from './plugins/ContextData';
-import { EventPluginContext } from './plugins/EventPluginContext';
-import { EventPluginManager } from './plugins/EventPluginManager';
-import { SubmissionResponse } from './submission/SubmissionResponse';
+import { Configuration } from './configuration/Configuration.js';
+import { IConfigurationSettings } from './configuration/IConfigurationSettings.js';
+import { SettingsManager } from './configuration/SettingsManager.js';
+import { EventBuilder } from './EventBuilder.js';
+import { IEvent } from './models/IEvent.js';
+import { IUserDescription } from './models/IUserDescription.js';
+import { ContextData } from './plugins/ContextData.js';
+import { EventPluginContext } from './plugins/EventPluginContext.js';
+import { EventPluginManager } from './plugins/EventPluginManager.js';
+import { SubmissionResponse } from './submission/SubmissionResponse.js';
 
 export class ExceptionlessClient {
   /**

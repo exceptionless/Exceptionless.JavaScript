@@ -3,7 +3,7 @@ import {
   IStorageProvider
 } from '@exceptionless/core';
 
-import { NodeFileStorage } from './NodeFileStorage';
+import { NodeFileStorage } from './NodeFileStorage.js';
 
 export class NodeFileStorageProvider implements IStorageProvider {
   public queue: IStorage;

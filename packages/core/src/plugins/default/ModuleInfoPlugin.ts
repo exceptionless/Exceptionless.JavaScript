@@ -1,6 +1,6 @@
-import { IModule } from '../../models/IModule';
-import { EventPluginContext } from '../EventPluginContext';
-import { IEventPlugin } from '../IEventPlugin';
+import { IModule } from '../../models/IModule.js';
+import { EventPluginContext } from '../EventPluginContext.js';
+import { IEventPlugin } from '../IEventPlugin.js';
 
 export class ModuleInfoPlugin implements IEventPlugin {
   public priority: number = 50;

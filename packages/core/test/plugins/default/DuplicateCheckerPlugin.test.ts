@@ -1,8 +1,8 @@
-import { DuplicateCheckerPlugin } from "../../../src/plugins/default/DuplicateCheckerPlugin";
-import { ExceptionlessClient } from "../../../src/ExceptionlessClient";
-import { EventPluginContext } from "../../../src/plugins/EventPluginContext";
-import { IInnerError } from "../../../src/models/IInnerError";
-import { IStackFrame } from "../../../src/models/IStackFrame";
+import { DuplicateCheckerPlugin } from "../../../src/plugins/default/DuplicateCheckerPlugin.js";
+import { ExceptionlessClient } from "../../../src/ExceptionlessClient.js";
+import { EventPluginContext } from "../../../src/plugins/EventPluginContext.js";
+import { IInnerError } from "../../../src/models/IInnerError.js";
+import { IStackFrame } from "../../../src/models/IStackFrame.js";
 
 const Exception1StackTrace = [
   {

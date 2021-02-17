@@ -1,11 +1,11 @@
-import { ExceptionlessClient } from './ExceptionlessClient';
-import { IEvent } from './models/IEvent';
-import { IManualStackingInfo } from './models/IManualStackingInfo';
-import { IRequestInfo } from "./models/IRequestInfo";
-import { IUserInfo } from './models/IUserInfo';
-import { ContextData } from './plugins/ContextData';
-import { EventPluginContext } from './plugins/EventPluginContext';
-import { Utils } from './Utils';
+import { ExceptionlessClient } from './ExceptionlessClient.js';
+import { IEvent } from './models/IEvent.js';
+import { IManualStackingInfo } from './models/IManualStackingInfo.js';
+import { IRequestInfo } from "./models/IRequestInfo.js";
+import { IUserInfo } from './models/IUserInfo.js';
+import { ContextData } from './plugins/ContextData.js';
+import { EventPluginContext } from './plugins/EventPluginContext.js';
+import { Utils } from './Utils.js';
 
 export class EventBuilder {
   public target: IEvent;

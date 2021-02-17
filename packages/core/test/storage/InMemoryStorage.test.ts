@@ -1,7 +1,7 @@
-import { IEvent } from "../../src/models/IEvent";
-import { InMemoryStorage } from "../../src/storage/InMemoryStorage";
-import { IStorage } from "../../src/storage/IStorage";
-import { IStorageItem } from "../../src/storage/IStorageItem";
+import { IEvent } from "../../src/models/IEvent.js";
+import { InMemoryStorage } from "../../src/storage/InMemoryStorage.js";
+import { IStorage } from "../../src/storage/IStorage.js";
+import { IStorageItem } from "../../src/storage/IStorageItem.js";
 
 describeStorage('InMemoryStorage', (maxItems = 250) => {
   return new InMemoryStorage(maxItems);

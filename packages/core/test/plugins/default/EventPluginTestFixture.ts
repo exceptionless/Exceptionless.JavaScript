@@ -1,7 +1,7 @@
-import { ContextData } from "../../../src/plugins/ContextData";
-import { EventPluginContext } from "../../../src/plugins/EventPluginContext";
-import { IErrorParser } from "../../../src/services/IErrorParser";
-import { IEvent } from "../../../src/models/IEvent";
+import { ContextData } from "../../../src/plugins/ContextData.js";
+import { EventPluginContext } from "../../../src/plugins/EventPluginContext.js";
+import { IErrorParser } from "../../../src/services/IErrorParser.js";
+import { IEvent } from "../../../src/models/IEvent.js";
 
 // TODO: This should use the real object instances and inject the error parser.
 export function createFixture(): { contextData: ContextData, context: EventPluginContext, client: any, event: IEvent } {
