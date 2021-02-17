@@ -36,14 +36,7 @@
     "build:watch": "tsc -p tsconfig.esm.json -w --preserveWatchOutput"
   },
   "devDependencies": {
-    "@types/angular": "1.8.0",
-    "@types/chai": "4.2.14",
-    "@types/mocha": "8.0.4",
-    "@types/mock-fs": "4.13.0",
-    "@types/sinon": "9.0.8",
-    "chai": "4.2.0",
-    "mock-fs": "4.13.0",
-    "sinon": "9.2.1"
+    "@types/angular": "1.8.0"
   },
   "dependencies": {
     "@exceptionless/core": "2.0.0-pre",

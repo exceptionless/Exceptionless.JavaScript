@@ -16,7 +16,7 @@
         // The file name for reported problems is relative to the opened folder.
         "fileLocation": [
           "relative",
-          "${workspaceRoot}/src"
+          "${workspaceRoot}"
         ],
         // The actual pattern to match problems in the output.
         "pattern": {
@@ -43,7 +43,7 @@
         // The file name for reported problems is relative to the opened folder.
         "fileLocation": [
           "relative",
-          "${workspaceRoot}/src"
+          "${workspaceRoot}"
         ],
         // The actual pattern to match problems in the output.
         "pattern": {

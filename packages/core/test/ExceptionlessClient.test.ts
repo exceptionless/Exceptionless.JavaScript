@@ -1,0 +1,107 @@
+
+
+import { Configuration } from "../src/configuration/Configuration";
+import { ExceptionlessClient } from "../src/ExceptionlessClient";
+import { EventPluginContext } from "../src/plugins/EventPluginContext";
+import { InMemorySubmissionAdapter } from "./submission/InMemorySubmissionAdapter";
+
+describe('ExceptionlessClient', () => {
+  beforeEach(() => {
+    Configuration.defaults.updateSettingsWhenIdleInterval = -1;
+    Configuration.defaults.submissionAdapter = new InMemorySubmissionAdapter();
+  });
+
+  test('should use event reference ids', done => {
+    const client = new ExceptionlessClient({
+      apiKey: 'LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw',
+      serverUrl: 'http://localhost:5000'
+    });
+
+    expect(client.config.lastReferenceIdManager.getLast()).toBeNull();
+
+    const error = createException();
+    client.submitException(error, () => {
+      expect(client.config.lastReferenceIdManager.getLast()).toBeNull();
+    });
+
+    const numberOfPlugins = client.config.plugins.length;
+    client.config.useReferenceIds();
+    expect(client.config.plugins.length).toBe(numberOfPlugins + 1);
+
+    client.submitException(error, (context: EventPluginContext) => {
+      if (!context.cancelled) {
+        expect(client.config.lastReferenceIdManager.getLast()).not.toBeNull();
+      } else {
+        expect(client.config.lastReferenceIdManager.getLast()).toBeNull();
+      }
+
+      done();
+    });
+  });
+
+  test('should accept null source', () => {
+    const client = new ExceptionlessClient({
+      apiKey: 'LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw',
+      serverUrl: 'http://localhost:5000'
+    });
+
+    const builder = client.createLog(null, 'Unit Test message', 'Trace');
+
+    expect(builder.target.source).toBeUndefined();
+    expect(builder.target.message).toBe('Unit Test message');
+    expect(builder.target.data['@level']).toBe('Trace');
+  });
+
+  test('should accept source and message', () => {
+    const client = new ExceptionlessClient({
+      apiKey: 'LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw',
+      serverUrl: 'http://localhost:5000'
+    });
+
+    const builder = client.createLog('ExceptionlessClient', 'Unit Test message');
+
+    expect(builder.target.source).toBe('ExceptionlessClient');
+    expect(builder.target.message).toBe('Unit Test message');
+    expect(builder.target.data).toBeUndefined();
+  });
+
+  test('should accept source and message and level', () => {
+    const client = new ExceptionlessClient({
+      apiKey: 'LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw',
+      serverUrl: 'http://localhost:5000'
+    });
+    const builder = client.createLog('source', 'Unit Test message', 'Info');
+
+    expect(builder.target.source).toBe('source');
+    expect(builder.target.message).toBe('Unit Test message');
+    expect(builder.target.data['@level']).toBe('Info');
+  });
+
+  test('should allow construction via apiKey and serverUrl parameters', () => {
+    const client = new ExceptionlessClient('LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw', 'http://localhost:5000');
+
+    expect(client.config.apiKey).toBe('LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw');
+    expect(client.config.serverUrl).toBe('http://localhost:5000');
+  });
+
+  test('should allow construction via a configuration object', () => {
+    const client = new ExceptionlessClient({
+      apiKey: 'LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw',
+      serverUrl: 'http://localhost:5000'
+    });
+
+    expect(client.config.apiKey).toBe('LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw');
+    expect(client.config.serverUrl).toBe('http://localhost:5000');
+  });
+
+  function createException() {
+    function throwError() {
+      throw new ReferenceError('This is a test');
+    }
+    try {
+      throwError();
+    } catch (e) {
+      return e;
+    }
+  }
+});

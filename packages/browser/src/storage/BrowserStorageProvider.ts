@@ -13,5 +13,4 @@ export class BrowserStorageProvider implements IStorageProvider {
     this.queue = new BrowserStorage('q', prefix, maxQueueItems);
     this.settings = new BrowserStorage('settings', prefix, 1);
   }
-
 }

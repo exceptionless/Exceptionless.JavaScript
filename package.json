@@ -3,14 +3,20 @@
   "private": true,
   "version": "2.0.0-pre",
   "license": "Apache-2.0",
+  "jest": {
+    "moduleNameMapper": {
+      "^@exceptionless/(.*)$": "<rootDir>/packages/$1/src"
+    },
+    "preset": "ts-jest"
+  },
   "scripts": {
     "clean": "rimraf packages/*/dist examples/*/dist",
     "build": "lage build --scope @exceptionless/* --no-cache --verbose --no-deps",
     "build:cjs": "lage build:cjs --scope @exceptionless/* --no-cache --verbose --no-deps",
     "build:esm": "lage build:esm --scope @exceptionless/* --no-cache --verbose --no-deps",
     "build:watch": "lage run build:watch --scope @exceptionless/* --no-cache --verbose --no-deps",
-    "lint": "lage run lint",
-    "lint:fix": "lage run lint:fix",
+    "lint": "eslint . --ext .js,.ts",
+    "lint:fix": "eslint . --ext .js,.ts --fix",
     "test": "lage run test"
   },
   "workspaces": [
@@ -20,9 +26,11 @@
     "@typescript-eslint/eslint-plugin": "4.15.1",
     "@typescript-eslint/parser": "4.15.1",
     "eslint": "7.20.0",
+    "eslint-plugin-eslint-comments": "^3.2.0",
+    "eslint-plugin-eslint-plugin": "^2.3.0",
     "eslint-plugin-import": "2.22.1",
+    "eslint-plugin-jest": "24.1.3",
     "eslint-plugin-jsdoc": "32.0.0",
-    "eslint-plugin-mocha": "8.0.0",
     "lage": "0.29.0",
     "rimraf": "3.0.2",
     "source-map-support": "0.5.19",

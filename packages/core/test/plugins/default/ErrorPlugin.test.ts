@@ -1,11 +1,9 @@
-import { IEvent } from '../../../src/models/IEvent';
-import { ContextData } from '../../../src/plugins/ContextData';
-import { EventPluginContext } from '../../../src/plugins/EventPluginContext';
+import { ContextData } from "../../../src/plugins/ContextData";
+import { ErrorPlugin } from "../../../src/plugins/default/ErrorPlugin";
+import { EventPluginContext } from "../../../src/plugins/EventPluginContext";
+import { IEvent } from "../../../src/models/IEvent";
 
-import { expect } from 'chai';
-import { beforeEach, describe, it } from 'mocha';
-import { ErrorPlugin } from '../../../src/plugins/default/ErrorPlugin';
-import { CapturedExceptions } from './ErrorPlugin-spec-exceptions';
+import { CapturedExceptions } from './exceptions';
 import { createFixture } from './EventPluginTestFixture';
 
 function BaseTestError() {
@@ -43,47 +41,47 @@ describe('ErrorPlugin', () => {
 
   describe('additional data', () => {
     describeForCapturedExceptions((exception) => {
-      it('should ignore default error properties', () => {
+      test('should ignore default error properties', () => {
         contextData.setException(exception);
         target.run(context);
         const additionalData = getAdditionalData(event);
-        expect(additionalData).to.be.null;
+        expect(additionalData).toBeNull();
       });
 
     });
 
-    it('should add custom properties to additional data', () => {
+    test('should add custom properties to additional data', () => {
       const error = {
         someProperty: 'Test'
       };
       processError(error);
       const additionalData = getAdditionalData(event);
-      expect(additionalData).not.to.be.null;
-      expect(additionalData.someProperty).to.equal('Test');
+      expect(additionalData).not.toBeNull();
+      expect(additionalData.someProperty).toBe('Test');
     });
 
-    it('should support custom exception types', () => {
+    test('should support custom exception types', () => {
       processError(new BaseTestError());
       const additionalData = getAdditionalData(event);
-      expect(additionalData).not.to.be.null;
-      expect(additionalData.someProperty).to.equal('Test');
+      expect(additionalData).not.toBeNull();
+      expect(additionalData.someProperty).toBe('Test');
     });
 
-    it('should support inherited properties', () => {
+    test('should support inherited properties', () => {
       processError(new DerivedTestError());
       const additionalData = getAdditionalData(event);
-      expect(additionalData).not.to.be.null;
-      expect(additionalData.someProperty).to.equal('Test');
-      expect(additionalData.someOtherProperty).to.equal('Test2');
+      expect(additionalData).not.toBeNull();
+      expect(additionalData.someProperty).toBe('Test');
+      expect(additionalData.someOtherProperty).toBe('Test2');
     });
 
-    it('shouldn\'t set empty additional data', () => {
+    test('shouldn\'t set empty additional data', () => {
       processError({});
       const additionalData = getAdditionalData(event);
-      expect(additionalData).to.be.null;
+      expect(additionalData).toBeNull();
     });
 
-    it('should ignore functions', () => {
+    test('should ignore functions', () => {
       const exception: any = new Error('Error with function');
       exception.someFunction = () => { };
       contextData.setException(exception);
@@ -91,7 +89,7 @@ describe('ErrorPlugin', () => {
       target.run(context);
 
       const additionalData = getAdditionalData(event);
-      expect(additionalData).to.be.null;
+      expect(additionalData).toBeNull();
     });
   });
 });

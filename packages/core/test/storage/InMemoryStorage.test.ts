@@ -1,9 +1,7 @@
-import { expect } from 'chai';
-import { beforeEach, describe, it } from 'mocha';
-import { IEvent } from '../../src/models/IEvent';
-import { InMemoryStorage } from '../../src/storage/InMemoryStorage';
-import { IStorage } from '../../src/storage/IStorage';
-import { IStorageItem } from '../../src/storage/IStorageItem';
+import { IEvent } from "../../src/models/IEvent";
+import { InMemoryStorage } from "../../src/storage/InMemoryStorage";
+import { IStorage } from "../../src/storage/IStorage";
+import { IStorageItem } from "../../src/storage/IStorageItem";
 
 describeStorage('InMemoryStorage', (maxItems = 250) => {
   return new InMemoryStorage(maxItems);
@@ -12,6 +10,7 @@ describeStorage('InMemoryStorage', (maxItems = 250) => {
 export function describeStorage(
   name: string,
   storageFactory: (maxItems?: number) => IStorage,
+  afterEachCallback?: () => void,
   beforeEachCallback?: () => void,
   recreateStorage: boolean = false
 ) {
@@ -20,24 +19,28 @@ export function describeStorage(
       beforeEach(beforeEachCallback);
     }
 
-    it('should save events', () => {
+    if (afterEachCallback) {
+      afterEach(afterEachCallback);
+    }
+
+    test('should save events', () => {
       let storage = storageFactory();
       const key = 'ex-q-';
       const event1: IEvent = { type: 'log', reference_id: key + '123454321' };
       const event2: IEvent = { type: 'log', reference_id: key + '098765432' };
-      expect(storage.get().length).to.equal(0);
+      expect(storage.get().length).toBe(0);
       storage.save(event1);
-      expect(storage.get().length).to.equal(1);
+      expect(storage.get().length).toBe(1);
 
       if (recreateStorage) {
         storage = storageFactory();
       }
 
       storage.save(event2);
-      expect(storage.get().length).to.equal(2);
+      expect(storage.get().length).toBe(2);
     });
 
-    it('should get saved events', () => {
+    test('should get saved events', () => {
       let storage = storageFactory();
       const key = 'ex-q-';
       const event1: IEvent = { type: 'log', reference_id: key + '11' };
@@ -46,7 +49,7 @@ export function describeStorage(
       const event4: IEvent = { type: 'log', reference_id: key + '14' };
       const event5: IEvent = { type: 'log', reference_id: key + '15' };
       const event6: IEvent = { type: 'log', reference_id: key + '16' };
-      expect(storage.get().length).to.equal(0);
+      expect(storage.get().length).toBe(0);
 
       const ts1 = storage.save(event1);
       const ts2 = storage.save(event2);
@@ -54,33 +57,33 @@ export function describeStorage(
       storage.save(event4);
       storage.save(event5);
       storage.save(event6);
-      expect(storage.get().length).to.equal(6);
+      expect(storage.get().length).toBe(6);
 
       if (recreateStorage) {
         storage = storageFactory();
       }
 
-      expect(storage.get().length).to.equal(6);
+      expect(storage.get().length).toBe(6);
       storage.remove(ts1);
-      expect(storage.get().length).to.equal(5);
+      expect(storage.get().length).toBe(5);
 
-      expect(storage.get()[0].value).to.deep.equal(event2);
+      expect(storage.get()[0].value).toEqual(event2);
       storage.remove(ts2);
-      expect(storage.get().length).to.equal(4);
+      expect(storage.get().length).toBe(4);
 
       let events = storage.get(2);
-      expect(events.length).to.equal(2);
-      expect(events[0].value).not.to.deep.equal(events[1].value);
+      expect(events.length).toBe(2);
+      expect(events[0].value).not.toEqual(events[1].value);
       storage.remove(events[0].timestamp);
       storage.remove(events[1].timestamp);
-      expect(storage.get().length).to.equal(2);
+      expect(storage.get().length).toBe(2);
 
       events = storage.get();
-      expect(events.length).to.equal(2);
-      expect(events[0].value).not.to.deep.equal(events[1].value);
+      expect(events.length).toBe(2);
+      expect(events[0].value).not.toEqual(events[1].value);
     });
 
-    it('should clear all events', () => {
+    test('should clear all events', () => {
       let storage = storageFactory();
       const key = 'ex-q-';
       const event1: IEvent = { type: 'log', reference_id: key + '11' };
@@ -89,7 +92,7 @@ export function describeStorage(
       const event4: IEvent = { type: 'log', reference_id: key + '14' };
       const event5: IEvent = { type: 'log', reference_id: key + '15' };
       const event6: IEvent = { type: 'log', reference_id: key + '16' };
-      expect(storage.get().length).to.equal(0);
+      expect(storage.get().length).toBe(0);
 
       const ts1 = storage.save(event1);
       storage.save(event2);
@@ -97,21 +100,21 @@ export function describeStorage(
       storage.save(event4);
       storage.save(event5);
       storage.save(event6);
-      expect(storage.get().length).to.equal(6);
+      expect(storage.get().length).toBe(6);
 
       if (recreateStorage) {
         storage = storageFactory();
       }
 
       storage.remove(ts1);
-      expect(storage.get().length).to.equal(5);
+      expect(storage.get().length).toBe(5);
 
       storage.clear();
 
-      expect(storage.get().length).to.equal(0);
+      expect(storage.get().length).toBe(0);
     });
 
-    it('should get with limit', () => {
+    test('should get with limit', () => {
       let storage = storageFactory(250);
       for (let index: number = 0; index < 260; index++) {
         storage.save({ type: 'log', reference_id: index.toString() });
@@ -121,11 +124,11 @@ export function describeStorage(
         storage = storageFactory(250);
       }
 
-      expect(storage.get().length).to.equal(250);
-      expect(storage.get(1).length).to.equal(1);
+      expect(storage.get().length).toBe(250);
+      expect(storage.get(1).length).toBe(1);
     });
 
-    it('should get the oldest events', () => {
+    test('should get the oldest events', () => {
       function getDate(baseDate: Date, dateOffset: number) {
         return new Date(baseDate.getTime() + (dateOffset * 60000));
       }
@@ -139,7 +142,7 @@ export function describeStorage(
           reference_id: index.toString()
         });
 
-        expect(storage.get().length).to.equal(index + 1);
+        expect(storage.get().length).toBe(index + 1);
       }
 
       if (recreateStorage) {
@@ -149,9 +152,9 @@ export function describeStorage(
       let offset: number = 0;
       let events: IStorageItem[] = storage.get(2);
       while (events && events.length > 0) {
-        expect(2).to.equal(events.length);
+        expect(2).toBe(events.length);
         for (let ei = 0; ei < 2; ei++) {
-          expect(getDate(DATE, offset++)).to.deep.equal(events[ei].value.date);
+          expect(getDate(DATE, offset++)).toEqual(events[ei].value.date);
           storage.remove(events[ei].timestamp);
         }
 
@@ -159,7 +162,7 @@ export function describeStorage(
       }
     });
 
-    it('should respect max items limit', () => {
+    test('should respect max items limit', () => {
       let storage = storageFactory(5);
       const timestamps = [];
       for (let index: number = 0; index < 5; index++) {
@@ -167,8 +170,8 @@ export function describeStorage(
       }
 
       let events: IStorageItem[] = storage.get();
-      expect(events.length).to.equal(5);
-      expect(events[0].timestamp).to.equal(timestamps[0]);
+      expect(events.length).toBe(5);
+      expect(events[0].timestamp).toBe(timestamps[0]);
       storage.save({ type: 'log', reference_id: '6' });
 
       if (recreateStorage) {
@@ -176,8 +179,8 @@ export function describeStorage(
       }
 
       events = storage.get();
-      expect(events.length).to.equal(5);
-      expect(events[0].timestamp).to.equal(timestamps[1]);
+      expect(events.length).toBe(5);
+      expect(events[0].timestamp).toBe(timestamps[1]);
     });
 
   });

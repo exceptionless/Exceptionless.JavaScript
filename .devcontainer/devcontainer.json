@@ -2,8 +2,10 @@
   "name": "Exceptionless.JavaScript",
   "image": "mcr.microsoft.com/vscode/devcontainers/typescript-node:latest",
   "extensions": [
+    "andys8.jest-snippets",
     "dbaeumer.vscode-eslint",
-    "hbenl.vscode-mocha-test-adapter",
+    "esbenp.prettier-vscode",
+    "firsttris.vscode-jest-runner",
     "hbenl.vscode-test-explorer",
     "juancasanova.awesometypescriptproblemmatcher",
     "ryanluker.vscode-coverage-gutters",
