@@ -21,28 +21,28 @@ export class BrowserStorage extends KeyValueStorageBase {
     this.prefix = prefix + namespace + '-';
   }
 
-  public write(key: string, value: string) {
+  public writeValue(key: string, value: string): void {
     window.localStorage.setItem(key, value);
   }
 
-  public read(key: string) {
+  public readValue(key: string): string {
     return window.localStorage.getItem(key);
   }
 
-  public readAllKeys() {
+  public removeValue(key: string): void {
+    window.localStorage.removeItem(key);
+  }
+
+  public getAllKeys(): string[] {
     return Object.keys(window.localStorage)
       .filter((key) => key.indexOf(this.prefix) === 0);
   }
 
-  public delete(key: string) {
-    window.localStorage.removeItem(key);
-  }
-
-  public getKey(timestamp) {
+  public getKey(timestamp: number): string {
     return this.prefix + timestamp;
   }
 
-  public getTimestamp(key) {
+  public getTimestamp(key: string): number {
     return parseInt(key.substr(this.prefix.length), 10);
   }
 }

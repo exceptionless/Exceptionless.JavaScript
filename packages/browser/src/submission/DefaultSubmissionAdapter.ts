@@ -4,8 +4,9 @@ import {
   SubmissionRequest
 } from '@exceptionless/core';
 
+// TODO: Remove XDomainRequest which only works in old versions of ie: https://developer.mozilla.org/en-US/docs/Web/API/XDomainRequest
 // eslint-disable-next-line no-var
-declare var XDomainRequest: { new(); create(); };
+declare var XDomainRequest: { new(); };
 
 export class DefaultSubmissionAdapter implements ISubmissionAdapter {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars

@@ -1,8 +1,9 @@
 {
   "recommendations": [
+    "andys8.jest-snippets",
     "dbaeumer.vscode-eslint",
     "esbenp.prettier-vscode",
-    "hbenl.vscode-mocha-test-adapter",
+    "firsttris.vscode-jest-runner",
     "hbenl.vscode-test-explorer",
     "juancasanova.awesometypescriptproblemmatcher",
     "ryanluker.vscode-coverage-gutters",

@@ -1,8 +1,6 @@
-import { expect } from 'chai';
-import { beforeEach, describe, it } from 'mocha';
-import { ExceptionlessClient } from '../../../src/ExceptionlessClient';
-import { EventPluginContext } from '../../../src/plugins/EventPluginContext';
-import { DuplicateCheckerPlugin } from '../../../src/plugins/default/DuplicateCheckerPlugin';
+import { DuplicateCheckerPlugin } from "../../../src/plugins/default/DuplicateCheckerPlugin";
+import { ExceptionlessClient } from "../../../src/ExceptionlessClient";
+import { EventPluginContext } from "../../../src/plugins/EventPluginContext";
 import { IInnerError } from "../../../src/models/IInnerError";
 import { IStackFrame } from "../../../src/models/IStackFrame";
 
@@ -67,36 +65,36 @@ describe('DuplicateCheckerPlugin', () => {
     return context;
   }
 
-  it('should ignore duplicate within window', (done) => {
+  test('should ignore duplicate within window', done => {
     run(Exception1StackTrace);
 
     const contextOfSecondRun = run(Exception1StackTrace);
-    expect(contextOfSecondRun.cancelled).to.be.true;
+    expect(contextOfSecondRun.cancelled).toBe(true);
     setTimeout(() => {
-      expect(contextOfSecondRun.event.count).to.equal(1);
+      expect(contextOfSecondRun.event.count).toBe(1);
 
       done();
     }, 100);
   });
 
-  it('should ignore error without stack', () => {
+  test('should ignore error without stack', () => {
     run();
     const contextOfSecondRun = run();
-    expect(contextOfSecondRun.cancelled).to.be.true;
+    expect(contextOfSecondRun.cancelled).toBe(true);
   });
 
-  it('shouldn\'t ignore different stack within window', () => {
+  test('shouldn\'t ignore different stack within window', () => {
     run(Exception1StackTrace);
     const contextOfSecondRun = run(Exception2StackTrace);
 
-    expect(contextOfSecondRun.cancelled).not.to.be.true;
+    expect(contextOfSecondRun.cancelled).not.toBe(true);
   });
 
-  it('shouldn\'t ignore duplicate after window', () => {
+  test('shouldn\'t ignore duplicate after window', () => {
     run(Exception1StackTrace);
 
     now = 3000;
     const contextOfSecondRun = run(Exception1StackTrace);
-    expect(contextOfSecondRun.cancelled).not.to.be.true;
+    expect(contextOfSecondRun.cancelled).not.toBe(true);
   });
 });

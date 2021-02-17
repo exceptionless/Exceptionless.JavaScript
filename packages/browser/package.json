@@ -33,18 +33,7 @@
     "build": "npm run build:esm && npm run build:cjs",
     "build:cjs": "tsc -p tsconfig.cjs.json",
     "build:esm": "tsc -p tsconfig.json",
-    "build:watch": "tsc -p tsconfig.esm.json -w --preserveWatchOutput",
-    "test": "mocha --colors --require ts-node/register ./test --exit"
-  },
-  "devDependencies": {
-    "@types/chai": "4.2.14",
-    "@types/mocha": "8.0.4",
-    "@types/mock-fs": "4.13.0",
-    "@types/sinon": "9.0.8",
-    "chai": "4.2.0",
-    "mocha": "8.2.1",
-    "mock-fs": "4.13.0",
-    "sinon": "9.2.1"
+    "build:watch": "tsc -p tsconfig.esm.json -w --preserveWatchOutput"
   },
   "dependencies": {
     "@exceptionless/core": "2.0.0-pre",
