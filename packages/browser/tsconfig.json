@@ -2,7 +2,7 @@
   "extends": "../../tsconfig.json",
   "compilerOptions": {
     "lib": ["DOM", "ESNext"],
-    "outDir": "dist/esm",
+    "outDir": "dist",
     "rootDir": "src"
   },
   "include": ["src"]
