@@ -13,14 +13,16 @@
   "prettier.eslintIntegration": true,
   "typescript.tsdk": "./node_modules/typescript/lib",
   "cSpell.words": [
-      "Exceptionless",
-      "angularjs",
-      "bootstrapcdn",
-      "configversion",
-      "lage",
-      "maxcdn",
-      "tracekit",
-      "tsproject"
+    "Exceptionless",
+    "angularjs",
+    "bootstrapcdn",
+    "configversion",
+    "eslintignore",
+    "lage",
+    "maxcdn",
+    "tracekit",
+    "tsproject",
+    "webcompat"
   ],
   "eslint.validate": [
     "javascript",

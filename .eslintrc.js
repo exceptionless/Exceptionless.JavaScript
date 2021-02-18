@@ -1,4 +1,5 @@
 module.exports = {
+  root: true,
   env: {
     browser: true,
     es6: true,
@@ -6,34 +7,33 @@ module.exports = {
   },
   extends: [
     "eslint:recommended",
+    'plugin:import/typescript',
+    "plugin:@typescript-eslint/eslint-recommended",
     "plugin:@typescript-eslint/recommended",
     "plugin:@typescript-eslint/recommended-requiring-type-checking",
   ],
   globals: {
-    Atomics: "readonly",
-    SharedArrayBuffer: "readonly"
+    MutationObserver: 'readonly',
+    SharedArrayBuffer: 'readonly',
+    Atomics: 'readonly',
+    BigInt: 'readonly',
+    BigInt64Array: 'readonly',
+    BigUint64Array: 'readonly',
   },
   parser: "@typescript-eslint/parser",
   parserOptions: {
-    ecmaVersion: 2018,
+    ecmaVersion: 2020,
     sourceType: "module",
-    project: [
-      "./tsconfig.json",
-      "./packages/*/tsconfig.json",
-    ],
-    tsconfigRootDir: __dirname,
-    warnOnUnsupportedTypeScriptVersion: false,
-    EXPERIMENTAL_useSourceOfProjectReferenceRedirect: true,
+    project: ["./tsconfig.json"],
+    tsconfigRootDir: __dirname
   },
   plugins: [
-    "eslint-plugin",
     "@typescript-eslint",
-    "jest",
     "import",
-    "eslint-comments"
+    "jest",
   ],
   ignorePatterns: [
-    "node_modules",
+    "node_modules"
   ],
   rules: {
     "@typescript-eslint/explicit-module-boundary-types": "off",

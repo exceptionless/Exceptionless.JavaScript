@@ -12,6 +12,7 @@ import { SubmissionResponse } from './submission/SubmissionResponse.js';
 export class ExceptionlessClient {
   /**
    * The default ExceptionlessClient instance.
+   *
    * @type {ExceptionlessClient}
    * @private
    */
@@ -28,7 +29,7 @@ export class ExceptionlessClient {
   constructor(settingsOrApiKey?: IConfigurationSettings | string, serverUrl?: string) {
     this.config = typeof settingsOrApiKey === 'object'
       ? new Configuration(settingsOrApiKey)
-      : new Configuration({ apiKey: settingsOrApiKey as string, serverUrl });
+      : new Configuration({ apiKey: settingsOrApiKey, serverUrl });
 
     this.updateSettingsTimer(5000);
     this.config.onChanged(() => this.updateSettingsTimer(this._timeoutId > 0 ? 5000 : 0));
@@ -133,6 +134,7 @@ export class ExceptionlessClient {
 
   /**
    * Submits the event to be sent to the server.
+   *
    * @param event The event data.
    * @param pluginContextData Any contextual data objects to be used by Exceptionless plugins to gather default information for inclusion in the report information.
    * @param callback
