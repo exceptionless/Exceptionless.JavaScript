@@ -18,8 +18,8 @@
     "clean": "rimraf packages/*/dist examples/*/dist",
     "build": "lage build --scope @exceptionless/* --no-cache --verbose --no-deps",
     "build:watch": "lage run build:watch --scope @exceptionless/* --no-cache --verbose --no-deps",
-    "lint": "eslint . --ext .js,.ts",
-    "lint:fix": "eslint . --ext .js,.ts --fix",
+    "lint": "eslint . --ext .ts",
+    "lint:fix": "eslint . --ext .ts --fix",
     "test": "lage run test"
   },
   "workspaces": [
