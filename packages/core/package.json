@@ -32,14 +32,14 @@
     "./package.json": "./package.json"
   },
   "jest": {
+    "moduleFileExtensions": ["js", "ts"],
     "moduleNameMapper": {
       "^@exceptionless/(.*)$": "<rootDir>/../$1/src"
     },
-    "preset": "ts-jest"
+    "preset": "ts-jest",
+    "resolver": "jest-ts-webcompat-resolver"
   },
   "scripts": {
-    "lint": "eslint --cache --ext .ts",
-    "lint:fix": "eslint --fix",
     "build": "tsc -p tsconfig.json",
     "build:watch": "tsc -p tsconfig.json -w --preserveWatchOutput",
     "test": "jest"
@@ -47,6 +47,7 @@
   "devDependencies": {
     "@jest/globals": "26.6.2",
     "jest": "26.6.3",
+    "jest-ts-webcompat-resolver": "1.0.0",
     "ts-jest": "26.5.1",
     "typescript": "4.1.5"
   }
