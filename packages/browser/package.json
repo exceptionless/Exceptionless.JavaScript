@@ -27,13 +27,18 @@
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "unpkg": "dist/index.min.js",
+  "jsdelivr": "dist/index.min.js",
   "exports": {
     ".": "./dist/index.js",
     "./package.json": "./package.json"
   },
   "scripts": {
-    "build": "tsc -p tsconfig.json",
+    "build": "tsc -p tsconfig.json && esbuild dist/index.js --bundle --minify --sourcemap --outfile=dist/index.min.js",
     "build:watch": "tsc -p tsconfig.json -w --preserveWatchOutput"
+  },
+  "devDependencies": {
+    "esbuild": "0.8.49"
   },
   "dependencies": {
     "@exceptionless/core": "2.0.0-pre",
