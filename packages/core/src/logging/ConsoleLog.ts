@@ -1,4 +1,4 @@
-import { ILog } from '@exceptionless/core';
+import { ILog } from './ILog.js';
 
 export class ConsoleLog implements ILog {
   public trace(message: string): void {

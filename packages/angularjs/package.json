@@ -35,6 +35,7 @@
     "build": "tsc -p tsconfig.json",
     "build:watch": "tsc -p tsconfig.json -w --preserveWatchOutput"
   },
+  "sideEffects": false,
   "devDependencies": {
     "@types/angular": "1.8.0"
   },

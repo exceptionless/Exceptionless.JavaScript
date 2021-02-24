@@ -1,3 +1,9 @@
+
+import {
+  addListener,
+  on
+} from 'process';
+
 import {
   Configuration,
   ExceptionlessClient,
@@ -29,11 +35,11 @@ function init() {
     this.changed();
   };
 
-  process.addListener('uncaughtException', (error: Error) => {
+  addListener('uncaughtException', (error: Error) => {
     ExceptionlessClient.default.submitUnhandledException(error, 'uncaughtException');
   });
 
-  process.on('exit', (code: number) => {
+  on('exit', (code: number) => {
     /**
      * exit codes: https://nodejs.org/api/process.html#process_event_exit
      * From now on, only synchronous code may run. As soon as this method

@@ -2,7 +2,10 @@ import { describeStorage } from '../../../core/test/storage/InMemoryStorage.test
 import { IStorage } from "../../../core/src/storage/IStorage.js";
 import { NodeFileStorage } from '../../src/storage/NodeFileStorage.js';
 
-import * as fs from 'fs';
+import {
+  mkdirSync,
+  rmSync
+} from 'fs';
 
 const directory: string = './test-data';
 const nodeFileStorageFactory = (maxItems?: number): IStorage => {
@@ -10,8 +13,8 @@ const nodeFileStorageFactory = (maxItems?: number): IStorage => {
 };
 
 function resetStorageDirectory() {
-  fs.rmSync(directory, { recursive: true, force: true });
-  fs.mkdirSync(directory);
+  rmSync(directory, { recursive: true, force: true });
+  mkdirSync(directory);
 }
 
 describeStorage('NodeFileStorage',

@@ -1,7 +1,23 @@
-import { KeyValueStorageBase } from '@exceptionless/core';
+import {
+  existsSync,
+  mkdirSync,
+  readdirSync,
+  readFileSync,
+  unlinkSync,
+  writeFileSync
+} from 'fs';
 
-import * as fs from 'fs';
-import * as path from 'path';
+import {
+  basename,
+  dirname,
+  join,
+  resolve,
+  sep
+} from 'path';
+
+import { argv } from 'process';
+
+import { KeyValueStorageBase } from '@exceptionless/core';
 
 export class NodeFileStorage extends KeyValueStorageBase {
   private directory: string;
@@ -11,58 +27,58 @@ export class NodeFileStorage extends KeyValueStorageBase {
     super(maxItems);
 
     if (!folder) {
-      folder = require.main && require.main.filename ? path.join(path.dirname(require.main.filename), '.exceptionless') : '.exceptionless';
+      folder = argv && argv.length > 1 ? join(dirname(argv[1]), '.exceptionless') : '.exceptionless';
     }
 
-    const subFolder = path.join(folder, namespace);
-    this.directory = path.resolve(subFolder);
+    const subFolder = join(folder, namespace);
+    this.directory = resolve(subFolder);
     this.prefix = prefix;
 
     this.mkdir(this.directory);
   }
 
   public writeValue(key: string, value: string): void {
-    fs.writeFileSync(key, value);
+    writeFileSync(key, value);
   }
 
   public readValue(key: string): string {
-    return fs.readFileSync(key, 'utf8');
+    return readFileSync(key, 'utf8');
   }
 
   public removeValue(key: string): void {
-    fs.unlinkSync(key);
+    unlinkSync(key);
   }
 
   public getAllKeys(): string[] {
-    return fs.readdirSync(this.directory)
+    return readdirSync(this.directory)
       .filter((file) => file.indexOf(this.prefix) === 0)
-      .map((file) => path.join(this.directory, file));
+      .map((file) => join(this.directory, file));
   }
 
   public getKey(timestamp: number): string {
-    return path.join(this.directory, `${this.prefix}${timestamp}.json`);
+    return join(this.directory, `${this.prefix}${timestamp}.json`);
   }
 
   public getTimestamp(key: string): number {
-    return parseInt(path.basename(key, '.json')
+    return parseInt(basename(key, '.json')
       .substr(this.prefix.length), 10);
   }
 
   private mkdir(directory: string): void {
-    const dirs = directory.split(path.sep);
+    const dirs = directory.split(sep);
     let root = '';
 
     while (dirs.length > 0) {
       const dir = dirs.shift();
       if (dir === '') {
-        root = path.sep;
+        root = sep;
       }
 
-      if (!fs.existsSync(root + dir)) {
-        fs.mkdirSync(root + dir);
+      if (!existsSync(root + dir)) {
+        mkdirSync(root + dir);
       }
 
-      root += dir + path.sep;
+      root += dir + sep;
     }
   }
 }

@@ -44,6 +44,7 @@
     "build:watch": "tsc -p tsconfig.json -w --preserveWatchOutput",
     "test": "jest"
   },
+  "sideEffects": false,
   "devDependencies": {
     "@jest/globals": "26.6.2",
     "jest": "26.6.3",
