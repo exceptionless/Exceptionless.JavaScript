@@ -44,6 +44,9 @@
     "build:watch": "tsc -p tsconfig.json -w --preserveWatchOutput",
     "test": "jest"
   },
+  "sideEffects": [
+    "dist/index.js"
+  ],
   "devDependencies": {
     "@types/stack-trace": "0.0.29",
     "@jest/globals": "26.6.2",

@@ -1,15 +1,29 @@
+import { spawnSync } from 'child_process'
+
+import {
+  ClientRequest,
+  IncomingHttpHeaders,
+  IncomingMessage,
+  request as httpRequest
+} from 'http'
+
+import {
+  request as httpsRequest,
+  RequestOptions
+} from 'https'
+
+import { URL } from 'url'
+
+import {
+  execPath,
+  stderr
+} from 'process';
+
 import {
   ISubmissionAdapter,
   SubmissionCallback,
   SubmissionRequest
 } from '@exceptionless/core';
-
-import * as child from 'child_process'
-import * as http from 'http'
-import * as https from 'https'
-import * as url from 'url'
-
-import { IncomingHttpHeaders } from "http";
 
 export class NodeSubmissionAdapter implements ISubmissionAdapter {
   public sendRequest(request: SubmissionRequest, callback?: SubmissionCallback, isAppExiting?: boolean) {
@@ -18,9 +32,8 @@ export class NodeSubmissionAdapter implements ISubmissionAdapter {
       return;
     }
 
-    const parsedHost = url.parse(request.url);
-
-    const options: https.RequestOptions = {
+    const parsedHost = new URL(request.url);
+    const options: RequestOptions = {
       auth: `client:${request.apiKey}`,
       headers: {},
       hostname: parsedHost.hostname,
@@ -38,9 +51,9 @@ export class NodeSubmissionAdapter implements ISubmissionAdapter {
       };
     }
 
-    const protocol: any = (parsedHost.protocol === 'https:' ? https : http);
-    const clientRequest: http.ClientRequest = protocol.request(options, (response: http.IncomingMessage) => {
-      let body = '';
+    const requestImpl = parsedHost.protocol === 'https:' ? httpsRequest : httpRequest;
+    const clientRequest: ClientRequest = requestImpl(options, (response: IncomingMessage) => {
+      let body: string = '';
       response.setEncoding('utf8');
       response.on('data', (chunk) => body += chunk);
       response.on('end', () => this.complete(response, body, response.headers, callback));
@@ -50,7 +63,7 @@ export class NodeSubmissionAdapter implements ISubmissionAdapter {
     clientRequest.end(request.data);
   }
 
-  private complete(response: http.IncomingMessage, responseBody: string, responseHeaders: IncomingHttpHeaders, callback: SubmissionCallback): void {
+  private complete(response: IncomingMessage, responseBody: string, responseHeaders: IncomingHttpHeaders, callback: SubmissionCallback): void {
     let message: string;
     if (response.statusCode === 0) {
       message = 'Unable to connect to server.';
@@ -63,11 +76,11 @@ export class NodeSubmissionAdapter implements ISubmissionAdapter {
 
   private sendRequestSync(request: SubmissionRequest, callback: SubmissionCallback): void {
     const requestJson = JSON.stringify(request);
-    const res = child.spawnSync(process.execPath, [require.resolve('./submitSync.js')],
-      {
-        input: requestJson,
-        stdio: ['pipe', 'pipe', process.stderr]
-      });
+    // TODO: Figure out how to remove require
+    const res = spawnSync(execPath, [require.resolve('./submitSync.js')], {
+      input: requestJson,
+      stdio: ['pipe', 'pipe', stderr]
+    });
 
     const out = res.stdout.toString();
     const result = JSON.parse(out);

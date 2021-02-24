@@ -1,13 +1,19 @@
 import { SubmissionRequest } from '@exceptionless/core';
 import { NodeSubmissionAdapter } from '@exceptionless/node';
 
-import * as stream from 'stream';
+import {
+  exit,
+  stdin,
+  stdout
+} from 'process';
+
+import { Writable } from 'stream';
 import { StringDecoder } from 'string_decoder';
 
 const decoder = new StringDecoder('utf8');
 const strings: string[] = [];
 
-const jsonStream = new stream.Writable();
+const jsonStream = new Writable();
 (jsonStream as any)._write = (chunk: Buffer | string, encoding: string, next: () => void) => {
   strings.push(decoder.write(chunk as Buffer));
   next();
@@ -24,9 +30,9 @@ jsonStream.on('finish', () => {
       data,
       headers
     };
-    process.stdout.write(JSON.stringify(result));
-    process.exit(0);
+    stdout.write(JSON.stringify(result));
+    exit(0);
   });
 });
 
-process.stdin.pipe(jsonStream);
+stdin.pipe(jsonStream);

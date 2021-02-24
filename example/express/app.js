@@ -1,7 +1,8 @@
-var express = require('express');
-var app = express();
+import express from 'express';
+const app = express()
 
-var client = require('../../dist/exceptionless.node').ExceptionlessClient.default;
+import { ExceptionlessClient } from '@exceptionless/node';
+const client = ExceptionlessClient.default;
 client.config.apiKey = 'LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw';
 client.config.serverUrl = 'http://localhost:5000';
 client.config.useDebugLogger();
@@ -47,7 +48,7 @@ app.use(function(req, res, next) {
   res.status(404).send('Sorry cant find that!');
 });
 
-var server = app.listen(3000, function () {
+const server = app.listen(3000, function () {
   var host = server.address().address;
   var port = server.address().port;
 
@@ -55,3 +56,5 @@ var server = app.listen(3000, function () {
   console.log(message);
   client.submitLog('app', message , 'Info');
 });
+
+export default app;

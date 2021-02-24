@@ -1,12 +1,11 @@
+import { parse } from 'stack-trace'
+
 import {
   EventPluginContext,
   IError,
   IErrorParser,
   IStackFrame
 } from '@exceptionless/core';
-
-import { parse } from 'stack-trace'
-
 
 export class NodeErrorParser implements IErrorParser {
   public parse(context: EventPluginContext, exception: Error): IError {

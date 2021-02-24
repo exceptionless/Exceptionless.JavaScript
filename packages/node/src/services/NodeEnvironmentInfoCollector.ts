@@ -1,20 +1,43 @@
 import {
+  argv,
+  memoryUsage,
+  pid,
+  title,
+  version
+} from 'process';
+
+import {
+  arch,
+  cpus,
+  endianness,
+  freemem,
+  hostname,
+  loadavg,
+  networkInterfaces,
+  NetworkInterfaceInfo,
+  platform,
+  release,
+  tmpdir,
+  totalmem,
+  type,
+  uptime
+} from 'os';
+
+import {
   IEnvironmentInfo,
   IEnvironmentInfoCollector,
   EventPluginContext
 } from '@exceptionless/core';
 
-import * as os from 'os'
-
 export class NodeEnvironmentInfoCollector implements IEnvironmentInfoCollector {
   public getEnvironmentInfo(context: EventPluginContext): IEnvironmentInfo {
     function getIpAddresses(): string {
       const ips: string[] = [];
-      const interfaces = os.networkInterfaces();
+      const interfaces = networkInterfaces();
       Object.keys(interfaces).forEach((name) => {
-        interfaces[name].forEach((iface: any) => {
-          if ('IPv4' === iface.family && !iface.internal) {
-            ips.push(iface.address);
+        interfaces[name].forEach((network: NetworkInterfaceInfo) => {
+          if ('IPv4' === network.family && !network.internal) {
+            ips.push(network.address);
           }
         });
       });
@@ -22,43 +45,43 @@ export class NodeEnvironmentInfoCollector implements IEnvironmentInfoCollector {
       return ips.join(', ');
     }
 
-    if (!os) {
+    if (!cpus) {
       return null;
     }
 
     const environmentInfo: IEnvironmentInfo = {
-      processor_count: os.cpus().length,
-      total_physical_memory: os.totalmem(),
-      available_physical_memory: os.freemem(),
-      command_line: process.argv.join(' '),
-      process_name: (process.title || '').replace(/[\uE000-\uF8FF]/g, ''),
-      process_id: process.pid + '',
-      process_memory_size: process.memoryUsage().heapTotal,
+      processor_count: cpus().length,
+      total_physical_memory: totalmem(),
+      available_physical_memory: freemem(),
+      command_line: argv.join(' '),
+      process_name: (title || '').replace(/[\uE000-\uF8FF]/g, ''),
+      process_id: pid + '',
+      process_memory_size: memoryUsage().heapTotal,
       // thread_id: '',
-      architecture: os.arch(),
-      o_s_name: os.type(),
-      o_s_version: os.release(),
+      architecture: arch(),
+      o_s_name: type(),
+      o_s_version: release(),
       // install_id: '',
-      runtime_version: process.version,
+      runtime_version: version,
       data: {
-        loadavg: os.loadavg(),
-        platform: os.platform(),
-        tmpdir: os.tmpdir(),
-        uptime: os.uptime()
+        loadavg: loadavg(),
+        platform: platform(),
+        tmpdir: tmpdir(),
+        uptime: uptime()
       }
     };
 
     const config = context.client.config;
     if (config.includeMachineName) {
-      environmentInfo.machine_name = os.hostname();
+      environmentInfo.machine_name = hostname();
     }
 
     if (config.includeIpAddress) {
       environmentInfo.ip_address = getIpAddresses();
     }
 
-    if ((os as any).endianness) {
-      environmentInfo.data.endianness = (os as any).endianness();
+    if (endianness) {
+      environmentInfo.data.endianness = endianness();
     }
 
     return environmentInfo;

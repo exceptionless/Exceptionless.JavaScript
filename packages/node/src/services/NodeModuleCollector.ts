@@ -1,35 +1,45 @@
+import { spawnSync } from 'child_process'
+
+import {
+  dirname,
+  join,
+  resolve
+} from 'path';
+
+import { argv } from 'process';
+
 import {
   IModule,
   IModuleCollector
 } from '@exceptionless/core';
 
-import * as child from 'child_process'
-import * as path from 'path'
-
 export class NodeModuleCollector implements IModuleCollector {
-
   private initialized: boolean = false;
   private installedModules: { [id: string]: IModule } = {};
 
   public getModules(): IModule[] {
-    if (!require.main || !require.main.filename) {
+    if (argv && argv.length < 2) {
       return [];
     }
 
     this.initialize();
 
-    const modulePath = path.dirname(require.main.filename) + '/node_modules/';
+    // TODO: Cache this lookup
+    const modulePath = resolve(join(dirname(argv[1]), 'node_modules'));
+    // TODO: What to do if this doesn't exist..
+    console.log(modulePath);
     const pathLength = modulePath.length;
 
-    const loadedKeys = Object.keys(require.cache);
-    const loadedModules = {};
+    // TODO: Figure out how to remove require
+    const loadedKeys: string[] = Object.keys(require.cache);
+    const loadedModules: { [id: string]: boolean } = {};
 
     loadedKeys.forEach((key) => {
       let id = key.substr(pathLength);
       id = id.substr(0, id.indexOf('/'));
       loadedModules[id] = true;
     });
-
+    console.log(loadedKeys, loadedModules, module);
     return Object.keys(loadedModules)
       .map((key) => this.installedModules[key])
       .filter((m) => m !== undefined);
@@ -42,9 +52,9 @@ export class NodeModuleCollector implements IModuleCollector {
 
     this.initialized = true;
 
-    let json;
+    let json: { dependencies?: { version: string }[] };
     try {
-      const output = child.spawnSync('npm', ['ls', '--depth=0', '--json']).stdout;
+      const output = spawnSync('npm', ['ls', '--depth=0', '--json']).stdout;
       if (!output) {
         return;
       }

@@ -1,6 +1,7 @@
 import { DefaultLastReferenceIdManager } from '../lastReferenceIdManager/DefaultLastReferenceIdManager.js';
 import { ILastReferenceIdManager } from '../lastReferenceIdManager/ILastReferenceIdManager.js';
 import { ILog } from '../logging/ILog.js';
+import { ConsoleLog } from '../logging/ConsoleLog.js';
 import { NullLog } from '../logging/NullLog.js';
 import { IUserInfo } from '../models/IUserInfo.js';
 import { HeartbeatPlugin } from '../plugins/default/HeartbeatPlugin.js';
@@ -614,8 +615,7 @@ export class Configuration implements IConfigurationSettings {
 
   // TODO: Support a min log level.
   public useDebugLogger(): void {
-    // TODO: Inject a debug logger.
-    //this.log = new ConsoleLog();
+    this.log = new ConsoleLog();
   }
 
   public onChanged(handler: (config: Configuration) => void): void {

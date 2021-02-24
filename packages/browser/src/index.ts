@@ -41,20 +41,20 @@ function init() {
   }
 
   /*
-   TODO: We currently are unable to parse string exceptions.
-   function processJQueryAjaxError(event, xhr, settings, error:string): void {
-   let client = ExceptionlessClient.default;
-   if (xhr.status === 404) {
-   client.submitNotFound(settings.url);
-   } else if (xhr.status !== 401) {
-   client.createUnhandledException(error, 'JQuery.ajaxError')
-   .setSource(settings.url)
-   .setProperty('status', xhr.status)
-   .setProperty('request', settings.data)
-   .setProperty('response', xhr.responseText && xhr.responseText.slice && xhr.responseText.slice(0, 1024))
-   .submit();
-   }
-   }
+    TODO: We currently are unable to parse string exceptions.
+    function processJQueryAjaxError(event, xhr, settings, error:string): void {
+    let client = ExceptionlessClient.default;
+    if (xhr.status === 404) {
+    client.submitNotFound(settings.url);
+    } else if (xhr.status !== 401) {
+    client.createUnhandledException(error, 'JQuery.ajaxError')
+    .setSource(settings.url)
+    .setProperty('status', xhr.status)
+    .setProperty('request', settings.data)
+    .setProperty('response', xhr.responseText && xhr.responseText.slice && xhr.responseText.slice(0, 1024))
+    .submit();
+    }
+    }
    */
 
   Configuration.prototype.useLocalStorage = function() {

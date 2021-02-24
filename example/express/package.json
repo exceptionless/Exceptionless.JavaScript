@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "Exceptionless Sample Node App",
   "main": "app.js",
+  "type": "module",
   "author": "Exceptionless",
   "license": "Apache-2.0",
   "dependencies": {

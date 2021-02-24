@@ -6,6 +6,7 @@ export { DefaultLastReferenceIdManager } from './lastReferenceIdManager/DefaultL
 export { ILastReferenceIdManager } from './lastReferenceIdManager/ILastReferenceIdManager.js';
 
 export { ILog } from './logging/ILog.js';
+export { ConsoleLog } from './logging/ConsoleLog.js';
 export { NullLog } from './logging/NullLog.js';
 
 export { IClientConfiguration } from './models/IClientConfiguration.js';
