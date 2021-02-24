@@ -15,6 +15,8 @@ jobs:
         uses: actions/setup-node@v2.1.2
       - name: NPM install with caching
         uses: bahmutov/npm-install@v1.1.0
+      - name: Yarn install (for lage)
+        run: yarn install
       - name: Build
         run: npm run build
       - name: Run Tests
