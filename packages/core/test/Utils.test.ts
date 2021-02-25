@@ -1,16 +1,24 @@
-import { Utils } from "../src/Utils.js";
+import {
+  addRange,
+  stringify,
+  parseVersion,
+  isMatch,
+  startsWith,
+  endsWith,
+  toBoolean
+} from "../src/Utils.js";
 
 describe('Utils', () => {
   test('should add range', () => {
     let target: string[] = undefined;
-    expect(Utils.addRange(target)).toEqual([]);
+    expect(addRange(target)).toEqual([]);
     expect(target).toBeUndefined();
 
-    expect(Utils.addRange(target, '1', '2')).toEqual(['1', '2']);
-    expect(Utils.addRange(target, '1', '2')).toEqual(['1', '2']);
+    expect(addRange(target, '1', '2')).toEqual(['1', '2']);
+    expect(addRange(target, '1', '2')).toEqual(['1', '2']);
 
     target = ['3'];
-    expect(Utils.addRange(target, '1', '2')).toEqual(['3', '1', '2']);
+    expect(addRange(target, '1', '2')).toEqual(['3', '1', '2']);
     expect(target).toEqual(['3', '1', '2']);
   });
 
@@ -62,16 +70,16 @@ describe('Utils', () => {
         tags: []
       };
 
-      expect(Utils.stringify(error)).toBe(JSON.stringify(error));
-      expect(Utils.stringify([error, error])).toBe(JSON.stringify([error, error]));
+      expect(stringify(error)).toBe(JSON.stringify(error));
+      expect(stringify([error, error])).toBe(JSON.stringify([error, error]));
     });
 
     test('circular reference', () => {
       const aFoo: any = { a: 'foo' };
       aFoo.b = aFoo;
 
-      expect(Utils.stringify(aFoo)).toBe('{"a":"foo"}');
-      expect(Utils.stringify([{ one: aFoo, two: aFoo }])).toBe('[{"one":{"a":"foo"}}]');
+      expect(stringify(aFoo)).toBe('{"a":"foo"}');
+      expect(stringify([{ one: aFoo, two: aFoo }])).toBe('[{"one":{"a":"foo"}}]');
     });
 
     test.skip('deep circular reference', () => {
@@ -85,14 +93,14 @@ describe('Utils', () => {
 
       const expected = '{"b":{"c":{"d":"test"}}}';
 
-      const actual = Utils.stringify(a);
+      const actual = stringify(a);
       expect(actual).toBe(expected);
     });
 
     describe('should behave like JSON.stringify', () => {
       [new Date(), 1, true, null, undefined, () => { }, user].forEach((value) => {
         test('for ' + typeof (value), () => {
-          expect(Utils.stringify(value)).toBe(JSON.stringify(value));
+          expect(stringify(value)).toBe(JSON.stringify(value));
         });
       });
     });
@@ -122,203 +130,203 @@ describe('Utils', () => {
         b: 'b'
       };
 
-      const result = JSON.parse(Utils.stringify(bar));
+      const result = JSON.parse(stringify(bar));
       expect(result).toEqual(expected);
     });
 
     describe('with exclude pattern', () => {
       test('pAssword', () => {
-        expect(Utils.stringify(user, ['pAssword'])).toBe(
+        expect(stringify(user, ['pAssword'])).toBe(
           '{"id":1,"name":"Blake","passwordResetToken":"a reset token","myPassword":"123456","myPasswordValue":"123456","customValue":"Password","value":{}}'
         );
       });
 
       test('*password', () => {
-        expect(Utils.stringify(user, ['*password'])).toBe(
+        expect(stringify(user, ['*password'])).toBe(
           '{"id":1,"name":"Blake","passwordResetToken":"a reset token","myPasswordValue":"123456","customValue":"Password","value":{}}'
         );
       });
 
       test('password*', () => {
-        expect(Utils.stringify(user, ['password*'])).toBe(
+        expect(stringify(user, ['password*'])).toBe(
           '{"id":1,"name":"Blake","myPassword":"123456","myPasswordValue":"123456","customValue":"Password","value":{}}'
         );
       });
 
       test('*password*', () => {
-        expect(Utils.stringify(user, ['*password*'])).toBe('{"id":1,"name":"Blake","customValue":"Password","value":{}}');
+        expect(stringify(user, ['*password*'])).toBe('{"id":1,"name":"Blake","customValue":"Password","value":{}}');
       });
 
       test('*Address', () => {
         const event = { type: 'usage', source: 'about' };
-        expect(Utils.stringify(event, ['*Address'])).toBe(JSON.stringify(event));
+        expect(stringify(event, ['*Address'])).toBe(JSON.stringify(event));
       });
     });
   });
 
   test('should parse version from url', () => {
-    expect(Utils.parseVersion('https://code.jquery.com/jquery-2.1.3.js')).toBe('2.1.3');
-    expect(Utils.parseVersion('//maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css')).toBe('3.3.4');
-    expect(Utils.parseVersion('https://cdnjs.cloudflare.com/ajax/libs/1140/2.0/1140.css')).toBe('2.0');
-    expect(Utils.parseVersion('https://cdnjs.cloudflare.com/ajax/libs/Base64/0.3.0/base64.min.js')).toBe('0.3.0');
-    expect(Utils.parseVersion('https://cdnjs.cloudflare.com/ajax/libs/angular-google-maps/2.1.0-X.10/angular-google-maps.min.js')).toBe('2.1.0-X.10');
-    expect(Utils.parseVersion('https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/2.1.8-M1/swagger-ui.min.js')).toBe('2.1.8-M1');
-    expect(Utils.parseVersion('https://cdnjs.cloudflare.com/BLAH/BLAH.min.js')).toBeNull();
+    expect(parseVersion('https://code.jquery.com/jquery-2.1.3.js')).toBe('2.1.3');
+    expect(parseVersion('//maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css')).toBe('3.3.4');
+    expect(parseVersion('https://cdnjs.cloudflare.com/ajax/libs/1140/2.0/1140.css')).toBe('2.0');
+    expect(parseVersion('https://cdnjs.cloudflare.com/ajax/libs/Base64/0.3.0/base64.min.js')).toBe('0.3.0');
+    expect(parseVersion('https://cdnjs.cloudflare.com/ajax/libs/angular-google-maps/2.1.0-X.10/angular-google-maps.min.js')).toBe('2.1.0-X.10');
+    expect(parseVersion('https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/2.1.8-M1/swagger-ui.min.js')).toBe('2.1.8-M1');
+    expect(parseVersion('https://cdnjs.cloudflare.com/BLAH/BLAH.min.js')).toBeNull();
   });
 
   describe('isMatch', () => {
     test('input: blake patterns ["pAssword"]', () => {
-      expect(Utils.isMatch('blake', ['pAssword'])).toBe(false);
+      expect(isMatch('blake', ['pAssword'])).toBe(false);
     });
 
     test('input: pAssword patterns ["pAssword"]', () => {
-      expect(Utils.isMatch('pAssword', ['pAssword'])).toBe(true);
+      expect(isMatch('pAssword', ['pAssword'])).toBe(true);
     });
 
     test('input: passwordResetToken patterns ["pAssword"]', () => {
-      expect(Utils.isMatch('passwordResetToken', ['pAssword'])).toBe(false);
+      expect(isMatch('passwordResetToken', ['pAssword'])).toBe(false);
     });
 
     test('input: myPassword patterns ["pAssword"]', () => {
-      expect(Utils.isMatch('myPassword', ['pAssword'])).toBe(false);
+      expect(isMatch('myPassword', ['pAssword'])).toBe(false);
     });
 
     test('input: blake patterns ["*pAssword"]', () => {
-      expect(Utils.isMatch('blake', ['*pAssword'])).toBe(false);
+      expect(isMatch('blake', ['*pAssword'])).toBe(false);
     });
 
     test('input: pAssword patterns ["*pAssword"]', () => {
-      expect(Utils.isMatch('pAssword', ['*pAssword'])).toBe(true);
+      expect(isMatch('pAssword', ['*pAssword'])).toBe(true);
     });
 
     test('input: passwordResetToken patterns ["*pAssword"]', () => {
-      expect(Utils.isMatch('passwordResetToken', ['*pAssword'])).toBe(false);
+      expect(isMatch('passwordResetToken', ['*pAssword'])).toBe(false);
     });
 
     test('input: myPassword patterns ["*pAssword"]', () => {
-      expect(Utils.isMatch('myPassword', ['*pAssword'])).toBe(true);
+      expect(isMatch('myPassword', ['*pAssword'])).toBe(true);
     });
 
     test('input: blake patterns ["pAssword*"]', () => {
-      expect(Utils.isMatch('blake', ['pAssword*'])).toBe(false);
+      expect(isMatch('blake', ['pAssword*'])).toBe(false);
     });
 
     test('input: pAssword patterns ["pAssword*"]', () => {
-      expect(Utils.isMatch('pAssword', ['pAssword*'])).toBe(true);
+      expect(isMatch('pAssword', ['pAssword*'])).toBe(true);
     });
 
     test('input: passwordResetToken patterns ["pAssword*"]', () => {
-      expect(Utils.isMatch('passwordResetToken', ['pAssword*'])).toBe(true);
+      expect(isMatch('passwordResetToken', ['pAssword*'])).toBe(true);
     });
 
     test('input: myPassword patterns ["pAssword*"]', () => {
-      expect(Utils.isMatch('myPassword', ['pAssword*'])).toBe(false);
+      expect(isMatch('myPassword', ['pAssword*'])).toBe(false);
     });
 
     test('input: blake patterns ["*pAssword*"]', () => {
-      expect(Utils.isMatch('blake', ['*pAssword*'])).toBe(false);
+      expect(isMatch('blake', ['*pAssword*'])).toBe(false);
     });
 
     test('input: pAssword patterns ["*pAssword*"]', () => {
-      expect(Utils.isMatch('pAssword', ['*pAssword*'])).toBe(true);
+      expect(isMatch('pAssword', ['*pAssword*'])).toBe(true);
     });
 
     test('input: passwordResetToken patterns ["*pAssword*"]', () => {
-      expect(Utils.isMatch('passwordResetToken', ['*pAssword*'])).toBe(true);
+      expect(isMatch('passwordResetToken', ['*pAssword*'])).toBe(true);
     });
 
     test('input: myPassword patterns ["*pAssword*"]', () => {
-      expect(Utils.isMatch('myPassword', ['*pAssword*'])).toBe(true);
+      expect(isMatch('myPassword', ['*pAssword*'])).toBe(true);
     });
   });
 
   describe('startsWith', () => {
     test('input: blake prefix: blake', () => {
-      expect(Utils.startsWith('blake', 'blake')).toBe(true);
+      expect(startsWith('blake', 'blake')).toBe(true);
     });
 
     test('input: blake prefix: bl', () => {
-      expect(Utils.startsWith('blake', 'bl')).toBe(true);
+      expect(startsWith('blake', 'bl')).toBe(true);
     });
 
     test('input: blake prefix: Blake', () => {
-      expect(Utils.startsWith('blake', 'Blake')).toBe(false);
+      expect(startsWith('blake', 'Blake')).toBe(false);
     });
 
     test('input: @@log:* prefix: @@log:', () => {
-      expect(Utils.startsWith('@@log:*', '@@log:')).toBe(true);
+      expect(startsWith('@@log:*', '@@log:')).toBe(true);
     });
 
     test('input: test prefix: noPattern', () => {
-      expect(Utils.startsWith('test', 'noPattern')).toBe(false);
+      expect(startsWith('test', 'noPattern')).toBe(false);
     });
   });
 
   describe('endsWith', () => {
     test('input: blake suffix: blake', () => {
-      expect(Utils.endsWith('blake', 'blake')).toBe(true);
+      expect(endsWith('blake', 'blake')).toBe(true);
     });
 
     test('input: blake suffix: ake', () => {
-      expect(Utils.endsWith('blake', 'ake')).toBe(true);
+      expect(endsWith('blake', 'ake')).toBe(true);
     });
 
     test('input: blake suffix: Blake', () => {
-      expect(Utils.endsWith('blake', 'Blake')).toBe(false);
+      expect(endsWith('blake', 'Blake')).toBe(false);
     });
 
     test('input: @@log:* suffix: log:*', () => {
-      expect(Utils.endsWith('@@log:*', 'log:*')).toBe(true);
+      expect(endsWith('@@log:*', 'log:*')).toBe(true);
     });
 
     test('input: test suffix: noPattern', () => {
-      expect(Utils.endsWith('test', 'noPattern')).toBe(false);
+      expect(endsWith('test', 'noPattern')).toBe(false);
     });
   });
 
   describe('toBoolean', () => {
     test('input: blake', () => {
-      expect(Utils.toBoolean('blake')).toBe(false);
+      expect(toBoolean('blake')).toBe(false);
     });
 
     test('input: 0', () => {
-      expect(Utils.toBoolean('0')).toBe(false);
+      expect(toBoolean('0')).toBe(false);
     });
 
     test('input: no', () => {
-      expect(Utils.toBoolean('no')).toBe(false);
+      expect(toBoolean('no')).toBe(false);
     });
 
     test('input: false', () => {
-      expect(Utils.toBoolean('false')).toBe(false);
+      expect(toBoolean('false')).toBe(false);
     });
 
     test('input: false', () => {
-      expect(Utils.toBoolean(false)).toBe(false);
+      expect(toBoolean(false)).toBe(false);
     });
 
     test('input: undefined', () => {
-      expect(Utils.toBoolean(undefined)).toBe(false);
+      expect(toBoolean(undefined)).toBe(false);
     });
 
     test('input: null', () => {
-      expect(Utils.toBoolean(null)).toBe(false);
+      expect(toBoolean(null)).toBe(false);
     });
 
     test('input: 1', () => {
-      expect(Utils.toBoolean('1')).toBe(true);
+      expect(toBoolean('1')).toBe(true);
     });
 
     test('input: yes', () => {
-      expect(Utils.toBoolean('yes')).toBe(true);
+      expect(toBoolean('yes')).toBe(true);
     });
 
     test('input: true', () => {
-      expect(Utils.toBoolean('true')).toBe(true);
+      expect(toBoolean('true')).toBe(true);
     });
 
     test('input: true', () => {
-      expect(Utils.toBoolean(true)).toBe(true);
+      expect(toBoolean(true)).toBe(true);
     });
   });
 });

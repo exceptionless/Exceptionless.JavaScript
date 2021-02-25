@@ -2,7 +2,8 @@ import {
   EventPluginContext,
   IRequestInfo,
   IRequestInfoCollector,
-  Utils
+  getCookies,
+  stringify
 } from '@exceptionless/core';
 
 export class NodeRequestInfoCollector implements IRequestInfoCollector {
@@ -36,15 +37,15 @@ export class NodeRequestInfoCollector implements IRequestInfoCollector {
     }
 
     if (config.includeCookies) {
-      requestInfo.cookies = Utils.getCookies(request.headers.cookie, exclusions);
+      requestInfo.cookies = getCookies(request.headers.cookie, exclusions);
     }
 
     if (config.includeQueryString) {
-      requestInfo.query_string = JSON.parse(Utils.stringify(request.params || {}, exclusions));
+      requestInfo.query_string = JSON.parse(stringify(request.params || {}, exclusions));
     }
 
     if (config.includePostData) {
-      requestInfo.post_data = JSON.parse(Utils.stringify(request.body || {}, exclusions));
+      requestInfo.post_data = JSON.parse(stringify(request.body || {}, exclusions));
     }
 
     return requestInfo;

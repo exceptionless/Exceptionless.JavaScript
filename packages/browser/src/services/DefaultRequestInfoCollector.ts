@@ -2,7 +2,8 @@ import {
   EventPluginContext,
   IRequestInfo,
   IRequestInfoCollector,
-  Utils
+  getCookies,
+  parseQueryString
 } from '@exceptionless/core';
 
 export class DefaultRequestInfoCollector implements IRequestInfoCollector {
@@ -23,11 +24,11 @@ export class DefaultRequestInfoCollector implements IRequestInfoCollector {
     };
 
     if (config.includeCookies) {
-      requestInfo.cookies = Utils.getCookies(document.cookie, exclusions);
+      requestInfo.cookies = getCookies(document.cookie, exclusions);
     }
 
     if (config.includeQueryString) {
-      requestInfo.query_string = Utils.parseQueryString(location.search.substring(1), exclusions);
+      requestInfo.query_string = parseQueryString(location.search.substring(1), exclusions);
     }
 
     if (document.referrer && document.referrer !== '') {

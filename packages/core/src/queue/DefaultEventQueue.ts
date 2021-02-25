@@ -3,7 +3,7 @@ import { ILog } from '../logging/ILog.js';
 import { IEvent } from '../models/IEvent.js';
 import { IEventQueue } from '../queue/IEventQueue.js';
 import { IStorageItem } from '../storage/IStorageItem.js';
-import { SubmissionResponse } from '../submission/SubmissionResponse.js';
+import { Response } from "../submission/Response.js";
 
 export class DefaultEventQueue implements IEventQueue {
   /**
@@ -18,7 +18,7 @@ export class DefaultEventQueue implements IEventQueue {
    * @type {Array}
    * @private
    */
-  private _handlers: Array<(events: IEvent[], response: SubmissionResponse) => void> = [];
+  private _handlers: Array<(events: IEvent[], response: Response<void>) => void> = [];
 
   /**
    * Suspends processing until the specified time.
@@ -83,7 +83,7 @@ export class DefaultEventQueue implements IEventQueue {
     }
   }
 
-  public process(isAppExiting?: boolean): void {
+  public async process(): Promise<void> {
     const queueNotProcessed: string = 'The queue will not be processed.'; // optimization for minifier.
     const config: Configuration = this._config; // Optimization for minifier.
     const log: ILog = config.log; // Optimization for minifier.
@@ -94,12 +94,12 @@ export class DefaultEventQueue implements IEventQueue {
 
     log.info('Processing queue...');
     if (!config.enabled) {
-      log.info(`Configuration is disabled. ${queueNotProcessed}`);
+      log.info(`Configuration is disabled: ${queueNotProcessed}`);
       return;
     }
 
     if (!config.isValid) {
-      log.info(`Invalid Api Key. ${queueNotProcessed}`);
+      log.info(`Invalid Api Key: ${queueNotProcessed}`);
       return;
     }
 
@@ -113,13 +113,12 @@ export class DefaultEventQueue implements IEventQueue {
         return;
       }
 
-      log.info(`Sending ${events.length} events to ${config.serverUrl}.`);
-      config.submissionClient.postEvents(events.map((e) => e.value), config, (response: SubmissionResponse) => {
-        this.processSubmissionResponse(response, events);
-        this.eventsPosted(events.map((e) => e.value), response);
-        log.info('Finished processing queue.');
-        this._processingQueue = false;
-      }, isAppExiting);
+      log.info(`Sending ${events.length} events to ${config.serverUrl}`);
+      const response = await config.submissionClient.submitEvents(events.map((e) => e.value));
+      this.processSubmissionResponse(response, events);
+      this.eventsPosted(events.map((e) => e.value), response);
+      log.info('Finished processing queue.');
+      this._processingQueue = false;
     } catch (ex) {
       log.error(`Error processing queue: ${ex}`);
       this.suspendProcessing();
@@ -147,11 +146,12 @@ export class DefaultEventQueue implements IEventQueue {
     }
   }
 
-  public onEventsPosted(handler: (events: IEvent[], response: SubmissionResponse) => void): void {
+  // TODO: See if this makes sense.
+  public onEventsPosted(handler: (events: IEvent[], response: Response<void>) => void): void {
     handler && this._handlers.push(handler);
   }
 
-  private eventsPosted(events: IEvent[], response: SubmissionResponse) {
+  private eventsPosted(events: IEvent[], response: Response<void>) {
     const handlers = this._handlers; // optimization for minifier.
     for (const handler of handlers) {
       try {
@@ -182,32 +182,32 @@ export class DefaultEventQueue implements IEventQueue {
     }
   }
 
-  private processSubmissionResponse(response: SubmissionResponse, events: IStorageItem[]): void {
+  private processSubmissionResponse(response: Response<void>, events: IStorageItem[]): void {
     const noSubmission: string = 'The event will not be submitted.'; // Optimization for minifier.
     const config: Configuration = this._config; // Optimization for minifier.
     const log: ILog = config.log; // Optimization for minifier.
 
-    if (response.success) {
+    if (response.status === 202) {
       log.info(`Sent ${events.length} events.`);
       this.removeEvents(events);
       return;
     }
 
-    if (response.serviceUnavailable) {
+    if (response.status === 429 || response.status === 503) {
       // You are currently over your rate limit or the servers are under stress.
       log.error('Server returned service unavailable.');
       this.suspendProcessing();
       return;
     }
 
-    if (response.paymentRequired) {
+    if (response.status === 402) {
       // If the organization over the rate limit then discard the event.
       log.info('Too many events have been submitted, please upgrade your plan.');
       this.suspendProcessing(null, true, true);
       return;
     }
 
-    if (response.unableToAuthenticate) {
+    if (response.status === 401 || response.status === 403) {
       // The api key was suspended or could not be authorized.
       log.info(`Unable to authenticate, please check your configuration. ${noSubmission}`);
       this.suspendProcessing(15);
@@ -215,7 +215,7 @@ export class DefaultEventQueue implements IEventQueue {
       return;
     }
 
-    if (response.notFound || response.badRequest) {
+    if (response.status === 400 || response.status === 404) {
       // The service end point could not be found.
       log.error(`Error while trying to submit data: ${response.message}`);
       this.suspendProcessing(60 * 4);
@@ -223,7 +223,7 @@ export class DefaultEventQueue implements IEventQueue {
       return;
     }
 
-    if (response.requestEntityTooLarge) {
+    if (response.status === 413) {
       const message = 'Event submission discarded for being too large.';
       if (config.submissionBatchSize > 1) {
         log.error(`${message} Retrying with smaller batch size.`);
@@ -236,10 +236,8 @@ export class DefaultEventQueue implements IEventQueue {
       return;
     }
 
-    if (!response.success) {
-      log.error(`Error submitting events: ${response.message || 'Please check the network tab for more info.'}`);
-      this.suspendProcessing();
-    }
+    log.error(`Error submitting events: ${response.message || 'Please check the network tab for more info.'}`);
+    this.suspendProcessing();
   }
 
   private removeEvents(events: IStorageItem[]) {

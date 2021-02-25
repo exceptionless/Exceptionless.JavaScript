@@ -5,7 +5,7 @@ import { IRequestInfo } from "./models/IRequestInfo.js";
 import { IUserInfo } from './models/IUserInfo.js';
 import { ContextData } from './plugins/ContextData.js';
 import { EventPluginContext } from './plugins/EventPluginContext.js';
-import { Utils } from './Utils.js';
+import { addRange, stringify, isEmpty } from "./Utils.js";
 
 export class EventBuilder {
   public target: IEvent;
@@ -148,6 +148,11 @@ export class EventBuilder {
     return this;
   }
 
+  /**
+   * Sets the event value.
+   * @param value The value of the event.
+   * @returns {EventBuilder}
+   */
   public setValue(value: number): EventBuilder {
     if (value) {
       this.target.value = value;
@@ -157,7 +162,7 @@ export class EventBuilder {
   }
 
   public addTags(...tags: string[]): EventBuilder {
-    this.target.tags = Utils.addRange<string>(this.target.tags, ...tags);
+    this.target.tags = addRange<string>(this.target.tags, ...tags);
     return this;
   }
 
@@ -178,8 +183,8 @@ export class EventBuilder {
       this.target.data = {};
     }
 
-    const result = JSON.parse(Utils.stringify(value, this.client.config.dataExclusions.concat(excludedPropertyNames || []), maxDepth));
-    if (!Utils.isEmpty(result)) {
+    const result = JSON.parse(stringify(value, this.client.config.dataExclusions.concat(excludedPropertyNames || []), maxDepth));
+    if (!isEmpty(result)) {
       this.target.data[name] = result;
     }
 

@@ -1,5 +1,5 @@
 import { IRequestInfo } from '../../models/IRequestInfo.js';
-import { Utils } from '../../Utils.js';
+import { isMatch } from "../../Utils.js";
 import { EventPluginContext } from '../EventPluginContext.js';
 import { IEventPlugin } from '../IEventPlugin.js';
 
@@ -15,7 +15,7 @@ export class RequestInfoPlugin implements IEventPlugin {
     if (!context.event.data[REQUEST_KEY] && collector) {
       const requestInfo: IRequestInfo = collector.getRequestInfo(context);
       if (requestInfo) {
-        if (Utils.isMatch(requestInfo.user_agent, config.userAgentBotPatterns)) {
+        if (isMatch(requestInfo.user_agent, config.userAgentBotPatterns)) {
           context.log.info('Cancelling event as the request user agent matches a known bot pattern');
           context.cancelled = true;
         } else {

@@ -1,4 +1,4 @@
-import { Utils } from '../../Utils.js';
+import { stringify, isEmpty } from "../../Utils.js";
 import { EventPluginContext } from '../EventPluginContext.js';
 import { IEventPlugin } from '../IEventPlugin.js';
 
@@ -18,8 +18,8 @@ export class ConfigurationDefaultsPlugin implements IEventPlugin {
     const defaultData: Record<string, unknown> = config.defaultData || {};
     for (const key in defaultData) {
       if (defaultData[key]) {
-        const result = JSON.parse(Utils.stringify(defaultData[key], config.dataExclusions));
-        if (!Utils.isEmpty(result)) {
+        const result = JSON.parse(stringify(defaultData[key], config.dataExclusions));
+        if (!isEmpty(result)) {
           context.event.data[key] = result;
         }
       }

@@ -57,6 +57,7 @@
   },
   "dependencies": {
     "@exceptionless/core": "2.0.0-pre",
+    "node-fetch": "2.6.1",
     "stack-trace": "0.0.10"
   }
 }

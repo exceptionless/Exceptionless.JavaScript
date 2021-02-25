@@ -17,12 +17,10 @@ import { IModuleCollector } from '../services/IModuleCollector.js';
 import { IRequestInfoCollector } from '../services/IRequestInfoCollector.js';
 import { InMemoryStorageProvider } from '../storage/InMemoryStorageProvider.js';
 import { IStorageProvider } from '../storage/IStorageProvider.js';
-import { DefaultSubmissionClient } from '../submission/DefaultSubmissionClient.js';
-import { ISubmissionAdapter } from '../submission/ISubmissionAdapter.js';
-import { ISubmissionClient } from '../submission/ISubmissionClient.js';
-import { Utils } from '../Utils.js';
+import { ISubmissionClient } from "../submission/ISubmissionClient.js";
 import { IConfigurationSettings } from './IConfigurationSettings.js';
 import { SettingsManager } from './SettingsManager.js';
+import { merge, addRange, guid } from "../Utils.js";
 
 export class Configuration implements IConfigurationSettings {
   /**
@@ -67,7 +65,6 @@ export class Configuration implements IConfigurationSettings {
    * Maximum number of events that should be sent to the server together in a batch. (Defaults to 50)
    */
   public submissionBatchSize: number;
-  public submissionAdapter: ISubmissionAdapter;
   public submissionClient: ISubmissionClient;
 
   /**
@@ -156,7 +153,7 @@ export class Configuration implements IConfigurationSettings {
       return typeof fn === 'function' ? fn(this) : fn;
     }
 
-    configSettings = Utils.merge(Configuration.defaults, configSettings);
+    configSettings = merge(Configuration.defaults, configSettings);
 
     this.log = inject(configSettings.log) || new NullLog();
     this.apiKey = configSettings.apiKey;
@@ -172,8 +169,7 @@ export class Configuration implements IConfigurationSettings {
     this.moduleCollector = inject(configSettings.moduleCollector);
     this.requestInfoCollector = inject(configSettings.requestInfoCollector);
     this.submissionBatchSize = inject(configSettings.submissionBatchSize) || 50;
-    this.submissionAdapter = inject(configSettings.submissionAdapter);
-    this.submissionClient = inject(configSettings.submissionClient) || new DefaultSubmissionClient();
+    this.submissionClient = inject(configSettings.submissionClient);
     this.storage = inject(configSettings.storage) || new InMemoryStorageProvider();
     this.queue = inject(configSettings.queue) || new DefaultEventQueue(this);
 
@@ -321,7 +317,7 @@ export class Configuration implements IConfigurationSettings {
    * @param exclusions
    */
   public addDataExclusions(...exclusions: string[]) {
-    this._dataExclusions = Utils.addRange<string>(this._dataExclusions, ...exclusions);
+    this._dataExclusions = addRange<string>(this._dataExclusions, ...exclusions);
   }
 
   /**
@@ -477,7 +473,7 @@ export class Configuration implements IConfigurationSettings {
    * @param userAgentBotPatterns
    */
   public addUserAgentBotPatterns(...userAgentBotPatterns: string[]) {
-    this._userAgentBotPatterns = Utils.addRange<string>(this._userAgentBotPatterns, ...userAgentBotPatterns);
+    this._userAgentBotPatterns = addRange<string>(this._userAgentBotPatterns, ...userAgentBotPatterns);
   }
 
   /**
@@ -511,7 +507,7 @@ export class Configuration implements IConfigurationSettings {
     }
 
     if (!plugin.name) {
-      plugin.name = Utils.guid();
+      plugin.name = guid();
     }
 
     if (!plugin.priority) {
