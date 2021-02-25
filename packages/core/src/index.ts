@@ -53,14 +53,30 @@ export { IStorageItem } from './storage/IStorageItem.js';
 export { IStorageProvider } from './storage/IStorageProvider.js';
 export { KeyValueStorageBase } from './storage/KeyValueStorageBase.js';
 
-export { DefaultSubmissionClient } from './submission/DefaultSubmissionClient.js';
-export { ISubmissionAdapter } from './submission/ISubmissionAdapter.js';
 export { ISubmissionClient } from './submission/ISubmissionClient.js';
-export { SettingsResponse } from './submission/SettingsResponse.js';
-export { SubmissionCallback } from './submission/SubmissionCallback.js';
-export { SubmissionRequest } from './submission/SubmissionRequest.js';
-export { SubmissionResponse } from './submission/SubmissionResponse.js';
+export { Response } from './submission/Response.js';
+export {
+  FetchOptions,
+  SubmissionClientBase
+} from './submission/SubmissionClientBase.js';
 
 export { EventBuilder } from './EventBuilder.js';
 export { ExceptionlessClient } from './ExceptionlessClient.js';
-export { Utils } from './Utils.js';
+
+export {
+  addRange,
+  delay,
+  getHashCode,
+  getCookies,
+  guid,
+  merge,
+  parseVersion,
+  parseQueryString,
+  randomNumber,
+  isMatch,
+  isEmpty,
+  startsWith,
+  endsWith,
+  stringify,
+  toBoolean
+} from './Utils.js';

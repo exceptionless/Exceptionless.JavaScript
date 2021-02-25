@@ -1,7 +1,8 @@
 import {
   IModule,
   IModuleCollector,
-  Utils
+  getHashCode,
+  parseVersion
 } from '@exceptionless/core';
 
 export class DefaultModuleCollector implements IModuleCollector {
@@ -18,13 +19,13 @@ export class DefaultModuleCollector implements IModuleCollector {
           modules.push({
             module_id: index,
             name: scripts[index].src.split('?')[0],
-            version: Utils.parseVersion(scripts[index].src)
+            version: parseVersion(scripts[index].src)
           });
         } else if (scripts[index].innerHTML) {
           modules.push({
             module_id: index,
             name: 'Script Tag',
-            version: Utils.getHashCode(scripts[index].innerHTML).toString()
+            version: getHashCode(scripts[index].innerHTML).toString()
           });
         }
       }

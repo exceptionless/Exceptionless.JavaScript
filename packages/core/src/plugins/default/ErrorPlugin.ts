@@ -1,4 +1,4 @@
-import { Utils } from '../../Utils.js';
+import { stringify, isEmpty } from "../../Utils.js";
 import { EventPluginContext } from '../EventPluginContext.js';
 import { IEventPlugin } from '../IEventPlugin.js';
 
@@ -40,8 +40,8 @@ export class ErrorPlugin implements IEventPlugin {
 
         const result = await parser.parse(context, exception);
         if (result) {
-          const additionalData = JSON.parse(Utils.stringify(exception, config.dataExclusions.concat(ignoredProperties)));
-          if (!Utils.isEmpty(additionalData)) {
+          const additionalData = JSON.parse(stringify(exception, config.dataExclusions.concat(ignoredProperties)));
+          if (!isEmpty(additionalData)) {
             if (!result.data) {
               result.data = {};
             }

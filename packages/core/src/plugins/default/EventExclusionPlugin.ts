@@ -1,5 +1,5 @@
 import { IInnerError } from '../../models/IInnerError.js';
-import { Utils } from '../../Utils.js';
+import { toBoolean, startsWith, isMatch } from "../../Utils.js";
 import { EventPluginContext } from '../EventPluginContext.js';
 import { IEventPlugin } from '../IEventPlugin.js';
 
@@ -83,21 +83,21 @@ export class EventExclusionPlugin implements IEventPlugin {
 
     const value: string = configSettings[sourcePrefix + source];
     if (value) {
-      return isLog ? value: Utils.toBoolean(value);
+      return isLog ? value: toBoolean(value);
     }
 
     // sort object keys longest first, then alphabetically.
     const sortedKeys = Object.keys(configSettings).sort((a, b) => b.length - a.length || a.localeCompare(b));
     for (const index in sortedKeys) {
       const key: string = sortedKeys[index];
-      if (!Utils.startsWith(key.toLowerCase(), sourcePrefix)) {
+      if (!startsWith(key.toLowerCase(), sourcePrefix)) {
         continue;
       }
 
       // check for wildcard match
       const cleanKey: string = key.substring(sourcePrefix.length);
-      if (Utils.isMatch(source, [cleanKey])) {
-        return isLog ? configSettings[key] : Utils.toBoolean(configSettings[key]);
+      if (isMatch(source, [cleanKey])) {
+        return isLog ? configSettings[key] : toBoolean(configSettings[key]);
       }
     }
 

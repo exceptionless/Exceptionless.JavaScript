@@ -1,4 +1,4 @@
 export interface IManualStackingInfo {
   title?: string;
-  signature_data?: any;
+  signature_data?: { [key: string]: string };
 }

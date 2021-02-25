@@ -3,6 +3,7 @@ import { ContextData } from "../../src/plugins/ContextData.js";
 import { ExceptionlessClient } from "../../src/ExceptionlessClient.js";
 import { EventPluginContext } from "../../src/plugins/EventPluginContext.js";
 import { EventPluginManager } from "../../src/plugins/EventPluginManager.js";
+import { delay } from "../../src/Utils.js";
 
 beforeEach(() => {
   Configuration.defaults.updateSettingsWhenIdleInterval = -1;
@@ -25,7 +26,7 @@ describe('EventPluginManager', () => {
     }
 
     client.config.addPlugin('1', 1, async (ctx: EventPluginContext) => {
-      await new Promise(r => setTimeout(r, 25));
+      await delay(25);
       ctx.event.source = 'plugin 1';
     });
 
@@ -102,7 +103,7 @@ describe('EventPluginManager', () => {
     }
 
     client.config.addPlugin('1', 1, async () => {
-      await new Promise(() => setTimeout(done, 25));
+      await delay(25);
     });
 
     client.config.addPlugin('2', 2, () => {

@@ -1,10 +1,11 @@
-import { SettingsResponse } from '../submission/SettingsResponse.js';
+import { merge } from "../Utils.js";
 import { Configuration } from './Configuration.js';
-import { Utils } from '../Utils.js';
 
-interface ISettingsWithVersion {
-  version: number;
-  settings: { [key: string]: string };
+export class ClientSettings {
+  constructor(
+    public settings: { [key: string]: string },
+    public version: number
+  ) { }
 }
 
 export class SettingsManager {
@@ -17,6 +18,7 @@ export class SettingsManager {
    */
   private static _handlers: Array<(config: Configuration) => void> = [];
 
+  // TODO: see if this is still needed.
   public static onChanged(handler: (config: Configuration) => void): void {
     handler && this._handlers.push(handler);
   }
@@ -28,7 +30,7 @@ export class SettingsManager {
 
     const savedSettings = this.getSavedServerSettings(config);
     config.log.info(`Applying saved settings: v${savedSettings.version}`);
-    config.settings = Utils.merge(config.settings, savedSettings.settings);
+    config.settings = merge(config.settings, savedSettings.settings);
     this.changed(config);
   }
 
@@ -41,17 +43,17 @@ export class SettingsManager {
     return savedSettings.version || 0;
   }
 
-  public static checkVersion(version: number, config: Configuration): void {
+  public static async checkVersion(version: number, config: Configuration): Promise<void> {
     const currentVersion: number = this.getVersion(config);
     if (version <= currentVersion) {
       return;
     }
 
     config.log.info(`Updating settings from v${currentVersion} to v${version}`);
-    this.updateSettings(config, currentVersion);
+    await this.updateSettings(config, currentVersion);
   }
 
-  public static updateSettings(config: Configuration, version?: number): void {
+  public static async updateSettings(config: Configuration, version?: number): Promise<void> {
     if (!config || !config.enabled || this._isUpdatingSettings) {
       return;
     }
@@ -68,39 +70,32 @@ export class SettingsManager {
 
     config.log.info(`Checking for updated settings from: v${version}.`);
     this._isUpdatingSettings = true;
-    config.submissionClient.getSettings(config, version, (response: SettingsResponse) => {
-      try {
-        if (!config || !response || !response.success || !response.settings) {
-          config.log.warn(`${unableToUpdateMessage}: ${response.message}`);
-          return;
-        }
-
-        config.settings = Utils.merge(config.settings, response.settings);
-
-        // TODO: Store snapshot of settings after reading from config and attributes and use that to revert to defaults.
-        // Remove any existing server settings that are not in the new server settings.
-        const savedServerSettings = SettingsManager.getSavedServerSettings(config);
-        for (const key in savedServerSettings) {
-          if (response.settings[key]) {
-            continue;
-          }
-
-          delete config.settings[key];
-        }
-
-        const newSettings: ISettingsWithVersion = {
-          version: response.settingsVersion,
-          settings: response.settings
-        };
-
-        config.storage.settings.save(newSettings);
-
-        config.log.info(`Updated settings: v${newSettings.version}`);
-        this.changed(config);
-      } finally {
-        this._isUpdatingSettings = false;
+    const response = await config.submissionClient.getSettings(version);
+    try {
+      if (!config || !response || !response.success || !response.data) {
+        config.log.warn(`${unableToUpdateMessage}: ${response.message}`);
+        return;
       }
-    });
+
+      config.settings = merge(config.settings, response.data.settings);
+
+      // TODO: Store snapshot of settings after reading from config and attributes and use that to revert to defaults.
+      // Remove any existing server settings that are not in the new server settings.
+      const savedServerSettings = SettingsManager.getSavedServerSettings(config);
+      for (const key in savedServerSettings) {
+        if (response.data.settings[key]) {
+          continue;
+        }
+
+        delete config.settings[key];
+      }
+
+      config.storage.settings.save(response.data);
+      config.log.info(`Updated settings: v${response.data.version}`);
+      this.changed(config);
+    } finally {
+      this._isUpdatingSettings = false;
+    }
   }
 
   private static changed(config: Configuration) {
@@ -114,7 +109,7 @@ export class SettingsManager {
     }
   }
 
-  private static getSavedServerSettings(config: Configuration): ISettingsWithVersion {
+  private static getSavedServerSettings(config: Configuration): ClientSettings {
     const item = config.storage.settings.get()[0];
     if (item && item.value && item.value.version && item.value.settings) {
       return item.value;

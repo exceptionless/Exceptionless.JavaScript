@@ -1,9 +1,9 @@
 import {
   IConfigurationSettings,
-  Utils,
   ExceptionlessClient,
   Configuration,
-  SettingsManager
+  SettingsManager,
+  parseQueryString
 } from "@exceptionless/core";
 
 import { DefaultErrorParser } from './services/DefaultErrorParser.js';
@@ -11,7 +11,7 @@ import { DefaultModuleCollector } from './services/DefaultModuleCollector.js';
 import { DefaultRequestInfoCollector } from './services/DefaultRequestInfoCollector.js';
 import { BrowserStorage } from './storage/BrowserStorage.js';
 import { BrowserStorageProvider } from './storage/BrowserStorageProvider.js';
-import { DefaultSubmissionAdapter } from './submission/DefaultSubmissionAdapter.js';
+import { FetchSubmissionClient } from './submission/FetchSubmissionClient.js';
 
 function init() {
   function getDefaultsSettingsFromScriptTag(): IConfigurationSettings {
@@ -22,7 +22,7 @@ function init() {
     const scripts = document.getElementsByTagName('script');
     for (let index = 0; index < scripts.length; index++) {
       if (scripts[index].src && scripts[index].src.indexOf('/exceptionless') > -1) {
-        return Utils.parseQueryString(scripts[index].src.split('?').pop());
+        return parseQueryString(scripts[index].src.split('?').pop());
       }
     }
     return null;
@@ -82,7 +82,7 @@ function init() {
   defaults.errorParser = new DefaultErrorParser();
   defaults.moduleCollector = new DefaultModuleCollector();
   defaults.requestInfoCollector = new DefaultRequestInfoCollector();
-  defaults.submissionAdapter = new DefaultSubmissionAdapter();
+  defaults.submissionClient = new FetchSubmissionClient(ExceptionlessClient.default.config); // TODO: Figure out how to flow in the client settings.
 
   //TraceKit.report.subscribe(processUnhandledException);
   //TraceKit.extendToAsynchronousCallbacks();
@@ -100,4 +100,6 @@ function init() {
 //declare var $;
 
 init();
+
+// TODO: Export all services
 export { ExceptionlessClient };

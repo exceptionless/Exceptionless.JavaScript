@@ -6,8 +6,7 @@ import { IErrorParser } from '../services/IErrorParser.js';
 import { IModuleCollector } from '../services/IModuleCollector.js';
 import { IRequestInfoCollector } from '../services/IRequestInfoCollector.js';
 import { IStorageProvider } from '../storage/IStorageProvider.js';
-import { ISubmissionAdapter } from '../submission/ISubmissionAdapter.js';
-import { ISubmissionClient } from '../submission/ISubmissionClient.js';
+import { ISubmissionClient } from "../submission/ISubmissionClient.js";
 
 export interface IConfigurationSettings {
   apiKey?: string;
@@ -24,7 +23,6 @@ export interface IConfigurationSettings {
   requestInfoCollector?: IRequestInfoCollector;
   submissionBatchSize?: number;
   submissionClient?: ISubmissionClient;
-  submissionAdapter?: ISubmissionAdapter;
   storage?: IStorageProvider;
   queue?: IEventQueue;
 }

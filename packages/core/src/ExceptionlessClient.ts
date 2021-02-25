@@ -7,7 +7,6 @@ import { IUserDescription } from './models/IUserDescription.js';
 import { ContextData } from './plugins/ContextData.js';
 import { EventPluginContext } from './plugins/EventPluginContext.js';
 import { EventPluginManager } from './plugins/EventPluginManager.js';
-import { SubmissionResponse } from './submission/SubmissionResponse.js';
 
 export class ExceptionlessClient {
   /**
@@ -114,17 +113,17 @@ export class ExceptionlessClient {
     return this.createSessionStart().submit();
   }
 
-  public submitSessionEnd(sessionIdOrUserId: string): void {
+  public async submitSessionEnd(sessionIdOrUserId: string): Promise<void> {
     if (sessionIdOrUserId && this.config.enabled && this.config.isValid) {
       this.config.log.info(`Submitting session end: ${sessionIdOrUserId}`);
-      this.config.submissionClient.sendHeartbeat(sessionIdOrUserId, true, this.config);
+      await this.config.submissionClient.submitHeartbeat(sessionIdOrUserId, true);
     }
   }
 
-  public submitSessionHeartbeat(sessionIdOrUserId: string): void {
+  public async submitSessionHeartbeat(sessionIdOrUserId: string): Promise<void> {
     if (sessionIdOrUserId && this.config.enabled && this.config.isValid) {
       this.config.log.info(`Submitting session heartbeat: ${sessionIdOrUserId}`);
-      this.config.submissionClient.sendHeartbeat(sessionIdOrUserId, false, this.config);
+      await this.config.submissionClient.submitHeartbeat(sessionIdOrUserId, false);
     }
   }
 
@@ -192,19 +191,16 @@ export class ExceptionlessClient {
    * @param description The user's description of the event.
    * @param callback The submission response.
    */
-  public updateUserEmailAndDescription(referenceId: string, email: string, description: string, callback?: (response: SubmissionResponse) => void) {
+  public async updateUserEmailAndDescription(referenceId: string, email: string, description: string): Promise<void> {
     if (!referenceId || !email || !description || !this.config.enabled || !this.config.isValid) {
-      return callback && callback(new SubmissionResponse(500, 'cancelled'));
+      return;
     }
 
     const userDescription: IUserDescription = { email_address: email, description };
-    this.config.submissionClient.postUserDescription(referenceId, userDescription, this.config, (response: SubmissionResponse) => {
-      if (!response.success) {
-        this.config.log.error(`Failed to submit user email and description for event '${referenceId}': ${response.statusCode} ${response.message}`);
-      }
-
-      callback && callback(response);
-    });
+    const response = await this.config.submissionClient.submitUserDescription(referenceId, userDescription);
+    if (!response.success) {
+      this.config.log.error(`Failed to submit user email and description for event '${referenceId}': ${response.status} ${response.message}`);
+    }
   }
 
   /**
@@ -215,14 +211,15 @@ export class ExceptionlessClient {
     return this.config.lastReferenceIdManager.getLast();
   }
 
+  // TODO: Look into better async scheduling..
   private updateSettingsTimer(initialDelay?: number) {
     this._timeoutId = clearTimeout(this._timeoutId);
-    this._timeoutId = clearInterval(this._intervalId);
+    this._intervalId = clearInterval(this._intervalId);
 
     const interval = this.config.updateSettingsWhenIdleInterval;
     if (interval > 0) {
       this.config.log.info(`Update settings every ${interval}ms (${initialDelay || 0}ms delay)`);
-      const updateSettings = () => SettingsManager.updateSettings(this.config);
+      const updateSettings = () => void SettingsManager.updateSettings(this.config);
       if (initialDelay > 0) {
         this._timeoutId = setTimeout(updateSettings, initialDelay);
       }
