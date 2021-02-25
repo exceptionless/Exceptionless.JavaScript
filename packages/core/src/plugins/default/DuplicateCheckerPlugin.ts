@@ -23,7 +23,7 @@ export class DuplicateCheckerPlugin implements IEventPlugin {
     }, interval);
   }
 
-  public run(context: EventPluginContext, next?: () => void): void {
+  public run(context: EventPluginContext): Promise<void> {
     function getHashCode(e: IInnerError): number {
       let hash = 0;
       while (e) {
@@ -70,7 +70,7 @@ export class DuplicateCheckerPlugin implements IEventPlugin {
       }
     }
 
-    next && next();
+    return Promise.resolve();
   }
 }
 

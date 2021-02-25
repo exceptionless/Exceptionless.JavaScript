@@ -13,7 +13,7 @@ export class HeartbeatPlugin implements IEventPlugin {
     this._interval = heartbeatInterval >= 30000 ? heartbeatInterval : 60000;
   }
 
-  public run(context: EventPluginContext, next?: () => void): void {
+  public run(context: EventPluginContext): Promise<void> {
     clearInterval(this._intervalId);
 
     const user: IUserInfo = context.event.data['@user'];
@@ -21,6 +21,6 @@ export class HeartbeatPlugin implements IEventPlugin {
       this._intervalId = setInterval(() => context.client.submitSessionHeartbeat(user.identity), this._interval);
     }
 
-    next && next();
+    return Promise.resolve();
   }
 }

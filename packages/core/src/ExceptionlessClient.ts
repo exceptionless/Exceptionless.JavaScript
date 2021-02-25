@@ -42,8 +42,8 @@ export class ExceptionlessClient {
     return this.createEvent(pluginContextData).setType('error');
   }
 
-  public submitException(exception: Error, callback?: (context: EventPluginContext) => void): void {
-    this.createException(exception).submit(callback);
+  public submitException(exception: Error): Promise<EventPluginContext> {
+    return this.createException(exception).submit();
   }
 
   public createUnhandledException(exception: Error, submissionMethod?: string): EventBuilder {
@@ -54,16 +54,16 @@ export class ExceptionlessClient {
     return builder;
   }
 
-  public submitUnhandledException(exception: Error, submissionMethod?: string, callback?: (context: EventPluginContext) => void) {
-    this.createUnhandledException(exception, submissionMethod).submit(callback);
+  public submitUnhandledException(exception: Error, submissionMethod?: string): Promise<EventPluginContext> {
+    return this.createUnhandledException(exception, submissionMethod).submit();
   }
 
   public createFeatureUsage(feature: string): EventBuilder {
     return this.createEvent().setType('usage').setSource(feature);
   }
 
-  public submitFeatureUsage(feature: string, callback?: (context: EventPluginContext) => void): void {
-    this.createFeatureUsage(feature).submit(callback);
+  public submitFeatureUsage(feature: string): Promise<EventPluginContext> {
+    return this.createFeatureUsage(feature).submit();
   }
 
   public createLog(message: string): EventBuilder;
@@ -91,27 +91,27 @@ export class ExceptionlessClient {
     return builder;
   }
 
-  public submitLog(message: string): void;
-  public submitLog(source: string, message: string): void;
-  public submitLog(source: string, message: string, level: string, callback?: (context: EventPluginContext) => void): void;
-  public submitLog(sourceOrMessage: string, message?: string, level?: string, callback?: (context: EventPluginContext) => void): void {
-    this.createLog(sourceOrMessage, message, level).submit(callback);
+  public submitLog(message: string): Promise<EventPluginContext>
+  public submitLog(source: string, message: string): Promise<EventPluginContext>
+  public submitLog(source: string, message: string, level: string): Promise<EventPluginContext>;
+  public submitLog(sourceOrMessage: string, message?: string, level?: string): Promise<EventPluginContext> {
+    return this.createLog(sourceOrMessage, message, level).submit();
   }
 
   public createNotFound(resource: string): EventBuilder {
     return this.createEvent().setType('404').setSource(resource);
   }
 
-  public submitNotFound(resource: string, callback?: (context: EventPluginContext) => void): void {
-    this.createNotFound(resource).submit(callback);
+  public submitNotFound(resource: string): Promise<EventPluginContext> {
+    return this.createNotFound(resource).submit();
   }
 
   public createSessionStart(): EventBuilder {
     return this.createEvent().setType('session');
   }
 
-  public submitSessionStart(callback?: (context: EventPluginContext) => void): void {
-    this.createSessionStart().submit(callback);
+  public submitSessionStart(): Promise<EventPluginContext> {
+    return this.createSessionStart().submit();
   }
 
   public submitSessionEnd(sessionIdOrUserId: string): void {
@@ -139,23 +139,17 @@ export class ExceptionlessClient {
    * @param pluginContextData Any contextual data objects to be used by Exceptionless plugins to gather default information for inclusion in the report information.
    * @param callback
    */
-  public submitEvent(event: IEvent, pluginContextData?: ContextData, callback?: (context: EventPluginContext) => void): void {
-    function cancelled(eventPluginContext: EventPluginContext) {
-      if (eventPluginContext) {
-        eventPluginContext.cancelled = true;
-      }
-
-      return callback && callback(eventPluginContext);
-    }
-
+  public async submitEvent(event: IEvent, pluginContextData?: ContextData): Promise<EventPluginContext> {
     const context = new EventPluginContext(this, event, pluginContextData);
     if (!event) {
-      return cancelled(context);
+      context.cancelled = true;
+      return context;
     }
 
     if (!this.config.enabled || !this.config.isValid) {
       this.config.log.info('Event submission is currently disabled.');
-      return cancelled(context);
+      context.cancelled = true;
+      return context;
     }
 
     if (!event.data) {
@@ -166,30 +160,29 @@ export class ExceptionlessClient {
       event.tags = [];
     }
 
-    EventPluginManager.run(context, (ctx: EventPluginContext) => {
-      const config = ctx.client.config;
-      const ev = ctx.event;
+    await EventPluginManager.run(context);
+    if (context.cancelled) {
+      return context;
+    }
 
-      if (!ctx.cancelled) {
-        // ensure all required data
-        if (!ev.type || ev.type.length === 0) {
-          ev.type = 'log';
-        }
+    const config = context.client.config;
+    const ev = context.event;
 
-        if (!ev.date) {
-          ev.date = new Date();
-        }
+    // ensure all required data
+    if (!ev.type || ev.type.length === 0) {
+      ev.type = 'log';
+    }
 
-        config.queue.enqueue(ev);
+    if (!ev.date) {
+      ev.date = new Date();
+    }
 
-        if (ev.reference_id && ev.reference_id.length > 0) {
-          ctx.log.info(`Setting last reference id '${ev.reference_id}'`);
-          config.lastReferenceIdManager.setLast(ev.reference_id);
-        }
-      }
+    config.queue.enqueue(ev);
 
-      callback && callback(ctx);
-    });
+    if (ev.reference_id && ev.reference_id.length > 0) {
+      context.log.info(`Setting last reference id '${ev.reference_id}'`);
+      config.lastReferenceIdManager.setLast(ev.reference_id);
+    }
   }
 
   /**
@@ -240,6 +233,7 @@ export class ExceptionlessClient {
     }
   }
 
+  // TODO: Remove or rename.
   /**
    * The default ExceptionlessClient instance.
    * @type {ExceptionlessClient}

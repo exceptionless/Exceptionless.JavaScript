@@ -6,7 +6,7 @@ export class ModuleInfoPlugin implements IEventPlugin {
   public priority: number = 50;
   public name: string = 'ModuleInfoPlugin';
 
-  public run(context: EventPluginContext, next?: () => void): void {
+  public run(context: EventPluginContext): Promise<void> {
     const ERROR_KEY: string = '@error'; // optimization for minifier.
 
     const collector = context.client.config.moduleCollector;
@@ -17,6 +17,6 @@ export class ModuleInfoPlugin implements IEventPlugin {
       }
     }
 
-    next && next();
+    return Promise.resolve();
   }
 }

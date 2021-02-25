@@ -6,7 +6,7 @@ export class ErrorPlugin implements IEventPlugin {
   public priority: number = 30;
   public name: string = 'ErrorPlugin';
 
-  public run(context: EventPluginContext, next?: () => void): void {
+  public async run(context: EventPluginContext): Promise<void> {
     const ERROR_KEY: string = '@error'; // optimization for minifier.
     const ignoredProperties: string[] = [
       'arguments',
@@ -38,7 +38,7 @@ export class ErrorPlugin implements IEventPlugin {
           throw new Error('No error parser was defined.');
         }
 
-        const result = parser.parse(context, exception);
+        const result = await parser.parse(context, exception);
         if (result) {
           const additionalData = JSON.parse(Utils.stringify(exception, config.dataExclusions.concat(ignoredProperties)));
           if (!Utils.isEmpty(additionalData)) {
@@ -52,7 +52,5 @@ export class ErrorPlugin implements IEventPlugin {
         }
       }
     }
-
-    next && next();
   }
 }

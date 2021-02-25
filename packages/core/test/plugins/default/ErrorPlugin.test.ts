@@ -33,60 +33,60 @@ describe('ErrorPlugin', () => {
     } = createFixture());
   });
 
-  function processError(error) {
+  function processError(error): Promise<void> {
     const exception = throwAndCatch(error);
     contextData.setException(exception);
-    target.run(context);
+    return target.run(context);
   }
 
   describe('additional data', () => {
     describeForCapturedExceptions((exception) => {
-      test('should ignore default error properties', () => {
+      test('should ignore default error properties', async () => {
         contextData.setException(exception);
-        target.run(context);
+        await target.run(context);
         const additionalData = getAdditionalData(event);
         expect(additionalData).toBeNull();
       });
 
     });
 
-    test('should add custom properties to additional data', () => {
+    test('should add custom properties to additional data', async () => {
       const error = {
         someProperty: 'Test'
       };
-      processError(error);
+      await processError(error);
       const additionalData = getAdditionalData(event);
       expect(additionalData).not.toBeNull();
       expect(additionalData.someProperty).toBe('Test');
     });
 
-    test('should support custom exception types', () => {
-      processError(new BaseTestError());
+    test('should support custom exception types', async () => {
+      await processError(new BaseTestError());
       const additionalData = getAdditionalData(event);
       expect(additionalData).not.toBeNull();
       expect(additionalData.someProperty).toBe('Test');
     });
 
-    test('should support inherited properties', () => {
-      processError(new DerivedTestError());
+    test('should support inherited properties', async () => {
+      await processError(new DerivedTestError());
       const additionalData = getAdditionalData(event);
       expect(additionalData).not.toBeNull();
       expect(additionalData.someProperty).toBe('Test');
       expect(additionalData.someOtherProperty).toBe('Test2');
     });
 
-    test('shouldn\'t set empty additional data', () => {
-      processError({});
+    test('shouldn\'t set empty additional data', async () => {
+      await processError({});
       const additionalData = getAdditionalData(event);
       expect(additionalData).toBeNull();
     });
 
-    test('should ignore functions', () => {
+    test('should ignore functions', async () => {
       const exception: any = new Error('Error with function');
       exception.someFunction = () => { };
       contextData.setException(exception);
 
-      target.run(context);
+      await target.run(context);
 
       const additionalData = getAdditionalData(event);
       expect(additionalData).toBeNull();

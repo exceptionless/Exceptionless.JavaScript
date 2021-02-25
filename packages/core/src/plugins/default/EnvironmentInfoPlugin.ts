@@ -6,7 +6,7 @@ export class EnvironmentInfoPlugin implements IEventPlugin {
   public priority: number = 80;
   public name: string = 'EnvironmentInfoPlugin';
 
-  public run(context: EventPluginContext, next?: () => void): void {
+  public run(context: EventPluginContext): Promise<void> {
     const ENVIRONMENT_KEY: string = '@environment'; // optimization for minifier.
 
     const collector = context.client.config.environmentInfoCollector;
@@ -17,6 +17,6 @@ export class EnvironmentInfoPlugin implements IEventPlugin {
       }
     }
 
-    next && next();
+    return Promise.resolve();
   }
 }

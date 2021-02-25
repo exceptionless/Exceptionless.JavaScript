@@ -51,8 +51,8 @@ describe('Configuration', () => {
       config.removePlugin(config.plugins[0]);
     }
 
-    config.addPlugin('test', 20, () => { });
-    config.addPlugin('test', 20, () => { });
+    config.addPlugin('test', 20, () => Promise.resolve());
+    config.addPlugin('test', 20, () => Promise.resolve());
     expect(config.plugins.length).toBe(1);
   });
 
@@ -63,7 +63,7 @@ describe('Configuration', () => {
       config.removePlugin(config.plugins[0]);
     }
 
-    config.addPlugin(null, null, () => { });
+    config.addPlugin(null, null, () => Promise.resolve());
     expect(config.plugins.length).toBe(1);
     expect(config.plugins[0].name).not.toBeNull();
     expect(config.plugins[0].priority).toBe(0);
@@ -76,9 +76,9 @@ describe('Configuration', () => {
       config.removePlugin(config.plugins[0]);
     }
 
-    config.addPlugin('3', 3, () => { });
-    config.addPlugin('1', 1, () => { });
-    config.addPlugin('2', 2, () => { });
+    config.addPlugin('3', 3, () => Promise.resolve());
+    config.addPlugin('1', 1, () => Promise.resolve());
+    config.addPlugin('2', 2, () => Promise.resolve());
     expect(config.plugins.length).toBe(3);
     expect(config.plugins[0].priority).toBe(1);
     expect(config.plugins[1].priority).toBe(2);

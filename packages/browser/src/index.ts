@@ -6,8 +6,6 @@ import {
   SettingsManager
 } from "@exceptionless/core";
 
-import * as TraceKit from 'TraceKit';
-
 import { DefaultErrorParser } from './services/DefaultErrorParser.js';
 import { DefaultModuleCollector } from './services/DefaultModuleCollector.js';
 import { DefaultRequestInfoCollector } from './services/DefaultRequestInfoCollector.js';
@@ -30,11 +28,11 @@ function init() {
     return null;
   }
 
-  function processUnhandledException(stackTrace: TraceKit.StackTrace, options?: any): void {
-    const builder = ExceptionlessClient.default.createUnhandledException(new Error(stackTrace.message || (options || {}).status || 'Script error'), 'onerror');
-    builder.pluginContextData['@@_TraceKit.StackTrace'] = stackTrace;
-    builder.submit();
-  }
+  //function processUnhandledException(stackTrace: TraceKit.StackTrace, options?: any): void {
+  //  const builder = ExceptionlessClient.default.createUnhandledException(new Error(stackTrace.message || (options || {}).status || 'Script error'), 'onerror');
+  //  builder.pluginContextData['@@_TraceKit.StackTrace'] = stackTrace;
+  //  builder.submit();
+  //}
 
   if (typeof document === 'undefined') {
     return;
@@ -86,8 +84,8 @@ function init() {
   defaults.requestInfoCollector = new DefaultRequestInfoCollector();
   defaults.submissionAdapter = new DefaultSubmissionAdapter();
 
-  TraceKit.report.subscribe(processUnhandledException);
-  TraceKit.extendToAsynchronousCallbacks();
+  //TraceKit.report.subscribe(processUnhandledException);
+  //TraceKit.extendToAsynchronousCallbacks();
 
   // window && window.addEventListener && window.addEventListener('beforeunload', function () {
   //   ExceptionlessClient.default.config.queue.process(true);
