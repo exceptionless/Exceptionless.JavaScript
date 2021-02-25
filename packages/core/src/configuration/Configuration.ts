@@ -502,8 +502,8 @@ export class Configuration implements IConfigurationSettings {
    * @param priority Used to determine plugins priority.
    * @param pluginAction A function that is run.
    */
-  public addPlugin(name: string, priority: number, pluginAction: (context: EventPluginContext, next?: () => void) => void): void;
-  public addPlugin(pluginOrName: IEventPlugin | string, priority?: number, pluginAction?: (context: EventPluginContext, next?: () => void) => void): void {
+  public addPlugin(name: string, priority: number, pluginAction: (context: EventPluginContext) => Promise<void>): void;
+  public addPlugin(pluginOrName: IEventPlugin | string, priority?: number, pluginAction?: (context: EventPluginContext) => Promise<void>): void {
     const plugin: IEventPlugin = pluginAction ? { name: pluginOrName as string, priority, run: pluginAction } : pluginOrName as IEventPlugin;
     if (!plugin || !plugin.run) {
       this.log.error('Add plugin failed: Run method not defined');

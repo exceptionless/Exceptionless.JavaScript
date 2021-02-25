@@ -45,6 +45,6 @@
   },
   "dependencies": {
     "@exceptionless/core": "2.0.0-pre",
-    "tracekit": "0.4.6"
+    "stacktrace-js": "2.0.2"
   }
 }

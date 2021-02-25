@@ -6,7 +6,7 @@ import { IEvent } from "../../../src/models/IEvent.js";
 // TODO: This should use the real object instances and inject the error parser.
 export function createFixture(): { contextData: ContextData, context: EventPluginContext, client: any, event: IEvent } {
   const errorParser: IErrorParser = {
-    parse: (c: EventPluginContext, exception: Error) => ({
+    parse: (c: EventPluginContext, exception: Error) => Promise.resolve({
       type: exception.name,
       message: exception.message,
       stack_trace: (exception as any).testStack || null

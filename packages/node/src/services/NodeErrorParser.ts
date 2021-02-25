@@ -1,21 +1,33 @@
-import { parse } from 'stack-trace'
+import { parse as fromError } from 'stack-trace'
 
 import {
   EventPluginContext,
   IError,
   IErrorParser,
+  IParameter,
   IStackFrame
 } from '@exceptionless/core';
 
 export class NodeErrorParser implements IErrorParser {
-  public parse(context: EventPluginContext, exception: Error): IError {
-    function getStackFrames(frames: any[]): IStackFrame[] {
-      const result: IStackFrame[] = [];
+  public parse(context: EventPluginContext, exception: Error): Promise<IError> {
+    function getParameters(parameters: string | string[]): IParameter[] {
+      const params: string[] = (typeof parameters === 'string' ? [parameters] : parameters) || [];
 
-      for (const frame of frames) {
-        result.push({
+      const items: IParameter[] = [];
+      for (const param of params) {
+        items.push({ name: param });
+      }
+
+      return items;
+    }
+
+    function getStackFrames(stackFrames: any[]): IStackFrame[] {
+      const frames: IStackFrame[] = [];
+
+      for (const frame of stackFrames) {
+        frames.push({
           name: frame.getMethodName() || frame.getFunctionName(),
-          // parameters: frame.args,
+          parameters: getParameters(frame.getArgs()),
           file_name: frame.getFileName(),
           line_number: frame.getLineNumber() || 0,
           column: frame.getColumnNumber() || 0,
@@ -26,18 +38,18 @@ export class NodeErrorParser implements IErrorParser {
         });
       }
 
-      return result;
+      return frames;
     }
 
-    if (!parse) {
-      throw new Error('Unable to load the stack trace library.');
+    const result = fromError(exception);
+    if (!result) {
+      throw new Error('Unable to parse the exception stack trace.');
     }
 
-    const stackFrames = parse(exception) || [];
-    return {
+    return Promise.resolve({
       type: exception.name || 'Error',
       message: exception.message,
-      stack_trace: getStackFrames(stackFrames)
-    };
+      stack_trace: getStackFrames(result || [])
+    });
   }
 }

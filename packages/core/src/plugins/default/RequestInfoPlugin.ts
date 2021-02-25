@@ -7,7 +7,7 @@ export class RequestInfoPlugin implements IEventPlugin {
   public priority: number = 70;
   public name: string = 'RequestInfoPlugin';
 
-  public run(context: EventPluginContext, next?: () => void): void {
+  public run(context: EventPluginContext): Promise<void> {
     const REQUEST_KEY: string = '@request'; // optimization for minifier.
 
     const config = context.client.config;
@@ -24,6 +24,6 @@ export class RequestInfoPlugin implements IEventPlugin {
       }
     }
 
-    next && next();
+    return Promise.resolve();
   }
 }

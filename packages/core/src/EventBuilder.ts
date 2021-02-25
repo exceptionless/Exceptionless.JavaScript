@@ -202,8 +202,8 @@ export class EventBuilder {
     return this;
   }
 
-  public submit(callback?: (context: EventPluginContext) => void): void {
-    this.client.submitEvent(this.target, this.pluginContextData, callback);
+  public submit(): Promise<EventPluginContext> {
+    return this.client.submitEvent(this.target, this.pluginContextData);
   }
 
   private isValidIdentifier(value: string): boolean {

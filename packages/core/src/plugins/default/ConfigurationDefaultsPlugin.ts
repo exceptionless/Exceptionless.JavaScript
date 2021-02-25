@@ -6,7 +6,7 @@ export class ConfigurationDefaultsPlugin implements IEventPlugin {
   public priority: number = 10;
   public name: string = 'ConfigurationDefaultsPlugin';
 
-  public run(context: EventPluginContext, next?: () => void): void {
+  public run(context: EventPluginContext): Promise<void> {
     const config = context.client.config;
     const defaultTags: string[] = config.defaultTags || [];
     for (const tag of defaultTags) {
@@ -25,6 +25,6 @@ export class ConfigurationDefaultsPlugin implements IEventPlugin {
       }
     }
 
-    next && next();
+    return Promise.resolve();
   }
 }

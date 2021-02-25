@@ -7,7 +7,7 @@ export class EventExclusionPlugin implements IEventPlugin {
   public priority: number = 45;
   public name: string = 'EventExclusionPlugin';
 
-  public run(context: EventPluginContext, next?: () => void): void {
+  public run(context: EventPluginContext): Promise<void> {
     const ev = context.event;
     const log = context.log;
     const settings = context.client.config.settings;
@@ -35,7 +35,7 @@ export class EventExclusionPlugin implements IEventPlugin {
       context.cancelled = true;
     }
 
-    next && next();
+    return Promise.resolve();
   }
 
   public getLogLevel(level: string): number {

@@ -6,53 +6,55 @@ import {
   IStackFrame
 } from '@exceptionless/core';
 
-import * as TraceKit from 'TraceKit';
+import {
+  fromError,
+  StackFrame
+} from 'stacktrace-js';
 
 export class DefaultErrorParser implements IErrorParser {
-  public parse(context: EventPluginContext, exception: Error): IError {
+  public async parse(context: EventPluginContext, exception: Error): Promise<IError> {
     function getParameters(parameters: string | string[]): IParameter[] {
       const params: string[] = (typeof parameters === 'string' ? [parameters] : parameters) || [];
 
-      const result: IParameter[] = [];
+      const items: IParameter[] = [];
       for (const param of params) {
-        result.push({ name: param });
+        items.push({ name: param });
       }
 
-      return result;
+      return items;
     }
 
-    function getStackFrames(stackFrames: TraceKit.StackFrame[]): IStackFrame[] {
+    function getStackFrames(stackFrames: StackFrame[]): IStackFrame[] {
       const ANONYMOUS: string = '<anonymous>';
       const frames: IStackFrame[] = [];
 
       for (const frame of stackFrames) {
+        const fileName: string = frame.getFileName();
         frames.push({
-          name: (frame.func || ANONYMOUS).replace('?', ANONYMOUS),
-          parameters: getParameters(frame.args),
-          file_name: frame.url,
-          line_number: frame.line || 0,
-          column: frame.column || 0
+          name: (frame.getFunctionName() || ANONYMOUS).replace('?', ANONYMOUS),
+          parameters: getParameters(frame.getArgs()),
+          file_name: fileName,
+          line_number: frame.getLineNumber() || 0,
+          column: frame.getColumnNumber() || 0,
+          data: {
+            is_native: frame.getIsNative() || (fileName && fileName[0] !== '/' && fileName[0] !== '.')
+          }
         });
       }
 
       return frames;
     }
 
-    const TRACEKIT_STACK_TRACE_KEY: string = '@@_TraceKit.StackTrace'; // optimization for minifier.
-
-    const stackTrace: TraceKit.StackTrace = context.contextData[TRACEKIT_STACK_TRACE_KEY]
-      ? context.contextData[TRACEKIT_STACK_TRACE_KEY]
-      : TraceKit.computeStackTrace(exception, 25);
-
-    if (!stackTrace) {
-      throw new Error('Unable to parse the exceptions stack trace.');
+    const result: StackFrame[] = await fromError(exception);
+    if (!result) {
+      throw new Error('Unable to parse the exception stack trace.');
     }
 
-    const message = typeof (exception) === 'string' ? exception as any : undefined;
-    return {
-      type: stackTrace.name || 'Error',
-      message: stackTrace.message || exception.message || message,
-      stack_trace: getStackFrames(stackTrace.stack || [])
-    };
+    // TODO: Test with reference error.
+    return Promise.resolve({
+      type: exception.name || 'Error',
+      message: exception.message,
+      stack_trace: getStackFrames(result || [])
+    });
   }
 }

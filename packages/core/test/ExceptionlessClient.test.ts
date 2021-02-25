@@ -11,7 +11,7 @@ describe('ExceptionlessClient', () => {
     Configuration.defaults.submissionAdapter = new InMemorySubmissionAdapter();
   });
 
-  test('should use event reference ids', done => {
+  test('should use event reference ids', async () => {
     const client = new ExceptionlessClient({
       apiKey: 'LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw',
       serverUrl: 'http://localhost:5000'
@@ -20,23 +20,19 @@ describe('ExceptionlessClient', () => {
     expect(client.config.lastReferenceIdManager.getLast()).toBeNull();
 
     const error = createException();
-    client.submitException(error, () => {
-      expect(client.config.lastReferenceIdManager.getLast()).toBeNull();
-    });
+    await client.submitException(error);
+    expect(client.config.lastReferenceIdManager.getLast()).toBeNull();
 
     const numberOfPlugins = client.config.plugins.length;
     client.config.useReferenceIds();
     expect(client.config.plugins.length).toBe(numberOfPlugins + 1);
 
-    client.submitException(error, (context: EventPluginContext) => {
-      if (!context.cancelled) {
-        expect(client.config.lastReferenceIdManager.getLast()).not.toBeNull();
-      } else {
-        expect(client.config.lastReferenceIdManager.getLast()).toBeNull();
-      }
-
-      done();
-    });
+    const context = await client.submitException(error);
+    if (!context.cancelled) {
+      expect(client.config.lastReferenceIdManager.getLast()).not.toBeNull();
+    } else {
+      expect(client.config.lastReferenceIdManager.getLast()).toBeNull();
+    }
   });
 
   test('should accept null source', () => {
