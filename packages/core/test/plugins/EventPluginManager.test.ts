@@ -90,7 +90,7 @@ describe('EventPluginManager', () => {
     expect(context.cancelled).toBe(true);
   });
 
-  test('should cancel via timeout.', async done => {
+  test('should cancel via timeout.', async () => {
     const client = new ExceptionlessClient({
       apiKey: 'LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw',
       serverUrl: 'http://localhost:5000'

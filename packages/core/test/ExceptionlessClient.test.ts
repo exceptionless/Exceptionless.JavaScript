@@ -2,13 +2,10 @@
 
 import { Configuration } from "../src/configuration/Configuration.js";
 import { ExceptionlessClient } from "../src/ExceptionlessClient.js";
-import { EventPluginContext } from "../src/plugins/EventPluginContext.js";
-import { InMemorySubmissionAdapter } from "./submission/InMemorySubmissionAdapter.js";
 
 describe('ExceptionlessClient', () => {
   beforeEach(() => {
     Configuration.defaults.updateSettingsWhenIdleInterval = -1;
-    Configuration.defaults.submissionAdapter = new InMemorySubmissionAdapter();
   });
 
   test('should use event reference ids', async () => {

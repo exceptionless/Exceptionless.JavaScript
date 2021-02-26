@@ -3,6 +3,7 @@ import { ExceptionlessClient } from "../../../src/ExceptionlessClient.js";
 import { EventPluginContext } from "../../../src/plugins/EventPluginContext.js";
 import { IInnerError } from "../../../src/models/IInnerError.js";
 import { IStackFrame } from "../../../src/models/IStackFrame.js";
+import { delay } from "../../../src/Utils.js";
 
 const Exception1StackTrace = [
   {
@@ -48,7 +49,7 @@ describe('DuplicateCheckerPlugin', () => {
     plugin = new DuplicateCheckerPlugin(() => now, 50);
   });
 
-  function run(stackTrace?: IStackFrame[]) {
+  function run(stackTrace?: IStackFrame[]): Promise<EventPluginContext> {
     // TODO: Generate unique stack traces based on test data.
     const context = new EventPluginContext(client, {
       type: 'error',
@@ -61,19 +62,19 @@ describe('DuplicateCheckerPlugin', () => {
       }
     });
 
-    plugin.run(context);
+    await plugin.run(context);
     return context;
   }
 
-  test('should ignore duplicate within window', done => {
+  test('should ignore duplicate within window', async () => {
     run(Exception1StackTrace);
 
     const contextOfSecondRun = run(Exception1StackTrace);
     expect(contextOfSecondRun.cancelled).toBe(true);
+    await delay(100);
     setTimeout(() => {
       expect(contextOfSecondRun.event.count).toBe(1);
 
-      done();
     }, 100);
   });
 

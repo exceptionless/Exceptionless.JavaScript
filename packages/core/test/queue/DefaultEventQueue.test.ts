@@ -1,7 +1,6 @@
 import { Configuration } from "../../src/configuration/Configuration.js";
 import { IEvent } from "../../src/models/IEvent.js";
-
-import { InMemorySubmissionAdapter } from "../submission/InMemorySubmissionAdapter.js";
+import { delay } from "../../src/Utils.js";
 
 describe('DefaultEventQueue', () => {
   let config: Configuration;
@@ -9,8 +8,7 @@ describe('DefaultEventQueue', () => {
   beforeEach(() => {
     config = new Configuration({
       apiKey: 'LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw',
-      serverUrl: 'http://localhost:5000',
-      submissionAdapter: new InMemorySubmissionAdapter()
+      serverUrl: 'http://localhost:5000'
     });
 
     expect(config.storage.queue.get().length).toBe(0);
@@ -48,21 +46,18 @@ describe('DefaultEventQueue', () => {
     expect(config.storage.queue.get().length).toBe(0);
   });
 
-  test('should suspend processing', done => {
+  test('should suspend processing', async () => {
     config.queue.suspendProcessing(.0001);
 
     const event: IEvent = { type: 'log', reference_id: '123454321' };
     config.queue.enqueue(event);
     expect(config.storage.queue.get().length).toBe(1);
 
-    setTimeout(() => {
-      if (!(config.queue as any)._suspendProcessingUntil) {
-        expect(config.storage.queue.get().length).toBe(0);
-      } else {
-        expect(config.storage.queue.get().length).toBe(1);
-      }
-
-      done();
-    }, 25);
+    await delay(25);
+    if (!(config.queue as any)._suspendProcessingUntil) {
+      expect(config.storage.queue.get().length).toBe(0);
+    } else {
+      expect(config.storage.queue.get().length).toBe(1);
+    }
   });
 });
