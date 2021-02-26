@@ -15,13 +15,15 @@ export { ManualStackingInfo } from "./models/data/ManualStackingInfo.js";
 export { RequestInfo } from "./models/data/RequestInfo.js";
 export { UserDescription } from "./models/data/UserDescription.js";
 export { UserInfo } from "./models/data/UserInfo.js";
+export { ModuleInfo } from "./models/data/ModuleInfo.js";
 
-export { ErrorInfo } from "./models/data/error/ErrorInfo.js";
-export { InnerErrorInfo } from "./models/data/error/InnerErrorInfo.js";
-export { MethodInfo } from "./models/data/error/MethodInfo.js";
-export { ModuleInfo } from "./models/data/error/ModuleInfo.js";
-export { ParameterInfo } from "./models/data/error/ParameterInfo.js";
-export { StackFrameInfo } from "./models/data/error/StackFrameInfo.js";
+export {
+  ErrorInfo,
+  InnerErrorInfo,
+  MethodInfo,
+  ParameterInfo,
+  StackFrameInfo,
+} from "./models/data/ErrorInfo.js";
 
 export { ConfigurationDefaultsPlugin } from "./plugins/default/ConfigurationDefaultsPlugin.js";
 export { DuplicateCheckerPlugin } from "./plugins/default/DuplicateCheckerPlugin.js";

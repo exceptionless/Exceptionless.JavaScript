@@ -1,4 +1,4 @@
-import { ModuleInfo } from "../models/data/error/ModuleInfo.js";
+import { ModuleInfo } from "../models/data/ModuleInfo.js";
 
 export interface IModuleCollector {
   getModules(): ModuleInfo[];

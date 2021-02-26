@@ -1,4 +1,4 @@
-import { InnerErrorInfo } from "../../models/data/error/InnerErrorInfo.js";
+import { InnerErrorInfo } from "../../models/data/ErrorInfo.js";
 import { isMatch, startsWith, toBoolean } from "../../Utils.js";
 import { EventPluginContext } from "../EventPluginContext.js";
 import { IEventPlugin } from "../IEventPlugin.js";
