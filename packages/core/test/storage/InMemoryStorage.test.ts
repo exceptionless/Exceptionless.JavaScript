@@ -1,4 +1,4 @@
-import { IEvent } from "../../src/models/IEvent.js";
+import { Event } from "../../src/models/Event.js";
 import { InMemoryStorage } from "../../src/storage/InMemoryStorage.js";
 import { IStorage } from "../../src/storage/IStorage.js";
 import { IStorageItem } from "../../src/storage/IStorageItem.js";
@@ -26,8 +26,8 @@ export function describeStorage(
     test("should save events", () => {
       let storage = storageFactory();
       const key = "ex-q-";
-      const event1: IEvent = { type: "log", reference_id: key + "123454321" };
-      const event2: IEvent = { type: "log", reference_id: key + "098765432" };
+      const event1: Event = { type: "log", reference_id: key + "123454321" };
+      const event2: Event = { type: "log", reference_id: key + "098765432" };
       expect(storage.get().length).toBe(0);
       storage.save(event1);
       expect(storage.get().length).toBe(1);
@@ -43,12 +43,12 @@ export function describeStorage(
     test("should get saved events", () => {
       let storage = storageFactory();
       const key = "ex-q-";
-      const event1: IEvent = { type: "log", reference_id: key + "11" };
-      const event2: IEvent = { type: "log", reference_id: key + "12" };
-      const event3: IEvent = { type: "log", reference_id: key + "13" };
-      const event4: IEvent = { type: "log", reference_id: key + "14" };
-      const event5: IEvent = { type: "log", reference_id: key + "15" };
-      const event6: IEvent = { type: "log", reference_id: key + "16" };
+      const event1: Event = { type: "log", reference_id: key + "11" };
+      const event2: Event = { type: "log", reference_id: key + "12" };
+      const event3: Event = { type: "log", reference_id: key + "13" };
+      const event4: Event = { type: "log", reference_id: key + "14" };
+      const event5: Event = { type: "log", reference_id: key + "15" };
+      const event6: Event = { type: "log", reference_id: key + "16" };
       expect(storage.get().length).toBe(0);
 
       const ts1 = storage.save(event1);
@@ -86,12 +86,12 @@ export function describeStorage(
     test("should clear all events", () => {
       let storage = storageFactory();
       const key = "ex-q-";
-      const event1: IEvent = { type: "log", reference_id: key + "11" };
-      const event2: IEvent = { type: "log", reference_id: key + "12" };
-      const event3: IEvent = { type: "log", reference_id: key + "13" };
-      const event4: IEvent = { type: "log", reference_id: key + "14" };
-      const event5: IEvent = { type: "log", reference_id: key + "15" };
-      const event6: IEvent = { type: "log", reference_id: key + "16" };
+      const event1: Event = { type: "log", reference_id: key + "11" };
+      const event2: Event = { type: "log", reference_id: key + "12" };
+      const event3: Event = { type: "log", reference_id: key + "13" };
+      const event4: Event = { type: "log", reference_id: key + "14" };
+      const event5: Event = { type: "log", reference_id: key + "15" };
+      const event6: Event = { type: "log", reference_id: key + "16" };
       expect(storage.get().length).toBe(0);
 
       const ts1 = storage.save(event1);

@@ -1,8 +1,10 @@
 import { DuplicateCheckerPlugin } from "../../../src/plugins/default/DuplicateCheckerPlugin.js";
 import { ExceptionlessClient } from "../../../src/ExceptionlessClient.js";
 import { EventPluginContext } from "../../../src/plugins/EventPluginContext.js";
-import { IInnerError } from "../../../src/models/IInnerError.js";
-import { IStackFrame } from "../../../src/models/IStackFrame.js";
+import {
+  InnerErrorInfo,
+  StackFrameInfo
+} from "../../../src/models/data/ErrorInfo.js";
 import { delay } from "../../../src/Utils.js";
 
 const Exception1StackTrace = [
@@ -49,12 +51,12 @@ describe("DuplicateCheckerPlugin", () => {
     plugin = new DuplicateCheckerPlugin(() => now, 50);
   });
 
-  function run(stackTrace?: IStackFrame[]): Promise<EventPluginContext> {
+  const run = async(stackTrace?: StackFrameInfo[]): Promise<EventPluginContext> => {
     // TODO: Generate unique stack traces based on test data.
     const context = new EventPluginContext(client, {
       type: "error",
       data: {
-        "@error": <IInnerError>{
+        "@error": <InnerErrorInfo>{
           type: "ReferenceError",
           message: "This is a test",
           stack_trace: stackTrace
@@ -67,9 +69,9 @@ describe("DuplicateCheckerPlugin", () => {
   }
 
   test("should ignore duplicate within window", async () => {
-    run(Exception1StackTrace);
+    await run(Exception1StackTrace);
 
-    const contextOfSecondRun = run(Exception1StackTrace);
+    const contextOfSecondRun = await run(Exception1StackTrace);
     expect(contextOfSecondRun.cancelled).toBe(true);
     await delay(100);
     setTimeout(() => {
@@ -78,24 +80,24 @@ describe("DuplicateCheckerPlugin", () => {
     }, 100);
   });
 
-  test("should ignore error without stack", () => {
-    run();
-    const contextOfSecondRun = run();
+  test("should ignore error without stack", async () => {
+    await run();
+    const contextOfSecondRun = await run();
     expect(contextOfSecondRun.cancelled).toBe(true);
   });
 
-  test("shouldn\"t ignore different stack within window", () => {
-    run(Exception1StackTrace);
-    const contextOfSecondRun = run(Exception2StackTrace);
+  test("shouldn't ignore different stack within window", async () => {
+    await run(Exception1StackTrace);
+    const contextOfSecondRun = await run(Exception2StackTrace);
 
     expect(contextOfSecondRun.cancelled).not.toBe(true);
   });
 
-  test("shouldn\"t ignore duplicate after window", () => {
-    run(Exception1StackTrace);
+  test("shouldn't ignore duplicate after window", async () => {
+    await run(Exception1StackTrace);
 
     now = 3000;
-    const contextOfSecondRun = run(Exception1StackTrace);
+    const contextOfSecondRun = await run(Exception1StackTrace);
     expect(contextOfSecondRun.cancelled).not.toBe(true);
   });
 });
