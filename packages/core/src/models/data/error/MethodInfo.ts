@@ -1,10 +1,9 @@
-import { IParameter } from './IParameter.js';
+import { ParameterInfo } from "./ParameterInfo.js";
 
-export interface IMethod {
+export class MethodInfo {
   data?: any;
   generic_arguments?: string[];
-  parameters?: IParameter[];
-
+  parameters?: ParameterInfo[];
   is_signature_target?: boolean;
   declaring_namespace?: string;
   declaring_type?: string;

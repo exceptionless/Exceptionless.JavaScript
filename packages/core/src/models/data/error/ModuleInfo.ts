@@ -1,6 +1,5 @@
-export interface IModule {
+export class ModuleInfo {
   data?: any;
-
   module_id?: number;
   name?: string;
   version?: string;

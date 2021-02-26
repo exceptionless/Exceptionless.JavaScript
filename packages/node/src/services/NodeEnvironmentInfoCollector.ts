@@ -1,10 +1,4 @@
-import {
-  argv,
-  memoryUsage,
-  pid,
-  title,
-  version
-} from 'process';
+import { argv, memoryUsage, pid, title, version } from "process";
 
 import {
   arch,
@@ -13,49 +7,49 @@ import {
   freemem,
   hostname,
   loadavg,
-  networkInterfaces,
   NetworkInterfaceInfo,
+  networkInterfaces,
   platform,
   release,
   tmpdir,
   totalmem,
   type,
-  uptime
-} from 'os';
+  uptime,
+} from "os";
 
 import {
-  IEnvironmentInfo,
+  EnvironmentInfo,
+  EventPluginContext,
   IEnvironmentInfoCollector,
-  EventPluginContext
-} from '@exceptionless/core';
+} from "@exceptionless/core";
 
 export class NodeEnvironmentInfoCollector implements IEnvironmentInfoCollector {
-  public getEnvironmentInfo(context: EventPluginContext): IEnvironmentInfo {
+  public getEnvironmentInfo(context: EventPluginContext): EnvironmentInfo {
     function getIpAddresses(): string {
       const ips: string[] = [];
       const interfaces = networkInterfaces();
       Object.keys(interfaces).forEach((name) => {
         interfaces[name].forEach((network: NetworkInterfaceInfo) => {
-          if ('IPv4' === network.family && !network.internal) {
+          if ("IPv4" === network.family && !network.internal) {
             ips.push(network.address);
           }
         });
       });
 
-      return ips.join(', ');
+      return ips.join(", ");
     }
 
     if (!cpus) {
       return null;
     }
 
-    const environmentInfo: IEnvironmentInfo = {
+    const environmentInfo: EnvironmentInfo = {
       processor_count: cpus().length,
       total_physical_memory: totalmem(),
       available_physical_memory: freemem(),
-      command_line: argv.join(' '),
-      process_name: (title || '').replace(/[\uE000-\uF8FF]/g, ''),
-      process_id: pid + '',
+      command_line: argv.join(" "),
+      process_name: (title || "").replace(/[\uE000-\uF8FF]/g, ""),
+      process_id: pid + "",
       process_memory_size: memoryUsage().heapTotal,
       // thread_id: '',
       architecture: arch(),
@@ -67,8 +61,8 @@ export class NodeEnvironmentInfoCollector implements IEnvironmentInfoCollector {
         loadavg: loadavg(),
         platform: platform(),
         tmpdir: tmpdir(),
-        uptime: uptime()
-      }
+        uptime: uptime(),
+      },
     };
 
     const config = context.client.config;

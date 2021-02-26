@@ -1,6 +1,6 @@
-import { IEnvironmentInfo } from '../models/IEnvironmentInfo.js';
-import { EventPluginContext } from '../plugins/EventPluginContext.js';
+import { EnvironmentInfo } from "../models/data/EnvironmentInfo.js";
+import { EventPluginContext } from "../plugins/EventPluginContext.js";
 
 export interface IEnvironmentInfoCollector {
-  getEnvironmentInfo(context: EventPluginContext): IEnvironmentInfo;
+  getEnvironmentInfo(context: EventPluginContext): EnvironmentInfo;
 }
