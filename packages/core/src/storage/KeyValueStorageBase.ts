@@ -1,5 +1,5 @@
-import { IStorage } from './IStorage.js';
-import { IStorageItem } from './IStorageItem.js';
+import { IStorage } from "./IStorage.js";
+import { IStorageItem } from "./IStorageItem.js";
 
 export abstract class KeyValueStorageBase implements IStorage {
   private maxItems: number;
@@ -111,7 +111,7 @@ export abstract class KeyValueStorageBase implements IStorage {
 
 function parseDate(key: string, value: string) {
   const dateRegex = /\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d\.\d+([+-][0-2]\d:[0-5]\d|Z)/g;
-  if (typeof value === 'string') {
+  if (typeof value === "string") {
     const a = dateRegex.exec(value);
     if (a) {
       return new Date(value);

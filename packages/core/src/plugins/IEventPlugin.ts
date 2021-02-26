@@ -1,4 +1,4 @@
-import { EventPluginContext } from './EventPluginContext.js';
+import { EventPluginContext } from "./EventPluginContext.js";
 
 export interface IEventPlugin {
   priority?: number;

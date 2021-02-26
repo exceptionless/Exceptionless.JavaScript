@@ -16,17 +16,20 @@
         "kind": "build",
         "isDefault": true
       },
-      "problemMatcher": "$tsc"
+      "problemMatcher": "$tsc",
+      "label": "npm: build"
     },
     {
       "type": "npm",
       "script": "test",
-      "group": "test"
+      "group": "test",
+      "label": "npm: test"
     },
     {
       "type": "npm",
       "script": "lint",
-      "problemMatcher": "$eslint-stylish"
+      "problemMatcher": "$eslint-stylish",
+      "label": "npm: lint"
     }
   ]
 }

@@ -1,4 +1,4 @@
-import { KeyValueStorageBase } from '@exceptionless/core';
+import { KeyValueStorageBase } from "@exceptionless/core";
 
 export class BrowserStorage extends KeyValueStorageBase {
   private prefix: string;
@@ -6,7 +6,7 @@ export class BrowserStorage extends KeyValueStorageBase {
   public static isAvailable(): boolean {
     try {
       const storage = window.localStorage;
-      const x = '__storage_test__';
+      const x = "__storage_test__";
       storage.setItem(x, x);
       storage.removeItem(x);
       return true;
@@ -15,10 +15,10 @@ export class BrowserStorage extends KeyValueStorageBase {
     }
   }
 
-  constructor(namespace: string, prefix: string = 'com.exceptionless.', maxItems: number = 20) {
+  constructor(namespace: string, prefix: string = "com.exceptionless.", maxItems: number = 20) {
     super(maxItems);
 
-    this.prefix = prefix + namespace + '-';
+    this.prefix = prefix + namespace + "-";
   }
 
   public writeValue(key: string, value: string): void {

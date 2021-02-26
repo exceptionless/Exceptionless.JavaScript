@@ -1,5 +1,5 @@
-import { IStorage } from './IStorage.js';
-import { IStorageItem } from './IStorageItem.js';
+import { IStorage } from "./IStorage.js";
+import { IStorageItem } from "./IStorageItem.js";
 
 export class InMemoryStorage implements IStorage {
   private maxItems: number;

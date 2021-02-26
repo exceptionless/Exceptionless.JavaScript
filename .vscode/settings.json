@@ -11,6 +11,8 @@
     "**/node_modules": true,
   },
   "prettier.eslintIntegration": true,
+  "javascript.preferences.quoteStyle": "double",
+  "typescript.preferences.quoteStyle": "double",
   "typescript.tsdk": "./node_modules/typescript/lib",
   "cSpell.words": [
     "Exceptionless",

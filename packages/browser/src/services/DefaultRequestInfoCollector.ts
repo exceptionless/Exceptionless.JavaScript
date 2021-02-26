@@ -22,7 +22,7 @@ export class DefaultRequestInfoCollector implements IRequestInfoCollector {
         ? parseInt(location.port, 10)
         : 80,
       path: location.pathname,
-      // client_ip_address: 'TODO'
+      // client_ip_address: "TODO"
     };
 
     if (config.includeCookies) {

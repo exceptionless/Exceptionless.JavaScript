@@ -14,10 +14,10 @@ The definition of the word exceptionless is: to be without exception. Exceptionl
 <script src="https://cdn.jsdelivr.net/npm/exceptionless@v1.6.4/dist/exceptionless.min.js"></script>
 <script>
   var client = exceptionless.ExceptionlessClient.default;
-  client.config.apiKey = 'API_KEY_HERE';
+  client.config.apiKey = "API_KEY_HERE";
 
   try {
-    throw new Error('test');
+    throw new Error("test");
   } catch (error) {
     client.submitException(error);
   }
@@ -25,11 +25,11 @@ The definition of the word exceptionless is: to be without exception. Exceptionl
 ```
 
 ```javascript
-var client = require('exceptionless').ExceptionlessClient.default;
-client.config.apiKey = 'API_KEY_HERE';
+var client = require("exceptionless").ExceptionlessClient.default;
+client.config.apiKey = "API_KEY_HERE";
 
 try {
-  throw new Error('test');
+  throw new Error("test");
 } catch (error) {
   client.submitException(error);
 }
@@ -73,7 +73,7 @@ Use this method to install Exceptionless.js into your Node application:
 2. Require the Exceptionless.js module in your application:
 
   ```javascript
-  var client = require('exceptionless').ExceptionlessClient.default;
+  var client = require("exceptionless").ExceptionlessClient.default;
   ```
 
 ### Configuring the client
@@ -92,19 +92,19 @@ You can configure the `ExceptionlessClient` class using one of the following way
 - You can set the `apiKey` on the default `ExceptionlessClient` instance:
 
   ```javascript
-  exceptionless.ExceptionlessClient.default.config.apiKey = 'API_KEY_HERE';
+  exceptionless.ExceptionlessClient.default.config.apiKey = "API_KEY_HERE";
   ```
 
 - You can create a new instance of the `ExceptionlessClient` class and specify the `apiKey`, `serverUrl` or [configuration object](https://github.com/exceptionless/Exceptionless.JavaScript/blob/master/packages/core/src/configuration/IConfigurationSettings.ts):
 
   ```javascript
-  var client = new exceptionless.ExceptionlessClient('API_KEY_HERE');
+  var client = new exceptionless.ExceptionlessClient("API_KEY_HERE");
   // or with an api key and server url
-  var client = new exceptionless.ExceptionlessClient('API_KEY_HERE', 'http://localhost:5000');
+  var client = new exceptionless.ExceptionlessClient("API_KEY_HERE", "http://localhost:5000");
   // or with a configuration object
   var client = new exceptionless.ExceptionlessClient({
-    apiKey: 'API_KEY_HERE',
-    serverUrl: 'http://localhost:5000',
+    apiKey: "API_KEY_HERE",
+    serverUrl: "http://localhost:5000",
     submissionBatchSize: 100
   });
   ```
@@ -114,22 +114,22 @@ You can configure the `ExceptionlessClient` class using one of the following way
 - You can set the `apiKey` on the default `ExceptionlessClient` instance:
 
   ```javascript
-  var client = require('exceptionless').ExceptionlessClient.default;
-  client.config.apiKey = 'API_KEY_HERE';
+  var client = require("exceptionless").ExceptionlessClient.default;
+  client.config.apiKey = "API_KEY_HERE";
   ```
 
 - You can create a new instance of the `ExceptionlessClient` class and specify the `apiKey`, `serverUrl` or [configuration object](https://github.com/exceptionless/Exceptionless.JavaScript/blob/master/packages/core/src/configuration/IConfigurationSettings.ts):
 
   ```javascript
-  var exceptionless = require('exceptionless');
+  var exceptionless = require("exceptionless");
 
-  var client = new exceptionless.ExceptionlessClient('API_KEY_HERE');
+  var client = new exceptionless.ExceptionlessClient("API_KEY_HERE");
   // or with an api key and server url
-  var client = new exceptionless.ExceptionlessClient('API_KEY_HERE', 'http://localhost:5000');
+  var client = new exceptionless.ExceptionlessClient("API_KEY_HERE", "http://localhost:5000");
   // or with a configuration object
   var client = new exceptionless.ExceptionlessClient({
-    apiKey: 'API_KEY_HERE',
-    serverUrl: 'http://localhost:5000',
+    apiKey: "API_KEY_HERE",
+    serverUrl: "http://localhost:5000",
     submissionBatchSize: 100
   });
   ```
@@ -146,25 +146,25 @@ You may also want to submit log messages, feature usage data or other kinds of e
 // Browser
 var client = exceptionless.ExceptionlessClient.default;
 // Node.js
-// var client = require('exceptionless').ExceptionlessClient.default;
+// var client = require("exceptionless").ExceptionlessClient.default;
 
-client.submitLog('Logging made easy');
+client.submitLog("Logging made easy");
 
 // You can also specify the log source and log level.
 // We recommend specifying one of the following log levels: Trace, Debug, Info, Warn, Error
-client.submitLog('app.logger', 'This is so easy', 'Info');
-client.createLog('app.logger', 'This is so easy', 'Info').addTags('Exceptionless').submit();
+client.submitLog("app.logger", "This is so easy", "Info");
+client.createLog("app.logger", "This is so easy", "Info").addTags("Exceptionless").submit();
 
 // Submit feature usages
-client.submitFeatureUsage('MyFeature');
-client.createFeatureUsage('MyFeature').addTags('Exceptionless').submit();
+client.submitFeatureUsage("MyFeature");
+client.createFeatureUsage("MyFeature").addTags("Exceptionless").submit();
 
 // Submit a 404
-client.submitNotFound('/somepage');
-client.createNotFound('/somepage').addTags('Exceptionless').submit();
+client.submitNotFound("/somepage");
+client.createNotFound("/somepage").addTags("Exceptionless").submit();
 
 // Submit a custom event type
-client.submitEvent({ message = 'Low Fuel', type = 'racecar', source = 'Fuel System' });
+client.submitEvent({ message = "Low Fuel", type = "racecar", source = "Fuel System" });
 ```
 
 #### Manually submitting Errors
@@ -175,10 +175,10 @@ In addition to automatically sending all unhandled exceptions, you may want to m
 // Browser
 var client = exceptionless.ExceptionlessClient.default;
 // Node.js
-// var client = require('exceptionless').ExceptionlessClient.default;
+// var client = require("exceptionless").ExceptionlessClient.default;
 
 try {
-  throw new Error('test');
+  throw new Error("test");
 } catch (error) {
   client.submitException(error);
 }
@@ -192,15 +192,15 @@ You can easily include additional information in your error reports using the fl
 // Browser
 var client = exceptionless.ExceptionlessClient.default;
 // Node.js
-// var client = require('exceptionless').ExceptionlessClient.default;
+// var client = require("exceptionless").ExceptionlessClient.default;
 
 try {
-  throw new Error('Unable to create order from quote.');
+  throw new Error("Unable to create order from quote.");
 } catch (error) {
   client.createException(error)
     // Set the reference id of the event so we can search for it later (reference:id).
     // This will automatically be populated if you call client.config.useReferenceIds();
-    .setReferenceId('random guid')
+    .setReferenceId("random guid")
     // Add the order object (the ability to exclude specific fields will be coming in a future version).
     .setProperty("Order", order)
     // Set the quote number.
@@ -227,7 +227,7 @@ The Exceptionless client can also be configured to send data to your self hosted
 You can set the `serverUrl` on the default `ExceptionlessClient` instance:
 
 ```javascript
-exceptionless.ExceptionlessClient.default.config.serverUrl = 'http://localhost:5000';
+exceptionless.ExceptionlessClient.default.config.serverUrl = "http://localhost:5000";
 ```
 
 #### Node.js
@@ -235,8 +235,8 @@ exceptionless.ExceptionlessClient.default.config.serverUrl = 'http://localhost:5
 You can set the `serverUrl` on the default `ExceptionlessClient` instance:
 
 ```javascript
-var client = require('exceptionless.node').ExceptionlessClient.default;
-client.config.serverUrl = 'http://localhost:5000';
+var client = require("exceptionless.node").ExceptionlessClient.default;
+client.config.serverUrl = "http://localhost:5000";
 ```
 
 ### General Data Protection Regulation
@@ -280,7 +280,7 @@ If you find a bug or want to contribute a feature, feel free to create a pull re
     npm run test
     ```
 
-During development, you can use relative paths to require Exceptionless, e.g. `require('./dist/exceptionless.node.js')` when you are running Node.js from the git root directory.
+During development, you can use relative paths to require Exceptionless, e.g. `require("./dist/exceptionless.node.js")` when you are running Node.js from the git root directory.
 
 ## Thanks
 

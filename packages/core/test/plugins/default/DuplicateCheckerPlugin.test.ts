@@ -39,24 +39,24 @@ const Exception2StackTrace = [
   }
 ];
 
-describe('DuplicateCheckerPlugin', () => {
+describe("DuplicateCheckerPlugin", () => {
   let now: number = 0;
   let client: ExceptionlessClient;
   let plugin: DuplicateCheckerPlugin;
 
   beforeEach(() => {
-    client = new ExceptionlessClient('LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw', 'http://localhost:5000');
+    client = new ExceptionlessClient("LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw", "http://localhost:5000");
     plugin = new DuplicateCheckerPlugin(() => now, 50);
   });
 
   function run(stackTrace?: IStackFrame[]): Promise<EventPluginContext> {
     // TODO: Generate unique stack traces based on test data.
     const context = new EventPluginContext(client, {
-      type: 'error',
+      type: "error",
       data: {
-        '@error': <IInnerError>{
-          type: 'ReferenceError',
-          message: 'This is a test',
+        "@error": <IInnerError>{
+          type: "ReferenceError",
+          message: "This is a test",
           stack_trace: stackTrace
         }
       }
@@ -66,7 +66,7 @@ describe('DuplicateCheckerPlugin', () => {
     return context;
   }
 
-  test('should ignore duplicate within window', async () => {
+  test("should ignore duplicate within window", async () => {
     run(Exception1StackTrace);
 
     const contextOfSecondRun = run(Exception1StackTrace);
@@ -78,20 +78,20 @@ describe('DuplicateCheckerPlugin', () => {
     }, 100);
   });
 
-  test('should ignore error without stack', () => {
+  test("should ignore error without stack", () => {
     run();
     const contextOfSecondRun = run();
     expect(contextOfSecondRun.cancelled).toBe(true);
   });
 
-  test('shouldn\'t ignore different stack within window', () => {
+  test("shouldn\"t ignore different stack within window", () => {
     run(Exception1StackTrace);
     const contextOfSecondRun = run(Exception2StackTrace);
 
     expect(contextOfSecondRun.cancelled).not.toBe(true);
   });
 
-  test('shouldn\'t ignore duplicate after window', () => {
+  test("shouldn\"t ignore duplicate after window", () => {
     run(Exception1StackTrace);
 
     now = 3000;

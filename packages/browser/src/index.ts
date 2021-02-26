@@ -6,12 +6,12 @@ import {
   parseQueryString
 } from "@exceptionless/core";
 
-import { DefaultErrorParser } from './services/DefaultErrorParser.js';
-import { DefaultModuleCollector } from './services/DefaultModuleCollector.js';
-import { DefaultRequestInfoCollector } from './services/DefaultRequestInfoCollector.js';
-import { BrowserStorage } from './storage/BrowserStorage.js';
-import { BrowserStorageProvider } from './storage/BrowserStorageProvider.js';
-import { FetchSubmissionClient } from './submission/FetchSubmissionClient.js';
+import { DefaultErrorParser } from "./services/DefaultErrorParser.js";
+import { DefaultModuleCollector } from "./services/DefaultModuleCollector.js";
+import { DefaultRequestInfoCollector } from "./services/DefaultRequestInfoCollector.js";
+import { BrowserStorage } from "./storage/BrowserStorage.js";
+import { BrowserStorageProvider } from "./storage/BrowserStorageProvider.js";
+import { FetchSubmissionClient } from "./submission/FetchSubmissionClient.js";
 
 function init() {
   function getDefaultsSettingsFromScriptTag(): IConfigurationSettings {
@@ -19,22 +19,22 @@ function init() {
       return null;
     }
 
-    const scripts = document.getElementsByTagName('script');
+    const scripts = document.getElementsByTagName("script");
     for (let index = 0; index < scripts.length; index++) {
-      if (scripts[index].src && scripts[index].src.indexOf('/exceptionless') > -1) {
-        return parseQueryString(scripts[index].src.split('?').pop());
+      if (scripts[index].src && scripts[index].src.indexOf("/exceptionless") > -1) {
+        return parseQueryString(scripts[index].src.split("?").pop());
       }
     }
     return null;
   }
 
   //function processUnhandledException(stackTrace: TraceKit.StackTrace, options?: any): void {
-  //  const builder = ExceptionlessClient.default.createUnhandledException(new Error(stackTrace.message || (options || {}).status || 'Script error'), 'onerror');
-  //  builder.pluginContextData['@@_TraceKit.StackTrace'] = stackTrace;
+  //  const builder = ExceptionlessClient.default.createUnhandledException(new Error(stackTrace.message || (options || {}).status || "Script error"), "onerror");
+  //  builder.pluginContextData["@@_TraceKit.StackTrace"] = stackTrace;
   //  builder.submit();
   //}
 
-  if (typeof document === 'undefined') {
+  if (typeof document === "undefined") {
     return;
   }
 
@@ -45,11 +45,11 @@ function init() {
     if (xhr.status === 404) {
     client.submitNotFound(settings.url);
     } else if (xhr.status !== 401) {
-    client.createUnhandledException(error, 'JQuery.ajaxError')
+    client.createUnhandledException(error, "JQuery.ajaxError")
     .setSource(settings.url)
-    .setProperty('status', xhr.status)
-    .setProperty('request', settings.data)
-    .setProperty('response', xhr.responseText && xhr.responseText.slice && xhr.responseText.slice(0, 1024))
+    .setProperty("status", xhr.status)
+    .setProperty("request", settings.data)
+    .setProperty("response", xhr.responseText && xhr.responseText.slice && xhr.responseText.slice(0, 1024))
     .submit();
     }
     }
@@ -74,8 +74,8 @@ function init() {
       defaults.serverUrl = settings.serverUrl;
     }
 
-    if (typeof settings.includePrivateInformation === 'string') {
-      defaults.includePrivateInformation = settings.includePrivateInformation === 'false' ? false : true;
+    if (typeof settings.includePrivateInformation === "string") {
+      defaults.includePrivateInformation = settings.includePrivateInformation === "false" ? false : true;
     }
   }
 
@@ -87,11 +87,11 @@ function init() {
   //TraceKit.report.subscribe(processUnhandledException);
   //TraceKit.extendToAsynchronousCallbacks();
 
-  // window && window.addEventListener && window.addEventListener('beforeunload', function () {
+  // window && window.addEventListener && window.addEventListener("beforeunload", function () {
   //   ExceptionlessClient.default.config.queue.process(true);
   // });
 
-  // if (typeof $ !== 'undefined' && $(document)) {
+  // if (typeof $ !== "undefined" && $(document)) {
   //   $(document).ajaxError(processJQueryAjaxError);
   // }
 

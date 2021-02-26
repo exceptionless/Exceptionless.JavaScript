@@ -1,20 +1,20 @@
-import { ILog } from './ILog.js';
+import { ILog } from "./ILog.js";
 
 export class ConsoleLog implements ILog {
   public trace(message: string): void {
-    this.log('debug', message);
+    this.log("debug", message);
   }
 
   public info(message: string): void {
-    this.log('info', message);
+    this.log("info", message);
   }
 
   public warn(message: string): void {
-    this.log('warn', message);
+    this.log("warn", message);
   }
 
   public error(message: string): void {
-    this.log('error', message);
+    this.log("error", message);
   }
 
   private log(level: string, message: string) {

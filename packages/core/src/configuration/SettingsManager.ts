@@ -1,5 +1,5 @@
 import { merge } from "../Utils.js";
-import { Configuration } from './Configuration.js';
+import { Configuration } from "./Configuration.js";
 
 export class ClientSettings {
   constructor(
@@ -58,7 +58,7 @@ export class SettingsManager {
       return;
     }
 
-    const unableToUpdateMessage = 'Unable to update settings';
+    const unableToUpdateMessage = "Unable to update settings";
     if (!config.isValid) {
       config.log.error(`${unableToUpdateMessage}: ApiKey is not set.`);
       return;

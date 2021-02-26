@@ -51,11 +51,11 @@ export class NodeEnvironmentInfoCollector implements IEnvironmentInfoCollector {
       process_name: (title || "").replace(/[\uE000-\uF8FF]/g, ""),
       process_id: pid + "",
       process_memory_size: memoryUsage().heapTotal,
-      // thread_id: '',
+      // thread_id: "",
       architecture: arch(),
       o_s_name: type(),
       o_s_version: release(),
-      // install_id: '',
+      // install_id: "",
       runtime_version: version,
       data: {
         loadavg: loadavg(),

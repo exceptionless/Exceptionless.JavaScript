@@ -1,6 +1,6 @@
-import { InMemoryStorage } from './InMemoryStorage.js';
-import { IStorage } from './IStorage.js';
-import { IStorageProvider } from './IStorageProvider.js';
+import { InMemoryStorage } from "./InMemoryStorage.js";
+import { IStorage } from "./IStorage.js";
+import { IStorageProvider } from "./IStorageProvider.js";
 
 export class InMemoryStorageProvider implements IStorageProvider {
   public queue: IStorage;
