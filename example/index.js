@@ -10,23 +10,23 @@ function sendEvents(numberToSends, eventType) {
         break;
       }
       case 1: {
-        exceptionless.ExceptionlessClient.default.submitLog('sendEvents', 'This is a test trace message', 'trace');
+        exceptionless.ExceptionlessClient.default.submitLog("sendEvents", "This is a test trace message", "trace");
         break;
       }
       case 2: {
-        exceptionless.ExceptionlessClient.default.submitLog('sendEvents', 'This is a test debug message', 'debug');
+        exceptionless.ExceptionlessClient.default.submitLog("sendEvents", "This is a test debug message", "debug");
         break;
       }
       case 3: {
-        exceptionless.ExceptionlessClient.default.submitLog('sendEvents', 'This is a test info message', 'info');
+        exceptionless.ExceptionlessClient.default.submitLog("sendEvents", "This is a test info message", "info");
         break;
       }
       case 4: {
-        exceptionless.ExceptionlessClient.default.submitLog('sendEvents', 'This is a test warn message', 'warn');
+        exceptionless.ExceptionlessClient.default.submitLog("sendEvents", "This is a test warn message", "warn");
         break;
       }
       case 5: {
-        exceptionless.ExceptionlessClient.default.submitLog('sendEvents', 'This is a test error message', 'error');
+        exceptionless.ExceptionlessClient.default.submitLog("sendEvents", "This is a test error message", "error");
         break;
       }
     }
@@ -34,7 +34,7 @@ function sendEvents(numberToSends, eventType) {
 }
 
 function getRandomInt(min, max) {
-  exceptionless.ExceptionlessClient.default.submitLog('getting random int min:' + min + ' max:' + max);
+  exceptionless.ExceptionlessClient.default.submitLog("getting random int min:" + min + " max:" + max);
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
@@ -43,7 +43,7 @@ function throwDivisionByZero() {
 }
 
 function throwStringError() {
-  return throwStringErrorImpl('string error message');
+  return throwStringErrorImpl("string error message");
 }
 
 function throwIndexOutOfRange(indexer, withCustomStacking) {
@@ -53,12 +53,12 @@ function throwIndexOutOfRange(indexer, withCustomStacking) {
     var client = exceptionless.ExceptionlessClient.default;
     if (withCustomStacking) {
       if (Math.random() < .5) {
-        client.createException(e).setManualStackingKey('MyCustomStackingKey').submit();
+        client.createException(e).setManualStackingKey("MyCustomStackingKey").submit();
       } else {
         client.createException(e).setManualStackingInfo({
-          File: 'index.js',
-          Function: 'throwIndexOutOfRange'
-        }, 'Custom Index Out Of Range Exception').submit();
+          File: "index.js",
+          Function: "throwIndexOutOfRange"
+        }, "Custom Index Out Of Range Exception").submit();
       }
     } else {
       client.submitException(e);

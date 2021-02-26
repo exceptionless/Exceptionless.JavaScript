@@ -38,9 +38,9 @@ export function getHashCode(source: string): number {
 export function getCookies(cookies: string, exclusions?: string[]): Record<string, string> {
   const result: Record<string, string> = {};
 
-  const parts: string[] = (cookies || '').split('; ');
+  const parts: string[] = (cookies || "").split("; ");
   for (const part of parts) {
-    const cookie: string[] = part.split('=');
+    const cookie: string[] = part.split("=");
     if (!isMatch(cookie[0], exclusions)) {
       result[cookie[0]] = cookie[1];
     }
@@ -54,7 +54,7 @@ export function guid(): string {
     return Math.floor((1 + Math.random()) * 0x10000).toString(16).substring(1);
   }
 
-  return s4() + s4() + '-' + s4() + '-' + s4() + '-' + s4() + '-' + s4() + s4() + s4();
+  return s4() + s4() + "-" + s4() + "-" + s4() + "-" + s4() + "-" + s4() + s4() + s4();
 }
 
 export function merge<T>(defaultValues: T, values: T): T {
@@ -94,14 +94,14 @@ export function parseQueryString(query: string, exclusions?: string[]): Record<s
     return null;
   }
 
-  const pairs: string[] = query.split('&');
+  const pairs: string[] = query.split("&");
   if (pairs.length === 0) {
     return null;
   }
 
   const result: Record<string, string> = {};
   for (const pair of pairs) {
-    const parts = pair.split('=');
+    const parts = pair.split("=");
     if (!isMatch(parts[0], exclusions)) {
       result[decodeURIComponent(parts[0])] = decodeURIComponent(parts[1]);
     }
@@ -120,27 +120,27 @@ export function randomNumber(): number {
  * @param pattern The pattern to check, supports wild cards (*).
  */
 export function isMatch(input: string, patterns: string[], ignoreCase: boolean = true): boolean {
-  if (typeof input !== 'string') {
+  if (typeof input !== "string") {
     return false;
   }
 
   const trim = /^[\s\uFEFF\xA0]+|[\s\uFEFF\xA0]+$/g;
-  input = (ignoreCase ? input.toLowerCase() : input).replace(trim, '');
+  input = (ignoreCase ? input.toLowerCase() : input).replace(trim, "");
 
   return (patterns || []).some((pattern) => {
-    if (typeof pattern !== 'string') {
+    if (typeof pattern !== "string") {
       return false;
     }
 
     if (pattern) {
-      pattern = (ignoreCase ? pattern.toLowerCase() : pattern).replace(trim, '')
+      pattern = (ignoreCase ? pattern.toLowerCase() : pattern).replace(trim, "")
     }
 
     if (!pattern) {
       return input === undefined || input === null;
     }
 
-    if (pattern === '*') {
+    if (pattern === "*") {
       return true;
     }
 
@@ -148,12 +148,12 @@ export function isMatch(input: string, patterns: string[], ignoreCase: boolean =
       return false;
     }
 
-    const startsWithWildcard: boolean = pattern[0] === '*';
+    const startsWithWildcard: boolean = pattern[0] === "*";
     if (startsWithWildcard) {
       pattern = pattern.slice(1);
     }
 
-    const endsWithWildcard: boolean = pattern[pattern.length - 1] === '*';
+    const endsWithWildcard: boolean = pattern[pattern.length - 1] === "*";
     if (endsWithWildcard) {
       pattern = pattern.substring(0, pattern.length - 1);
     }
@@ -175,7 +175,7 @@ export function isMatch(input: string, patterns: string[], ignoreCase: boolean =
 }
 
 export function isEmpty(input: Record<string, unknown>) {
-  return input === null || (typeof (input) === 'object' && Object.keys(input).length === 0);
+  return input === null || (typeof (input) === "object" && Object.keys(input).length === 0);
 }
 
 export function startsWith(input: string, prefix: string): boolean {
@@ -200,7 +200,7 @@ export function stringify(data: any, exclusions?: string[], maxDepth?: number): 
         return;
       }
 
-      if (typeof value === 'object' && value) {
+      if (typeof value === "object" && value) {
         if (cache.indexOf(value) !== -1) {
           // Circular reference found, discard key
           return;
@@ -213,7 +213,7 @@ export function stringify(data: any, exclusions?: string[], maxDepth?: number): 
     });
   }
 
-  if (({}).toString.call(data) === '[object Object]') {
+  if (({}).toString.call(data) === "[object Object]") {
     const flattened = {};
     for (const prop in data) {
       const value = data[prop];
@@ -226,7 +226,7 @@ export function stringify(data: any, exclusions?: string[], maxDepth?: number): 
     return stringifyImpl(flattened, exclusions);
   }
 
-  if (({}).toString.call(data) === '[object Array]') {
+  if (({}).toString.call(data) === "[object Array]") {
     const result = [];
     for (let index = 0; index < data.length; index++) {
       result[index] = JSON.parse(stringifyImpl(data[index], exclusions));
@@ -239,17 +239,17 @@ export function stringify(data: any, exclusions?: string[], maxDepth?: number): 
 }
 
 export function toBoolean(input, defaultValue: boolean = false): boolean {
-  if (typeof input === 'boolean') {
+  if (typeof input === "boolean") {
     return input;
   }
 
-  if (input === null || typeof input !== 'number' && typeof input !== 'string') {
+  if (input === null || typeof input !== "number" && typeof input !== "string") {
     return defaultValue;
   }
 
-  switch ((input + '').toLowerCase().trim()) {
-    case 'true': case 'yes': case '1': return true;
-    case 'false': case 'no': case '0': case null: return false;
+  switch ((input + "").toLowerCase().trim()) {
+    case "true": case "yes": case "1": return true;
+    case "false": case "no": case "0": case null: return false;
   }
 
   return defaultValue;

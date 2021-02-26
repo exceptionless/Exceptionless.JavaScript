@@ -225,16 +225,16 @@ export class ExceptionlessClient {
     config.queue.enqueue(ev);
 
     if (ev.reference_id && ev.reference_id.length > 0) {
-      context.log.info(`Setting last reference id '${ev.reference_id}'`);
+      context.log.info(`Setting last reference id "${ev.reference_id}"`);
       config.lastReferenceIdManager.setLast(ev.reference_id);
     }
   }
 
   /**
-   * Updates the user's email address and description of an event for the specified reference id.
+   * Updates the user"s email address and description of an event for the specified reference id.
    * @param referenceId The reference id of the event to update.
-   * @param email The user's email address to set on the event.
-   * @param description The user's description of the event.
+   * @param email The user"s email address to set on the event.
+   * @param description The user"s description of the event.
    * @param callback The submission response.
    */
   public async updateUserEmailAndDescription(
@@ -259,7 +259,7 @@ export class ExceptionlessClient {
     );
     if (!response.success) {
       this.config.log.error(
-        `Failed to submit user email and description for event '${referenceId}': ${response.status} ${response.message}`,
+        `Failed to submit user email and description for event "${referenceId}": ${response.status} ${response.message}`,
       );
     }
   }

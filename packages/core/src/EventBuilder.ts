@@ -111,10 +111,10 @@ export class EventBuilder {
   }
 
   /**
-   * Sets the user's description of the event.
+   * Sets the user"s description of the event.
    *
    * @param emailAddress The email address
-   * @param description The user's description of the event.
+   * @param description The user"s description of the event.
    * @returns {EventBuilder}
    */
   public setUserDescription(

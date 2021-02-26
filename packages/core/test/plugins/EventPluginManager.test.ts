@@ -9,11 +9,11 @@ beforeEach(() => {
   Configuration.defaults.updateSettingsWhenIdleInterval = -1;
 });
 
-describe('EventPluginManager', () => {
-  test('should add items to the event.', async () => {
+describe("EventPluginManager", () => {
+  test("should add items to the event.", async () => {
     const client = new ExceptionlessClient({
-      apiKey: 'LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw',
-      serverUrl: 'http://localhost:5000'
+      apiKey: "LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw",
+      serverUrl: "http://localhost:5000"
     });
 
     const context = new EventPluginContext(client, {}, new ContextData());
@@ -25,26 +25,26 @@ describe('EventPluginManager', () => {
       client.config.removePlugin(client.config.plugins[0]);
     }
 
-    client.config.addPlugin('1', 1, async (ctx: EventPluginContext) => {
+    client.config.addPlugin("1", 1, async (ctx: EventPluginContext) => {
       await delay(25);
-      ctx.event.source = 'plugin 1';
+      ctx.event.source = "plugin 1";
     });
 
-    client.config.addPlugin('2', 2, (ctx: EventPluginContext) => {
-      ctx.event.geo = '43.5775,88.4472';
+    client.config.addPlugin("2", 2, (ctx: EventPluginContext) => {
+      ctx.event.geo = "43.5775,88.4472";
       return Promise.resolve();
     });
 
     await EventPluginManager.run(context);
     expect(context.cancelled).toBe(false);
-    expect(context.event.source).toBe('plugin 1');
-    expect(context.event.geo).toBe('43.5775,88.4472');
+    expect(context.event.source).toBe("plugin 1");
+    expect(context.event.geo).toBe("43.5775,88.4472");
   });
 
-  test('setting cancel should stop plugin execution.', async () => {
+  test("setting cancel should stop plugin execution.", async () => {
     const client = new ExceptionlessClient({
-      apiKey: 'LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw',
-      serverUrl: 'http://localhost:5000'
+      apiKey: "LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw",
+      serverUrl: "http://localhost:5000"
     });
 
     const context = new EventPluginContext(client, {}, new ContextData());
@@ -53,12 +53,12 @@ describe('EventPluginManager', () => {
       client.config.removePlugin(client.config.plugins[0]);
     }
 
-    client.config.addPlugin('1', 1, (ctx: EventPluginContext) => {
+    client.config.addPlugin("1", 1, (ctx: EventPluginContext) => {
       ctx.cancelled = true;
       return Promise.resolve();
     });
 
-    client.config.addPlugin('2', 2, () => {
+    client.config.addPlugin("2", 2, () => {
       throw new Error("Plugin should not be called due to cancellation");
     });
 
@@ -66,10 +66,10 @@ describe('EventPluginManager', () => {
     expect(context.cancelled).toBe(true);
   });
 
-  test('throwing error should stop plugin execution.', async () => {
+  test("throwing error should stop plugin execution.", async () => {
     const client = new ExceptionlessClient({
-      apiKey: 'LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw',
-      serverUrl: 'http://localhost:5000'
+      apiKey: "LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw",
+      serverUrl: "http://localhost:5000"
     });
     const context = new EventPluginContext(client, {}, new ContextData());
 
@@ -78,11 +78,11 @@ describe('EventPluginManager', () => {
       client.config.removePlugin(client.config.plugins[0]);
     }
 
-    client.config.addPlugin('1', 1, () => {
-      throw new Error('Random Error');
+    client.config.addPlugin("1", 1, () => {
+      throw new Error("Random Error");
     });
 
-    client.config.addPlugin('2', 2, () => {
+    client.config.addPlugin("2", 2, () => {
       throw new Error("Plugin should not be called due to cancellation");
     });
 
@@ -90,10 +90,10 @@ describe('EventPluginManager', () => {
     expect(context.cancelled).toBe(true);
   });
 
-  test('should cancel via timeout.', async () => {
+  test("should cancel via timeout.", async () => {
     const client = new ExceptionlessClient({
-      apiKey: 'LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw',
-      serverUrl: 'http://localhost:5000'
+      apiKey: "LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw",
+      serverUrl: "http://localhost:5000"
     });
     const context = new EventPluginContext(client, {}, new ContextData());
 
@@ -102,11 +102,11 @@ describe('EventPluginManager', () => {
       client.config.removePlugin(client.config.plugins[0]);
     }
 
-    client.config.addPlugin('1', 1, async () => {
+    client.config.addPlugin("1", 1, async () => {
       await delay(25);
     });
 
-    client.config.addPlugin('2', 2, () => {
+    client.config.addPlugin("2", 2, () => {
       throw new Error("Plugin should not be called due to cancellation");
     });
 
@@ -114,10 +114,10 @@ describe('EventPluginManager', () => {
     expect(context.cancelled).toBe(true);
   });
 
-  test('should ensure config plugins are not wrapped.', async () => {
+  test("should ensure config plugins are not wrapped.", async () => {
     const client = new ExceptionlessClient({
-      apiKey: 'LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw',
-      serverUrl: 'http://localhost:5000'
+      apiKey: "LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw",
+      serverUrl: "http://localhost:5000"
     });
     const context = new EventPluginContext(client, {}, new ContextData());
 
@@ -126,15 +126,15 @@ describe('EventPluginManager', () => {
       client.config.removePlugin(client.config.plugins[0]);
     }
 
-    client.config.addPlugin('1', 1, (ctx: EventPluginContext) => {
+    client.config.addPlugin("1", 1, (ctx: EventPluginContext) => {
       return Promise.resolve();
     });
 
-    expect(client.config.plugins[0].name).toBe('1');
+    expect(client.config.plugins[0].name).toBe("1");
     expect(client.config.plugins.length).toBe(1);
 
     await EventPluginManager.run(context);
-    expect(client.config.plugins[0].name).toBe('1');
+    expect(client.config.plugins[0].name).toBe("1");
     expect(client.config.plugins.length).toBe(1);
   });
 });

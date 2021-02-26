@@ -19,7 +19,7 @@ export class NodeModuleCollector implements IModuleCollector {
 
     // TODO: Cache this lookup
     const modulePath = resolve(join(dirname(argv[1]), "node_modules"));
-    // TODO: What to do if this doesn't exist..
+    // TODO: What to do if this doesn"t exist..
     console.log(modulePath);
     const pathLength = modulePath.length;
 

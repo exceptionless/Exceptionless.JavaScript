@@ -1,8 +1,8 @@
 (function () {
-    'use strict';
+    "use strict";
 
-    angular.module('myApp')
-        .factory('userService', userService);
+    angular.module("myApp")
+        .factory("userService", userService);
 
     function userService($http) {
         return {
@@ -10,7 +10,7 @@
         };
 
         function getAll() {
-            return $http.get('http://random_domain_name_that_doesnt_exist.com/api/users');
+            return $http.get("http://random_domain_name_that_doesnt_exist.com/api/users");
         }
     }
 })();

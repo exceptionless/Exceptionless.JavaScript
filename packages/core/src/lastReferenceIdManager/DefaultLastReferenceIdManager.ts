@@ -1,4 +1,4 @@
-import { ILastReferenceIdManager } from './ILastReferenceIdManager.js';
+import { ILastReferenceIdManager } from "./ILastReferenceIdManager.js";
 
 export class DefaultLastReferenceIdManager implements ILastReferenceIdManager {
   /**

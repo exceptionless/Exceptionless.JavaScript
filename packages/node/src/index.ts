@@ -2,23 +2,23 @@
 import {
   addListener,
   on
-} from 'process';
+} from "process";
 
 import {
   Configuration,
   ExceptionlessClient,
   SettingsManager
-} from '@exceptionless/core';
+} from "@exceptionless/core";
 
-import { NodeEnvironmentInfoCollector } from './services/NodeEnvironmentInfoCollector.js';
-import { NodeErrorParser } from './services/NodeErrorParser.js';
-import { NodeModuleCollector } from './services/NodeModuleCollector.js';
-import { NodeRequestInfoCollector } from './services/NodeRequestInfoCollector.js';
-import { NodeFileStorageProvider } from './storage/NodeFileStorageProvider.js';
-import { FetchSubmissionClient } from './submission/FetchSubmissionClient.js';
+import { NodeEnvironmentInfoCollector } from "./services/NodeEnvironmentInfoCollector.js";
+import { NodeErrorParser } from "./services/NodeErrorParser.js";
+import { NodeModuleCollector } from "./services/NodeModuleCollector.js";
+import { NodeRequestInfoCollector } from "./services/NodeRequestInfoCollector.js";
+import { NodeFileStorageProvider } from "./storage/NodeFileStorageProvider.js";
+import { FetchSubmissionClient } from "./submission/FetchSubmissionClient.js";
 
 function init() {
-  if (typeof process === 'undefined') {
+  if (typeof process === "undefined") {
     return;
   }
 
@@ -35,13 +35,13 @@ function init() {
     this.changed();
   };
 
-  addListener('uncaughtException', (error: Error) => {
-    ExceptionlessClient.default.submitUnhandledException(error, 'uncaughtException');
+  addListener("uncaughtException", (error: Error) => {
+    ExceptionlessClient.default.submitUnhandledException(error, "uncaughtException");
   });
 
   // TODO: Handle submission https://stackoverflow.com/questions/40574218/how-to-perform-an-async-operation-on-exit
 
-  on('exit', (code: number) => {
+  on("exit", (code: number) => {
     /**
      * exit codes: https://nodejs.org/api/process.html#process_event_exit
      * From now on, only synchronous code may run. As soon as this method
@@ -49,43 +49,43 @@ function init() {
      */
     function getExitCodeReason(exitCode: number): string {
       if (exitCode === 1) {
-        return 'Uncaught Fatal Exception';
+        return "Uncaught Fatal Exception";
       }
 
       if (exitCode === 3) {
-        return 'Internal JavaScript Parse Error';
+        return "Internal JavaScript Parse Error";
       }
 
       if (exitCode === 4) {
-        return 'Internal JavaScript Evaluation Failure';
+        return "Internal JavaScript Evaluation Failure";
       }
 
       if (exitCode === 5) {
-        return 'Fatal Exception';
+        return "Fatal Exception";
       }
 
       if (exitCode === 6) {
-        return 'Non-function Internal Exception Handler ';
+        return "Non-function Internal Exception Handler ";
       }
 
       if (exitCode === 7) {
-        return 'Internal Exception Handler Run-Time Failure';
+        return "Internal Exception Handler Run-Time Failure";
       }
 
       if (exitCode === 8) {
-        return 'Uncaught Exception';
+        return "Uncaught Exception";
       }
 
       if (exitCode === 9) {
-        return 'Invalid Argument';
+        return "Invalid Argument";
       }
 
       if (exitCode === 10) {
-        return 'Internal JavaScript Run-Time Failure';
+        return "Internal JavaScript Run-Time Failure";
       }
 
       if (exitCode === 12) {
-        return 'Invalid Debug Argument';
+        return "Invalid Debug Argument";
       }
 
       return null;
@@ -95,7 +95,7 @@ function init() {
     const message = getExitCodeReason(code);
 
     if (message !== null) {
-      client.submitLog('exit', message, 'Error');
+      client.submitLog("exit", message, "Error");
     }
 
     client.config.queue.process();
