@@ -6,6 +6,8 @@
     {
       "type": "npm",
       "script": "clean",
+      "problemMatcher": [],
+      "label": "npm: clean"
     },
     {
       "type": "npm",

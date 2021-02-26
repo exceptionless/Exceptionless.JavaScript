@@ -1,10 +1,10 @@
-import { IUserInfo } from '../../models/IUserInfo.js';
-import { EventPluginContext } from '../EventPluginContext.js';
-import { IEventPlugin } from '../IEventPlugin.js';
+import { UserInfo } from "../../models/data/UserInfo.js";
+import { EventPluginContext } from "../EventPluginContext.js";
+import { IEventPlugin } from "../IEventPlugin.js";
 
 export class HeartbeatPlugin implements IEventPlugin {
   public priority: number = 100;
-  public name: string = 'HeartbeatPlugin';
+  public name: string = "HeartbeatPlugin";
 
   private _interval: number;
   private _intervalId: any;
@@ -16,9 +16,12 @@ export class HeartbeatPlugin implements IEventPlugin {
   public run(context: EventPluginContext): Promise<void> {
     clearInterval(this._intervalId);
 
-    const user: IUserInfo = context.event.data['@user'];
+    const user: UserInfo = context.event.data["@user"];
     if (user && user.identity) {
-      this._intervalId = setInterval(() => context.client.submitSessionHeartbeat(user.identity), this._interval);
+      this._intervalId = setInterval(
+        () => context.client.submitSessionHeartbeat(user.identity),
+        this._interval,
+      );
     }
 
     return Promise.resolve();

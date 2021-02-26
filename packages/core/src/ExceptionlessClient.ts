@@ -1,12 +1,12 @@
-import { Configuration } from './configuration/Configuration.js';
-import { IConfigurationSettings } from './configuration/IConfigurationSettings.js';
-import { SettingsManager } from './configuration/SettingsManager.js';
-import { EventBuilder } from './EventBuilder.js';
-import { IEvent } from './models/IEvent.js';
-import { IUserDescription } from './models/IUserDescription.js';
-import { ContextData } from './plugins/ContextData.js';
-import { EventPluginContext } from './plugins/EventPluginContext.js';
-import { EventPluginManager } from './plugins/EventPluginManager.js';
+import { Configuration } from "./configuration/Configuration.js";
+import { IConfigurationSettings } from "./configuration/IConfigurationSettings.js";
+import { SettingsManager } from "./configuration/SettingsManager.js";
+import { EventBuilder } from "./EventBuilder.js";
+import { Event } from "./models/Event.js";
+import { UserDescription } from "./models/data/UserDescription.js";
+import { ContextData } from "./plugins/ContextData.js";
+import { EventPluginContext } from "./plugins/EventPluginContext.js";
+import { EventPluginManager } from "./plugins/EventPluginManager.js";
 
 export class ExceptionlessClient {
   /**
@@ -25,27 +25,35 @@ export class ExceptionlessClient {
   constructor();
   constructor(settings: IConfigurationSettings);
   constructor(apiKey: string, serverUrl?: string);
-  constructor(settingsOrApiKey?: IConfigurationSettings | string, serverUrl?: string) {
-    this.config = typeof settingsOrApiKey === 'object'
+  constructor(
+    settingsOrApiKey?: IConfigurationSettings | string,
+    serverUrl?: string,
+  ) {
+    this.config = typeof settingsOrApiKey === "object"
       ? new Configuration(settingsOrApiKey)
       : new Configuration({ apiKey: settingsOrApiKey, serverUrl });
 
     this.updateSettingsTimer(5000);
-    this.config.onChanged(() => this.updateSettingsTimer(this._timeoutId > 0 ? 5000 : 0));
+    this.config.onChanged(() =>
+      this.updateSettingsTimer(this._timeoutId > 0 ? 5000 : 0)
+    );
     this.config.queue.onEventsPosted(() => this.updateSettingsTimer());
   }
 
   public createException(exception: Error): EventBuilder {
     const pluginContextData = new ContextData();
     pluginContextData.setException(exception);
-    return this.createEvent(pluginContextData).setType('error');
+    return this.createEvent(pluginContextData).setType("error");
   }
 
   public submitException(exception: Error): Promise<EventPluginContext> {
     return this.createException(exception).submit();
   }
 
-  public createUnhandledException(exception: Error, submissionMethod?: string): EventBuilder {
+  public createUnhandledException(
+    exception: Error,
+    submissionMethod?: string,
+  ): EventBuilder {
     const builder = this.createException(exception);
     builder.pluginContextData.markAsUnhandledError();
     builder.pluginContextData.setSubmissionMethod(submissionMethod);
@@ -53,12 +61,15 @@ export class ExceptionlessClient {
     return builder;
   }
 
-  public submitUnhandledException(exception: Error, submissionMethod?: string): Promise<EventPluginContext> {
+  public submitUnhandledException(
+    exception: Error,
+    submissionMethod?: string,
+  ): Promise<EventPluginContext> {
     return this.createUnhandledException(exception, submissionMethod).submit();
   }
 
   public createFeatureUsage(feature: string): EventBuilder {
-    return this.createEvent().setType('usage').setSource(feature);
+    return this.createEvent().setType("usage").setSource(feature);
   }
 
   public submitFeatureUsage(feature: string): Promise<EventPluginContext> {
@@ -67,12 +78,21 @@ export class ExceptionlessClient {
 
   public createLog(message: string): EventBuilder;
   public createLog(source: string, message: string): EventBuilder;
-  public createLog(source: string, message: string, level: string): EventBuilder;
-  public createLog(sourceOrMessage: string, message?: string, level?: string): EventBuilder {
-    let builder = this.createEvent().setType('log');
+  public createLog(
+    source: string,
+    message: string,
+    level: string,
+  ): EventBuilder;
+  public createLog(
+    sourceOrMessage: string,
+    message?: string,
+    level?: string,
+  ): EventBuilder {
+    let builder = this.createEvent().setType("log");
 
     if (level) {
-      builder = builder.setSource(sourceOrMessage).setMessage(message).setProperty('@level', level);
+      builder = builder.setSource(sourceOrMessage).setMessage(message)
+        .setProperty("@level", level);
     } else if (message) {
       builder = builder.setSource(sourceOrMessage).setMessage(message);
     } else {
@@ -81,24 +101,37 @@ export class ExceptionlessClient {
       try {
         // TODO: Look into using https://www.stevefenton.co.uk/Content/Blog/Date/201304/Blog/Obtaining-A-Class-Name-At-Runtime-In-TypeScript/
         const caller: any = this.createLog.caller;
-        builder = builder.setSource(caller && caller.caller && caller.caller.name);
+        builder = builder.setSource(
+          caller && caller.caller && caller.caller.name,
+        );
       } catch (e) {
-        this.config.log.trace('Unable to resolve log source: ' + e.message);
+        this.config.log.trace("Unable to resolve log source: " + e.message);
       }
     }
 
     return builder;
   }
 
-  public submitLog(message: string): Promise<EventPluginContext>
-  public submitLog(source: string, message: string): Promise<EventPluginContext>
-  public submitLog(source: string, message: string, level: string): Promise<EventPluginContext>;
-  public submitLog(sourceOrMessage: string, message?: string, level?: string): Promise<EventPluginContext> {
+  public submitLog(message: string): Promise<EventPluginContext>;
+  public submitLog(
+    source: string,
+    message: string,
+  ): Promise<EventPluginContext>;
+  public submitLog(
+    source: string,
+    message: string,
+    level: string,
+  ): Promise<EventPluginContext>;
+  public submitLog(
+    sourceOrMessage: string,
+    message?: string,
+    level?: string,
+  ): Promise<EventPluginContext> {
     return this.createLog(sourceOrMessage, message, level).submit();
   }
 
   public createNotFound(resource: string): EventBuilder {
-    return this.createEvent().setType('404').setSource(resource);
+    return this.createEvent().setType("404").setSource(resource);
   }
 
   public submitNotFound(resource: string): Promise<EventPluginContext> {
@@ -106,7 +139,7 @@ export class ExceptionlessClient {
   }
 
   public createSessionStart(): EventBuilder {
-    return this.createEvent().setType('session');
+    return this.createEvent().setType("session");
   }
 
   public submitSessionStart(): Promise<EventPluginContext> {
@@ -116,14 +149,24 @@ export class ExceptionlessClient {
   public async submitSessionEnd(sessionIdOrUserId: string): Promise<void> {
     if (sessionIdOrUserId && this.config.enabled && this.config.isValid) {
       this.config.log.info(`Submitting session end: ${sessionIdOrUserId}`);
-      await this.config.submissionClient.submitHeartbeat(sessionIdOrUserId, true);
+      await this.config.submissionClient.submitHeartbeat(
+        sessionIdOrUserId,
+        true,
+      );
     }
   }
 
-  public async submitSessionHeartbeat(sessionIdOrUserId: string): Promise<void> {
+  public async submitSessionHeartbeat(
+    sessionIdOrUserId: string,
+  ): Promise<void> {
     if (sessionIdOrUserId && this.config.enabled && this.config.isValid) {
-      this.config.log.info(`Submitting session heartbeat: ${sessionIdOrUserId}`);
-      await this.config.submissionClient.submitHeartbeat(sessionIdOrUserId, false);
+      this.config.log.info(
+        `Submitting session heartbeat: ${sessionIdOrUserId}`,
+      );
+      await this.config.submissionClient.submitHeartbeat(
+        sessionIdOrUserId,
+        false,
+      );
     }
   }
 
@@ -138,7 +181,10 @@ export class ExceptionlessClient {
    * @param pluginContextData Any contextual data objects to be used by Exceptionless plugins to gather default information for inclusion in the report information.
    * @param callback
    */
-  public async submitEvent(event: IEvent, pluginContextData?: ContextData): Promise<EventPluginContext> {
+  public async submitEvent(
+    event: Event,
+    pluginContextData?: ContextData,
+  ): Promise<EventPluginContext> {
     const context = new EventPluginContext(this, event, pluginContextData);
     if (!event) {
       context.cancelled = true;
@@ -146,7 +192,7 @@ export class ExceptionlessClient {
     }
 
     if (!this.config.enabled || !this.config.isValid) {
-      this.config.log.info('Event submission is currently disabled.');
+      this.config.log.info("Event submission is currently disabled.");
       context.cancelled = true;
       return context;
     }
@@ -169,7 +215,7 @@ export class ExceptionlessClient {
 
     // ensure all required data
     if (!ev.type || ev.type.length === 0) {
-      ev.type = 'log';
+      ev.type = "log";
     }
 
     if (!ev.date) {
@@ -191,15 +237,30 @@ export class ExceptionlessClient {
    * @param description The user's description of the event.
    * @param callback The submission response.
    */
-  public async updateUserEmailAndDescription(referenceId: string, email: string, description: string): Promise<void> {
-    if (!referenceId || !email || !description || !this.config.enabled || !this.config.isValid) {
+  public async updateUserEmailAndDescription(
+    referenceId: string,
+    email: string,
+    description: string,
+  ): Promise<void> {
+    if (
+      !referenceId || !email || !description || !this.config.enabled ||
+      !this.config.isValid
+    ) {
       return;
     }
 
-    const userDescription: IUserDescription = { email_address: email, description };
-    const response = await this.config.submissionClient.submitUserDescription(referenceId, userDescription);
+    const userDescription: UserDescription = {
+      email_address: email,
+      description,
+    };
+    const response = await this.config.submissionClient.submitUserDescription(
+      referenceId,
+      userDescription,
+    );
     if (!response.success) {
-      this.config.log.error(`Failed to submit user email and description for event '${referenceId}': ${response.status} ${response.message}`);
+      this.config.log.error(
+        `Failed to submit user email and description for event '${referenceId}': ${response.status} ${response.message}`,
+      );
     }
   }
 
@@ -218,8 +279,11 @@ export class ExceptionlessClient {
 
     const interval = this.config.updateSettingsWhenIdleInterval;
     if (interval > 0) {
-      this.config.log.info(`Update settings every ${interval}ms (${initialDelay || 0}ms delay)`);
-      const updateSettings = () => void SettingsManager.updateSettings(this.config);
+      this.config.log.info(
+        `Update settings every ${interval}ms (${initialDelay || 0}ms delay)`,
+      );
+      const updateSettings = () =>
+        void SettingsManager.updateSettings(this.config);
       if (initialDelay > 0) {
         this._timeoutId = setTimeout(updateSettings, initialDelay);
       }

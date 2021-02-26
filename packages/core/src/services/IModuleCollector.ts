@@ -1,5 +1,5 @@
-import { IModule } from '../models/IModule.js';
+import { ModuleInfo } from "../models/data/ModuleInfo.js";
 
 export interface IModuleCollector {
-  getModules(): IModule[];
+  getModules(): ModuleInfo[];
 }
