@@ -26,7 +26,7 @@ export abstract class SubmissionClientBase implements ISubmissionClient {
   public async submitEvents(events: IEvent[]): Promise<Response<void>> {
     const url = `${this.config.serverUrl}/api/v2/events`;
     const response = await this.fetch<void>(url, {
-      method: 'GET',
+      method: 'POST',
       body: JSON.stringify(events)
     });
 
