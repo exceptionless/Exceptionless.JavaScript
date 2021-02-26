@@ -1,4 +1,4 @@
-export interface IEnvironmentInfo {
+export class EnvironmentInfo {
   processor_count?: number;
   total_physical_memory?: number;
   available_physical_memory?: number;

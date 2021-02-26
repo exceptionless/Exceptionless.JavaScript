@@ -1,4 +1,4 @@
-export interface IRequestInfo {
+export class RequestInfo {
   user_agent?: string;
   http_method?: string;
   is_secure?: boolean;

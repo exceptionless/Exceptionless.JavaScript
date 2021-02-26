@@ -1,20 +1,25 @@
-import { ExceptionlessClient } from './ExceptionlessClient.js';
-import { IEvent } from './models/IEvent.js';
-import { IManualStackingInfo } from './models/IManualStackingInfo.js';
-import { IRequestInfo } from "./models/IRequestInfo.js";
-import { IUserInfo } from './models/IUserInfo.js';
-import { ContextData } from './plugins/ContextData.js';
-import { EventPluginContext } from './plugins/EventPluginContext.js';
-import { addRange, stringify, isEmpty } from "./Utils.js";
+import { ExceptionlessClient } from "./ExceptionlessClient.js";
+import { Event } from "./models/Event.js";
+import { ManualStackingInfo } from "./models/data/ManualStackingInfo.js";
+import { RequestInfo } from "./models/data/RequestInfo.js";
+import { UserInfo } from "./models/data/UserInfo.js";
+import { ContextData } from "./plugins/ContextData.js";
+import { EventPluginContext } from "./plugins/EventPluginContext.js";
+import { addRange, isEmpty, stringify } from "./Utils.js";
 
 export class EventBuilder {
-  public target: IEvent;
+  public target: Event;
   public client: ExceptionlessClient;
   public pluginContextData: ContextData;
 
-  private _validIdentifierErrorMessage: string = 'must contain between 8 and 100 alphanumeric or \'-\' characters.'; // optimization for minifier.
+  private _validIdentifierErrorMessage: string =
+    "must contain between 8 and 100 alphanumeric or '-' characters."; // optimization for minifier.
 
-  constructor(event: IEvent, client: ExceptionlessClient, pluginContextData?: ContextData) {
+  constructor(
+    event: Event,
+    client: ExceptionlessClient,
+    pluginContextData?: ContextData,
+  ) {
     this.target = event;
     this.client = client;
     this.pluginContextData = pluginContextData || new ContextData();
@@ -53,14 +58,14 @@ export class EventBuilder {
    */
   public setEventReference(name: string, id: string): EventBuilder {
     if (!name) {
-      throw new Error('Invalid name');
+      throw new Error("Invalid name");
     }
 
     if (!id || !this.isValidIdentifier(id)) {
       throw new Error(`Id ${this._validIdentifierErrorMessage}`);
     }
 
-    this.setProperty('@ref:' + name, id);
+    this.setProperty("@ref:" + name, id);
     return this;
   }
 
@@ -74,27 +79,34 @@ export class EventBuilder {
 
   public setGeo(latitude: number, longitude: number): EventBuilder {
     if (latitude < -90.0 || latitude > 90.0) {
-      throw new Error('Must be a valid latitude value between -90.0 and 90.0.');
+      throw new Error("Must be a valid latitude value between -90.0 and 90.0.");
     }
 
     if (longitude < -180.0 || longitude > 180.0) {
-      throw new Error('Must be a valid longitude value between -180.0 and 180.0.');
+      throw new Error(
+        "Must be a valid longitude value between -180.0 and 180.0.",
+      );
     }
 
     this.target.geo = `${latitude},${longitude}`;
     return this;
   }
 
-  public setUserIdentity(userInfo: IUserInfo): EventBuilder;
+  public setUserIdentity(userInfo: UserInfo): EventBuilder;
   public setUserIdentity(identity: string): EventBuilder;
   public setUserIdentity(identity: string, name: string): EventBuilder;
-  public setUserIdentity(userInfoOrIdentity: IUserInfo | string, name?: string): EventBuilder {
-    const userInfo = typeof userInfoOrIdentity !== 'string' ? userInfoOrIdentity : { identity: userInfoOrIdentity, name };
+  public setUserIdentity(
+    userInfoOrIdentity: UserInfo | string,
+    name?: string,
+  ): EventBuilder {
+    const userInfo = typeof userInfoOrIdentity !== "string"
+      ? userInfoOrIdentity
+      : { identity: userInfoOrIdentity, name };
     if (!userInfo || (!userInfo.identity && !userInfo.name)) {
       return this;
     }
 
-    this.setProperty('@user', userInfo);
+    this.setProperty("@user", userInfo);
     return this;
   }
 
@@ -105,9 +117,15 @@ export class EventBuilder {
    * @param description The user's description of the event.
    * @returns {EventBuilder}
    */
-  public setUserDescription(emailAddress: string, description: string): EventBuilder {
+  public setUserDescription(
+    emailAddress: string,
+    description: string,
+  ): EventBuilder {
     if (emailAddress && description) {
-      this.setProperty('@user_description', { email_address: emailAddress, description });
+      this.setProperty("@user_description", {
+        email_address: emailAddress,
+        description,
+      });
     }
 
     return this;
@@ -120,14 +138,17 @@ export class EventBuilder {
    * @param title An optional title for the stacking information.
    * @returns {EventBuilder}
    */
-  public setManualStackingInfo(signatureData: any, title?: string): EventBuilder {
+  public setManualStackingInfo(
+    signatureData: any,
+    title?: string,
+  ): EventBuilder {
     if (signatureData) {
-      const stack: IManualStackingInfo = { signature_data: signatureData };
+      const stack: ManualStackingInfo = { signature_data: signatureData };
       if (title) {
         stack.title = title;
       }
 
-      this.setProperty('@stack', stack);
+      this.setProperty("@stack", stack);
     }
 
     return this;
@@ -139,7 +160,10 @@ export class EventBuilder {
    * @param title An optional title for the stacking information.
    * @returns {EventBuilder}
    */
-  public setManualStackingKey(manualStackingKey: string, title?: string): EventBuilder {
+  public setManualStackingKey(
+    manualStackingKey: string,
+    title?: string,
+  ): EventBuilder {
     if (manualStackingKey) {
       const data = { ManualStackingKey: manualStackingKey };
       this.setManualStackingInfo(data, title);
@@ -174,7 +198,12 @@ export class EventBuilder {
    * @param maxDepth The max depth of the object to include.
    * @param excludedPropertyNames Any property names that should be excluded.
    */
-  public setProperty(name: string, value: any, maxDepth?: number, excludedPropertyNames?: string[]): EventBuilder {
+  public setProperty(
+    name: string,
+    value: any,
+    maxDepth?: number,
+    excludedPropertyNames?: string[],
+  ): EventBuilder {
     if (!name || (value === undefined || value == null)) {
       return this;
     }
@@ -183,7 +212,13 @@ export class EventBuilder {
       this.target.data = {};
     }
 
-    const result = JSON.parse(stringify(value, this.client.config.dataExclusions.concat(excludedPropertyNames || []), maxDepth));
+    const result = JSON.parse(
+      stringify(
+        value,
+        this.client.config.dataExclusions.concat(excludedPropertyNames || []),
+        maxDepth,
+      ),
+    );
     if (!isEmpty(result)) {
       this.target.data[name] = result;
     }
@@ -193,15 +228,15 @@ export class EventBuilder {
 
   public markAsCritical(critical: boolean): EventBuilder {
     if (critical) {
-      this.addTags('Critical');
+      this.addTags("Critical");
     }
 
     return this;
   }
 
-  public addRequestInfo(request: IRequestInfo): EventBuilder {
+  public addRequestInfo(request: RequestInfo): EventBuilder {
     if (request) {
-      this.pluginContextData['@request'] = request;
+      this.pluginContextData["@request"] = request;
     }
 
     return this;
@@ -223,7 +258,8 @@ export class EventBuilder {
     for (let index = 0; index < value.length; index++) {
       const code = value.charCodeAt(index);
       const isDigit = (code >= 48) && (code <= 57);
-      const isLetter = ((code >= 65) && (code <= 90)) || ((code >= 97) && (code <= 122));
+      const isLetter = ((code >= 65) && (code <= 90)) ||
+        ((code >= 97) && (code <= 122));
       const isMinus = code === 45;
 
       if (!(isDigit || isLetter) && !isMinus) {

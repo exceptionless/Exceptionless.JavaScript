@@ -1,9 +1,9 @@
 import {
   EventPluginContext,
-  IError,
+  ErrorInfo,
   IErrorParser,
-  IParameter,
-  IStackFrame
+  ParameterInfo,
+  StackFrameInfo
 } from '@exceptionless/core';
 
 import {
@@ -12,11 +12,11 @@ import {
 } from 'stacktrace-js';
 
 export class DefaultErrorParser implements IErrorParser {
-  public async parse(context: EventPluginContext, exception: Error): Promise<IError> {
-    function getParameters(parameters: string | string[]): IParameter[] {
+  public async parse(context: EventPluginContext, exception: Error): Promise<ErrorInfo> {
+    function getParameters(parameters: string | string[]): ParameterInfo[] {
       const params: string[] = (typeof parameters === 'string' ? [parameters] : parameters) || [];
 
-      const items: IParameter[] = [];
+      const items: ParameterInfo[] = [];
       for (const param of params) {
         items.push({ name: param });
       }
@@ -24,9 +24,9 @@ export class DefaultErrorParser implements IErrorParser {
       return items;
     }
 
-    function getStackFrames(stackFrames: StackFrame[]): IStackFrame[] {
+    function getStackFrames(stackFrames: StackFrame[]): StackFrameInfo[] {
       const ANONYMOUS: string = '<anonymous>';
-      const frames: IStackFrame[] = [];
+      const frames: StackFrameInfo[] = [];
 
       for (const frame of stackFrames) {
         const fileName: string = frame.getFileName();

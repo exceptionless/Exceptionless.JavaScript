@@ -1,8 +1,8 @@
-import { Configuration } from '../configuration/Configuration.js';
-import { ILog } from '../logging/ILog.js';
-import { IEvent } from '../models/IEvent.js';
-import { IEventQueue } from '../queue/IEventQueue.js';
-import { IStorageItem } from '../storage/IStorageItem.js';
+import { Configuration } from "../configuration/Configuration.js";
+import { ILog } from "../logging/ILog.js";
+import { Event } from "../models/Event.js";
+import { IEventQueue } from "../queue/IEventQueue.js";
+import { IStorageItem } from "../storage/IStorageItem.js";
 import { Response } from "../submission/Response.js";
 
 export class DefaultEventQueue implements IEventQueue {
@@ -18,7 +18,9 @@ export class DefaultEventQueue implements IEventQueue {
    * @type {Array}
    * @private
    */
-  private _handlers: Array<(events: IEvent[], response: Response<void>) => void> = [];
+  private _handlers: Array<
+    (events: Event[], response: Response<void>) => void
+  > = [];
 
   /**
    * Suspends processing until the specified time.
@@ -52,8 +54,8 @@ export class DefaultEventQueue implements IEventQueue {
     this._config = config;
   }
 
-  public enqueue(event: IEvent): void {
-    const eventWillNotBeQueued: string = 'The event will not be queued.'; // optimization for minifier.
+  public enqueue(event: Event): void {
+    const eventWillNotBeQueued: string = "The event will not be queued."; // optimization for minifier.
     const config: Configuration = this._config; // Optimization for minifier.
     const log: ILog = config.log; // Optimization for minifier.
 
@@ -68,14 +70,18 @@ export class DefaultEventQueue implements IEventQueue {
     }
 
     if (this.areQueuedItemsDiscarded()) {
-      log.info(`Queue items are currently being discarded. ${eventWillNotBeQueued}`);
+      log.info(
+        `Queue items are currently being discarded. ${eventWillNotBeQueued}`,
+      );
       return;
     }
 
     this.ensureQueueTimer();
 
     const timestamp = config.storage.queue.save(event);
-    const logText = `type=${event.type} ${event.reference_id ? 'refid=' + event.reference_id : ''}`;
+    const logText = `type=${event.type} ${
+      event.reference_id ? "refid=" + event.reference_id : ""
+    }`;
     if (timestamp) {
       log.info(`Enqueuing event: ${timestamp} ${logText}`);
     } else {
@@ -84,7 +90,7 @@ export class DefaultEventQueue implements IEventQueue {
   }
 
   public async process(): Promise<void> {
-    const queueNotProcessed: string = 'The queue will not be processed.'; // optimization for minifier.
+    const queueNotProcessed: string = "The queue will not be processed."; // optimization for minifier.
     const config: Configuration = this._config; // Optimization for minifier.
     const log: ILog = config.log; // Optimization for minifier.
 
@@ -92,7 +98,7 @@ export class DefaultEventQueue implements IEventQueue {
       return;
     }
 
-    log.info('Processing queue...');
+    log.info("Processing queue...");
     if (!config.enabled) {
       log.info(`Configuration is disabled: ${queueNotProcessed}`);
       return;
@@ -114,10 +120,12 @@ export class DefaultEventQueue implements IEventQueue {
       }
 
       log.info(`Sending ${events.length} events to ${config.serverUrl}`);
-      const response = await config.submissionClient.submitEvents(events.map((e) => e.value));
+      const response = await config.submissionClient.submitEvents(
+        events.map((e) => e.value),
+      );
       this.processSubmissionResponse(response, events);
       this.eventsPosted(events.map((e) => e.value), response);
-      log.info('Finished processing queue.');
+      log.info("Finished processing queue.");
       this._processingQueue = false;
     } catch (ex) {
       log.error(`Error processing queue: ${ex}`);
@@ -126,7 +134,11 @@ export class DefaultEventQueue implements IEventQueue {
     }
   }
 
-  public suspendProcessing(durationInMinutes?: number, discardFutureQueuedItems?: boolean, clearQueue?: boolean): void {
+  public suspendProcessing(
+    durationInMinutes?: number,
+    discardFutureQueuedItems?: boolean,
+    clearQueue?: boolean,
+  ): void {
     const config: Configuration = this._config; // Optimization for minifier.
 
     if (!durationInMinutes || durationInMinutes <= 0) {
@@ -134,7 +146,9 @@ export class DefaultEventQueue implements IEventQueue {
     }
 
     config.log.info(`Suspending processing for ${durationInMinutes} minutes.`);
-    this._suspendProcessingUntil = new Date(new Date().getTime() + (durationInMinutes * 60000));
+    this._suspendProcessingUntil = new Date(
+      new Date().getTime() + (durationInMinutes * 60000),
+    );
 
     if (discardFutureQueuedItems) {
       this._discardQueuedItemsUntil = this._suspendProcessingUntil;
@@ -147,11 +161,13 @@ export class DefaultEventQueue implements IEventQueue {
   }
 
   // TODO: See if this makes sense.
-  public onEventsPosted(handler: (events: IEvent[], response: Response<void>) => void): void {
+  public onEventsPosted(
+    handler: (events: Event[], response: Response<void>) => void,
+  ): void {
     handler && this._handlers.push(handler);
   }
 
-  private eventsPosted(events: IEvent[], response: Response<void>) {
+  private eventsPosted(events: Event[], response: Response<void>) {
     const handlers = this._handlers; // optimization for minifier.
     for (const handler of handlers) {
       try {
@@ -163,7 +179,8 @@ export class DefaultEventQueue implements IEventQueue {
   }
 
   private areQueuedItemsDiscarded(): boolean {
-    return this._discardQueuedItemsUntil && this._discardQueuedItemsUntil > new Date();
+    return this._discardQueuedItemsUntil &&
+      this._discardQueuedItemsUntil > new Date();
   }
 
   private ensureQueueTimer(): void {
@@ -173,7 +190,8 @@ export class DefaultEventQueue implements IEventQueue {
   }
 
   private isQueueProcessingSuspended(): boolean {
-    return this._suspendProcessingUntil && this._suspendProcessingUntil > new Date();
+    return this._suspendProcessingUntil &&
+      this._suspendProcessingUntil > new Date();
   }
 
   private onProcessQueue(): void {
@@ -182,8 +200,11 @@ export class DefaultEventQueue implements IEventQueue {
     }
   }
 
-  private processSubmissionResponse(response: Response<void>, events: IStorageItem[]): void {
-    const noSubmission: string = 'The event will not be submitted.'; // Optimization for minifier.
+  private processSubmissionResponse(
+    response: Response<void>,
+    events: IStorageItem[],
+  ): void {
+    const noSubmission: string = "The event will not be submitted."; // Optimization for minifier.
     const config: Configuration = this._config; // Optimization for minifier.
     const log: ILog = config.log; // Optimization for minifier.
 
@@ -195,21 +216,25 @@ export class DefaultEventQueue implements IEventQueue {
 
     if (response.status === 429 || response.status === 503) {
       // You are currently over your rate limit or the servers are under stress.
-      log.error('Server returned service unavailable.');
+      log.error("Server returned service unavailable.");
       this.suspendProcessing();
       return;
     }
 
     if (response.status === 402) {
       // If the organization over the rate limit then discard the event.
-      log.info('Too many events have been submitted, please upgrade your plan.');
+      log.info(
+        "Too many events have been submitted, please upgrade your plan.",
+      );
       this.suspendProcessing(null, true, true);
       return;
     }
 
     if (response.status === 401 || response.status === 403) {
       // The api key was suspended or could not be authorized.
-      log.info(`Unable to authenticate, please check your configuration. ${noSubmission}`);
+      log.info(
+        `Unable to authenticate, please check your configuration. ${noSubmission}`,
+      );
       this.suspendProcessing(15);
       this.removeEvents(events);
       return;
@@ -224,10 +249,13 @@ export class DefaultEventQueue implements IEventQueue {
     }
 
     if (response.status === 413) {
-      const message = 'Event submission discarded for being too large.';
+      const message = "Event submission discarded for being too large.";
       if (config.submissionBatchSize > 1) {
         log.error(`${message} Retrying with smaller batch size.`);
-        config.submissionBatchSize = Math.max(1, Math.round(config.submissionBatchSize / 1.5));
+        config.submissionBatchSize = Math.max(
+          1,
+          Math.round(config.submissionBatchSize / 1.5),
+        );
       } else {
         log.error(`${message} ${noSubmission}`);
         this.removeEvents(events);
@@ -236,7 +264,10 @@ export class DefaultEventQueue implements IEventQueue {
       return;
     }
 
-    log.error(`Error submitting events: ${response.message || 'Please check the network tab for more info.'}`);
+    log.error(
+      `Error submitting events: ${response.message ||
+        "Please check the network tab for more info."}`,
+    );
     this.suspendProcessing();
   }
 

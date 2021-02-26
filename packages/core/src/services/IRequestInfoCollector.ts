@@ -1,6 +1,6 @@
-import { IRequestInfo } from '../models/IRequestInfo.js';
-import { EventPluginContext } from '../plugins/EventPluginContext.js';
+import { RequestInfo } from "../models/data/RequestInfo.js";
+import { EventPluginContext } from "../plugins/EventPluginContext.js";
 
 export interface IRequestInfoCollector {
-  getRequestInfo(context: EventPluginContext): IRequestInfo;
+  getRequestInfo(context: EventPluginContext): RequestInfo;
 }

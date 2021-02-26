@@ -1,18 +1,21 @@
-import { IInnerError } from '../../models/IInnerError.js';
-import { getHashCode } from '../../Utils.js';
-import { EventPluginContext } from '../EventPluginContext.js';
-import { IEventPlugin } from '../IEventPlugin.js';
+import { InnerErrorInfo } from "../../models/data/ErrorInfo.js";
+import { getHashCode } from "../../Utils.js";
+import { EventPluginContext } from "../EventPluginContext.js";
+import { IEventPlugin } from "../IEventPlugin.js";
 
 export class DuplicateCheckerPlugin implements IEventPlugin {
   public priority: number = 1010;
-  public name: string = 'DuplicateCheckerPlugin';
+  public name: string = "DuplicateCheckerPlugin";
 
   private _mergedEvents: MergedEvent[] = [];
   private _processedHashCodes: TimestampedHash[] = [];
   private _getCurrentTime: () => number;
   private _interval: number;
 
-  constructor(getCurrentTime: () => number = () => Date.now(), interval: number = 30000) {
+  constructor(
+    getCurrentTime: () => number = () => Date.now(),
+    interval: number = 30000,
+  ) {
     this._getCurrentTime = getCurrentTime;
     this._interval = interval;
 
@@ -24,7 +27,7 @@ export class DuplicateCheckerPlugin implements IEventPlugin {
   }
 
   public run(context: EventPluginContext): Promise<void> {
-    function calculateHashCode(e: IInnerError): number {
+    function calculateHashCode(e: InnerErrorInfo): number {
       let hash = 0;
       while (e) {
         if (e.message && e.message.length) {
@@ -39,28 +42,37 @@ export class DuplicateCheckerPlugin implements IEventPlugin {
       return hash;
     }
 
-    const error = context.event.data['@error'];
+    const error = context.event.data["@error"];
     const hashCode = calculateHashCode(error);
     if (hashCode) {
       const count = context.event.count || 1;
       const now = this._getCurrentTime();
 
-      const merged = this._mergedEvents.filter((s) => s.hashCode === hashCode)[0];
+      const merged = this._mergedEvents.filter((s) =>
+        s.hashCode === hashCode
+      )[0];
       if (merged) {
         merged.incrementCount(count);
         merged.updateDate(context.event.date);
-        context.log.info('Ignoring duplicate event with hash: ' + hashCode);
+        context.log.info("Ignoring duplicate event with hash: " + hashCode);
         context.cancelled = true;
       }
 
-      if (!context.cancelled && this._processedHashCodes.some((h) => h.hash === hashCode && h.timestamp >= (now - this._interval))) {
-        context.log.trace('Adding event with hash: ' + hashCode);
+      if (
+        !context.cancelled &&
+        this._processedHashCodes.some((h) =>
+          h.hash === hashCode && h.timestamp >= (now - this._interval)
+        )
+      ) {
+        context.log.trace("Adding event with hash: " + hashCode);
         this._mergedEvents.push(new MergedEvent(hashCode, context, count));
         context.cancelled = true;
       }
 
       if (!context.cancelled) {
-        context.log.trace('Enqueueing event with hash: ' + hashCode + 'to cache.');
+        context.log.trace(
+          "Enqueueing event with hash: " + hashCode + "to cache.",
+        );
         this._processedHashCodes.push({ hash: hashCode, timestamp: now });
 
         // Only keep the last 50 recent errors.

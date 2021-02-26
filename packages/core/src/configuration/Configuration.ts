@@ -1,26 +1,26 @@
-import { DefaultLastReferenceIdManager } from '../lastReferenceIdManager/DefaultLastReferenceIdManager.js';
-import { ILastReferenceIdManager } from '../lastReferenceIdManager/ILastReferenceIdManager.js';
-import { ILog } from '../logging/ILog.js';
-import { ConsoleLog } from '../logging/ConsoleLog.js';
-import { NullLog } from '../logging/NullLog.js';
-import { IUserInfo } from '../models/IUserInfo.js';
-import { HeartbeatPlugin } from '../plugins/default/HeartbeatPlugin.js';
-import { ReferenceIdPlugin } from '../plugins/default/ReferenceIdPlugin.js';
-import { EventPluginContext } from '../plugins/EventPluginContext.js';
-import { EventPluginManager } from '../plugins/EventPluginManager.js';
-import { IEventPlugin } from '../plugins/IEventPlugin.js';
-import { DefaultEventQueue } from '../queue/DefaultEventQueue.js';
-import { IEventQueue } from '../queue/IEventQueue.js';
-import { IEnvironmentInfoCollector } from '../services/IEnvironmentInfoCollector.js';
-import { IErrorParser } from '../services/IErrorParser.js';
-import { IModuleCollector } from '../services/IModuleCollector.js';
-import { IRequestInfoCollector } from '../services/IRequestInfoCollector.js';
-import { InMemoryStorageProvider } from '../storage/InMemoryStorageProvider.js';
-import { IStorageProvider } from '../storage/IStorageProvider.js';
+import { DefaultLastReferenceIdManager } from "../lastReferenceIdManager/DefaultLastReferenceIdManager.js";
+import { ILastReferenceIdManager } from "../lastReferenceIdManager/ILastReferenceIdManager.js";
+import { ILog } from "../logging/ILog.js";
+import { ConsoleLog } from "../logging/ConsoleLog.js";
+import { NullLog } from "../logging/NullLog.js";
+import { UserInfo } from "../models/data/UserInfo.js";
+import { HeartbeatPlugin } from "../plugins/default/HeartbeatPlugin.js";
+import { ReferenceIdPlugin } from "../plugins/default/ReferenceIdPlugin.js";
+import { EventPluginContext } from "../plugins/EventPluginContext.js";
+import { EventPluginManager } from "../plugins/EventPluginManager.js";
+import { IEventPlugin } from "../plugins/IEventPlugin.js";
+import { DefaultEventQueue } from "../queue/DefaultEventQueue.js";
+import { IEventQueue } from "../queue/IEventQueue.js";
+import { IEnvironmentInfoCollector } from "../services/IEnvironmentInfoCollector.js";
+import { IErrorParser } from "../services/IErrorParser.js";
+import { IModuleCollector } from "../services/IModuleCollector.js";
+import { IRequestInfoCollector } from "../services/IRequestInfoCollector.js";
+import { InMemoryStorageProvider } from "../storage/InMemoryStorageProvider.js";
+import { IStorageProvider } from "../storage/IStorageProvider.js";
 import { ISubmissionClient } from "../submission/ISubmissionClient.js";
-import { IConfigurationSettings } from './IConfigurationSettings.js';
-import { SettingsManager } from './SettingsManager.js';
-import { merge, addRange, guid } from "../Utils.js";
+import { IConfigurationSettings } from "./IConfigurationSettings.js";
+import { SettingsManager } from "./SettingsManager.js";
+import { addRange, guid, merge } from "../Utils.js";
 
 export class Configuration implements IConfigurationSettings {
   /**
@@ -56,7 +56,8 @@ export class Configuration implements IConfigurationSettings {
 
   public environmentInfoCollector: IEnvironmentInfoCollector;
   public errorParser: IErrorParser;
-  public lastReferenceIdManager: ILastReferenceIdManager = new DefaultLastReferenceIdManager();
+  public lastReferenceIdManager: ILastReferenceIdManager =
+    new DefaultLastReferenceIdManager();
   public log: ILog;
   public moduleCollector: IModuleCollector;
   public requestInfoCollector: IRequestInfoCollector;
@@ -89,21 +90,21 @@ export class Configuration implements IConfigurationSettings {
    * @type {string}
    * @private
    */
-  private _serverUrl: string = 'https://collector.exceptionless.io';
+  private _serverUrl: string = "https://collector.exceptionless.io";
 
   /**
    * The config server url that all configuration will be retrieved from.
    * @type {string}
    * @private
    */
-  private _configServerUrl: string = 'https://config.exceptionless.io';
+  private _configServerUrl: string = "https://config.exceptionless.io";
 
   /**
    * The heartbeat server url that all heartbeats will be sent to.
    * @type {string}
    * @private
    */
-  private _heartbeatServerUrl: string = 'https://heartbeat.exceptionless.io';
+  private _heartbeatServerUrl: string = "https://heartbeat.exceptionless.io";
 
   /**
    * How often the client should check for updated server settings when idle. The default is every 2 minutes.
@@ -150,7 +151,7 @@ export class Configuration implements IConfigurationSettings {
 
   constructor(configSettings?: IConfigurationSettings) {
     function inject(fn: any) {
-      return typeof fn === 'function' ? fn(this) : fn;
+      return typeof fn === "function" ? fn(this) : fn;
     }
 
     configSettings = merge(Configuration.defaults, configSettings);
@@ -160,17 +161,23 @@ export class Configuration implements IConfigurationSettings {
     this.serverUrl = configSettings.serverUrl;
     this.configServerUrl = configSettings.configServerUrl;
     this.heartbeatServerUrl = configSettings.heartbeatServerUrl;
-    this.updateSettingsWhenIdleInterval = configSettings.updateSettingsWhenIdleInterval;
+    this.updateSettingsWhenIdleInterval =
+      configSettings.updateSettingsWhenIdleInterval;
     this.includePrivateInformation = configSettings.includePrivateInformation;
 
-    this.environmentInfoCollector = inject(configSettings.environmentInfoCollector);
+    this.environmentInfoCollector = inject(
+      configSettings.environmentInfoCollector,
+    );
     this.errorParser = inject(configSettings.errorParser);
-    this.lastReferenceIdManager = inject(configSettings.lastReferenceIdManager) || new DefaultLastReferenceIdManager();
+    this.lastReferenceIdManager =
+      inject(configSettings.lastReferenceIdManager) ||
+      new DefaultLastReferenceIdManager();
     this.moduleCollector = inject(configSettings.moduleCollector);
     this.requestInfoCollector = inject(configSettings.requestInfoCollector);
     this.submissionBatchSize = inject(configSettings.submissionBatchSize) || 50;
     this.submissionClient = inject(configSettings.submissionClient);
-    this.storage = inject(configSettings.storage) || new InMemoryStorageProvider();
+    this.storage = inject(configSettings.storage) ||
+      new InMemoryStorageProvider();
     this.queue = inject(configSettings.queue) || new DefaultEventQueue(this);
 
     SettingsManager.applySavedServerSettings(this);
@@ -278,7 +285,7 @@ export class Configuration implements IConfigurationSettings {
    * @param value
    */
   public set updateSettingsWhenIdleInterval(value: number) {
-    if (typeof value !== 'number') {
+    if (typeof value !== "number") {
       return;
     }
 
@@ -303,8 +310,10 @@ export class Configuration implements IConfigurationSettings {
    * @returns {string[]}
    */
   public get dataExclusions(): string[] {
-    const exclusions: string = this.settings['@@DataExclusions'];
-    return this._dataExclusions.concat(exclusions && exclusions.split(',') || []);
+    const exclusions: string = this.settings["@@DataExclusions"];
+    return this._dataExclusions.concat(
+      exclusions && exclusions.split(",") || [],
+    );
   }
 
   /**
@@ -317,7 +326,10 @@ export class Configuration implements IConfigurationSettings {
    * @param exclusions
    */
   public addDataExclusions(...exclusions: string[]) {
-    this._dataExclusions = addRange<string>(this._dataExclusions, ...exclusions);
+    this._dataExclusions = addRange<string>(
+      this._dataExclusions,
+      ...exclusions,
+    );
   }
 
   /**
@@ -461,8 +473,10 @@ export class Configuration implements IConfigurationSettings {
    * @returns {string[]}
    */
   public get userAgentBotPatterns(): string[] {
-    const patterns: string = this.settings['@@UserAgentBotPatterns'];
-    return this._userAgentBotPatterns.concat(patterns && patterns.split(',') || []);
+    const patterns: string = this.settings["@@UserAgentBotPatterns"];
+    return this._userAgentBotPatterns.concat(
+      patterns && patterns.split(",") || [],
+    );
   }
 
   /**
@@ -473,7 +487,10 @@ export class Configuration implements IConfigurationSettings {
    * @param userAgentBotPatterns
    */
   public addUserAgentBotPatterns(...userAgentBotPatterns: string[]) {
-    this._userAgentBotPatterns = addRange<string>(this._userAgentBotPatterns, ...userAgentBotPatterns);
+    this._userAgentBotPatterns = addRange<string>(
+      this._userAgentBotPatterns,
+      ...userAgentBotPatterns,
+    );
   }
 
   /**
@@ -482,7 +499,11 @@ export class Configuration implements IConfigurationSettings {
    */
   public get plugins(): IEventPlugin[] {
     return this._plugins.sort((p1: IEventPlugin, p2: IEventPlugin) => {
-      return (p1.priority < p2.priority) ? -1 : (p1.priority > p2.priority) ? 1 : 0;
+      return (p1.priority < p2.priority)
+        ? -1
+        : (p1.priority > p2.priority)
+        ? 1
+        : 0;
     });
   }
 
@@ -498,11 +519,21 @@ export class Configuration implements IConfigurationSettings {
    * @param priority Used to determine plugins priority.
    * @param pluginAction A function that is run.
    */
-  public addPlugin(name: string, priority: number, pluginAction: (context: EventPluginContext) => Promise<void>): void;
-  public addPlugin(pluginOrName: IEventPlugin | string, priority?: number, pluginAction?: (context: EventPluginContext) => Promise<void>): void {
-    const plugin: IEventPlugin = pluginAction ? { name: pluginOrName as string, priority, run: pluginAction } : pluginOrName as IEventPlugin;
+  public addPlugin(
+    name: string,
+    priority: number,
+    pluginAction: (context: EventPluginContext) => Promise<void>,
+  ): void;
+  public addPlugin(
+    pluginOrName: IEventPlugin | string,
+    priority?: number,
+    pluginAction?: (context: EventPluginContext) => Promise<void>,
+  ): void {
+    const plugin: IEventPlugin = pluginAction
+      ? { name: pluginOrName as string, priority, run: pluginAction }
+      : pluginOrName as IEventPlugin;
     if (!plugin || !plugin.run) {
-      this.log.error('Add plugin failed: Run method not defined');
+      this.log.error("Add plugin failed: Run method not defined");
       return;
     }
 
@@ -539,9 +570,11 @@ export class Configuration implements IConfigurationSettings {
    * @param name
    */
   public removePlugin(pluginOrName: IEventPlugin | string): void {
-    const name: string = typeof pluginOrName === 'string' ? pluginOrName : pluginOrName.name;
+    const name: string = typeof pluginOrName === "string"
+      ? pluginOrName
+      : pluginOrName.name;
     if (!name) {
-      this.log.error('Remove plugin failed: Plugin name not defined');
+      this.log.error("Remove plugin failed: Plugin name not defined");
       return;
     }
 
@@ -560,25 +593,33 @@ export class Configuration implements IConfigurationSettings {
    */
   public setVersion(version: string): void {
     if (version) {
-      this.defaultData['@version'] = version;
+      this.defaultData["@version"] = version;
     }
   }
 
-  public setUserIdentity(userInfo: IUserInfo): void;
+  public setUserIdentity(userInfo: UserInfo): void;
   public setUserIdentity(identity: string): void;
   public setUserIdentity(identity: string, name: string): void;
-  public setUserIdentity(userInfoOrIdentity: IUserInfo | string, name?: string): void {
-    const USER_KEY: string = '@user'; // optimization for minifier.
-    const userInfo: IUserInfo = typeof userInfoOrIdentity !== 'string' ? userInfoOrIdentity : { identity: userInfoOrIdentity, name };
+  public setUserIdentity(
+    userInfoOrIdentity: UserInfo | string,
+    name?: string,
+  ): void {
+    const USER_KEY: string = "@user"; // optimization for minifier.
+    const userInfo: UserInfo = typeof userInfoOrIdentity !== "string"
+      ? userInfoOrIdentity
+      : { identity: userInfoOrIdentity, name };
 
-    const shouldRemove: boolean = !userInfo || (!userInfo.identity && !userInfo.name);
+    const shouldRemove: boolean = !userInfo ||
+      (!userInfo.identity && !userInfo.name);
     if (shouldRemove) {
       delete this.defaultData[USER_KEY];
     } else {
       this.defaultData[USER_KEY] = userInfo;
     }
 
-    this.log.info(`user identity: ${shouldRemove ? 'null' : userInfo.identity}`);
+    this.log.info(
+      `user identity: ${shouldRemove ? "null" : userInfo.identity}`,
+    );
   }
 
   /**
@@ -586,13 +627,16 @@ export class Configuration implements IConfigurationSettings {
    * @returns {string}
    */
   public get userAgent(): string {
-    return 'exceptionless-js/1.0.0.0';
+    return "exceptionless-js/1.0.0.0";
   }
 
   /**
    * Automatically send a heartbeat to keep the session alive.
    */
-  public useSessions(sendHeartbeats: boolean = true, heartbeatInterval: number = 30000): void {
+  public useSessions(
+    sendHeartbeats: boolean = true,
+    heartbeatInterval: number = 30000,
+  ): void {
     if (sendHeartbeats) {
       this.addPlugin(new HeartbeatPlugin(heartbeatInterval));
     }

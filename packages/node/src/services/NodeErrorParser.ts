@@ -1,19 +1,23 @@
-import { parse as fromError } from 'stack-trace'
+import { parse as fromError } from "stack-trace";
 
 import {
+  ErrorInfo,
   EventPluginContext,
-  IError,
   IErrorParser,
-  IParameter,
-  IStackFrame
-} from '@exceptionless/core';
+  ParameterInfo,
+  StackFrameInfo,
+} from "@exceptionless/core";
 
 export class NodeErrorParser implements IErrorParser {
-  public parse(context: EventPluginContext, exception: Error): Promise<IError> {
-    function getParameters(parameters: string | string[]): IParameter[] {
-      const params: string[] = (typeof parameters === 'string' ? [parameters] : parameters) || [];
+  public parse(
+    context: EventPluginContext,
+    exception: Error,
+  ): Promise<ErrorInfo> {
+    function getParameters(parameters: string | string[]): ParameterInfo[] {
+      const params: string[] =
+        (typeof parameters === "string" ? [parameters] : parameters) || [];
 
-      const items: IParameter[] = [];
+      const items: ParameterInfo[] = [];
       for (const param of params) {
         items.push({ name: param });
       }
@@ -21,8 +25,8 @@ export class NodeErrorParser implements IErrorParser {
       return items;
     }
 
-    function getStackFrames(stackFrames: any[]): IStackFrame[] {
-      const frames: IStackFrame[] = [];
+    function getStackFrames(stackFrames: any[]): StackFrameInfo[] {
+      const frames: StackFrameInfo[] = [];
 
       for (const frame of stackFrames) {
         frames.push({
@@ -33,8 +37,10 @@ export class NodeErrorParser implements IErrorParser {
           column: frame.getColumnNumber() || 0,
           declaring_type: frame.getTypeName(),
           data: {
-            is_native: frame.isNative() || (frame.filename && frame.filename[0] !== '/' && frame.filename[0] !== '.')
-          }
+            is_native: frame.isNative() ||
+              (frame.filename && frame.filename[0] !== "/" &&
+                frame.filename[0] !== "."),
+          },
         });
       }
 
@@ -43,13 +49,13 @@ export class NodeErrorParser implements IErrorParser {
 
     const result = fromError(exception);
     if (!result) {
-      throw new Error('Unable to parse the exception stack trace.');
+      throw new Error("Unable to parse the exception stack trace.");
     }
 
     return Promise.resolve({
-      type: exception.name || 'Error',
+      type: exception.name || "Error",
       message: exception.message,
-      stack_trace: getStackFrames(result || [])
+      stack_trace: getStackFrames(result || []),
     });
   }
 }
