@@ -1,7 +1,7 @@
 import { Configuration } from "../../src/configuration/Configuration.js";
 import { ClientSettings } from "../../src/configuration/SettingsManager.js";
-import { IEvent } from "../../src/models/IEvent.js";
-import { IUserDescription } from "../../src/models/IUserDescription.js";
+import { Event } from "../../src/models/Event.js";
+import { UserDescription } from "../../src/models/data/UserDescription.js";
 import { Response } from "../../src/submission/Response.js";
 import { TestSubmissionClient } from "./TestSubmissionClient.js"
 
@@ -32,7 +32,7 @@ describe("TestSubmissionClient", () => {
     const fetchMock = TestSubmissionClient.prototype.fetch = jest.fn()
       .mockReturnValueOnce(new Response<void>(202, "", -1, undefined));
 
-    const events: IEvent[] = [{
+    const events: Event[] = [{
       type: "log", message: "From js client", reference_id: "123454321", data: {
         name: "blake",
         age: () => { throw new Error("Test"); }
@@ -53,7 +53,7 @@ describe("TestSubmissionClient", () => {
     const fetchMock = TestSubmissionClient.prototype.fetch = jest.fn()
       .mockReturnValueOnce(new Response<void>(202, "", -1, undefined));
 
-    const description: IUserDescription = {
+    const description: UserDescription = {
       email_address: "norply@exceptionless.io",
       description: "unit test"
     };

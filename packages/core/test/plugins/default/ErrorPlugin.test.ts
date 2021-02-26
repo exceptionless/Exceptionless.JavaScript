@@ -1,7 +1,7 @@
 import { ContextData } from "../../../src/plugins/ContextData.js";
 import { ErrorPlugin } from "../../../src/plugins/default/ErrorPlugin.js";
 import { EventPluginContext } from "../../../src/plugins/EventPluginContext.js";
-import { IEvent } from "../../../src/models/IEvent.js";
+import { Event } from "../../../src/models/Event.js";
 
 import { CapturedExceptions } from "./exceptions.js";
 import { createFixture } from "./EventPluginTestFixture.js";
@@ -23,7 +23,7 @@ describe("ErrorPlugin", () => {
   const target = new ErrorPlugin();
   let contextData: ContextData;
   let context: EventPluginContext;
-  let event: IEvent;
+  let event: Event;
 
   beforeEach(() => {
     ({
@@ -75,7 +75,7 @@ describe("ErrorPlugin", () => {
       expect(additionalData.someOtherProperty).toBe("Test2");
     });
 
-    test("shouldn\"t set empty additional data", async () => {
+    test("shouldn't set empty additional data", async () => {
       await processError({});
       const additionalData = getAdditionalData(event);
       expect(additionalData).toBeNull();
@@ -102,14 +102,14 @@ function describeForCapturedExceptions(specDefinitions: (exception: any) => void
   });
 }
 
-function getError(event: IEvent) {
+function getError(event: Event) {
   if (event && event.data && event.data["@error"]) {
     return event.data["@error"];
   }
   return null;
 }
 
-function getAdditionalData(event: IEvent) {
+function getAdditionalData(event: Event) {
   const error = getError(event);
   if (error && error.data && error.data["@ext"]) {
     return error.data["@ext"];

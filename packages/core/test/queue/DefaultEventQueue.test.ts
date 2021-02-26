@@ -1,5 +1,5 @@
 import { Configuration } from "../../src/configuration/Configuration.js";
-import { IEvent } from "../../src/models/IEvent.js";
+import { Event } from "../../src/models/Event.js";
 import { delay } from "../../src/Utils.js";
 
 describe("DefaultEventQueue", () => {
@@ -21,13 +21,13 @@ describe("DefaultEventQueue", () => {
   });
 
   test("should enqueue event", () => {
-    const event: IEvent = { type: "log", reference_id: "123454321" };
+    const event: Event = { type: "log", reference_id: "123454321" };
     config.queue.enqueue(event);
     expect(config.storage.queue.get().length).toBe(1);
   });
 
   test("should process queue", () => {
-    const event: IEvent = { type: "log", reference_id: "123454321" };
+    const event: Event = { type: "log", reference_id: "123454321" };
     config.queue.enqueue(event);
     expect(config.storage.queue.get().length).toBe(1);
     config.queue.process();
@@ -41,7 +41,7 @@ describe("DefaultEventQueue", () => {
   test("should discard event submission", () => {
     config.queue.suspendProcessing(1, true);
 
-    const event: IEvent = { type: "log", reference_id: "123454321" };
+    const event: Event = { type: "log", reference_id: "123454321" };
     config.queue.enqueue(event);
     expect(config.storage.queue.get().length).toBe(0);
   });
@@ -49,7 +49,7 @@ describe("DefaultEventQueue", () => {
   test("should suspend processing", async () => {
     config.queue.suspendProcessing(.0001);
 
-    const event: IEvent = { type: "log", reference_id: "123454321" };
+    const event: Event = { type: "log", reference_id: "123454321" };
     config.queue.enqueue(event);
     expect(config.storage.queue.get().length).toBe(1);
 

@@ -78,8 +78,8 @@ describe("Utils", () => {
       const aFoo: any = { a: "foo" };
       aFoo.b = aFoo;
 
-      expect(stringify(aFoo)).toBe("{"a":"foo"}");
-      expect(stringify([{ one: aFoo, two: aFoo }])).toBe("[{"one":{"a":"foo"}}]");
+      expect(stringify(aFoo)).toBe("{\"a\":\"foo\"}");
+      expect(stringify([{ one: aFoo, two: aFoo }])).toBe("[{\"one\":{\"a\":\"foo\"}}]");
     });
 
     test.skip("deep circular reference", () => {
@@ -91,7 +91,7 @@ describe("Utils", () => {
       b.c = c;
       c.a = a;
 
-      const expected = "{"b":{"c":{"d":"test"}}}";
+      const expected = "{\"b\":{\"c\":{\"d\":\"test\"}}}";
 
       const actual = stringify(a);
       expect(actual).toBe(expected);
@@ -137,24 +137,24 @@ describe("Utils", () => {
     describe("with exclude pattern", () => {
       test("pAssword", () => {
         expect(stringify(user, ["pAssword"])).toBe(
-          "{"id":1,"name":"Blake","passwordResetToken":"a reset token","myPassword":"123456","myPasswordValue":"123456","customValue":"Password","value":{}}"
+          JSON.stringify({ "id": 1, "name": "Blake", "passwordResetToken": "a reset token", "myPassword": "123456", "myPasswordValue": "123456", "customValue": "Password", "value": {} })
         );
       });
 
       test("*password", () => {
         expect(stringify(user, ["*password"])).toBe(
-          "{"id":1,"name":"Blake","passwordResetToken":"a reset token","myPasswordValue":"123456","customValue":"Password","value":{}}"
+          JSON.stringify({ "id": 1, "name": "Blake", "passwordResetToken": "a reset token", "myPasswordValue": "123456", "customValue": "Password", "value": {} })
         );
       });
 
       test("password*", () => {
         expect(stringify(user, ["password*"])).toBe(
-          "{"id":1,"name":"Blake","myPassword":"123456","myPasswordValue":"123456","customValue":"Password","value":{}}"
+          JSON.stringify({ "id": 1, "name": "Blake", "myPassword": "123456", "myPasswordValue": "123456", "customValue": "Password", "value": {} })
         );
       });
 
       test("*password*", () => {
-        expect(stringify(user, ["*password*"])).toBe("{"id":1,"name":"Blake","customValue":"Password","value":{}}");
+        JSON.stringify(expect(stringify(user, ["*password*"])).toBe(JSON.stringify({ "id": 1, "name": "Blake", "customValue": "Password", "value": {} })));
       });
 
       test("*Address", () => {
@@ -175,67 +175,67 @@ describe("Utils", () => {
   });
 
   describe("isMatch", () => {
-    test("input: blake patterns ["pAssword"]", () => {
+    test("input: blake patterns [\"pAssword\"]", () => {
       expect(isMatch("blake", ["pAssword"])).toBe(false);
     });
 
-    test("input: pAssword patterns ["pAssword"]", () => {
+    test("input: pAssword patterns [\"pAssword\"]", () => {
       expect(isMatch("pAssword", ["pAssword"])).toBe(true);
     });
 
-    test("input: passwordResetToken patterns ["pAssword"]", () => {
+    test("input: passwordResetToken patterns [\"pAssword\"]", () => {
       expect(isMatch("passwordResetToken", ["pAssword"])).toBe(false);
     });
 
-    test("input: myPassword patterns ["pAssword"]", () => {
+    test("input: myPassword patterns [\"pAssword\"]", () => {
       expect(isMatch("myPassword", ["pAssword"])).toBe(false);
     });
 
-    test("input: blake patterns [" * pAssword"]", () => {
+    test("input: blake patterns [\" * pAssword\"]", () => {
       expect(isMatch("blake", ["*pAssword"])).toBe(false);
     });
 
-    test("input: pAssword patterns [" * pAssword"]", () => {
+    test("input: pAssword patterns [\" * pAssword\"]", () => {
       expect(isMatch("pAssword", ["*pAssword"])).toBe(true);
     });
 
-    test("input: passwordResetToken patterns [" * pAssword"]", () => {
+    test("input: passwordResetToken patterns [\" * pAssword\"]", () => {
       expect(isMatch("passwordResetToken", ["*pAssword"])).toBe(false);
     });
 
-    test("input: myPassword patterns [" * pAssword"]", () => {
+    test("input: myPassword patterns [\" * pAssword\"]", () => {
       expect(isMatch("myPassword", ["*pAssword"])).toBe(true);
     });
 
-    test("input: blake patterns ["pAssword * "]", () => {
+    test("input: blake patterns [\"pAssword * \"]", () => {
       expect(isMatch("blake", ["pAssword*"])).toBe(false);
     });
 
-    test("input: pAssword patterns ["pAssword * "]", () => {
+    test("input: pAssword patterns [\"pAssword * \"]", () => {
       expect(isMatch("pAssword", ["pAssword*"])).toBe(true);
     });
 
-    test("input: passwordResetToken patterns ["pAssword * "]", () => {
+    test("input: passwordResetToken patterns [\"pAssword * \"]", () => {
       expect(isMatch("passwordResetToken", ["pAssword*"])).toBe(true);
     });
 
-    test("input: myPassword patterns ["pAssword * "]", () => {
+    test("input: myPassword patterns [\"pAssword * \"]", () => {
       expect(isMatch("myPassword", ["pAssword*"])).toBe(false);
     });
 
-    test("input: blake patterns [" * pAssword * "]", () => {
+    test("input: blake patterns [\" * pAssword * \"]", () => {
       expect(isMatch("blake", ["*pAssword*"])).toBe(false);
     });
 
-    test("input: pAssword patterns [" * pAssword * "]", () => {
+    test("input: pAssword patterns [\" * pAssword * \"]", () => {
       expect(isMatch("pAssword", ["*pAssword*"])).toBe(true);
     });
 
-    test("input: passwordResetToken patterns [" * pAssword * "]", () => {
+    test("input: passwordResetToken patterns [\" * pAssword * \"]", () => {
       expect(isMatch("passwordResetToken", ["*pAssword*"])).toBe(true);
     });
 
-    test("input: myPassword patterns [" * pAssword * "]", () => {
+    test("input: myPassword patterns [\" * pAssword * \"]", () => {
       expect(isMatch("myPassword", ["*pAssword*"])).toBe(true);
     });
   });
