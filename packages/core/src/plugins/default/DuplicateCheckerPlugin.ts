@@ -1,4 +1,5 @@
 import { InnerErrorInfo } from "../../models/data/ErrorInfo.js";
+import { KnownEventDataKeys } from "../../models/Event.js";
 import { getHashCode } from "../../Utils.js";
 import { EventPluginContext } from "../EventPluginContext.js";
 import { IEventPlugin } from "../IEventPlugin.js";
@@ -19,6 +20,7 @@ export class DuplicateCheckerPlugin implements IEventPlugin {
     this._getCurrentTime = getCurrentTime;
     this._interval = interval;
 
+    // TODO: Can we pause this? What about on shutdown,
     setInterval(() => {
       while (this._mergedEvents.length > 0) {
         this._mergedEvents.shift().resubmit();
@@ -42,7 +44,7 @@ export class DuplicateCheckerPlugin implements IEventPlugin {
       return hash;
     }
 
-    const error = context.event.data["@error"];
+    const error = context.event.data[KnownEventDataKeys.Error];
     const hashCode = calculateHashCode(error);
     if (hashCode) {
       const count = context.event.count || 1;

@@ -185,7 +185,8 @@ export class DefaultEventQueue implements IEventQueue {
 
   private ensureQueueTimer(): void {
     if (!this._queueTimer) {
-      this._queueTimer = setInterval(() => this.onProcessQueue(), 10000);
+      // TODO: Fix awaiting promise.
+      this._queueTimer = setInterval(() => void this.onProcessQueue(), 10000);
     }
   }
 
@@ -194,9 +195,9 @@ export class DefaultEventQueue implements IEventQueue {
       this._suspendProcessingUntil > new Date();
   }
 
-  private onProcessQueue(): void {
+  private async onProcessQueue(): Promise<void> {
     if (!this.isQueueProcessingSuspended() && !this._processingQueue) {
-      this.process();
+      await this.process();
     }
   }
 

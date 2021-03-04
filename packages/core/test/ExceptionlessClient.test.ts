@@ -2,6 +2,7 @@
 
 import { Configuration } from "../src/configuration/Configuration.js";
 import { ExceptionlessClient } from "../src/ExceptionlessClient.js";
+import { KnownEventDataKeys } from "../src/models/Event.js";
 
 describe("ExceptionlessClient", () => {
   beforeEach(() => {
@@ -42,7 +43,7 @@ describe("ExceptionlessClient", () => {
 
     expect(builder.target.source).toBeUndefined();
     expect(builder.target.message).toBe("Unit Test message");
-    expect(builder.target.data["@level"]).toBe("Trace");
+    expect(builder.target.data[KnownEventDataKeys.Level]).toBe("Trace");
   });
 
   test("should accept source and message", () => {
@@ -67,7 +68,7 @@ describe("ExceptionlessClient", () => {
 
     expect(builder.target.source).toBe("source");
     expect(builder.target.message).toBe("Unit Test message");
-    expect(builder.target.data["@level"]).toBe("Info");
+    expect(builder.target.data[KnownEventDataKeys.Level]).toBe("Info");
   });
 
   test("should allow construction via apiKey and serverUrl parameters", () => {

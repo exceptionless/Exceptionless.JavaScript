@@ -3,7 +3,7 @@ import { ContextData } from "../../src/plugins/ContextData.js";
 import { ExceptionlessClient } from "../../src/ExceptionlessClient.js";
 import { EventPluginContext } from "../../src/plugins/EventPluginContext.js";
 import { EventPluginManager } from "../../src/plugins/EventPluginManager.js";
-import { delay } from "../../src/Utils.js";
+import { delay } from "../helpers.js";
 
 beforeEach(() => {
   Configuration.defaults.updateSettingsWhenIdleInterval = -1;

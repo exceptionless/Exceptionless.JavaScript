@@ -1,11 +1,17 @@
 import { ExceptionlessClient } from "./ExceptionlessClient.js";
-import { Event } from "./models/Event.js";
+import {
+  Event,
+  KnownEventDataKeys
+} from "./models/Event.js";
 import { ManualStackingInfo } from "./models/data/ManualStackingInfo.js";
 import { RequestInfo } from "./models/data/RequestInfo.js";
 import { UserInfo } from "./models/data/UserInfo.js";
 import { ContextData } from "./plugins/ContextData.js";
 import { EventPluginContext } from "./plugins/EventPluginContext.js";
-import { addRange, isEmpty, stringify } from "./Utils.js";
+import {
+  isEmpty,
+  stringify
+} from "./Utils.js";
 
 export class EventBuilder {
   public target: Event;
@@ -106,7 +112,7 @@ export class EventBuilder {
       return this;
     }
 
-    this.setProperty("@user", userInfo);
+    this.setProperty(KnownEventDataKeys.UserInfo, userInfo);
     return this;
   }
 
@@ -122,7 +128,7 @@ export class EventBuilder {
     description: string,
   ): EventBuilder {
     if (emailAddress && description) {
-      this.setProperty("@user_description", {
+      this.setProperty(KnownEventDataKeys.UserDescription, {
         email_address: emailAddress,
         description,
       });
@@ -148,7 +154,7 @@ export class EventBuilder {
         stack.title = title;
       }
 
-      this.setProperty("@stack", stack);
+      this.setProperty(KnownEventDataKeys.ManualStackingInfo, stack);
     }
 
     return this;
@@ -186,7 +192,7 @@ export class EventBuilder {
   }
 
   public addTags(...tags: string[]): EventBuilder {
-    this.target.tags = addRange<string>(this.target.tags, ...tags);
+    this.target.tags = [...this.target.tags, ...tags];
     return this;
   }
 
@@ -236,7 +242,7 @@ export class EventBuilder {
 
   public addRequestInfo(request: RequestInfo): EventBuilder {
     if (request) {
-      this.pluginContextData["@request"] = request;
+      this.pluginContextData[KnownEventDataKeys.RequestInfo] = request;
     }
 
     return this;

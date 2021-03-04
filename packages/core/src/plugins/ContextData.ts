@@ -1,33 +1,41 @@
+
+const enum KnownContextKeys {
+  Exception = "@@_Exception",
+  IsUnhandledError = "@@_IsUnhandledError",
+  SubmissionMethod = "@@_SubmissionMethod"
+}
+
+// TODO: Look into ways of improving this.
 export class ContextData {
+  public getException(): Error {
+    return this[KnownContextKeys.Exception] || null;
+  }
+
   public setException(exception: Error): void {
     if (exception) {
-      this["@@_Exception"] = exception;
+      this[KnownContextKeys.Exception] = exception;
     }
   }
 
   public get hasException(): boolean {
-    return !!this["@@_Exception"];
-  }
-
-  public getException(): Error {
-    return this["@@_Exception"] || null;
+    return !!this[KnownContextKeys.Exception];
   }
 
   public markAsUnhandledError(): void {
-    this["@@_IsUnhandledError"] = true;
+    this[KnownContextKeys.IsUnhandledError] = true;
   }
 
   public get isUnhandledError(): boolean {
-    return !!this["@@_IsUnhandledError"];
+    return !!this[KnownContextKeys.IsUnhandledError];
+  }
+
+  public getSubmissionMethod(): string {
+    return this[KnownContextKeys.SubmissionMethod] || null;
   }
 
   public setSubmissionMethod(method: string): void {
     if (method) {
-      this["@@_SubmissionMethod"] = method;
+      this[KnownContextKeys.SubmissionMethod] = method;
     }
-  }
-
-  public getSubmissionMethod(): string {
-    return this["@@_SubmissionMethod"] || null;
   }
 }

@@ -1,5 +1,4 @@
 import {
-  addRange,
   stringify,
   parseVersion,
   isMatch,
@@ -9,19 +8,6 @@ import {
 } from "../src/Utils.js";
 
 describe("Utils", () => {
-  test("should add range", () => {
-    let target: string[] = undefined;
-    expect(addRange(target)).toEqual([]);
-    expect(target).toBeUndefined();
-
-    expect(addRange(target, "1", "2")).toEqual(["1", "2"]);
-    expect(addRange(target, "1", "2")).toEqual(["1", "2"]);
-
-    target = ["3"];
-    expect(addRange(target, "1", "2")).toEqual(["3", "1", "2"]);
-    expect(target).toEqual(["3", "1", "2"]);
-  });
-
   describe("stringify", () => {
     const user = {
       id: 1,

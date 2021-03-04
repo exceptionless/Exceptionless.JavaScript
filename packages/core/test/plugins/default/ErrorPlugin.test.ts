@@ -1,7 +1,10 @@
 import { ContextData } from "../../../src/plugins/ContextData.js";
 import { ErrorPlugin } from "../../../src/plugins/default/ErrorPlugin.js";
 import { EventPluginContext } from "../../../src/plugins/EventPluginContext.js";
-import { Event } from "../../../src/models/Event.js";
+import {
+  Event,
+  KnownEventDataKeys
+} from "../../../src/models/Event.js";
 
 import { CapturedExceptions } from "./exceptions.js";
 import { createFixture } from "./EventPluginTestFixture.js";
@@ -45,7 +48,7 @@ describe("ErrorPlugin", () => {
         contextData.setException(exception);
         await target.run(context);
         const additionalData = getAdditionalData(event);
-        expect(additionalData).toBeNull();
+        expect(additionalData).toBeUndefined();
       });
 
     });
@@ -78,7 +81,7 @@ describe("ErrorPlugin", () => {
     test("shouldn't set empty additional data", async () => {
       await processError({});
       const additionalData = getAdditionalData(event);
-      expect(additionalData).toBeNull();
+      expect(additionalData).toBeUndefined();
     });
 
     test("should ignore functions", async () => {
@@ -89,7 +92,7 @@ describe("ErrorPlugin", () => {
       await target.run(context);
 
       const additionalData = getAdditionalData(event);
-      expect(additionalData).toBeNull();
+      expect(additionalData).toBeUndefined();
     });
   });
 });
@@ -103,18 +106,12 @@ function describeForCapturedExceptions(specDefinitions: (exception: any) => void
 }
 
 function getError(event: Event) {
-  if (event && event.data && event.data["@error"]) {
-    return event.data["@error"];
-  }
-  return null;
+  return event?.data?.[KnownEventDataKeys.Error];
 }
 
 function getAdditionalData(event: Event) {
   const error = getError(event);
-  if (error && error.data && error.data["@ext"]) {
-    return error.data["@ext"];
-  }
-  return null;
+  return error?.data?.["@ext"];
 }
 
 function throwAndCatch(error: any): Error {

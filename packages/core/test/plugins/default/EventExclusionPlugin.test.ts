@@ -1,6 +1,9 @@
 import { Configuration } from "../../../src/configuration/Configuration.js";
 import { ExceptionlessClient } from "../../../src/ExceptionlessClient.js";
-import { Event } from "../../../src/models/Event.js";
+import {
+  Event,
+  KnownEventDataKeys
+} from "../../../src/models/Event.js";
 import { InnerErrorInfo } from "../../../src/models/data/ErrorInfo.js";
 import { EventExclusionPlugin } from "../../../src/plugins/default/EventExclusionPlugin.js";
 import { EventPluginContext } from "../../../src/plugins/EventPluginContext.js";
@@ -19,7 +22,7 @@ describe("EventExclusionPlugin", () => {
 
       const ev: Event = { type: "log", source, data: {} };
       if (level) {
-        ev.data["@level"] = level;
+        ev.data[KnownEventDataKeys.Level] = level;
       }
 
       const context = new EventPluginContext(client, ev);
@@ -62,7 +65,7 @@ describe("EventExclusionPlugin", () => {
 
       const ev: Event = { type: "log", source, data: {} };
       if (level) {
-        ev.data["@level"] = level;
+        ev.data[KnownEventDataKeys.Level] = level;
       }
 
       const context = new EventPluginContext(client, ev);

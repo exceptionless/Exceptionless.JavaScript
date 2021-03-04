@@ -1,25 +1,3 @@
-export function addRange<T>(target: T[], ...values: T[]): T[] {
-  if (!target) {
-    target = [];
-  }
-
-  if (!values || values.length === 0) {
-    return target;
-  }
-
-  for (const value of values) {
-    if (value && target.indexOf(value) < 0) {
-      target.push(value);
-    }
-  }
-
-  return target;
-}
-
-export function delay(ms: number): Promise<unknown> {
-  return new Promise(r => setTimeout(r, ms));
-}
-
 export function getHashCode(source: string): number {
   if (!source || source.length === 0) {
     return 0;
@@ -49,6 +27,7 @@ export function getCookies(cookies: string, exclusions?: string[]): Record<strin
   return !isEmpty(result) ? result : null;
 }
 
+// TODO: PERF this to generate reference id.
 export function guid(): string {
   function s4() {
     return Math.floor((1 + Math.random()) * 0x10000).toString(16).substring(1);
@@ -74,6 +53,8 @@ export function merge<T>(defaultValues: T, values: T): T {
 
   return <T>result;
 }
+
+export const nameof = <T>(name: keyof T) => name;
 
 export function parseVersion(source: string): string {
   if (!source) {

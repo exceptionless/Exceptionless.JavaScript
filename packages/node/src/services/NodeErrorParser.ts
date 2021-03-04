@@ -9,13 +9,9 @@ import {
 } from "@exceptionless/core";
 
 export class NodeErrorParser implements IErrorParser {
-  public parse(
-    context: EventPluginContext,
-    exception: Error,
-  ): Promise<ErrorInfo> {
+  public parse(context: EventPluginContext, exception: Error): Promise<ErrorInfo> {
     function getParameters(parameters: string | string[]): ParameterInfo[] {
-      const params: string[] =
-        (typeof parameters === "string" ? [parameters] : parameters) || [];
+      const params: string[] = (typeof parameters === "string" ? [parameters] : parameters) || [];
 
       const items: ParameterInfo[] = [];
       for (const param of params) {

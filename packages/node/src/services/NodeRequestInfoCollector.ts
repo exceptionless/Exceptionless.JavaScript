@@ -8,6 +8,7 @@ import {
 
 export class NodeRequestInfoCollector implements IRequestInfoCollector {
   public getRequestInfo(context: EventPluginContext): RequestInfo {
+    // TODO: Move this into a known keys.
     const REQUEST_KEY: string = "@request"; // optimization for minifier.
     if (!context.contextData[REQUEST_KEY]) {
       return null;
