@@ -1,3 +1,4 @@
+import { KnownEventDataKeys } from "../../models/Event.js";
 import { stringify, isEmpty } from "../../Utils.js";
 import { EventPluginContext } from "../EventPluginContext.js";
 import { IEventPlugin } from "../IEventPlugin.js";
@@ -7,8 +8,7 @@ export class ErrorPlugin implements IEventPlugin {
   public name: string = "ErrorPlugin";
 
   public async run(context: EventPluginContext): Promise<void> {
-    const ERROR_KEY: string = "@error"; // optimization for minifier.
-    const ignoredProperties: string[] = [
+    const IGNORED_ERROR_PROPERTIES: string[] = [
       "arguments",
       "column",
       "columnNumber",
@@ -31,7 +31,7 @@ export class ErrorPlugin implements IEventPlugin {
     if (exception) {
       context.event.type = "error";
 
-      if (!context.event.data[ERROR_KEY]) {
+      if (!context.event.data[KnownEventDataKeys.Error]) {
         const config = context.client.config;
         const parser = config.errorParser;
         if (!parser) {
@@ -40,7 +40,7 @@ export class ErrorPlugin implements IEventPlugin {
 
         const result = await parser.parse(context, exception);
         if (result) {
-          const additionalData = JSON.parse(stringify(exception, config.dataExclusions.concat(ignoredProperties)));
+          const additionalData = JSON.parse(stringify(exception, config.dataExclusions.concat(IGNORED_ERROR_PROPERTIES)));
           if (!isEmpty(additionalData)) {
             if (!result.data) {
               result.data = {};
@@ -48,7 +48,7 @@ export class ErrorPlugin implements IEventPlugin {
             result.data["@ext"] = additionalData;
           }
 
-          context.event.data[ERROR_KEY] = result;
+          context.event.data[KnownEventDataKeys.Error] = result;
         }
       }
     }

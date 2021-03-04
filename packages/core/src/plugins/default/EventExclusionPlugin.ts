@@ -1,4 +1,5 @@
 import { InnerErrorInfo } from "../../models/data/ErrorInfo.js";
+import { KnownEventDataKeys } from "../../models/Event.js";
 import { isMatch, startsWith, toBoolean } from "../../Utils.js";
 import { EventPluginContext } from "../EventPluginContext.js";
 import { IEventPlugin } from "../IEventPlugin.js";
@@ -14,33 +15,24 @@ export class EventExclusionPlugin implements IEventPlugin {
 
     if (ev.type === "log") {
       const minLogLevel = this.getMinLogLevel(settings, ev.source);
-      const logLevel = this.getLogLevel(ev.data["@level"]);
+      const logLevel = this.getLogLevel(ev.data[KnownEventDataKeys.Level]);
 
       if (logLevel !== -1 && (logLevel === 6 || logLevel < minLogLevel)) {
         log.info("Cancelling log event due to minimum log level.");
         context.cancelled = true;
       }
     } else if (ev.type === "error") {
-      let error: InnerErrorInfo = ev.data["@error"];
+      let error: InnerErrorInfo = ev.data[KnownEventDataKeys.Error];
       while (!context.cancelled && error) {
-        if (
-          this.getTypeAndSourceSetting(settings, ev.type, error.type, true) ===
-            false
-        ) {
-          log.info(
-            `Cancelling error from excluded exception type: ${error.type}`,
-          );
+        if (this.getTypeAndSourceSetting(settings, ev.type, error.type, true) === false) {
+          log.info(`Cancelling error from excluded exception type: ${error.type}`);
           context.cancelled = true;
         }
 
         error = error.inner;
       }
-    } else if (
-      this.getTypeAndSourceSetting(settings, ev.type, ev.source, true) === false
-    ) {
-      log.info(
-        `Cancelling event from excluded type: ${ev.type} and source: ${ev.source}`,
-      );
+    } else if (this.getTypeAndSourceSetting(settings, ev.type, ev.source, true) === false) {
+      log.info(`Cancelling event from excluded type: ${ev.type} and source: ${ev.source}`);
       context.cancelled = true;
     }
 

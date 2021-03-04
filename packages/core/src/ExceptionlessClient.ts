@@ -2,7 +2,7 @@ import { Configuration } from "./configuration/Configuration.js";
 import { IConfigurationSettings } from "./configuration/IConfigurationSettings.js";
 import { SettingsManager } from "./configuration/SettingsManager.js";
 import { EventBuilder } from "./EventBuilder.js";
-import { Event } from "./models/Event.js";
+import { Event, KnownEventDataKeys } from "./models/Event.js";
 import { UserDescription } from "./models/data/UserDescription.js";
 import { ContextData } from "./plugins/ContextData.js";
 import { EventPluginContext } from "./plugins/EventPluginContext.js";
@@ -92,7 +92,7 @@ export class ExceptionlessClient {
 
     if (level) {
       builder = builder.setSource(sourceOrMessage).setMessage(message)
-        .setProperty("@level", level);
+        .setProperty(KnownEventDataKeys.Level, level);
     } else if (message) {
       builder = builder.setSource(sourceOrMessage).setMessage(message);
     } else {
@@ -156,9 +156,7 @@ export class ExceptionlessClient {
     }
   }
 
-  public async submitSessionHeartbeat(
-    sessionIdOrUserId: string,
-  ): Promise<void> {
+  public async submitSessionHeartbeat(sessionIdOrUserId: string): Promise<void> {
     if (sessionIdOrUserId && this.config.enabled && this.config.isValid) {
       this.config.log.info(
         `Submitting session heartbeat: ${sessionIdOrUserId}`,
@@ -181,10 +179,7 @@ export class ExceptionlessClient {
    * @param pluginContextData Any contextual data objects to be used by Exceptionless plugins to gather default information for inclusion in the report information.
    * @param callback
    */
-  public async submitEvent(
-    event: Event,
-    pluginContextData?: ContextData,
-  ): Promise<EventPluginContext> {
+  public async submitEvent(event: Event, pluginContextData?: ContextData): Promise<EventPluginContext> {
     const context = new EventPluginContext(this, event, pluginContextData);
     if (!event) {
       context.cancelled = true;
@@ -237,25 +232,18 @@ export class ExceptionlessClient {
    * @param description The user"s description of the event.
    * @param callback The submission response.
    */
-  public async updateUserEmailAndDescription(
-    referenceId: string,
-    email: string,
-    description: string,
-  ): Promise<void> {
-    if (
-      !referenceId || !email || !description || !this.config.enabled ||
-      !this.config.isValid
-    ) {
+  public async updateUserEmailAndDescription(referenceId: string, email: string, description: string): Promise<void> {
+    if (!referenceId || !email || !description || !this.config.enabled || !this.config.isValid) {
       return;
     }
 
     const userDescription: UserDescription = {
       email_address: email,
-      description,
+      description
     };
     const response = await this.config.submissionClient.submitUserDescription(
       referenceId,
-      userDescription,
+      userDescription
     );
     if (!response.success) {
       this.config.log.error(
@@ -282,6 +270,7 @@ export class ExceptionlessClient {
       this.config.log.info(
         `Update settings every ${interval}ms (${initialDelay || 0}ms delay)`,
       );
+      // TODO: Fix awaiting promise.
       const updateSettings = () =>
         void SettingsManager.updateSettings(this.config);
       if (initialDelay > 0) {
@@ -292,18 +281,5 @@ export class ExceptionlessClient {
     } else {
       this.config.log.info("Turning off update settings");
     }
-  }
-
-  // TODO: Remove or rename.
-  /**
-   * The default ExceptionlessClient instance.
-   * @type {ExceptionlessClient}
-   */
-  public static get default() {
-    if (ExceptionlessClient._instance === null) {
-      ExceptionlessClient._instance = new ExceptionlessClient(null);
-    }
-
-    return ExceptionlessClient._instance;
   }
 }

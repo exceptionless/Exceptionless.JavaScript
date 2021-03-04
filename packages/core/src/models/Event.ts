@@ -18,5 +18,19 @@ export class Event {
   /** An optional identifier to be used for referencing this event instance at a later time. */
   reference_id?: string;
   /** Optional data entries that contain additional information about this event. */
-  data?: Record<string, any>;
+  data?: Record<string, any>; // TODO: Add typing for known keys.
+}
+
+export const enum KnownEventDataKeys {
+  Error = "@error",
+  SimpleError = "@simple_error",
+  RequestInfo = "@request",
+  TraceLog = "@trace",
+  EnvironmentInfo = "@environment",
+  UserInfo = "@user",
+  UserDescription = "@user_description",
+  Version = "@version",
+  Level = "@level",
+  SubmissionMethod = "@submission_method",
+  ManualStackingInfo = "@stack"
 }

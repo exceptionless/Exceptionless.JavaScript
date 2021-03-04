@@ -12,7 +12,6 @@ import {
 
 import { NodeEnvironmentInfoCollector } from "./services/NodeEnvironmentInfoCollector.js";
 import { NodeErrorParser } from "./services/NodeErrorParser.js";
-import { NodeModuleCollector } from "./services/NodeModuleCollector.js";
 import { NodeRequestInfoCollector } from "./services/NodeRequestInfoCollector.js";
 import { NodeFileStorageProvider } from "./storage/NodeFileStorageProvider.js";
 import { FetchSubmissionClient } from "./submission/FetchSubmissionClient.js";
@@ -25,9 +24,8 @@ function init() {
   const defaults = Configuration.defaults;
   defaults.environmentInfoCollector = new NodeEnvironmentInfoCollector();
   defaults.errorParser = new NodeErrorParser();
-  defaults.moduleCollector = new NodeModuleCollector();
   defaults.requestInfoCollector = new NodeRequestInfoCollector();
-  defaults.submissionClient = new FetchSubmissionClient(ExceptionlessClient.default.config); // TODO: Figure out how to flow in the client settings.
+  //defaults.submissionClient = new FetchSubmissionClient(ExceptionlessClient.default.config); // TODO: Figure out how to flow in the client settings.
 
   Configuration.prototype.useLocalStorage = function() {
     this.storage = new NodeFileStorageProvider();
@@ -36,7 +34,7 @@ function init() {
   };
 
   addListener("uncaughtException", (error: Error) => {
-    ExceptionlessClient.default.submitUnhandledException(error, "uncaughtException");
+    //ExceptionlessClient.default.submitUnhandledException(error, "uncaughtException");
   });
 
   // TODO: Handle submission https://stackoverflow.com/questions/40574218/how-to-perform-an-async-operation-on-exit
@@ -91,7 +89,7 @@ function init() {
       return null;
     }
 
-    const client = ExceptionlessClient.default;
+   /* const client = ExceptionlessClient.default;
     const message = getExitCodeReason(code);
 
     if (message !== null) {
@@ -99,6 +97,7 @@ function init() {
     }
 
     client.config.queue.process();
+    */
     // Application will now exit.
   });
 

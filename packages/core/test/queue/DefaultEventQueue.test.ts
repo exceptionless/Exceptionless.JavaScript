@@ -1,6 +1,6 @@
 import { Configuration } from "../../src/configuration/Configuration.js";
 import { Event } from "../../src/models/Event.js";
-import { delay } from "../../src/Utils.js";
+import { delay } from "../helpers.js";
 
 describe("DefaultEventQueue", () => {
   let config: Configuration;

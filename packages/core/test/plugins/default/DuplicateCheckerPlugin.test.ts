@@ -5,7 +5,7 @@ import {
   InnerErrorInfo,
   StackFrameInfo
 } from "../../../src/models/data/ErrorInfo.js";
-import { delay } from "../../../src/Utils.js";
+import { delay } from "../../helpers.js";
 
 const Exception1StackTrace = [
   {

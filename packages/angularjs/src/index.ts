@@ -2,7 +2,7 @@ import { ExceptionlessClient } from "@exceptionless/core";
 
 let angular: ng.IAngularStatic;
 angular.module("exceptionless", [])
-  .constant("$ExceptionlessClient", ExceptionlessClient.default)
+  //.constant("$ExceptionlessClient", ExceptionlessClient.default) // TODO: Resolve this from the browser export.
   .factory("exceptionlessHttpInterceptor", ["$location", "$q", "$ExceptionlessClient", ($location, $q, $ExceptionlessClient) => {
     return {
       responseError: function responseError(response) {

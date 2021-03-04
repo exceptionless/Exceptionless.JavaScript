@@ -20,7 +20,8 @@ import { IStorageProvider } from "../storage/IStorageProvider.js";
 import { ISubmissionClient } from "../submission/ISubmissionClient.js";
 import { IConfigurationSettings } from "./IConfigurationSettings.js";
 import { SettingsManager } from "./SettingsManager.js";
-import { addRange, guid, merge } from "../Utils.js";
+import { guid, merge } from "../Utils.js";
+import { KnownEventDataKeys } from "../models/Event.js";
 
 export class Configuration implements IConfigurationSettings {
   /**
@@ -310,6 +311,7 @@ export class Configuration implements IConfigurationSettings {
    * @returns {string[]}
    */
   public get dataExclusions(): string[] {
+    // TODO: Known settings keys.
     const exclusions: string = this.settings["@@DataExclusions"];
     return this._dataExclusions.concat(
       exclusions && exclusions.split(",") || [],
@@ -326,10 +328,7 @@ export class Configuration implements IConfigurationSettings {
    * @param exclusions
    */
   public addDataExclusions(...exclusions: string[]) {
-    this._dataExclusions = addRange<string>(
-      this._dataExclusions,
-      ...exclusions,
-    );
+    this._dataExclusions = [...this._dataExclusions, ...exclusions];
   }
 
   /**
@@ -473,6 +472,7 @@ export class Configuration implements IConfigurationSettings {
    * @returns {string[]}
    */
   public get userAgentBotPatterns(): string[] {
+    // TODO: Known settings keys.
     const patterns: string = this.settings["@@UserAgentBotPatterns"];
     return this._userAgentBotPatterns.concat(
       patterns && patterns.split(",") || [],
@@ -487,10 +487,7 @@ export class Configuration implements IConfigurationSettings {
    * @param userAgentBotPatterns
    */
   public addUserAgentBotPatterns(...userAgentBotPatterns: string[]) {
-    this._userAgentBotPatterns = addRange<string>(
-      this._userAgentBotPatterns,
-      ...userAgentBotPatterns,
-    );
+    this._userAgentBotPatterns = [...this._userAgentBotPatterns, ...userAgentBotPatterns];
   }
 
   /**
@@ -593,7 +590,7 @@ export class Configuration implements IConfigurationSettings {
    */
   public setVersion(version: string): void {
     if (version) {
-      this.defaultData["@version"] = version;
+      this.defaultData[KnownEventDataKeys.Version] = version;
     }
   }
 
@@ -604,7 +601,6 @@ export class Configuration implements IConfigurationSettings {
     userInfoOrIdentity: UserInfo | string,
     name?: string,
   ): void {
-    const USER_KEY: string = "@user"; // optimization for minifier.
     const userInfo: UserInfo = typeof userInfoOrIdentity !== "string"
       ? userInfoOrIdentity
       : { identity: userInfoOrIdentity, name };
@@ -612,9 +608,9 @@ export class Configuration implements IConfigurationSettings {
     const shouldRemove: boolean = !userInfo ||
       (!userInfo.identity && !userInfo.name);
     if (shouldRemove) {
-      delete this.defaultData[USER_KEY];
+      delete this.defaultData[KnownEventDataKeys.UserInfo];
     } else {
-      this.defaultData[USER_KEY] = userInfo;
+      this.defaultData[KnownEventDataKeys.UserInfo] = userInfo;
     }
 
     this.log.info(

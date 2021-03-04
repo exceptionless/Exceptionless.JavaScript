@@ -13,7 +13,8 @@ import { BrowserStorage } from "./storage/BrowserStorage.js";
 import { BrowserStorageProvider } from "./storage/BrowserStorageProvider.js";
 import { FetchSubmissionClient } from "./submission/FetchSubmissionClient.js";
 
-function init() {
+/*
+export function init() {
   function getDefaultsSettingsFromScriptTag(): IConfigurationSettings {
     if (!document || !document.getElementsByTagName) {
       return null;
@@ -82,7 +83,7 @@ function init() {
   defaults.errorParser = new DefaultErrorParser();
   defaults.moduleCollector = new DefaultModuleCollector();
   defaults.requestInfoCollector = new DefaultRequestInfoCollector();
-  defaults.submissionClient = new FetchSubmissionClient(ExceptionlessClient.default.config); // TODO: Figure out how to flow in the client settings.
+  //defaults.submissionClient = new FetchSubmissionClient(ExceptionlessClient.default.config); // TODO: Figure out how to flow in the client settings.
 
   //TraceKit.report.subscribe(processUnhandledException);
   //TraceKit.extendToAsynchronousCallbacks();
@@ -98,8 +99,6 @@ function init() {
   (Error as any).stackTraceLimit = Infinity;
 }
 //declare var $;
-
-init();
 
 // TODO: Export all services
 export { ExceptionlessClient };

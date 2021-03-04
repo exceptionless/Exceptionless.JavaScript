@@ -8,16 +8,12 @@ export class ConfigurationDefaultsPlugin implements IEventPlugin {
 
   public run(context: EventPluginContext): Promise<void> {
     const config = context.client.config;
-    const defaultTags: string[] = config.defaultTags || [];
-    for (const tag of defaultTags) {
-      if (tag && context.event.tags.indexOf(tag) < 0) {
-        context.event.tags.push(tag);
-      }
-    }
+    context.event.tags.push(...config.defaultTags);
 
+    // PERF: Discus if we can calculate this a head of time and cache it.
     const defaultData: Record<string, unknown> = config.defaultData || {};
     for (const key in defaultData) {
-      if (defaultData[key]) {
+      if (context.event.data[key] === undefined) {
         const result = JSON.parse(stringify(defaultData[key], config.dataExclusions));
         if (!isEmpty(result)) {
           context.event.data[key] = result;
