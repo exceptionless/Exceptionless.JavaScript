@@ -45,6 +45,7 @@
   },
   "dependencies": {
     "@exceptionless/core": "2.0.0-pre",
-    "stacktrace-js": "2.0.2"
+    "stacktrace-js": "2.0.2",
+    "node-fetch": "^2.6.1"
   }
 }

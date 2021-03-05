@@ -1,6 +1,5 @@
-
-
 import { Configuration } from "../src/configuration/Configuration.js";
+import { Exceptionless } from "../src/index.js";
 import { ExceptionlessClient } from "../src/ExceptionlessClient.js";
 import { KnownEventDataKeys } from "../src/models/Event.js";
 
@@ -12,7 +11,7 @@ describe("ExceptionlessClient", () => {
   test("should use event reference ids", async () => {
     const client = new ExceptionlessClient({
       apiKey: "LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw",
-      serverUrl: "http://localhost:5000"
+      serverUrl: "http://localhost:5000",
     });
 
     expect(client.config.lastReferenceIdManager.getLast()).toBeNull();
@@ -36,7 +35,7 @@ describe("ExceptionlessClient", () => {
   test("should accept null source", () => {
     const client = new ExceptionlessClient({
       apiKey: "LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw",
-      serverUrl: "http://localhost:5000"
+      serverUrl: "http://localhost:5000",
     });
 
     const builder = client.createLog(null, "Unit Test message", "Trace");
@@ -49,10 +48,13 @@ describe("ExceptionlessClient", () => {
   test("should accept source and message", () => {
     const client = new ExceptionlessClient({
       apiKey: "LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw",
-      serverUrl: "http://localhost:5000"
+      serverUrl: "http://localhost:5000",
     });
 
-    const builder = client.createLog("ExceptionlessClient", "Unit Test message");
+    const builder = client.createLog(
+      "ExceptionlessClient",
+      "Unit Test message",
+    );
 
     expect(builder.target.source).toBe("ExceptionlessClient");
     expect(builder.target.message).toBe("Unit Test message");
@@ -62,7 +64,7 @@ describe("ExceptionlessClient", () => {
   test("should accept source and message and level", () => {
     const client = new ExceptionlessClient({
       apiKey: "LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw",
-      serverUrl: "http://localhost:5000"
+      serverUrl: "http://localhost:5000",
     });
     const builder = client.createLog("source", "Unit Test message", "Info");
 
@@ -72,20 +74,39 @@ describe("ExceptionlessClient", () => {
   });
 
   test("should allow construction via apiKey and serverUrl parameters", () => {
-    const client = new ExceptionlessClient("LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw", "http://localhost:5000");
+    const client = new ExceptionlessClient({
+      apiKey: "LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw",
+      serverUrl: "http://localhost:5000",
+    });
 
-    expect(client.config.apiKey).toBe("LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw");
+    expect(client.config.apiKey).toBe(
+      "LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw",
+    );
     expect(client.config.serverUrl).toBe("http://localhost:5000");
   });
 
   test("should allow construction via a configuration object", () => {
     const client = new ExceptionlessClient({
       apiKey: "LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw",
-      serverUrl: "http://localhost:5000"
+      serverUrl: "http://localhost:5000",
     });
 
-    expect(client.config.apiKey).toBe("LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw");
+    expect(client.config.apiKey).toBe(
+      "LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw",
+    );
     expect(client.config.serverUrl).toBe("http://localhost:5000");
+  });
+
+  test("can use singleton export", () => {
+    Exceptionless.startup({
+      apiKey: "LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw",
+      serverUrl: "http://localhost:5000",
+    });
+
+    expect(Exceptionless.config.apiKey).toBe(
+      "LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw",
+    );
+    expect(Exceptionless.config.serverUrl).toBe("http://localhost:5000");
   });
 
   function createException() {

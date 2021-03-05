@@ -22,22 +22,29 @@ export class ExceptionlessClient {
   private _intervalId: any;
   private _timeoutId: any;
 
-  constructor();
-  constructor(settings: IConfigurationSettings);
-  constructor(apiKey: string, serverUrl?: string);
-  constructor(
-    settingsOrApiKey?: IConfigurationSettings | string,
-    serverUrl?: string,
-  ) {
+  constructor(settingsOrApiKey?: IConfigurationSettings | string) {
+    this.startup(settingsOrApiKey);
+  }
+
+  public startup(settingsOrApiKey?: IConfigurationSettings | string) {
     this.config = typeof settingsOrApiKey === "object"
       ? new Configuration(settingsOrApiKey)
-      : new Configuration({ apiKey: settingsOrApiKey, serverUrl });
+      : new Configuration({ apiKey: settingsOrApiKey });
 
     this.updateSettingsTimer(5000);
     this.config.onChanged(() =>
       this.updateSettingsTimer(this._timeoutId > 0 ? 5000 : 0)
     );
     this.config.queue.onEventsPosted(() => this.updateSettingsTimer());
+  }
+
+  public shutdown() {
+    // suspend timers
+    // can call startup() without parameters to resume processing (will use existing config)
+  }
+
+  public async processQueue(): Promise<void> {
+    // ability to force queue to process immediately
   }
 
   public createException(exception: Error): EventBuilder {
@@ -156,7 +163,9 @@ export class ExceptionlessClient {
     }
   }
 
-  public async submitSessionHeartbeat(sessionIdOrUserId: string): Promise<void> {
+  public async submitSessionHeartbeat(
+    sessionIdOrUserId: string,
+  ): Promise<void> {
     if (sessionIdOrUserId && this.config.enabled && this.config.isValid) {
       this.config.log.info(
         `Submitting session heartbeat: ${sessionIdOrUserId}`,
@@ -179,7 +188,10 @@ export class ExceptionlessClient {
    * @param pluginContextData Any contextual data objects to be used by Exceptionless plugins to gather default information for inclusion in the report information.
    * @param callback
    */
-  public async submitEvent(event: Event, pluginContextData?: ContextData): Promise<EventPluginContext> {
+  public async submitEvent(
+    event: Event,
+    pluginContextData?: ContextData,
+  ): Promise<EventPluginContext> {
     const context = new EventPluginContext(this, event, pluginContextData);
     if (!event) {
       context.cancelled = true;
@@ -232,18 +244,25 @@ export class ExceptionlessClient {
    * @param description The user"s description of the event.
    * @param callback The submission response.
    */
-  public async updateUserEmailAndDescription(referenceId: string, email: string, description: string): Promise<void> {
-    if (!referenceId || !email || !description || !this.config.enabled || !this.config.isValid) {
+  public async updateUserEmailAndDescription(
+    referenceId: string,
+    email: string,
+    description: string,
+  ): Promise<void> {
+    if (
+      !referenceId || !email || !description || !this.config.enabled ||
+      !this.config.isValid
+    ) {
       return;
     }
 
     const userDescription: UserDescription = {
       email_address: email,
-      description
+      description,
     };
     const response = await this.config.submissionClient.submitUserDescription(
       referenceId,
-      userDescription
+      userDescription,
     );
     if (!response.success) {
       this.config.log.error(

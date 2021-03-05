@@ -1,7 +1,4 @@
-import {
-  IStorage,
-  IStorageProvider
-} from "@exceptionless/core";
+import { IStorage, IStorageProvider } from "@exceptionless/core";
 
 import { BrowserStorage } from "./BrowserStorage.js";
 

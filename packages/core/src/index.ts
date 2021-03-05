@@ -9,10 +9,7 @@ export { ILog } from "./logging/ILog.js";
 export { ConsoleLog } from "./logging/ConsoleLog.js";
 export { NullLog } from "./logging/NullLog.js";
 
-export {
-  Event,
-  KnownEventDataKeys
-} from "./models/Event.js";
+export { Event, KnownEventDataKeys } from "./models/Event.js";
 export { EnvironmentInfo } from "./models/data/EnvironmentInfo.js";
 export { ManualStackingInfo } from "./models/data/ManualStackingInfo.js";
 export { RequestInfo } from "./models/data/RequestInfo.js";
@@ -67,6 +64,9 @@ export {
 
 export { EventBuilder } from "./EventBuilder.js";
 export { ExceptionlessClient } from "./ExceptionlessClient.js";
+
+import { ExceptionlessClient } from "./ExceptionlessClient.js";
+export const Exceptionless = new ExceptionlessClient();
 
 export {
   endsWith,

@@ -15,7 +15,11 @@ export class BrowserStorage extends KeyValueStorageBase {
     }
   }
 
-  constructor(namespace: string, prefix: string = "com.exceptionless.", maxItems: number = 20) {
+  constructor(
+    namespace: string,
+    prefix: string = "com.exceptionless.",
+    maxItems: number = 20,
+  ) {
     super(maxItems);
 
     this.prefix = prefix + namespace + "-";

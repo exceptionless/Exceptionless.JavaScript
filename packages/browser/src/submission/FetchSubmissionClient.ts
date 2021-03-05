@@ -1,20 +1,30 @@
 import {
   FetchOptions,
   Response,
-  SubmissionClientBase
+  SubmissionClientBase,
 } from "@exceptionless/core";
 
+// is there some way to polyfill this on node and have it work on both browser and node?
+if (!globalThis.fetch) {
+  const fetch = require("node-fetch");
+
+  globalThis.fetch = fetch;
+}
+
 export class FetchSubmissionClient extends SubmissionClientBase {
-  protected async fetch<T>(url: string, options: FetchOptions): Promise<Response<T>> {
+  protected async fetch<T>(
+    url: string,
+    options: FetchOptions,
+  ): Promise<Response<T>> {
     // TODO: Figure out how to set a 10000 timeout.
     const requestOptions: RequestInit = {
       method: options.method,
       headers: {
         "Accept": "application/json",
         "Authorization": `client:${this.config.apiKey}`,
-        "X-Exceptionless-Client": this.config.userAgent
+        "X-Exceptionless-Client": this.config.userAgent,
       },
-      body: options.body
+      body: options.body,
     };
 
     // TODO: Can we properly calculate content size?
@@ -23,7 +33,15 @@ export class FetchSubmissionClient extends SubmissionClientBase {
     }
 
     const response = await fetch(url, requestOptions);
-    const settingsVersion: number = parseInt(response.headers.get(this.ConfigurationVersionHeader), 10);
-    return new Response(response.status, response.statusText, settingsVersion, await response.json())
+    const settingsVersion: number = parseInt(
+      response.headers.get(this.ConfigurationVersionHeader),
+      10,
+    );
+    return new Response(
+      response.status,
+      response.statusText,
+      settingsVersion,
+      await response.json(),
+    );
   }
 }

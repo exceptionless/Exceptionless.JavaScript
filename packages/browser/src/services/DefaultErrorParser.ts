@@ -1,20 +1,21 @@
 import {
-  EventPluginContext,
   ErrorInfo,
+  EventPluginContext,
   IErrorParser,
   ParameterInfo,
-  StackFrameInfo
+  StackFrameInfo,
 } from "@exceptionless/core";
 
-import {
-  fromError,
-  StackFrame
-} from "stacktrace-js";
+import { fromError, StackFrame } from "stacktrace-js";
 
 export class DefaultErrorParser implements IErrorParser {
-  public async parse(context: EventPluginContext, exception: Error): Promise<ErrorInfo> {
+  public async parse(
+    context: EventPluginContext,
+    exception: Error,
+  ): Promise<ErrorInfo> {
     function getParameters(parameters: string | string[]): ParameterInfo[] {
-      const params: string[] = (typeof parameters === "string" ? [parameters] : parameters) || [];
+      const params: string[] =
+        (typeof parameters === "string" ? [parameters] : parameters) || [];
 
       const items: ParameterInfo[] = [];
       for (const param of params) {
@@ -37,8 +38,9 @@ export class DefaultErrorParser implements IErrorParser {
           line_number: frame.getLineNumber() || 0,
           column: frame.getColumnNumber() || 0,
           data: {
-            is_native: frame.getIsNative() || (fileName && fileName[0] !== "/" && fileName[0] !== ".")
-          }
+            is_native: frame.getIsNative() ||
+              (fileName && fileName[0] !== "/" && fileName[0] !== "."),
+          },
         });
       }
 
@@ -54,7 +56,7 @@ export class DefaultErrorParser implements IErrorParser {
     return Promise.resolve({
       type: exception.name || "Error",
       message: exception.message,
-      stack_trace: getStackFrames(result || [])
+      stack_trace: getStackFrames(result || []),
     });
   }
 }

@@ -23,7 +23,7 @@
     "test": "lage run test"
   },
   "workspaces": [
-    "example",
+    "example/*",
     "packages/*"
   ],
   "devDependencies": {

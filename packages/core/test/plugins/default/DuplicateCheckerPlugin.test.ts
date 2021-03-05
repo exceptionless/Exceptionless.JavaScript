@@ -3,7 +3,7 @@ import { ExceptionlessClient } from "../../../src/ExceptionlessClient.js";
 import { EventPluginContext } from "../../../src/plugins/EventPluginContext.js";
 import {
   InnerErrorInfo,
-  StackFrameInfo
+  StackFrameInfo,
 } from "../../../src/models/data/ErrorInfo.js";
 import { delay } from "../../helpers.js";
 
@@ -21,7 +21,7 @@ const Exception1StackTrace = [
     column: 25,
     is_signature_target: false,
     name: "throwError",
-  }
+  },
 ];
 
 const Exception2StackTrace = [
@@ -38,7 +38,7 @@ const Exception2StackTrace = [
     column: 25,
     is_signature_target: false,
     name: "throwError2",
-  }
+  },
 ];
 
 describe("DuplicateCheckerPlugin", () => {
@@ -47,26 +47,31 @@ describe("DuplicateCheckerPlugin", () => {
   let plugin: DuplicateCheckerPlugin;
 
   beforeEach(() => {
-    client = new ExceptionlessClient("LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw", "http://localhost:5000");
+    client = new ExceptionlessClient({
+      apiKey: "LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw",
+      serverUrl: "http://localhost:5000",
+    });
     plugin = new DuplicateCheckerPlugin(() => now, 50);
   });
 
-  const run = async(stackTrace?: StackFrameInfo[]): Promise<EventPluginContext> => {
+  const run = async (
+    stackTrace?: StackFrameInfo[],
+  ): Promise<EventPluginContext> => {
     // TODO: Generate unique stack traces based on test data.
     const context = new EventPluginContext(client, {
       type: "error",
       data: {
-        "@error": <InnerErrorInfo>{
+        "@error": <InnerErrorInfo> {
           type: "ReferenceError",
           message: "This is a test",
-          stack_trace: stackTrace
-        }
-      }
+          stack_trace: stackTrace,
+        },
+      },
     });
 
     await plugin.run(context);
     return context;
-  }
+  };
 
   test("should ignore duplicate within window", async () => {
     await run(Exception1StackTrace);
@@ -76,7 +81,6 @@ describe("DuplicateCheckerPlugin", () => {
     await delay(100);
     setTimeout(() => {
       expect(contextOfSecondRun.event.count).toBe(1);
-
     }, 100);
   });
 

@@ -8,6 +8,6 @@
   "license": "Apache-2.0",
   "dependencies": {
     "express": "4.16.4",
-    "stack-trace": "0.0.10"
+    "@exceptionless/browser": "2.0.0-pre"
   }
 }
