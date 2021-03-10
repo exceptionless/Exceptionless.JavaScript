@@ -2,12 +2,12 @@
 .idea
 .git
 node_modules
+bower_components
 dist
 *.eslintcache
 *.tsbuildinfo
 
 test-data
 packages/node/test-data
-
 
 yarn.lock

@@ -3,7 +3,7 @@ import { Configuration } from "../../src/configuration/Configuration.js";
 describe("Configuration", () => {
   test("should override configuration defaults", () => {
     let config = new Configuration();
-    expect(config.apiKey).toBeNull();
+    expect(config.apiKey).toBeUndefined();
 
     config.apiKey = "LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw";
     expect(config.apiKey).toBe("LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw");

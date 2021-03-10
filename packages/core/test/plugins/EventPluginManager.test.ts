@@ -11,7 +11,8 @@ beforeEach(() => {
 
 describe("EventPluginManager", () => {
   test("should add items to the event.", async () => {
-    const client = new ExceptionlessClient({
+    const client = new ExceptionlessClient();
+    await client.startup({
       apiKey: "LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw",
       serverUrl: "http://localhost:5000"
     });
@@ -42,7 +43,8 @@ describe("EventPluginManager", () => {
   });
 
   test("setting cancel should stop plugin execution.", async () => {
-    const client = new ExceptionlessClient({
+    const client = new ExceptionlessClient();
+    await client.startup({
       apiKey: "LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw",
       serverUrl: "http://localhost:5000"
     });
@@ -67,7 +69,8 @@ describe("EventPluginManager", () => {
   });
 
   test("throwing error should stop plugin execution.", async () => {
-    const client = new ExceptionlessClient({
+    const client = new ExceptionlessClient();
+    await client.startup({
       apiKey: "LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw",
       serverUrl: "http://localhost:5000"
     });
@@ -91,7 +94,8 @@ describe("EventPluginManager", () => {
   });
 
   test("should cancel via timeout.", async () => {
-    const client = new ExceptionlessClient({
+    const client = new ExceptionlessClient();
+    await client.startup({
       apiKey: "LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw",
       serverUrl: "http://localhost:5000"
     });
@@ -115,7 +119,8 @@ describe("EventPluginManager", () => {
   });
 
   test("should ensure config plugins are not wrapped.", async () => {
-    const client = new ExceptionlessClient({
+    const client = new ExceptionlessClient();
+    await client.startup({
       apiKey: "LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw",
       serverUrl: "http://localhost:5000"
     });

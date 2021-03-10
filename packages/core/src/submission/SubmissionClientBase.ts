@@ -14,11 +14,9 @@ export interface FetchOptions {
 }
 
 export abstract class SubmissionClientBase implements ISubmissionClient {
-  protected readonly ConfigurationVersionHeader: string =
-    "x-exceptionless-configversion";
+  protected readonly ConfigurationVersionHeader: string = "x-exceptionless-configversion";
 
-  public constructor(protected config: Configuration) {
-  }
+  public constructor(protected config: Configuration) { }
 
   public getSettings(version: number): Promise<Response<ClientSettings>> {
     const url = `${this.config.serverUrl}/api/v2/projects/config?v=${version}`;
@@ -38,10 +36,7 @@ export abstract class SubmissionClientBase implements ISubmissionClient {
     return response;
   }
 
-  public async submitUserDescription(
-    referenceId: string,
-    description: UserDescription,
-  ): Promise<Response<void>> {
+  public async submitUserDescription(referenceId: string, description: UserDescription): Promise<Response<void>> {
     const url = `${this.config.serverUrl}/api/v2/events/by-ref/${
       encodeURIComponent(referenceId)
     }/user-description`;
@@ -55,24 +50,18 @@ export abstract class SubmissionClientBase implements ISubmissionClient {
     return response;
   }
 
-  public async submitHeartbeat(
-    sessionIdOrUserId: string,
-    closeSession: boolean,
-  ): Promise<Response<void>> {
-    const url =
-      `${this.config.heartbeatServerUrl}/api/v2/events/session/heartbeat?id=${sessionIdOrUserId}&close=${closeSession}`;
+  public async submitHeartbeat(sessionIdOrUserId: string, closeSession: boolean): Promise<Response<void>> {
+    const url = `${this.config.heartbeatServerUrl}/api/v2/events/session/heartbeat?id=${sessionIdOrUserId}&close=${closeSession}`;
 
     const response = await this.fetch<void>(url, {
-      method: "GET",
+      method: "GET"
     });
 
     await this.updateSettingsVersion(response.settingsVersion);
     return response;
   }
 
-  protected async updateSettingsVersion(
-    settingsVersion: number,
-  ): Promise<void> {
+  protected async updateSettingsVersion(settingsVersion: number): Promise<void> {
     if (!isNaN(settingsVersion)) {
       await SettingsManager.checkVersion(settingsVersion, this.config);
     } else {
@@ -80,8 +69,5 @@ export abstract class SubmissionClientBase implements ISubmissionClient {
     }
   }
 
-  protected abstract fetch<T>(
-    url: string,
-    options: FetchOptions,
-  ): Promise<Response<T>>;
+  protected abstract fetch<T>(url: string, options: FetchOptions): Promise<Response<T>>;
 }
