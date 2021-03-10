@@ -23,7 +23,7 @@ import { SettingsManager } from "./SettingsManager.js";
 import { guid, merge } from "../Utils.js";
 import { KnownEventDataKeys } from "../models/Event.js";
 
-export class Configuration implements IConfigurationSettings {
+export class Configuration {
   /**
    * The default configuration settings that are applied to new configuration instances.
    * @type {IConfigurationSettings}
@@ -57,8 +57,7 @@ export class Configuration implements IConfigurationSettings {
 
   public environmentInfoCollector: IEnvironmentInfoCollector;
   public errorParser: IErrorParser;
-  public lastReferenceIdManager: ILastReferenceIdManager =
-    new DefaultLastReferenceIdManager();
+  public lastReferenceIdManager: ILastReferenceIdManager = new DefaultLastReferenceIdManager();
   public log: ILog;
   public moduleCollector: IModuleCollector;
   public requestInfoCollector: IRequestInfoCollector;
@@ -150,39 +149,30 @@ export class Configuration implements IConfigurationSettings {
    */
   private _handlers: Array<(config: Configuration) => void> = [];
 
-  constructor(configSettings?: IConfigurationSettings) {
-    function inject(fn: any) {
-      return typeof fn === "function" ? fn(this) : fn;
+  public apply(configSettings: IConfigurationSettings): void {
+    function inject<T>(functionOrValue: T | ((config: Configuration) => T)) {
+      return functionOrValue instanceof Function ? functionOrValue(this) : functionOrValue;
     }
 
+    // TODO: Handle this being called multiple times.
     configSettings = merge(Configuration.defaults, configSettings);
-
     this.log = inject(configSettings.log) || new NullLog();
     this.apiKey = configSettings.apiKey;
     this.serverUrl = configSettings.serverUrl;
     this.configServerUrl = configSettings.configServerUrl;
     this.heartbeatServerUrl = configSettings.heartbeatServerUrl;
-    this.updateSettingsWhenIdleInterval =
-      configSettings.updateSettingsWhenIdleInterval;
+    this.updateSettingsWhenIdleInterval = configSettings.updateSettingsWhenIdleInterval;
     this.includePrivateInformation = configSettings.includePrivateInformation;
 
-    this.environmentInfoCollector = inject(
-      configSettings.environmentInfoCollector,
-    );
+    this.environmentInfoCollector = inject(configSettings.environmentInfoCollector);
     this.errorParser = inject(configSettings.errorParser);
-    this.lastReferenceIdManager =
-      inject(configSettings.lastReferenceIdManager) ||
-      new DefaultLastReferenceIdManager();
+    this.lastReferenceIdManager = inject(configSettings.lastReferenceIdManager) || new DefaultLastReferenceIdManager();
     this.moduleCollector = inject(configSettings.moduleCollector);
     this.requestInfoCollector = inject(configSettings.requestInfoCollector);
     this.submissionBatchSize = inject(configSettings.submissionBatchSize) || 50;
     this.submissionClient = inject(configSettings.submissionClient);
-    this.storage = inject(configSettings.storage) ||
-      new InMemoryStorageProvider();
+    this.storage = inject(configSettings.storage) || new InMemoryStorageProvider();
     this.queue = inject(configSettings.queue) || new DefaultEventQueue(this);
-
-    SettingsManager.applySavedServerSettings(this);
-    EventPluginManager.addDefaultPlugins(this);
   }
 
   /**
@@ -673,7 +663,7 @@ export class Configuration implements IConfigurationSettings {
    * The default configuration settings that are applied to new configuration instances.
    * @returns {IConfigurationSettings}
    */
-  public static get defaults() {
+  public static get defaults(): IConfigurationSettings {
     if (Configuration._defaultSettings === null) {
       Configuration._defaultSettings = { includePrivateInformation: true };
     }

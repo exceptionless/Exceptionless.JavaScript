@@ -7,13 +7,6 @@ import { Response } from "../submission/Response.js";
 
 export class DefaultEventQueue implements IEventQueue {
   /**
-   * The configuration object.
-   * @type {Configuration}
-   * @private
-   */
-  private _config: Configuration;
-
-  /**
    * A list of handlers that will be fired when events are submitted.
    * @type {Array}
    * @private
@@ -50,13 +43,11 @@ export class DefaultEventQueue implements IEventQueue {
    */
   private _queueTimer: any;
 
-  constructor(config: Configuration) {
-    this._config = config;
-  }
+  constructor(private config: Configuration) {}
 
   public enqueue(event: Event): void {
     const eventWillNotBeQueued: string = "The event will not be queued."; // optimization for minifier.
-    const config: Configuration = this._config; // Optimization for minifier.
+    const config: Configuration = this.config; // Optimization for minifier.
     const log: ILog = config.log; // Optimization for minifier.
 
     if (!config.enabled) {
@@ -70,9 +61,7 @@ export class DefaultEventQueue implements IEventQueue {
     }
 
     if (this.areQueuedItemsDiscarded()) {
-      log.info(
-        `Queue items are currently being discarded. ${eventWillNotBeQueued}`,
-      );
+      log.info(`Queue items are currently being discarded. ${eventWillNotBeQueued}`);
       return;
     }
 
@@ -91,7 +80,7 @@ export class DefaultEventQueue implements IEventQueue {
 
   public async process(): Promise<void> {
     const queueNotProcessed: string = "The queue will not be processed."; // optimization for minifier.
-    const config: Configuration = this._config; // Optimization for minifier.
+    const config: Configuration = this.config; // Optimization for minifier.
     const log: ILog = config.log; // Optimization for minifier.
 
     if (this._processingQueue) {
@@ -120,9 +109,7 @@ export class DefaultEventQueue implements IEventQueue {
       }
 
       log.info(`Sending ${events.length} events to ${config.serverUrl}`);
-      const response = await config.submissionClient.submitEvents(
-        events.map((e) => e.value),
-      );
+      const response = await config.submissionClient.submitEvents(events.map((e) => e.value));
       this.processSubmissionResponse(response, events);
       this.eventsPosted(events.map((e) => e.value), response);
       log.info("Finished processing queue.");
@@ -139,7 +126,7 @@ export class DefaultEventQueue implements IEventQueue {
     discardFutureQueuedItems?: boolean,
     clearQueue?: boolean,
   ): void {
-    const config: Configuration = this._config; // Optimization for minifier.
+    const config: Configuration = this.config; // Optimization for minifier.
 
     if (!durationInMinutes || durationInMinutes <= 0) {
       durationInMinutes = 5;
@@ -173,7 +160,7 @@ export class DefaultEventQueue implements IEventQueue {
       try {
         handler(events, response);
       } catch (ex) {
-        this._config.log.error(`Error calling onEventsPosted handler: ${ex}`);
+        this.config.log.error(`Error calling onEventsPosted handler: ${ex}`);
       }
     }
   }
@@ -206,7 +193,7 @@ export class DefaultEventQueue implements IEventQueue {
     events: IStorageItem[],
   ): void {
     const noSubmission: string = "The event will not be submitted."; // Optimization for minifier.
-    const config: Configuration = this._config; // Optimization for minifier.
+    const config: Configuration = this.config; // Optimization for minifier.
     const log: ILog = config.log; // Optimization for minifier.
 
     if (response.status === 202) {
@@ -274,7 +261,7 @@ export class DefaultEventQueue implements IEventQueue {
 
   private removeEvents(events: IStorageItem[]) {
     for (let index = 0; index < (events || []).length; index++) {
-      this._config.storage.queue.remove(events[index].timestamp);
+      this.config.storage.queue.remove(events[index].timestamp);
     }
   }
 }

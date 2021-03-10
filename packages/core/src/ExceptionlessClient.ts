@@ -9,35 +9,58 @@ import { EventPluginContext } from "./plugins/EventPluginContext.js";
 import { EventPluginManager } from "./plugins/EventPluginManager.js";
 
 export class ExceptionlessClient {
-  /**
-   * The default ExceptionlessClient instance.
-   *
-   * @type {ExceptionlessClient}
-   * @private
-   */
-  private static _instance: ExceptionlessClient = null;
-
-  public config: Configuration;
-
+  public config: Configuration = new Configuration();
   private _intervalId: any;
   private _timeoutId: any;
 
-  constructor();
-  constructor(settings: IConfigurationSettings);
-  constructor(apiKey: string, serverUrl?: string);
-  constructor(
-    settingsOrApiKey?: IConfigurationSettings | string,
-    serverUrl?: string,
-  ) {
-    this.config = typeof settingsOrApiKey === "object"
-      ? new Configuration(settingsOrApiKey)
-      : new Configuration({ apiKey: settingsOrApiKey, serverUrl });
+  /** Resume background submission, resume any timers. */
+  public startup(settingsOrApiKey?: IConfigurationSettings | string): Promise<void> {
+    if (settingsOrApiKey) {
+      this.config.apply(typeof settingsOrApiKey === "object" ? settingsOrApiKey : { apiKey: settingsOrApiKey });
 
-    this.updateSettingsTimer(5000);
-    this.config.onChanged(() =>
-      this.updateSettingsTimer(this._timeoutId > 0 ? 5000 : 0)
-    );
-    this.config.queue.onEventsPosted(() => this.updateSettingsTimer());
+      SettingsManager.applySavedServerSettings(this.config);
+      EventPluginManager.addDefaultPlugins(this.config);
+
+      this.config.onChanged(() => this.updateSettingsTimer(this._timeoutId > 0 ? 5000 : 0));
+      this.config.queue.onEventsPosted(() => this.updateSettingsTimer());
+    }
+
+    this.updateSettingsTimer(settingsOrApiKey ? 5000 : 0);
+    // TODO: resume plugins
+    // TODO: resume queue
+    return Promise.resolve();
+  }
+
+  /** Submit events, pause any timers and go into low power mode. */
+  public async suspend(): Promise<void> {
+    // TODO: Turn off timers.
+    this.updateSettingsTimer(0);
+    // TODO: suspend plugins / trigger dedupe plugin to submit...
+    await this.processQueue();
+  }
+
+  public async processQueue(): Promise<void> {
+    await this.config.queue.process();
+  }
+
+  // TODO: Look into better async scheduling..
+  private updateSettingsTimer(initialDelay?: number) {
+    this._timeoutId = clearTimeout(this._timeoutId);
+    this._intervalId = clearInterval(this._intervalId);
+
+    const interval = this.config.updateSettingsWhenIdleInterval;
+    if (interval > 0) {
+      this.config.log.info(`Update settings every ${interval}ms (${initialDelay || 0}ms delay)`);
+      // TODO: Fix awaiting promise.
+      const updateSettings = () => void SettingsManager.updateSettings(this.config);
+      if (initialDelay > 0) {
+        this._timeoutId = setTimeout(updateSettings, initialDelay);
+      }
+
+      this._intervalId = setInterval(updateSettings, interval);
+    } else {
+      this.config.log.info("Turning off update settings");
+    }
   }
 
   public createException(exception: Error): EventBuilder {
@@ -113,10 +136,7 @@ export class ExceptionlessClient {
   }
 
   public submitLog(message: string): Promise<EventPluginContext>;
-  public submitLog(
-    source: string,
-    message: string,
-  ): Promise<EventPluginContext>;
+  public submitLog(source: string, message: string): Promise<EventPluginContext>;
   public submitLog(
     source: string,
     message: string,
@@ -149,22 +169,14 @@ export class ExceptionlessClient {
   public async submitSessionEnd(sessionIdOrUserId: string): Promise<void> {
     if (sessionIdOrUserId && this.config.enabled && this.config.isValid) {
       this.config.log.info(`Submitting session end: ${sessionIdOrUserId}`);
-      await this.config.submissionClient.submitHeartbeat(
-        sessionIdOrUserId,
-        true,
-      );
+      await this.config.submissionClient.submitHeartbeat(sessionIdOrUserId, true);
     }
   }
 
   public async submitSessionHeartbeat(sessionIdOrUserId: string): Promise<void> {
     if (sessionIdOrUserId && this.config.enabled && this.config.isValid) {
-      this.config.log.info(
-        `Submitting session heartbeat: ${sessionIdOrUserId}`,
-      );
-      await this.config.submissionClient.submitHeartbeat(
-        sessionIdOrUserId,
-        false,
-      );
+      this.config.log.info(`Submitting session heartbeat: ${sessionIdOrUserId}`);
+      await this.config.submissionClient.submitHeartbeat(sessionIdOrUserId, false);
     }
   }
 
@@ -241,10 +253,7 @@ export class ExceptionlessClient {
       email_address: email,
       description
     };
-    const response = await this.config.submissionClient.submitUserDescription(
-      referenceId,
-      userDescription
-    );
+    const response = await this.config.submissionClient.submitUserDescription(referenceId, userDescription);
     if (!response.success) {
       this.config.log.error(
         `Failed to submit user email and description for event "${referenceId}": ${response.status} ${response.message}`,
@@ -258,28 +267,5 @@ export class ExceptionlessClient {
    */
   public getLastReferenceId(): string {
     return this.config.lastReferenceIdManager.getLast();
-  }
-
-  // TODO: Look into better async scheduling..
-  private updateSettingsTimer(initialDelay?: number) {
-    this._timeoutId = clearTimeout(this._timeoutId);
-    this._intervalId = clearInterval(this._intervalId);
-
-    const interval = this.config.updateSettingsWhenIdleInterval;
-    if (interval > 0) {
-      this.config.log.info(
-        `Update settings every ${interval}ms (${initialDelay || 0}ms delay)`,
-      );
-      // TODO: Fix awaiting promise.
-      const updateSettings = () =>
-        void SettingsManager.updateSettings(this.config);
-      if (initialDelay > 0) {
-        this._timeoutId = setTimeout(updateSettings, initialDelay);
-      }
-
-      this._intervalId = setInterval(updateSettings, interval);
-    } else {
-      this.config.log.info("Turning off update settings");
-    }
   }
 }

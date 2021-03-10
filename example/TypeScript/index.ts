@@ -1,11 +1,13 @@
-import * as exceptionless from "../../dist/exceptionless";
+import { Exceptionless } from "@exceptionless/browser";
 
-var client = exceptionless.ExceptionlessClient.default;
-client.config.serverUrl = "http://localhost:5000";
-client.config.useDebugLogger();
+Exceptionless.startup({
+  serverUrl: "http://localhost:5000",
+});
+
+Exceptionless.config.useDebugLogger();
 
 // set some default data
-client.config.defaultData["SampleUser"] = {
+Exceptionless.config.defaultData["SampleUser"] = {
   id:1,
   name: "Blake",
   password: "123456",
@@ -18,5 +20,5 @@ client.config.defaultData["SampleUser"] = {
   }
 };
 
-client.config.defaultTags.push("Example", "JavaScript", "TypeScript");
-client.submitLog("Testing");
+Exceptionless.config.defaultTags.push("Example", "JavaScript", "TypeScript");
+Exceptionless.submitLog("Testing");

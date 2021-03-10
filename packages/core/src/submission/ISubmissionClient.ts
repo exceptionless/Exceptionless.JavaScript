@@ -6,12 +6,6 @@ import { Response } from "./Response";
 export interface ISubmissionClient {
   getSettings(version: number): Promise<Response<ClientSettings>>;
   submitEvents(events: Event[]): Promise<Response<void>>;
-  submitUserDescription(
-    referenceId: string,
-    description: UserDescription,
-  ): Promise<Response<void>>;
-  submitHeartbeat(
-    sessionIdOrUserId: string,
-    closeSession: boolean,
-  ): Promise<Response<void>>;
+  submitUserDescription(referenceId: string, description: UserDescription): Promise<Response<void>>;
+  submitHeartbeat(sessionIdOrUserId: string, closeSession: boolean): Promise<Response<void>>;
 }

@@ -7,6 +7,7 @@ import { IModuleCollector } from "../services/IModuleCollector.js";
 import { IRequestInfoCollector } from "../services/IRequestInfoCollector.js";
 import { IStorageProvider } from "../storage/IStorageProvider.js";
 import { ISubmissionClient } from "../submission/ISubmissionClient.js";
+import { Configuration } from "./Configuration.js";
 
 export interface IConfigurationSettings {
   apiKey?: string;
@@ -15,14 +16,14 @@ export interface IConfigurationSettings {
   heartbeatServerUrl?: string;
   updateSettingsWhenIdleInterval?: number;
   includePrivateInformation?: boolean;
-  environmentInfoCollector?: IEnvironmentInfoCollector;
-  errorParser?: IErrorParser;
-  lastReferenceIdManager?: ILastReferenceIdManager;
-  log?: ILog;
-  moduleCollector?: IModuleCollector;
-  requestInfoCollector?: IRequestInfoCollector;
+  environmentInfoCollector?: IEnvironmentInfoCollector | ((config: Configuration) => IEnvironmentInfoCollector);
+  errorParser?: IErrorParser | ((config: Configuration) => IErrorParser);
+  lastReferenceIdManager?: ILastReferenceIdManager | ((config: Configuration) => ILastReferenceIdManager);
+  log?: ILog | ((config: Configuration) => ILog);
+  moduleCollector?: IModuleCollector | ((config: Configuration) => IModuleCollector);
+  requestInfoCollector?: IRequestInfoCollector | ((config: Configuration) => IRequestInfoCollector);
   submissionBatchSize?: number;
-  submissionClient?: ISubmissionClient;
-  storage?: IStorageProvider;
-  queue?: IEventQueue;
+  submissionClient?: ISubmissionClient | ((config: Configuration) => ISubmissionClient);
+  storage?: IStorageProvider | ((config: Configuration) => IStorageProvider);
+  queue?: IEventQueue | ((config: Configuration) => IEventQueue);
 }

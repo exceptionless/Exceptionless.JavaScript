@@ -4,6 +4,7 @@ import {
 } from "node-fetch";
 
 import {
+  Configuration,
   FetchOptions,
   Response,
   SubmissionClientBase
