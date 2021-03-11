@@ -6,7 +6,8 @@ describe("DefaultEventQueue", () => {
   let config: Configuration;
 
   beforeEach(() => {
-    config = new Configuration({
+    config = new Configuration();
+    config.apply({
       apiKey: "LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw",
       serverUrl: "http://localhost:5000"
     });

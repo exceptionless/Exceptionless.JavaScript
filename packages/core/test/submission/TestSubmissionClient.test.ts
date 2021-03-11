@@ -6,7 +6,8 @@ import { Response } from "../../src/submission/Response.js";
 import { TestSubmissionClient } from "./TestSubmissionClient.js"
 
 describe("TestSubmissionClient", () => {
-  const config: Configuration = new Configuration({
+  const config: Configuration = new Configuration();
+  config.apply({
     apiKey: "LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw",
     serverUrl: "http://server.localhost:5000",
     configServerUrl: "http://config.localhost:5000",

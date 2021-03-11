@@ -7,7 +7,6 @@ import { UserInfo } from "../models/data/UserInfo.js";
 import { HeartbeatPlugin } from "../plugins/default/HeartbeatPlugin.js";
 import { ReferenceIdPlugin } from "../plugins/default/ReferenceIdPlugin.js";
 import { EventPluginContext } from "../plugins/EventPluginContext.js";
-import { EventPluginManager } from "../plugins/EventPluginManager.js";
 import { IEventPlugin } from "../plugins/IEventPlugin.js";
 import { DefaultEventQueue } from "../queue/DefaultEventQueue.js";
 import { IEventQueue } from "../queue/IEventQueue.js";
@@ -19,7 +18,6 @@ import { InMemoryStorageProvider } from "../storage/InMemoryStorageProvider.js";
 import { IStorageProvider } from "../storage/IStorageProvider.js";
 import { ISubmissionClient } from "../submission/ISubmissionClient.js";
 import { IConfigurationSettings } from "./IConfigurationSettings.js";
-import { SettingsManager } from "./SettingsManager.js";
 import { guid, merge } from "../Utils.js";
 import { KnownEventDataKeys } from "../models/Event.js";
 
@@ -58,14 +56,14 @@ export class Configuration {
   public environmentInfoCollector: IEnvironmentInfoCollector;
   public errorParser: IErrorParser;
   public lastReferenceIdManager: ILastReferenceIdManager = new DefaultLastReferenceIdManager();
-  public log: ILog;
+  public log: ILog = new NullLog();
   public moduleCollector: IModuleCollector;
   public requestInfoCollector: IRequestInfoCollector;
 
   /**
    * Maximum number of events that should be sent to the server together in a batch. (Defaults to 50)
    */
-  public submissionBatchSize: number;
+  public submissionBatchSize: number = 50;
   public submissionClient: ISubmissionClient;
 
   /**
@@ -74,9 +72,9 @@ export class Configuration {
    */
   public settings: Record<string, string> = {};
 
-  public storage: IStorageProvider;
+  public storage: IStorageProvider = new InMemoryStorageProvider();
 
-  public queue: IEventQueue;
+  public queue: IEventQueue = new DefaultEventQueue(this);
 
   /**
    * The API key that will be used when sending events to the server.
@@ -149,30 +147,61 @@ export class Configuration {
    */
   private _handlers: Array<(config: Configuration) => void> = [];
 
-  public apply(configSettings: IConfigurationSettings): void {
+  public apply(configSettings?: IConfigurationSettings): void {
     function inject<T>(functionOrValue: T | ((config: Configuration) => T)) {
       return functionOrValue instanceof Function ? functionOrValue(this) : functionOrValue;
     }
 
     // TODO: Handle this being called multiple times.
     configSettings = merge(Configuration.defaults, configSettings);
-    this.log = inject(configSettings.log) || new NullLog();
-    this.apiKey = configSettings.apiKey;
-    this.serverUrl = configSettings.serverUrl;
-    this.configServerUrl = configSettings.configServerUrl;
-    this.heartbeatServerUrl = configSettings.heartbeatServerUrl;
-    this.updateSettingsWhenIdleInterval = configSettings.updateSettingsWhenIdleInterval;
-    this.includePrivateInformation = configSettings.includePrivateInformation;
-
-    this.environmentInfoCollector = inject(configSettings.environmentInfoCollector);
-    this.errorParser = inject(configSettings.errorParser);
-    this.lastReferenceIdManager = inject(configSettings.lastReferenceIdManager) || new DefaultLastReferenceIdManager();
-    this.moduleCollector = inject(configSettings.moduleCollector);
-    this.requestInfoCollector = inject(configSettings.requestInfoCollector);
-    this.submissionBatchSize = inject(configSettings.submissionBatchSize) || 50;
-    this.submissionClient = inject(configSettings.submissionClient);
-    this.storage = inject(configSettings.storage) || new InMemoryStorageProvider();
-    this.queue = inject(configSettings.queue) || new DefaultEventQueue(this);
+    if (configSettings.apiKey) {
+      this.apiKey = configSettings.apiKey;
+    }
+    if (configSettings.serverUrl) {
+      this.serverUrl = configSettings.serverUrl;
+    }
+    if (configSettings.configServerUrl) {
+      this.configServerUrl = configSettings.configServerUrl;
+    }
+    if (configSettings.heartbeatServerUrl) {
+      this.heartbeatServerUrl = configSettings.heartbeatServerUrl;
+    }
+    if (configSettings.updateSettingsWhenIdleInterval !== undefined) {
+      this.updateSettingsWhenIdleInterval = configSettings.updateSettingsWhenIdleInterval;
+    }
+    if (configSettings.includePrivateInformation !== undefined) {
+      this.includePrivateInformation = configSettings.includePrivateInformation;
+    }
+    if (configSettings.submissionBatchSize !== undefined) {
+      this.submissionBatchSize = configSettings.submissionBatchSize;
+    }
+    if (configSettings.log) {
+      this.log = inject(configSettings.log);
+    }
+    if (configSettings.environmentInfoCollector) {
+      this.environmentInfoCollector = inject(configSettings.environmentInfoCollector);
+    }
+    if (configSettings.errorParser) {
+      this.errorParser = inject(configSettings.errorParser);
+    }
+    if (configSettings.lastReferenceIdManager) {
+      this.lastReferenceIdManager = inject(configSettings.lastReferenceIdManager);
+    }
+    if (configSettings.moduleCollector) {
+      this.moduleCollector = inject(configSettings.moduleCollector);
+    }
+    if (configSettings.requestInfoCollector) {
+      this.requestInfoCollector = inject(configSettings.requestInfoCollector);
+    }
+    if (configSettings.submissionClient) {
+      this.submissionClient = inject(configSettings.submissionClient);
+    }
+    if (configSettings.storage) {
+      this.storage = inject(configSettings.storage);
+    }
+    if (configSettings.queue) {
+      this.queue = inject(configSettings.queue);
+    }
   }
 
   /**
