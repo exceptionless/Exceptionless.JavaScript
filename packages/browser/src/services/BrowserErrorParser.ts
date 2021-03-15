@@ -11,7 +11,7 @@ import {
   StackFrame
 } from "stacktrace-js";
 
-export class DefaultErrorParser implements IErrorParser {
+export class BrowserErrorParser implements IErrorParser {
   public async parse(context: EventPluginContext, exception: Error): Promise<ErrorInfo> {
     function getParameters(parameters: string | string[]): ParameterInfo[] {
       const params: string[] = (typeof parameters === "string" ? [parameters] : parameters) || [];

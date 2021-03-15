@@ -6,7 +6,7 @@ import {
   RequestInfo,
 } from "@exceptionless/core";
 
-export class DefaultRequestInfoCollector implements IRequestInfoCollector {
+export class BrowserRequestInfoCollector implements IRequestInfoCollector {
   public getRequestInfo(context: EventPluginContext): RequestInfo {
     if (!document || !navigator || !location) {
       return null;

@@ -1,6 +1,6 @@
 import { KeyValueStorageBase } from "@exceptionless/core";
 
-export class BrowserStorage extends KeyValueStorageBase {
+export class BrowserLocalStorage extends KeyValueStorageBase {
   private prefix: string;
 
   public static isAvailable(): boolean {
