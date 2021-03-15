@@ -17,18 +17,10 @@ import { IRequestInfoCollector } from "../services/IRequestInfoCollector.js";
 import { InMemoryStorageProvider } from "../storage/InMemoryStorageProvider.js";
 import { IStorageProvider } from "../storage/IStorageProvider.js";
 import { ISubmissionClient } from "../submission/ISubmissionClient.js";
-import { IConfigurationSettings } from "./IConfigurationSettings.js";
-import { guid, merge } from "../Utils.js";
+import { guid } from "../Utils.js";
 import { KnownEventDataKeys } from "../models/Event.js";
 
 export class Configuration {
-  /**
-   * The default configuration settings that are applied to new configuration instances.
-   * @type {IConfigurationSettings}
-   * @private
-   */
-  private static _defaultSettings: IConfigurationSettings = null;
-
   /**
    * A default list of tags that will automatically be added to every
    * report submitted to the server.
@@ -53,6 +45,7 @@ export class Configuration {
    */
   public enabled: boolean = true;
 
+  // TODO: Move this into services sub object
   public environmentInfoCollector: IEnvironmentInfoCollector;
   public errorParser: IErrorParser;
   public lastReferenceIdManager: ILastReferenceIdManager = new DefaultLastReferenceIdManager();
@@ -146,63 +139,6 @@ export class Configuration {
    * @private
    */
   private _handlers: Array<(config: Configuration) => void> = [];
-
-  public apply(configSettings?: IConfigurationSettings): void {
-    function inject<T>(functionOrValue: T | ((config: Configuration) => T)) {
-      return functionOrValue instanceof Function ? functionOrValue(this) : functionOrValue;
-    }
-
-    // TODO: Handle this being called multiple times.
-    configSettings = merge(Configuration.defaults, configSettings);
-    if (configSettings.apiKey) {
-      this.apiKey = configSettings.apiKey;
-    }
-    if (configSettings.serverUrl) {
-      this.serverUrl = configSettings.serverUrl;
-    }
-    if (configSettings.configServerUrl) {
-      this.configServerUrl = configSettings.configServerUrl;
-    }
-    if (configSettings.heartbeatServerUrl) {
-      this.heartbeatServerUrl = configSettings.heartbeatServerUrl;
-    }
-    if (configSettings.updateSettingsWhenIdleInterval !== undefined) {
-      this.updateSettingsWhenIdleInterval = configSettings.updateSettingsWhenIdleInterval;
-    }
-    if (configSettings.includePrivateInformation !== undefined) {
-      this.includePrivateInformation = configSettings.includePrivateInformation;
-    }
-    if (configSettings.submissionBatchSize !== undefined) {
-      this.submissionBatchSize = configSettings.submissionBatchSize;
-    }
-    if (configSettings.log) {
-      this.log = inject(configSettings.log);
-    }
-    if (configSettings.environmentInfoCollector) {
-      this.environmentInfoCollector = inject(configSettings.environmentInfoCollector);
-    }
-    if (configSettings.errorParser) {
-      this.errorParser = inject(configSettings.errorParser);
-    }
-    if (configSettings.lastReferenceIdManager) {
-      this.lastReferenceIdManager = inject(configSettings.lastReferenceIdManager);
-    }
-    if (configSettings.moduleCollector) {
-      this.moduleCollector = inject(configSettings.moduleCollector);
-    }
-    if (configSettings.requestInfoCollector) {
-      this.requestInfoCollector = inject(configSettings.requestInfoCollector);
-    }
-    if (configSettings.submissionClient) {
-      this.submissionClient = inject(configSettings.submissionClient);
-    }
-    if (configSettings.storage) {
-      this.storage = inject(configSettings.storage);
-    }
-    if (configSettings.queue) {
-      this.queue = inject(configSettings.queue);
-    }
-  }
 
   /**
    * The API key that will be used when sending events to the server.
@@ -664,10 +600,6 @@ export class Configuration {
     this.addPlugin(new ReferenceIdPlugin());
   }
 
-  public useLocalStorage(): void {
-    // This method will be injected via the prototype.
-  }
-
   // TODO: Support a min log level.
   public useDebugLogger(): void {
     this.log = new ConsoleLog();
@@ -677,7 +609,7 @@ export class Configuration {
     handler && this._handlers.push(handler);
   }
 
-  private changed() {
+  protected changed() {
     const handlers = this._handlers; // optimization for minifier.
     for (const handler of handlers) {
       try {
@@ -686,17 +618,5 @@ export class Configuration {
         this.log.error(`Error calling onChanged handler: ${ex}`);
       }
     }
-  }
-
-  /**
-   * The default configuration settings that are applied to new configuration instances.
-   * @returns {IConfigurationSettings}
-   */
-  public static get defaults(): IConfigurationSettings {
-    if (Configuration._defaultSettings === null) {
-      Configuration._defaultSettings = { includePrivateInformation: true };
-    }
-
-    return Configuration._defaultSettings;
   }
 }

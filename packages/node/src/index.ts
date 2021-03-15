@@ -1,100 +1,11 @@
+export { NodeConfiguration } from "./configuration/NodeConfiguration.js";
+export { NodeEnvironmentInfoCollector } from "./services/NodeEnvironmentInfoCollector.js";
+export { NodeErrorParser } from "./services/NodeErrorParser.js";
+export { NodeRequestInfoCollector } from "./services/NodeRequestInfoCollector.js";
+export { NodeFileStorage } from "./storage/NodeFileStorage.js";
+export { NodeFileStorageProvider } from "./storage/NodeFileStorageProvider.js";
+export { NodeFetchSubmissionClient } from "./submission/NodeFetchSubmissionClient.js";
+export { NodeExceptionlessClient } from "./NodeExceptionlessClient.js";
 
-import {
-  addListener,
-  on
-} from "process";
-
-import {
-  Configuration,
-  Exceptionless,
-  SettingsManager
-} from "@exceptionless/core";
-
-import { NodeEnvironmentInfoCollector } from "./services/NodeEnvironmentInfoCollector.js";
-import { NodeErrorParser } from "./services/NodeErrorParser.js";
-import { NodeRequestInfoCollector } from "./services/NodeRequestInfoCollector.js";
-import { NodeFileStorageProvider } from "./storage/NodeFileStorageProvider.js";
-import { FetchSubmissionClient } from "./submission/FetchSubmissionClient.js";
-
-const defaults = Configuration.defaults;
-defaults.environmentInfoCollector = new NodeEnvironmentInfoCollector();
-defaults.errorParser = new NodeErrorParser();
-defaults.requestInfoCollector = new NodeRequestInfoCollector();
-defaults.submissionClient = (config: Configuration) => new FetchSubmissionClient(config);
-
-Configuration.prototype.useLocalStorage = function() {
-  this.storage = new NodeFileStorageProvider();
-  SettingsManager.applySavedServerSettings(this);
-  this.changed();
-};
-
-addListener("uncaughtException", (error: Error) => {
-  //ExceptionlessClient.default.submitUnhandledException(error, "uncaughtException");
-});
-
-// TODO: Handle submission https://stackoverflow.com/questions/40574218/how-to-perform-an-async-operation-on-exit
-
-on("exit", (code: number) => {
-  /**
-   * exit codes: https://nodejs.org/api/process.html#process_event_exit
-   * From now on, only synchronous code may run. As soon as this method
-   * ends, the application inevitably will exit.
-   */
-  function getExitCodeReason(exitCode: number): string {
-    if (exitCode === 1) {
-      return "Uncaught Fatal Exception";
-    }
-
-    if (exitCode === 3) {
-      return "Internal JavaScript Parse Error";
-    }
-
-    if (exitCode === 4) {
-      return "Internal JavaScript Evaluation Failure";
-    }
-
-    if (exitCode === 5) {
-      return "Fatal Exception";
-    }
-
-    if (exitCode === 6) {
-      return "Non-function Internal Exception Handler ";
-    }
-
-    if (exitCode === 7) {
-      return "Internal Exception Handler Run-Time Failure";
-    }
-
-    if (exitCode === 8) {
-      return "Uncaught Exception";
-    }
-
-    if (exitCode === 9) {
-      return "Invalid Argument";
-    }
-
-    if (exitCode === 10) {
-      return "Internal JavaScript Run-Time Failure";
-    }
-
-    if (exitCode === 12) {
-      return "Invalid Debug Argument";
-    }
-
-    return null;
-  }
-
-  const message = getExitCodeReason(code);
-
-  if (message !== null) {
-    Exceptionless.submitLog("exit", message, "Error");
-  }
-
-  Exceptionless.config.queue.process();
-  // Application will now exit.
-});
-
-//(Error as any).stackTraceLimit = Infinity;
-
-// TODO: Export all services
-export { Exceptionless } from "@exceptionless/core";
+import { NodeExceptionlessClient } from "./NodeExceptionlessClient.js";
+export const Exceptionless = new NodeExceptionlessClient();

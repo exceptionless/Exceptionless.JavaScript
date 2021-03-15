@@ -2,21 +2,15 @@ import { ExceptionlessClient } from "../ExceptionlessClient.js";
 import { ILog } from "../logging/ILog.js";
 import { Event } from "../models/Event.js";
 import { ContextData } from "./ContextData.js";
+import { PluginContext } from "./PluginContext.js";
 
-export class EventPluginContext {
-  public cancelled: boolean = false;
-  public client: ExceptionlessClient;
-  public event: Event;
-  public contextData: ContextData;
-
+export class EventPluginContext extends PluginContext {
   constructor(
     client: ExceptionlessClient,
-    event: Event,
-    contextData?: ContextData,
+    public event: Event,
+    public contextData: ContextData = new ContextData()
   ) {
-    this.client = client;
-    this.event = event;
-    this.contextData = contextData ? contextData : new ContextData();
+    super(client);
   }
 
   public get log(): ILog {

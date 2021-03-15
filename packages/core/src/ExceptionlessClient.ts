@@ -1,5 +1,4 @@
 import { Configuration } from "./configuration/Configuration.js";
-import { IConfigurationSettings } from "./configuration/IConfigurationSettings.js";
 import { SettingsManager } from "./configuration/SettingsManager.js";
 import { EventBuilder } from "./EventBuilder.js";
 import { Event, KnownEventDataKeys } from "./models/Event.js";
@@ -9,23 +8,32 @@ import { EventPluginContext } from "./plugins/EventPluginContext.js";
 import { EventPluginManager } from "./plugins/EventPluginManager.js";
 
 export class ExceptionlessClient {
-  public config: Configuration = new Configuration();
   private _intervalId: any;
   private _timeoutId: any;
 
-  /** Resume background submission, resume any timers. */
-  public startup(settingsOrApiKey?: IConfigurationSettings | string): Promise<void> {
-    if (settingsOrApiKey) {
-      this.config.apply(typeof settingsOrApiKey === "object" ? settingsOrApiKey : { apiKey: settingsOrApiKey });
+  public constructor(public config: Configuration) { }
 
-      SettingsManager.applySavedServerSettings(this.config);
+  /*
+    client.startup(c => {
+      c.services.storage = new InMemoryStorageProvider(c)''
+    })*/
+  /** Resume background submission, resume any timers. */
+  public startup(configurationOrApiKey?: (config: Configuration) => void | string): Promise<void> {
+    if (configurationOrApiKey) {
       EventPluginManager.addDefaultPlugins(this.config);
 
+      if (typeof configurationOrApiKey === "string") {
+        this.config.apiKey = configurationOrApiKey;
+      } else {
+        configurationOrApiKey(this.config);
+      }
+
+      SettingsManager.applySavedServerSettings(this.config);
       this.config.onChanged(() => this.updateSettingsTimer(this._timeoutId > 0 ? 5000 : 0));
       this.config.queue.onEventsPosted(() => this.updateSettingsTimer());
     }
 
-    this.updateSettingsTimer(settingsOrApiKey ? 5000 : 0);
+    this.updateSettingsTimer(configurationOrApiKey ? 5000 : 0);
     // TODO: resume plugins
     // TODO: resume queue
     return Promise.resolve();

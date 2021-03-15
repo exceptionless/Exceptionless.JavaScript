@@ -1,5 +1,4 @@
 export { Configuration } from "./configuration/Configuration.js";
-export { IConfigurationSettings } from "./configuration/IConfigurationSettings.js";
 export { SettingsManager } from "./configuration/SettingsManager.js";
 
 export { DefaultLastReferenceIdManager } from "./lastReferenceIdManager/DefaultLastReferenceIdManager.js";
@@ -66,9 +65,7 @@ export {
 } from "./submission/SubmissionClientBase.js";
 
 export { EventBuilder } from "./EventBuilder.js";
-import { ExceptionlessClient } from "./ExceptionlessClient.js";
 export { ExceptionlessClient } from "./ExceptionlessClient.js";
-export const Exceptionless = new ExceptionlessClient();
 
 export {
   endsWith,

@@ -1,10 +1,16 @@
 import {
+  default as fetch,
+  RequestInit
+} from "node-fetch";
+
+import {
+  Configuration,
   FetchOptions,
   Response,
   SubmissionClientBase
 } from "@exceptionless/core";
 
-export class FetchSubmissionClient extends SubmissionClientBase {
+export class NodeFetchSubmissionClient extends SubmissionClientBase {
   protected async fetch<T>(url: string, options: FetchOptions): Promise<Response<T>> {
     // TODO: Figure out how to set a 10000 timeout.
     const requestOptions: RequestInit = {

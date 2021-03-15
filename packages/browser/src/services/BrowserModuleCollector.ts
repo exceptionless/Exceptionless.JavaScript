@@ -5,7 +5,7 @@ import {
   parseVersion,
 } from "@exceptionless/core";
 
-export class DefaultModuleCollector implements IModuleCollector {
+export class BrowserModuleCollector implements IModuleCollector {
   public getModules(): ModuleInfo[] {
     if (!document || !document.getElementsByTagName) {
       return null;
