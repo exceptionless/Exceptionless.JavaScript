@@ -41,10 +41,11 @@ export class DefaultEventQueue implements IEventQueue {
    * @type {Timer}
    * @private
    */
-  private _queueTimer: any;
+  private _queueTimerId: any;
 
   constructor(private config: Configuration) {}
 
+  /** Enqueue an event and resumes any queue timers */
   public enqueue(event: Event): void {
     const eventWillNotBeQueued: string = "The event will not be queued."; // optimization for minifier.
     const config: Configuration = this.config; // Optimization for minifier.
@@ -78,6 +79,7 @@ export class DefaultEventQueue implements IEventQueue {
     }
   }
 
+  /** Processes all events in the queue and resumes any queue timers */
   public async process(): Promise<void> {
     const queueNotProcessed: string = "The queue will not be processed."; // optimization for minifier.
     const config: Configuration = this.config; // Optimization for minifier.
@@ -121,6 +123,13 @@ export class DefaultEventQueue implements IEventQueue {
     }
   }
 
+  /** Suspends queue timers */
+  public suspend(): Promise<void> {
+    this._queueTimerId = clearInterval(this._queueTimerId);
+    return Promise.resolve();
+  }
+
+  /** Suspends processing of events for a specific duration */
   public suspendProcessing(
     durationInMinutes?: number,
     discardFutureQueuedItems?: boolean,
@@ -148,9 +157,7 @@ export class DefaultEventQueue implements IEventQueue {
   }
 
   // TODO: See if this makes sense.
-  public onEventsPosted(
-    handler: (events: Event[], response: Response<void>) => void,
-  ): void {
+  public onEventsPosted(handler: (events: Event[], response: Response<void>) => void): void {
     handler && this._handlers.push(handler);
   }
 
@@ -171,9 +178,9 @@ export class DefaultEventQueue implements IEventQueue {
   }
 
   private ensureQueueTimer(): void {
-    if (!this._queueTimer) {
+    if (!this._queueTimerId) {
       // TODO: Fix awaiting promise.
-      this._queueTimer = setInterval(() => void this.onProcessQueue(), 10000);
+      this._queueTimerId = setInterval(() => void this.onProcessQueue(), 10000);
     }
   }
 

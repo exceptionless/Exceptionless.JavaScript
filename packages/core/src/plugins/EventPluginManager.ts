@@ -8,8 +8,37 @@ import { ModuleInfoPlugin } from "./default/ModuleInfoPlugin.js";
 import { RequestInfoPlugin } from "./default/RequestInfoPlugin.js";
 import { SubmissionMethodPlugin } from "./default/SubmissionMethodPlugin.js";
 import { EventPluginContext } from "./EventPluginContext.js";
+import { PluginContext } from "./PluginContext.js";
 
 export class EventPluginManager {
+  public static async startup(context: PluginContext): Promise<void> {
+    for (const plugin of context.client.config.plugins) {
+      if (!plugin.startup) {
+        continue;
+      }
+
+      try {
+        await plugin.startup(context);
+      } catch (ex) {
+        context.log.error(`Error running plugin startup"${plugin.name}": ${ex.message}`);
+      }
+    }
+  }
+
+  public static async suspend(context: PluginContext): Promise<void> {
+    for (const plugin of context.client.config.plugins) {
+      if (!plugin.suspend) {
+        continue;
+      }
+
+      try {
+        await plugin.suspend(context);
+      } catch (ex) {
+        context.log.error(`Error running plugin suspend"${plugin.name}": ${ex.message}`);
+      }
+    }
+  }
+
   public static async run(context: EventPluginContext): Promise<void> {
     for (const plugin of context.client.config.plugins) {
       if (context.cancelled) {

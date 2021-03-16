@@ -2,6 +2,7 @@ import { UserInfo } from "../../models/data/UserInfo.js";
 import { KnownEventDataKeys } from "../../models/Event.js";
 import { EventPluginContext } from "../EventPluginContext.js";
 import { IEventPlugin } from "../IEventPlugin.js";
+import { PluginContext } from "../PluginContext.js";
 
 export class HeartbeatPlugin implements IEventPlugin {
   public priority: number = 100;
@@ -11,12 +12,23 @@ export class HeartbeatPlugin implements IEventPlugin {
   private _intervalId: any;
 
   constructor(heartbeatInterval: number = 30000) {
-    // TODO: Can we pause this? What about on shutdown,
     this._interval = heartbeatInterval >= 30000 ? heartbeatInterval : 60000;
   }
 
+  public startup(context: PluginContext): Promise<void> {
+    this._intervalId = clearInterval(this._intervalId);
+    // TODO: Should we submit a session start?
+    return Promise.resolve();
+  }
+
+  public suspend(context: PluginContext): Promise<void> {
+    this._intervalId = clearInterval(this._intervalId);
+    // TODO: Should we submit a session end?
+    return Promise.resolve();
+  }
+
   public run(context: EventPluginContext): Promise<void> {
-    clearInterval(this._intervalId);
+    this._intervalId = clearInterval(this._intervalId);
 
     const user: UserInfo = context.event.data[KnownEventDataKeys.UserInfo];
     if (user && user.identity) {
