@@ -6,6 +6,7 @@ import { UserDescription } from "./models/data/UserDescription.js";
 import { ContextData } from "./plugins/ContextData.js";
 import { EventPluginContext } from "./plugins/EventPluginContext.js";
 import { EventPluginManager } from "./plugins/EventPluginManager.js";
+import { PluginContext } from "./plugins/PluginContext.js";
 
 export class ExceptionlessClient {
   private _intervalId: any;
@@ -13,12 +14,8 @@ export class ExceptionlessClient {
 
   public constructor(public config: Configuration) { }
 
-  /*
-    client.startup(c => {
-      c.services.storage = new InMemoryStorageProvider(c)''
-    })*/
   /** Resume background submission, resume any timers. */
-  public startup(configurationOrApiKey?: (config: Configuration) => void | string): Promise<void> {
+  public async startup(configurationOrApiKey?: (config: Configuration) => void | string): Promise<void> {
     if (configurationOrApiKey) {
       EventPluginManager.addDefaultPlugins(this.config);
 
@@ -34,17 +31,16 @@ export class ExceptionlessClient {
     }
 
     this.updateSettingsTimer(configurationOrApiKey ? 5000 : 0);
-    // TODO: resume plugins
-    // TODO: resume queue
-    return Promise.resolve();
+    await EventPluginManager.startup(new PluginContext(this));
+    await this.processQueue();
   }
 
   /** Submit events, pause any timers and go into low power mode. */
   public async suspend(): Promise<void> {
-    // TODO: Turn off timers.
-    this.updateSettingsTimer(0);
-    // TODO: suspend plugins / trigger dedupe plugin to submit...
+    await EventPluginManager.suspend(new PluginContext(this));
     await this.processQueue();
+    await this.config.queue.suspend();
+    this.updateSettingsTimer(0, -1);
   }
 
   public async processQueue(): Promise<void> {
@@ -52,11 +48,11 @@ export class ExceptionlessClient {
   }
 
   // TODO: Look into better async scheduling..
-  private updateSettingsTimer(initialDelay?: number) {
+  private updateSettingsTimer(initialDelay: number = 0, updateWhenIdleInterval?: number) {
     this._timeoutId = clearTimeout(this._timeoutId);
     this._intervalId = clearInterval(this._intervalId);
 
-    const interval = this.config.updateSettingsWhenIdleInterval;
+    const interval = updateWhenIdleInterval || this.config.updateSettingsWhenIdleInterval;
     if (interval > 0) {
       this.config.log.info(`Update settings every ${interval}ms (${initialDelay || 0}ms delay)`);
       // TODO: Fix awaiting promise.

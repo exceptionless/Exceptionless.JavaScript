@@ -3,6 +3,7 @@ import { KnownEventDataKeys } from "../../models/Event.js";
 import { getHashCode } from "../../Utils.js";
 import { EventPluginContext } from "../EventPluginContext.js";
 import { IEventPlugin } from "../IEventPlugin.js";
+import { PluginContext } from "../PluginContext.js";
 
 export class DuplicateCheckerPlugin implements IEventPlugin {
   public priority: number = 1010;
@@ -11,6 +12,7 @@ export class DuplicateCheckerPlugin implements IEventPlugin {
   private _mergedEvents: MergedEvent[] = [];
   private _processedHashCodes: TimestampedHash[] = [];
   private _getCurrentTime: () => number;
+  private _intervalId: any;
   private _interval: number;
 
   constructor(
@@ -19,13 +21,23 @@ export class DuplicateCheckerPlugin implements IEventPlugin {
   ) {
     this._getCurrentTime = getCurrentTime;
     this._interval = interval;
+  }
 
-    // TODO: Can we pause this? What about on shutdown,
-    setInterval(() => {
+  public startup(context: PluginContext): Promise<void> {
+    this._intervalId = clearInterval(this._intervalId);
+    this._intervalId = setInterval(() => {
       while (this._mergedEvents.length > 0) {
         this._mergedEvents.shift().resubmit();
       }
-    }, interval);
+    }, this._interval);
+
+    return Promise.resolve();
+  }
+
+  public suspend(context: PluginContext): Promise<void> {
+    this._intervalId = clearInterval(this._intervalId);
+    // TODO: Resubmit events.
+    return Promise.resolve();
   }
 
   public run(context: EventPluginContext): Promise<void> {
@@ -50,9 +62,7 @@ export class DuplicateCheckerPlugin implements IEventPlugin {
       const count = context.event.count || 1;
       const now = this._getCurrentTime();
 
-      const merged = this._mergedEvents.filter((s) =>
-        s.hashCode === hashCode
-      )[0];
+      const merged = this._mergedEvents.filter((s) => s.hashCode === hashCode)[0];
       if (merged) {
         merged.incrementCount(count);
         merged.updateDate(context.event.date);
@@ -72,9 +82,7 @@ export class DuplicateCheckerPlugin implements IEventPlugin {
       }
 
       if (!context.cancelled) {
-        context.log.trace(
-          "Enqueueing event with hash: " + hashCode + "to cache.",
-        );
+        context.log.trace(`Enqueueing event with hash: ${hashCode} to cache`);
         this._processedHashCodes.push({ hash: hashCode, timestamp: now });
 
         // Only keep the last 50 recent errors.
