@@ -7,12 +7,10 @@ import { TestSubmissionClient } from "./TestSubmissionClient.js"
 
 describe("TestSubmissionClient", () => {
   const config: Configuration = new Configuration();
-  config.apply({
-    apiKey: "LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw",
-    serverUrl: "http://server.localhost:5000",
-    configServerUrl: "http://config.localhost:5000",
-    heartbeatServerUrl: "http://heartbeat.localhost:5000",
-  });
+  config.apiKey = "UNIT_TEST_API_KEY";
+  config.serverUrl = "http://server.localhost:5000";
+  config.configServerUrl = "http://config.localhost:5000";
+  config.heartbeatServerUrl = "http://heartbeat.localhost:5000";
 
   test("should submit events", async () => {
     const fetchMock = TestSubmissionClient.prototype.fetch = jest.fn()
@@ -74,7 +72,7 @@ describe("TestSubmissionClient", () => {
       .mockReturnValueOnce(new Response<void>(200, "", 1, undefined))
       .mockReturnValueOnce(new Response<ClientSettings>(200, "", 1, new ClientSettings({}, 1)));
 
-    const client = config.submissionClient = new TestSubmissionClient(config);
+    const client = config.services.submissionClient = new TestSubmissionClient(config);
     await client.submitHeartbeat("sessionId", true);
     expect(fetchMock).toHaveBeenCalledTimes(2);
     expect(fetchMock.mock.calls[0][0]).toBe(`${config.heartbeatServerUrl}/api/v2/events/session/heartbeat?id=sessionId&close=true`);

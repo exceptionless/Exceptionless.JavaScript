@@ -5,21 +5,8 @@ describe("Configuration", () => {
     let config = new Configuration();
     expect(config.apiKey).toBeUndefined();
 
-    config.apiKey = "LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw";
-    expect(config.apiKey).toBe("LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw");
-
-    Configuration.defaults.apiKey = "test";
-    config = new Configuration();
-    config.apply();
-    expect(config.apiKey).toBe("test");
-
-    config = new Configuration();
-    config.apply({ apiKey: "LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw", serverUrl: "http://localhost:5000" });
-    expect(config.apiKey).toBe("LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw");
-
-    config = new Configuration();
-    config.apply({ apiKey: null });
-    expect(config.apiKey).toBe("test");
+    config.apiKey = "UNIT_TEST_API_KEY";
+    expect(config.apiKey).toBe("UNIT_TEST_API_KEY");
     expect(config.includePrivateInformation).toBe(true);
     expect(config.includeUserName).toBe(true);
     expect(config.includeMachineName).toBe(true);
@@ -29,7 +16,7 @@ describe("Configuration", () => {
     expect(config.includeQueryString).toBe(true);
 
     config = new Configuration();
-    config.apply({ includePrivateInformation: false });
+    config.includePrivateInformation = false;
     expect(config.includePrivateInformation).toBe(false);
     expect(config.includeUserName).toBe(false);
     expect(config.includeMachineName).toBe(false);
@@ -50,7 +37,8 @@ describe("Configuration", () => {
 
   test("should not add duplicate plugin", () => {
     const config = new Configuration();
-    config.apply({ apiKey: "LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw", serverUrl: "http://localhost:5000" });
+    config.apiKey = "UNIT_TEST_API_KEY";
+
     expect(config.plugins).not.toBeNull();
     while (config.plugins.length > 0) {
       config.removePlugin(config.plugins[0]);
@@ -63,7 +51,8 @@ describe("Configuration", () => {
 
   test("should generate plugin name and priority", () => {
     const config = new Configuration();
-    config.apply({ apiKey: "LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw", serverUrl: "http://localhost:5000" });
+    config.apiKey = "UNIT_TEST_API_KEY";
+
     expect(config.plugins).not.toBeNull();
     while (config.plugins.length > 0) {
       config.removePlugin(config.plugins[0]);
@@ -77,7 +66,8 @@ describe("Configuration", () => {
 
   test("should sort plugins by priority", () => {
     const config = new Configuration();
-    config.apply({ apiKey: "LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw", serverUrl: "http://localhost:5000" });
+    config.apiKey = "UNIT_TEST_API_KEY";
+
     expect(config.plugins).not.toBeNull();
     while (config.plugins.length > 0) {
       config.removePlugin(config.plugins[0]);

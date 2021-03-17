@@ -3,29 +3,28 @@ const app = express()
 
 import { Exceptionless } from "@exceptionless/node";
 
-Exceptionless.startup({
-  apiKey: "LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw",
-  serverUrl: "http://localhost:5000"
+Exceptionless.startup(c => {
+  c.apiKey = "LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw";
+  c.serverUrl = "http://localhost:5000";
+  c.useDebugLogger();
+  c.useLocalStorage();
+
+  c.defaultTags.push("Example", "Node");
+
+  // set some default data
+  c.defaultData["SampleUser"] = {
+    id: 1,
+    name: "Blake",
+    password: "123456",
+    passwordResetToken: "a reset token",
+    myPasswordValue: "123456",
+    myPassword: "123456",
+    customValue: "Password",
+    value: {
+      Password: "123456"
+    }
+  };
 });
-
-Exceptionless.config.useDebugLogger();
-Exceptionless.config.useLocalStorage();
-
-// set some default data
-Exceptionless.config.defaultData["SampleUser"] = {
-  id:1,
-  name: "Blake",
-  password: "123456",
-  passwordResetToken: "a reset token",
-  myPasswordValue: "123456",
-  myPassword: "123456",
-  customValue: "Password",
-  value: {
-    Password: "123456"
-  }
-};
-
-Exceptionless.config.defaultTags.push("Example", "Node");
 
 app.get("/", function index(req, res) {
   Exceptionless.submitLog("loading index content");

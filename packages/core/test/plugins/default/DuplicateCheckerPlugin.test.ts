@@ -46,12 +46,8 @@ describe("DuplicateCheckerPlugin", () => {
   let client: ExceptionlessClient;
   let plugin: DuplicateCheckerPlugin;
 
-  beforeEach(async () => {
+  beforeEach(() => {
     client = new ExceptionlessClient();
-    await client.startup({
-      apiKey: "LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw",
-      serverUrl: "http://localhost:5000"
-    });
     plugin = new DuplicateCheckerPlugin(() => now, 50);
   });
 

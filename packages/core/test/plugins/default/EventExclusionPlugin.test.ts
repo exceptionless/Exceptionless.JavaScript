@@ -8,10 +8,6 @@ import { InnerErrorInfo } from "../../../src/models/data/ErrorInfo.js";
 import { EventExclusionPlugin } from "../../../src/plugins/default/EventExclusionPlugin.js";
 import { EventPluginContext } from "../../../src/plugins/EventPluginContext.js";
 
-beforeEach(() => {
-  Configuration.defaults.updateSettingsWhenIdleInterval = -1;
-});
-
 describe("EventExclusionPlugin", () => {
   describe("should exclude log levels", () => {
     const run = async (source: string, level: string, settingKey: string, settingValue: string): Promise<boolean> => {
