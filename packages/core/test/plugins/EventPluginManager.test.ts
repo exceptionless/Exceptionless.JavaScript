@@ -1,21 +1,13 @@
-import { Configuration } from "../../src/configuration/Configuration.js";
 import { ContextData } from "../../src/plugins/ContextData.js";
 import { ExceptionlessClient } from "../../src/ExceptionlessClient.js";
 import { EventPluginContext } from "../../src/plugins/EventPluginContext.js";
 import { EventPluginManager } from "../../src/plugins/EventPluginManager.js";
 import { delay } from "../helpers.js";
 
-beforeEach(() => {
-  Configuration.defaults.updateSettingsWhenIdleInterval = -1;
-});
-
 describe("EventPluginManager", () => {
   test("should add items to the event.", async () => {
     const client = new ExceptionlessClient();
-    await client.startup({
-      apiKey: "LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw",
-      serverUrl: "http://localhost:5000"
-    });
+    client.config.apiKey = "UNIT_TEST_API_KEY";
 
     const context = new EventPluginContext(client, {}, new ContextData());
     expect(context.event.source).toBeUndefined();
@@ -44,10 +36,7 @@ describe("EventPluginManager", () => {
 
   test("setting cancel should stop plugin execution.", async () => {
     const client = new ExceptionlessClient();
-    await client.startup({
-      apiKey: "LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw",
-      serverUrl: "http://localhost:5000"
-    });
+    client.config.apiKey = "UNIT_TEST_API_KEY";
 
     const context = new EventPluginContext(client, {}, new ContextData());
     expect(client.config.plugins).not.toBeNull();
@@ -70,10 +59,7 @@ describe("EventPluginManager", () => {
 
   test("throwing error should stop plugin execution.", async () => {
     const client = new ExceptionlessClient();
-    await client.startup({
-      apiKey: "LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw",
-      serverUrl: "http://localhost:5000"
-    });
+    client.config.apiKey = "UNIT_TEST_API_KEY";
     const context = new EventPluginContext(client, {}, new ContextData());
 
     expect(client.config.plugins).not.toBeNull();
@@ -95,10 +81,7 @@ describe("EventPluginManager", () => {
 
   test("should cancel via timeout.", async () => {
     const client = new ExceptionlessClient();
-    await client.startup({
-      apiKey: "LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw",
-      serverUrl: "http://localhost:5000"
-    });
+    client.config.apiKey = "UNIT_TEST_API_KEY";
     const context = new EventPluginContext(client, {}, new ContextData());
 
     expect(client.config.plugins).not.toBeNull();
@@ -120,10 +103,7 @@ describe("EventPluginManager", () => {
 
   test("should ensure config plugins are not wrapped.", async () => {
     const client = new ExceptionlessClient();
-    await client.startup({
-      apiKey: "LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw",
-      serverUrl: "http://localhost:5000"
-    });
+    client.config.apiKey = "UNIT_TEST_API_KEY";
     const context = new EventPluginContext(client, {}, new ContextData());
 
     expect(client.config.plugins).not.toBeNull();

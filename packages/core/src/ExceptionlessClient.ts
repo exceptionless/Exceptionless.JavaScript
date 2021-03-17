@@ -12,7 +12,7 @@ export class ExceptionlessClient {
   private _intervalId: any;
   private _timeoutId: any;
 
-  public constructor(public config: Configuration) { }
+  public constructor(public config: Configuration = new Configuration()) { }
 
   /** Resume background submission, resume any timers. */
   public async startup(configurationOrApiKey?: (config: Configuration) => void | string): Promise<void> {

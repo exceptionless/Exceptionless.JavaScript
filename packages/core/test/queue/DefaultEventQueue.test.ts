@@ -7,58 +7,56 @@ describe("DefaultEventQueue", () => {
 
   beforeEach(() => {
     config = new Configuration();
-    config.apply({
-      apiKey: "LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw",
-      serverUrl: "http://localhost:5000"
-    });
+    config.apiKey = "UNIT_TEST_API_KEY";
+    config.serverUrl = "http://server.localhost:5000";
 
-    expect(config.storage.queue.get().length).toBe(0);
+    expect(config.services.storage.queue.get().length).toBe(0);
   });
 
   afterEach(() => {
-    const queue: any = config.queue;
+    const queue: any = config.services.queue;
     clearInterval(queue._queueTimer);
     config = null;
   });
 
   test("should enqueue event", () => {
     const event: Event = { type: "log", reference_id: "123454321" };
-    config.queue.enqueue(event);
-    expect(config.storage.queue.get().length).toBe(1);
+    config.services.queue.enqueue(event);
+    expect(config.services.storage.queue.get().length).toBe(1);
   });
 
-  test("should process queue", () => {
+  test("should process queue", async () => {
     const event: Event = { type: "log", reference_id: "123454321" };
-    config.queue.enqueue(event);
-    expect(config.storage.queue.get().length).toBe(1);
-    config.queue.process();
+    config.services.queue.enqueue(event);
+    expect(config.services.storage.queue.get().length).toBe(1);
+    await config.services.queue.process();
 
-    config.queue.onEventsPosted(() => {
-      expect((config.queue as any)._suspendProcessingUntil).toBeUndefined();
-      expect(config.storage.queue.get().length).toBe(0);
+    config.services.queue.onEventsPosted(() => {
+      expect((config.services.queue as any)._suspendProcessingUntil).toBeUndefined();
+      expect(config.services.storage.queue.get().length).toBe(0);
     });
   });
 
   test("should discard event submission", () => {
-    config.queue.suspendProcessing(1, true);
+    config.services.queue.suspendProcessing(1, true);
 
     const event: Event = { type: "log", reference_id: "123454321" };
-    config.queue.enqueue(event);
-    expect(config.storage.queue.get().length).toBe(0);
+    config.services.queue.enqueue(event);
+    expect(config.services.storage.queue.get().length).toBe(0);
   });
 
   test("should suspend processing", async () => {
-    config.queue.suspendProcessing(.0001);
+    config.services.queue.suspendProcessing(.0001);
 
     const event: Event = { type: "log", reference_id: "123454321" };
-    config.queue.enqueue(event);
-    expect(config.storage.queue.get().length).toBe(1);
+    config.services.queue.enqueue(event);
+    expect(config.services.storage.queue.get().length).toBe(1);
 
     await delay(25);
-    if (!(config.queue as any)._suspendProcessingUntil) {
-      expect(config.storage.queue.get().length).toBe(0);
+    if (!(config.services.queue as any)._suspendProcessingUntil) {
+      expect(config.services.storage.queue.get().length).toBe(0);
     } else {
-      expect(config.storage.queue.get().length).toBe(1);
+      expect(config.services.storage.queue.get().length).toBe(1);
     }
   });
 });
