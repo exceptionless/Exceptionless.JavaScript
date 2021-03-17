@@ -1,6 +1,6 @@
 import { ModuleInfo } from "./ModuleInfo.js";
 
-export class InnerErrorInfo {
+export interface InnerErrorInfo {
   message?: string;
   type?: string;
   code?: string;
@@ -10,11 +10,11 @@ export class InnerErrorInfo {
   target_method?: MethodInfo;
 }
 
-export class ErrorInfo extends InnerErrorInfo {
+export interface ErrorInfo extends InnerErrorInfo {
   modules?: ModuleInfo[];
 }
 
-export class MethodInfo {
+export interface MethodInfo {
   data?: any;
   generic_arguments?: string[];
   parameters?: ParameterInfo[];
@@ -25,7 +25,7 @@ export class MethodInfo {
   module_id?: number;
 }
 
-export class ParameterInfo {
+export interface ParameterInfo {
   data?: any;
   generic_arguments?: string[];
   name?: string;
@@ -33,7 +33,7 @@ export class ParameterInfo {
   type_namespace?: string;
 }
 
-export class StackFrameInfo extends MethodInfo {
+export interface StackFrameInfo extends MethodInfo {
   file_name?: string;
   line_number?: number;
   column?: number;

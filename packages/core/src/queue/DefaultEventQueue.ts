@@ -49,7 +49,7 @@ export class DefaultEventQueue implements IEventQueue {
   public enqueue(event: Event): void {
     const eventWillNotBeQueued: string = "The event will not be queued."; // optimization for minifier.
     const config: Configuration = this.config; // Optimization for minifier.
-    const log: ILog = config.log; // Optimization for minifier.
+    const log: ILog = config.services.log; // Optimization for minifier.
 
     if (!config.enabled) {
       log.info(`Configuration is disabled. ${eventWillNotBeQueued}`);
@@ -68,10 +68,8 @@ export class DefaultEventQueue implements IEventQueue {
 
     this.ensureQueueTimer();
 
-    const timestamp = config.storage.queue.save(event);
-    const logText = `type=${event.type} ${
-      event.reference_id ? "refid=" + event.reference_id : ""
-    }`;
+    const timestamp = config.services.storage.queue.save(event);
+    const logText = `type=${event.type} ${event.reference_id ? "refid=" + event.reference_id : ""}`;
     if (timestamp) {
       log.info(`Enqueuing event: ${timestamp} ${logText}`);
     } else {
@@ -82,20 +80,19 @@ export class DefaultEventQueue implements IEventQueue {
   /** Processes all events in the queue and resumes any queue timers */
   public async process(): Promise<void> {
     const queueNotProcessed: string = "The queue will not be processed."; // optimization for minifier.
-    const config: Configuration = this.config; // Optimization for minifier.
-    const log: ILog = config.log; // Optimization for minifier.
+    const { log } = this.config.services;
 
     if (this._processingQueue) {
       return;
     }
 
     log.info("Processing queue...");
-    if (!config.enabled) {
+    if (!this.config.enabled) {
       log.info(`Configuration is disabled: ${queueNotProcessed}`);
       return;
     }
 
-    if (!config.isValid) {
+    if (!this.config.isValid) {
       log.info(`Invalid Api Key: ${queueNotProcessed}`);
       return;
     }
@@ -104,14 +101,14 @@ export class DefaultEventQueue implements IEventQueue {
     this.ensureQueueTimer();
 
     try {
-      const events = config.storage.queue.get(config.submissionBatchSize);
+      const events = this.config.services.storage.queue.get(this.config.submissionBatchSize);
       if (!events || events.length === 0) {
         this._processingQueue = false;
         return;
       }
 
-      log.info(`Sending ${events.length} events to ${config.serverUrl}`);
-      const response = await config.submissionClient.submitEvents(events.map((e) => e.value));
+      log.info(`Sending ${events.length} events to ${this.config.serverUrl}`);
+      const response = await this.config.services.submissionClient.submitEvents(events.map((e) => e.value));
       this.processSubmissionResponse(response, events);
       this.eventsPosted(events.map((e) => e.value), response);
       log.info("Finished processing queue.");
@@ -130,18 +127,14 @@ export class DefaultEventQueue implements IEventQueue {
   }
 
   /** Suspends processing of events for a specific duration */
-  public suspendProcessing(
-    durationInMinutes?: number,
-    discardFutureQueuedItems?: boolean,
-    clearQueue?: boolean,
-  ): void {
+  public suspendProcessing(durationInMinutes?: number, discardFutureQueuedItems?: boolean, clearQueue?: boolean): void {
     const config: Configuration = this.config; // Optimization for minifier.
 
     if (!durationInMinutes || durationInMinutes <= 0) {
       durationInMinutes = 5;
     }
 
-    config.log.info(`Suspending processing for ${durationInMinutes} minutes.`);
+    config.services.log.info(`Suspending processing for ${durationInMinutes} minutes.`);
     this._suspendProcessingUntil = new Date(
       new Date().getTime() + (durationInMinutes * 60000),
     );
@@ -152,7 +145,7 @@ export class DefaultEventQueue implements IEventQueue {
 
     if (clearQueue) {
       // Account is over the limit and we want to ensure that the sample size being sent in will contain newer errors.
-      config.storage.queue.clear();
+      config.services.storage.queue.clear();
     }
   }
 
@@ -167,7 +160,7 @@ export class DefaultEventQueue implements IEventQueue {
       try {
         handler(events, response);
       } catch (ex) {
-        this.config.log.error(`Error calling onEventsPosted handler: ${ex}`);
+        this.config.services.log.error(`Error calling onEventsPosted handler: ${ex}`);
       }
     }
   }
@@ -201,7 +194,7 @@ export class DefaultEventQueue implements IEventQueue {
   ): void {
     const noSubmission: string = "The event will not be submitted."; // Optimization for minifier.
     const config: Configuration = this.config; // Optimization for minifier.
-    const log: ILog = config.log; // Optimization for minifier.
+    const log: ILog = config.services.log; // Optimization for minifier.
 
     if (response.status === 202) {
       log.info(`Sent ${events.length} events.`);
@@ -268,7 +261,7 @@ export class DefaultEventQueue implements IEventQueue {
 
   private removeEvents(events: IStorageItem[]) {
     for (let index = 0; index < (events || []).length; index++) {
-      this.config.storage.queue.remove(events[index].timestamp);
+      this.config.services.storage.queue.remove(events[index].timestamp);
     }
   }
 }

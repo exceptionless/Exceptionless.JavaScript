@@ -33,7 +33,7 @@ export class ErrorPlugin implements IEventPlugin {
 
       if (!context.event.data[KnownEventDataKeys.Error]) {
         const config = context.client.config;
-        const parser = config.errorParser;
+        const parser = config.services.errorParser;
         if (!parser) {
           throw new Error("No error parser was defined.");
         }

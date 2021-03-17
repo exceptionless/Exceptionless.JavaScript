@@ -66,13 +66,8 @@ export class EventExclusionPlugin implements IEventPlugin {
     }
   }
 
-  public getMinLogLevel(
-    configSettings: Record<string, string>,
-    source,
-  ): number {
-    return this.getLogLevel(
-      this.getTypeAndSourceSetting(configSettings, "log", source, "other") + "",
-    );
+  public getMinLogLevel(configSettings: Record<string, string>, source): number {
+    return this.getLogLevel(this.getTypeAndSourceSetting(configSettings, "log", source, "other") + "");
   }
 
   private getTypeAndSourceSetting(

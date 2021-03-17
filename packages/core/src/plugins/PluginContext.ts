@@ -6,6 +6,6 @@ export class PluginContext {
   constructor(public client: ExceptionlessClient) { }
 
   public get log(): ILog {
-    return this.client.config.log;
+    return this.client.config.services.log;
   }
 }

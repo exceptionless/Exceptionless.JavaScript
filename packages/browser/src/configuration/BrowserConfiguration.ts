@@ -5,7 +5,7 @@ import { BrowserLocalStorageProvider } from "../storage/BrowserLocalStorageProvi
 export class BrowserConfiguration extends Configuration {
   public useLocalStorage(): void {
     if (BrowserLocalStorage.isAvailable()) {
-      this.storage = new BrowserLocalStorageProvider();
+      this.services.storage = new BrowserLocalStorageProvider();
       SettingsManager.applySavedServerSettings(this);
       super.changed();
     }

@@ -1,4 +1,4 @@
-export class UserDescription {
+export interface UserDescription {
   email_address?: string;
   description?: string;
   data?: any;

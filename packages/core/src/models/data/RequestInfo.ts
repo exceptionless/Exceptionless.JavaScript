@@ -1,4 +1,4 @@
-export class RequestInfo {
+export interface RequestInfo {
   user_agent?: string;
   http_method?: string;
   is_secure?: boolean;

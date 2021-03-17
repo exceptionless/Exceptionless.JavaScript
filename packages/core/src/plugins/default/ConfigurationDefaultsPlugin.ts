@@ -1,4 +1,4 @@
-import { stringify, isEmpty } from "../../Utils.js";
+import { isEmpty } from "../../Utils.js";
 import { EventPluginContext } from "../EventPluginContext.js";
 import { IEventPlugin } from "../IEventPlugin.js";
 
@@ -10,14 +10,10 @@ export class ConfigurationDefaultsPlugin implements IEventPlugin {
     const config = context.client.config;
     context.event.tags.push(...config.defaultTags);
 
-    // PERF: Discus if we can calculate this a head of time and cache it.
     const defaultData: Record<string, unknown> = config.defaultData || {};
-    for (const key in defaultData) {
-      if (context.event.data[key] === undefined) {
-        const result = JSON.parse(stringify(defaultData[key], config.dataExclusions));
-        if (!isEmpty(result)) {
-          context.event.data[key] = result;
-        }
+    for (const key in config.defaultData || {}) {
+      if (context.event.data[key] === undefined && !isEmpty(defaultData[key])) {
+        context.event.data[key] = defaultData[key];
       }
     }
 

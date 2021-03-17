@@ -16,6 +16,6 @@ export class EventPluginContext extends PluginContext {
   }
 
   public get log(): ILog {
-    return this.client.config.log;
+    return this.client.config.services.log;
   }
 }

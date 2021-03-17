@@ -1,4 +1,4 @@
-export class ModuleInfo {
+export interface ModuleInfo {
   data?: any;
   module_id?: number;
   name?: string;

@@ -65,7 +65,7 @@ export abstract class SubmissionClientBase implements ISubmissionClient {
     if (!isNaN(settingsVersion)) {
       await SettingsManager.checkVersion(settingsVersion, this.config);
     } else {
-      this.config.log.error("No config version header was returned.");
+      this.config.services.log.error("No config version header was returned.");
     }
   }
 

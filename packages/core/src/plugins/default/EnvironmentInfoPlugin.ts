@@ -9,7 +9,8 @@ export class EnvironmentInfoPlugin implements IEventPlugin {
 
   public run(context: EventPluginContext): Promise<void> {
     // TODO: Discus if we can get rid of collectors and just add them per integration.
-    const collector = context.client.config.environmentInfoCollector;
+    // PERF: Ensure module info is cached and rework below statement.
+    const collector = context.client.config.services.environmentInfoCollector;
     if (!context.event.data[KnownEventDataKeys.EnvironmentInfo] && collector) {
       const environmentInfo: EnvironmentInfo = collector.getEnvironmentInfo(context);
       if (environmentInfo) {
