@@ -1,7 +1,7 @@
 import { ClientSettings } from "../configuration/SettingsManager.js";
 import { Event } from "../models/Event.js";
 import { UserDescription } from "../models/data/UserDescription.js";
-import { Response } from "./Response";
+import { Response } from "./Response.js";
 
 export interface ISubmissionClient {
   getSettings(version: number): Promise<Response<ClientSettings>>;

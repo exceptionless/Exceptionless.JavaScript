@@ -21,9 +21,8 @@ import { KeyValueStorageBase } from "@exceptionless/core";
 
 export class NodeFileStorage extends KeyValueStorageBase {
   private directory: string;
-  private prefix: string
 
-  constructor(namespace: string, folder?: string, prefix: string = "ex-", maxItems: number = 20) {
+  constructor(namespace: string, folder?: string, maxItems: number = 20) {
     super(maxItems);
 
     if (!folder) {
@@ -32,7 +31,6 @@ export class NodeFileStorage extends KeyValueStorageBase {
 
     const subFolder = join(folder, namespace);
     this.directory = resolve(subFolder);
-    this.prefix = prefix;
 
     this.mkdir(this.directory);
   }
@@ -50,18 +48,15 @@ export class NodeFileStorage extends KeyValueStorageBase {
   }
 
   public getAllKeys(): string[] {
-    return readdirSync(this.directory)
-      .filter((file) => file.indexOf(this.prefix) === 0)
-      .map((file) => join(this.directory, file));
+    return readdirSync(this.directory).map((file) => join(this.directory, file));
   }
 
   public getKey(timestamp: number): string {
-    return join(this.directory, `${this.prefix}${timestamp}.json`);
+    return join(this.directory, `${timestamp}.json`);
   }
 
   public getTimestamp(key: string): number {
-    return parseInt(basename(key, ".json")
-      .substr(this.prefix.length), 10);
+    return parseInt(basename(key, ".json"), 10);
   }
 
   private mkdir(directory: string): void {

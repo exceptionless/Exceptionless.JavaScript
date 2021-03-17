@@ -14,12 +14,12 @@ export class NodeExceptionlessClient extends ExceptionlessClient {
     super(new NodeConfiguration());
   }
 
-  public async startup(configurationOrApiKey?: (config: Configuration) => void | string): Promise<void> {
+  public async startup(configurationOrApiKey?: (config: NodeConfiguration) => void | string): Promise<void> {
     if (configurationOrApiKey) {
-      this.config.environmentInfoCollector = new NodeEnvironmentInfoCollector();
-      this.config.errorParser = new NodeErrorParser();
-      this.config.requestInfoCollector = new NodeRequestInfoCollector();
-      this.config.submissionClient = new NodeFetchSubmissionClient(this.config);
+      this.config.services.environmentInfoCollector = new NodeEnvironmentInfoCollector();
+      this.config.services.errorParser = new NodeErrorParser();
+      this.config.services.requestInfoCollector = new NodeRequestInfoCollector();
+      this.config.services.submissionClient = new NodeFetchSubmissionClient(this.config);
 
       // TODO: Register platform specific plugins.
     }

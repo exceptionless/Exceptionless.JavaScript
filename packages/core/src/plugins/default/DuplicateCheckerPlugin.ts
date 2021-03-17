@@ -17,7 +17,7 @@ export class DuplicateCheckerPlugin implements IEventPlugin {
 
   constructor(
     getCurrentTime: () => number = () => Date.now(),
-    interval: number = 30000,
+    interval: number = 30000
   ) {
     this._getCurrentTime = getCurrentTime;
     this._interval = interval;
@@ -25,18 +25,13 @@ export class DuplicateCheckerPlugin implements IEventPlugin {
 
   public startup(context: PluginContext): Promise<void> {
     this._intervalId = clearInterval(this._intervalId);
-    this._intervalId = setInterval(() => {
-      while (this._mergedEvents.length > 0) {
-        this._mergedEvents.shift().resubmit();
-      }
-    }, this._interval);
-
+    this._intervalId = setInterval(() => this.submitEvents(), this._interval);
     return Promise.resolve();
   }
 
   public suspend(context: PluginContext): Promise<void> {
     this._intervalId = clearInterval(this._intervalId);
-    // TODO: Resubmit events.
+    this.submitEvents();
     return Promise.resolve();
   }
 
@@ -94,6 +89,12 @@ export class DuplicateCheckerPlugin implements IEventPlugin {
 
     return Promise.resolve();
   }
+
+  private submitEvents() {
+    while (this._mergedEvents.length > 0) {
+      this._mergedEvents.shift().resubmit();
+    }
+  }
 }
 
 interface TimestampedHash {
@@ -118,10 +119,10 @@ class MergedEvent {
 
   public resubmit() {
     this._context.event.count = this._count;
-    this._context.client.config.queue.enqueue(this._context.event);
+    this._context.client.config.services.queue.enqueue(this._context.event);
   }
 
-  public updateDate(date) {
+  public updateDate(date: Date) {
     if (date > this._context.event.date) {
       this._context.event.date = date;
     }

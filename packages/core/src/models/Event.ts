@@ -1,4 +1,4 @@
-export class Event {
+export interface Event {
   /** The event type (ie. error, log message, feature usage). */
   type?: string;
   /** The event source (ie. machine name, log name, feature name). */

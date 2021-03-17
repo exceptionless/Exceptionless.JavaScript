@@ -1,3 +1,4 @@
+import { ILog } from "../logging/ILog.js";
 import { merge } from "../Utils.js";
 import { Configuration } from "./Configuration.js";
 
@@ -29,7 +30,7 @@ export class SettingsManager {
     }
 
     const savedSettings = this.getSavedServerSettings(config);
-    config.log.info(`Applying saved settings: v${savedSettings.version}`);
+    config.services.log.info(`Applying saved settings: v${savedSettings.version}`);
     config.settings = merge(config.settings, savedSettings.settings);
     this.changed(config);
   }
@@ -49,7 +50,7 @@ export class SettingsManager {
       return;
     }
 
-    config.log.info(`Updating settings from v${currentVersion} to v${version}`);
+    config.services.log.info(`Updating settings from v${currentVersion} to v${version}`);
     await this.updateSettings(config, currentVersion);
   }
 
@@ -58,9 +59,10 @@ export class SettingsManager {
       return;
     }
 
+    const { log } = config.services;
     const unableToUpdateMessage = "Unable to update settings";
     if (!config.isValid) {
-      config.log.error(`${unableToUpdateMessage}: ApiKey is not set.`);
+      log.error(`${unableToUpdateMessage}: ApiKey is not set.`);
       return;
     }
 
@@ -68,12 +70,12 @@ export class SettingsManager {
       version = this.getVersion(config);
     }
 
-    config.log.info(`Checking for updated settings from: v${version}.`);
+    log.info(`Checking for updated settings from: v${version}.`);
     this._isUpdatingSettings = true;
-    const response = await config.submissionClient.getSettings(version);
+    const response = await config.services.submissionClient.getSettings(version);
     try {
       if (!config || !response || !response.success || !response.data) {
-        config.log.warn(`${unableToUpdateMessage}: ${response.message}`);
+        log.warn(`${unableToUpdateMessage}: ${response.message}`);
         return;
       }
 
@@ -90,8 +92,8 @@ export class SettingsManager {
         delete config.settings[key];
       }
 
-      config.storage.settings.save(response.data);
-      config.log.info(`Updated settings: v${response.data.version}`);
+      config.services.storage.settings.save(response.data);
+      log.info(`Updated settings: v${response.data.version}`);
       this.changed(config);
     } finally {
       this._isUpdatingSettings = false;
@@ -104,13 +106,13 @@ export class SettingsManager {
       try {
         handler(config);
       } catch (ex) {
-        config.log.error(`Error calling onChanged handler: ${ex}`);
+        config.services.log.error(`Error calling onChanged handler: ${ex}`);
       }
     }
   }
 
   private static getSavedServerSettings(config: Configuration): ClientSettings {
-    const item = config.storage.settings.get()[0];
+    const item = config.services.storage.settings.get()[0];
     if (item && item.value && item.value.version && item.value.settings) {
       return item.value;
     }

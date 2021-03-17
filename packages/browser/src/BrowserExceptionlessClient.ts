@@ -1,5 +1,4 @@
 import {
-  Configuration,
   ExceptionlessClient,
   parseQueryString
 } from "@exceptionless/core";
@@ -15,7 +14,7 @@ export class BrowserExceptionlessClient extends ExceptionlessClient {
     super(new BrowserConfiguration());
   }
 
-  public async startup(configurationOrApiKey?: (config: Configuration) => void | string): Promise<void> {
+  public async startup(configurationOrApiKey?: (config: BrowserConfiguration) => void | string): Promise<void> {
     if (configurationOrApiKey) {
       const settings = this.getDefaultsSettingsFromScriptTag();
       if (settings?.apiKey) {
@@ -34,10 +33,10 @@ export class BrowserExceptionlessClient extends ExceptionlessClient {
         this.config.includePrivateInformation = settings.includePrivateInformation === "true";
       }
 
-      this.config.errorParser = new BrowserErrorParser();
-      this.config.moduleCollector = new BrowserModuleCollector();
-      this.config.requestInfoCollector = new BrowserRequestInfoCollector();
-      this.config.submissionClient = new BrowserFetchSubmissionClient(this.config);
+      this.config.services.errorParser = new BrowserErrorParser();
+      this.config.services.moduleCollector = new BrowserModuleCollector();
+      this.config.services.requestInfoCollector = new BrowserRequestInfoCollector();
+      this.config.services.submissionClient = new BrowserFetchSubmissionClient(this.config);
 
       // TODO: Register platform specific plugins.
     }

@@ -21,6 +21,8 @@ import { guid } from "../Utils.js";
 import { KnownEventDataKeys } from "../models/Event.js";
 
 export class Configuration {
+  // TODO: add flag if your suspended.
+  // change version to be a string.
   /**
    * A default list of tags that will automatically be added to every
    * report submitted to the server.
@@ -45,29 +47,33 @@ export class Configuration {
    */
   public enabled: boolean = true;
 
-  // TODO: Move this into services sub object
-  public environmentInfoCollector: IEnvironmentInfoCollector;
-  public errorParser: IErrorParser;
-  public lastReferenceIdManager: ILastReferenceIdManager = new DefaultLastReferenceIdManager();
-  public log: ILog = new NullLog();
-  public moduleCollector: IModuleCollector;
-  public requestInfoCollector: IRequestInfoCollector;
+  public services: {
+    environmentInfoCollector?: IEnvironmentInfoCollector,
+    errorParser?: IErrorParser,
+    lastReferenceIdManager: ILastReferenceIdManager,
+    log: ILog,
+    moduleCollector?: IModuleCollector,
+    requestInfoCollector?: IRequestInfoCollector,
+    submissionClient?: ISubmissionClient,
+    storage: IStorageProvider,
+    queue: IEventQueue
+  } = {
+      lastReferenceIdManager: new DefaultLastReferenceIdManager(),
+      log: new NullLog(),
+      storage: new InMemoryStorageProvider(),
+      queue: new DefaultEventQueue(this)
+    }
 
   /**
    * Maximum number of events that should be sent to the server together in a batch. (Defaults to 50)
    */
   public submissionBatchSize: number = 50;
-  public submissionClient: ISubmissionClient;
 
   /**
    * Contains a dictionary of custom settings that can be used to control
    * the client and will be automatically updated from the server.
    */
   public settings: Record<string, string> = {};
-
-  public storage: IStorageProvider = new InMemoryStorageProvider();
-
-  public queue: IEventQueue = new DefaultEventQueue(this);
 
   /**
    * The API key that will be used when sending events to the server.
@@ -154,7 +160,7 @@ export class Configuration {
    */
   public set apiKey(value: string) {
     this._apiKey = value || null;
-    this.log.info(`apiKey: ${this._apiKey}`);
+    this.services.log.info(`apiKey: ${this._apiKey}`);
     this.changed();
   }
 
@@ -183,7 +189,7 @@ export class Configuration {
       this._serverUrl = value;
       this._configServerUrl = value;
       this._heartbeatServerUrl = value;
-      this.log.info(`serverUrl: ${value}`);
+      this.services.log.info(`serverUrl: ${value}`);
       this.changed();
     }
   }
@@ -203,7 +209,7 @@ export class Configuration {
   public set configServerUrl(value: string) {
     if (value) {
       this._configServerUrl = value;
-      this.log.info(`configServerUrl: ${value}`);
+      this.services.log.info(`configServerUrl: ${value}`);
       this.changed();
     }
   }
@@ -223,7 +229,7 @@ export class Configuration {
   public set heartbeatServerUrl(value: string) {
     if (value) {
       this._heartbeatServerUrl = value;
-      this.log.info(`heartbeatServerUrl: ${value}`);
+      this.services.log.info(`heartbeatServerUrl: ${value}`);
       this.changed();
     }
   }
@@ -252,7 +258,7 @@ export class Configuration {
     }
 
     this._updateSettingsWhenIdleInterval = value;
-    this.log.info(`updateSettingsWhenIdleInterval: ${value}`);
+    this.services.log.info(`updateSettingsWhenIdleInterval: ${value}`);
     this.changed();
   }
 
@@ -307,7 +313,7 @@ export class Configuration {
     this._includeCookies = val;
     this._includePostData = val;
     this._includeQueryString = val;
-    this.log.info(`includePrivateInformation: ${val}`);
+    this.services.log.info(`includePrivateInformation: ${val}`);
     this.changed();
   }
 
@@ -485,7 +491,7 @@ export class Configuration {
       ? { name: pluginOrName as string, priority, run: pluginAction }
       : pluginOrName as IEventPlugin;
     if (!plugin || !plugin.run) {
-      this.log.error("Add plugin failed: Run method not defined");
+      this.services.log.error("Add plugin failed: Run method not defined");
       return;
     }
 
@@ -526,7 +532,7 @@ export class Configuration {
       ? pluginOrName
       : pluginOrName.name;
     if (!name) {
-      this.log.error("Remove plugin failed: Plugin name not defined");
+      this.services.log.error("Remove plugin failed: Plugin name not defined");
       return;
     }
 
@@ -568,7 +574,7 @@ export class Configuration {
       this.defaultData[KnownEventDataKeys.UserInfo] = userInfo;
     }
 
-    this.log.info(
+    this.services.log.info(
       `user identity: ${shouldRemove ? "null" : userInfo.identity}`,
     );
   }
@@ -602,7 +608,7 @@ export class Configuration {
 
   // TODO: Support a min log level.
   public useDebugLogger(): void {
-    this.log = new ConsoleLog();
+    this.services.log = new ConsoleLog();
   }
 
   public onChanged(handler: (config: Configuration) => void): void {
@@ -615,7 +621,7 @@ export class Configuration {
       try {
         handler(this);
       } catch (ex) {
-        this.log.error(`Error calling onChanged handler: ${ex}`);
+        this.services.log.error(`Error calling onChanged handler: ${ex}`);
       }
     }
   }

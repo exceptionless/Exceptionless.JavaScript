@@ -17,13 +17,12 @@ export class HeartbeatPlugin implements IEventPlugin {
 
   public startup(context: PluginContext): Promise<void> {
     this._intervalId = clearInterval(this._intervalId);
-    // TODO: Should we submit a session start?
+    // TODO: Do we want to send a heartbeat for the last user?
     return Promise.resolve();
   }
 
   public suspend(context: PluginContext): Promise<void> {
     this._intervalId = clearInterval(this._intervalId);
-    // TODO: Should we submit a session end?
     return Promise.resolve();
   }
 

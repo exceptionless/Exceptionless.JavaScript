@@ -10,7 +10,7 @@ export class RequestInfoPlugin implements IEventPlugin {
 
   public run(context: EventPluginContext): Promise<void> {
     const config = context.client.config;
-    const collector = config.requestInfoCollector;
+    const collector = config.services.requestInfoCollector;
     if (!context.event.data[KnownEventDataKeys.RequestInfo] && collector) {
       const requestInfo: RequestInfo = collector.getRequestInfo(context);
       if (requestInfo) {

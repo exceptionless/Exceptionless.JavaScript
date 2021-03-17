@@ -8,7 +8,7 @@ export class ModuleInfoPlugin implements IEventPlugin {
   public name: string = "ModuleInfoPlugin";
 
   public run(context: EventPluginContext): Promise<void> {
-    const collector = context.client.config.moduleCollector;
+    const collector = context.client.config.services.moduleCollector;
     // PERF: Ensure module info is cached and rework below statement.
     if (context.event.data[KnownEventDataKeys.Error] && !context.event.data[KnownEventDataKeys.Error]?.modules && collector) {
       const modules: ModuleInfo[] = collector.getModules();

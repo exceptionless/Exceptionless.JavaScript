@@ -155,7 +155,7 @@ export function isMatch(input: string, patterns: string[], ignoreCase: boolean =
   });
 }
 
-export function isEmpty(input: Record<string, unknown>) {
+export function isEmpty(input: Record<string, unknown> | unknown) {
   return input === null || (typeof (input) === "object" && Object.keys(input).length === 0);
 }
 
