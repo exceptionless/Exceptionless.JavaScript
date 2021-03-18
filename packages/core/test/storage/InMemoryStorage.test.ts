@@ -3,9 +3,12 @@ import { InMemoryStorage } from "../../src/storage/InMemoryStorage.js";
 import { IStorage } from "../../src/storage/IStorage.js";
 import { IStorageItem } from "../../src/storage/IStorageItem.js";
 
-describeStorage("InMemoryStorage", (maxItems = 250) => {
-  return new InMemoryStorage(maxItems);
-});
+describeStorage(
+  "InMemoryStorage",
+  (maxItems = 250) => {
+    return new InMemoryStorage(maxItems);
+  }
+);
 
 export function describeStorage(
   name: string,

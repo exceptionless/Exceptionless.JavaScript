@@ -4,26 +4,31 @@ import { KnownEventDataKeys } from "../src/models/Event.js";
 
 describe("ExceptionlessClient", () => {
   test("should use event reference ids", async () => {
+    const error = createException();
+
     const client = new ExceptionlessClient();
     client.config.apiKey = "UNIT_TEST_API_KEY";
-    const { lastReferenceIdManager } = client.config.services;
 
+    const { lastReferenceIdManager } = client.config.services;
     expect(lastReferenceIdManager.getLast()).toBeNull();
 
-    const error = createException();
-    await client.submitException(error);
+    let context = await client.submitException(error);
+    expect(context.event.reference_id).toBeUndefined();
     expect(lastReferenceIdManager.getLast()).toBeNull();
 
     const numberOfPlugins = client.config.plugins.length;
     client.config.useReferenceIds();
     expect(client.config.plugins.length).toBe(numberOfPlugins + 1);
 
-    const context = await client.submitException(error);
-    if (!context.cancelled) {
-      expect(lastReferenceIdManager.getLast()).not.toBeNull();
-    } else {
-      expect(lastReferenceIdManager.getLast()).toBeNull();
-    }
+    context = await client.submitException(error);
+    expect(context.event.reference_id).not.toBeUndefined();
+    const lastReference: string = lastReferenceIdManager.getLast();
+    expect(context.event.reference_id).toBe(lastReference);
+
+    context = await client.submitException(error);
+    expect(context.event.reference_id).not.toBeUndefined();
+    expect(context.event.reference_id).not.toBe(lastReference);
+    expect(context.event.reference_id).toBe(lastReferenceIdManager.getLast());
   });
 
   test("should accept null source", () => {

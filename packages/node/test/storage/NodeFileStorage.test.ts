@@ -9,7 +9,7 @@ import {
 
 const directory: string = "./test-data";
 const nodeFileStorageFactory = (maxItems?: number): IStorage => {
-  return new NodeFileStorage("test", directory, "ex-", maxItems);
+  return new NodeFileStorage("test", directory, maxItems);
 };
 
 function resetStorageDirectory() {
@@ -17,7 +17,8 @@ function resetStorageDirectory() {
   mkdirSync(directory);
 }
 
-describeStorage("NodeFileStorage",
+describeStorage(
+  "NodeFileStorage",
   nodeFileStorageFactory,
   resetStorageDirectory,
   resetStorageDirectory,

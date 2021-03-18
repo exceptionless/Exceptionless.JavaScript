@@ -50,7 +50,6 @@ describe("ErrorPlugin", () => {
         const additionalData = getAdditionalData(event);
         expect(additionalData).toBeUndefined();
       });
-
     });
 
     test("should add custom properties to additional data", async () => {

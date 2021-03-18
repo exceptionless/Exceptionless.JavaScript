@@ -48,21 +48,21 @@ export class Configuration {
   public enabled: boolean = true;
 
   public services: {
-    environmentInfoCollector?: IEnvironmentInfoCollector,
-    errorParser?: IErrorParser,
-    lastReferenceIdManager: ILastReferenceIdManager,
-    log: ILog,
-    moduleCollector?: IModuleCollector,
-    requestInfoCollector?: IRequestInfoCollector,
-    submissionClient?: ISubmissionClient,
-    storage: IStorageProvider,
-    queue: IEventQueue
-  } = {
+      environmentInfoCollector?: IEnvironmentInfoCollector,
+      errorParser?: IErrorParser,
+      lastReferenceIdManager: ILastReferenceIdManager,
+      log: ILog,
+      moduleCollector?: IModuleCollector,
+      requestInfoCollector?: IRequestInfoCollector,
+      submissionClient?: ISubmissionClient,
+      storage: IStorageProvider,
+      queue: IEventQueue
+    } = {
       lastReferenceIdManager: new DefaultLastReferenceIdManager(),
       log: new NullLog(),
       storage: new InMemoryStorageProvider(),
       queue: new DefaultEventQueue(this)
-    }
+    };
 
   /**
    * Maximum number of events that should be sent to the server together in a batch. (Defaults to 50)
@@ -117,13 +117,13 @@ export class Configuration {
    */
   private _dataExclusions: string[] = [];
 
-  private _includePrivateInformation: boolean;
-  private _includeUserName: boolean;
-  private _includeMachineName: boolean;
-  private _includeIpAddress: boolean;
-  private _includeCookies: boolean;
-  private _includePostData: boolean;
-  private _includeQueryString: boolean;
+  private _includePrivateInformation: boolean = true;
+  private _includeUserName: boolean = true;
+  private _includeMachineName: boolean = true;
+  private _includeIpAddress: boolean = true;
+  private _includeCookies: boolean = true;
+  private _includePostData: boolean = true;
+  private _includeQueryString: boolean = true;
 
   /**
    * A list of user agent patterns.
@@ -305,7 +305,7 @@ export class Configuration {
    * @param value
    */
   public set includePrivateInformation(value: boolean) {
-    const val = value || false;
+    const val = value === true;
     this._includePrivateInformation = val;
     this._includeUserName = val;
     this._includeMachineName = val;
@@ -330,7 +330,7 @@ export class Configuration {
    * @param value
    */
   public set includeUserName(value: boolean) {
-    this._includeUserName = value || false;
+    this._includeUserName = value === true;
     this.changed();
   }
 
@@ -347,7 +347,7 @@ export class Configuration {
    * @param value
    */
   public set includeMachineName(value: boolean) {
-    this._includeMachineName = value || false;
+    this._includeMachineName = value === true;
     this.changed();
   }
 
@@ -364,7 +364,7 @@ export class Configuration {
    * @param value
    */
   public set includeIpAddress(value: boolean) {
-    this._includeIpAddress = value || false;
+    this._includeIpAddress = value === true;
     this.changed();
   }
 
@@ -383,7 +383,7 @@ export class Configuration {
    * @param value
    */
   public set includeCookies(value: boolean) {
-    this._includeCookies = value || false;
+    this._includeCookies = value === true;
     this.changed();
   }
 
@@ -402,7 +402,7 @@ export class Configuration {
    * @param value
    */
   public set includePostData(value: boolean) {
-    this._includePostData = value || false;
+    this._includePostData = value === true;
     this.changed();
   }
 
@@ -421,7 +421,7 @@ export class Configuration {
    * @param value
    */
   public set includeQueryString(value: boolean) {
-    this._includeQueryString = value || false;
+    this._includeQueryString = value === true;
     this.changed();
   }
 

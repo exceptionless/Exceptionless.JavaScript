@@ -217,6 +217,8 @@ export class ExceptionlessClient {
       context.log.info(`Setting last reference id "${ev.reference_id}"`);
       config.services.lastReferenceIdManager.setLast(ev.reference_id);
     }
+
+    return context;
   }
 
   /**
