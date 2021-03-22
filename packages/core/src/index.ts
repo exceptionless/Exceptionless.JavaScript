@@ -38,6 +38,7 @@ export { ReferenceIdPlugin } from "./plugins/default/ReferenceIdPlugin.js";
 export { RequestInfoPlugin } from "./plugins/default/RequestInfoPlugin.js";
 export { SubmissionMethodPlugin } from "./plugins/default/SubmissionMethodPlugin.js";
 export { ContextData } from "./plugins/ContextData.js";
+export { PluginContext } from "./plugins/PluginContext.js";
 export { EventPluginContext } from "./plugins/EventPluginContext.js";
 export { EventPluginManager } from "./plugins/EventPluginManager.js";
 export { IEventPlugin } from "./plugins/IEventPlugin.js";

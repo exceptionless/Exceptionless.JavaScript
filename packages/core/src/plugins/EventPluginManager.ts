@@ -45,6 +45,10 @@ export class EventPluginManager {
         break;
       }
 
+      if (!plugin.run) {
+        continue;
+      }
+
       try {
         await plugin.run(context);
       } catch (ex) {

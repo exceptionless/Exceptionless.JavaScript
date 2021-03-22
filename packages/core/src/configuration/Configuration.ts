@@ -21,8 +21,21 @@ import { guid } from "../Utils.js";
 import { KnownEventDataKeys } from "../models/Event.js";
 
 export class Configuration {
+  private handler = {
+    set: (target, key, value) => {
+      console.log(key, ` set to ${value}`);
+      target[key] = value;
+      return true;
+    }
+  };
+
+  constructor() {
+    // TODO: Verify this works in derived classes.
+    return new Proxy(this, this.handler);
+  }
+
   // TODO: add flag if your suspended.
-  // change version to be a string.
+  // TODO: change version to be a string.
   /**
    * A default list of tags that will automatically be added to every
    * report submitted to the server.
@@ -57,12 +70,12 @@ export class Configuration {
       submissionClient?: ISubmissionClient,
       storage: IStorageProvider,
       queue: IEventQueue
-    } = {
+  } = new Proxy({
       lastReferenceIdManager: new DefaultLastReferenceIdManager(),
       log: new NullLog(),
       storage: new InMemoryStorageProvider(),
       queue: new DefaultEventQueue(this)
-    };
+  }, this.handler);
 
   /**
    * Maximum number of events that should be sent to the server together in a batch. (Defaults to 50)
@@ -140,11 +153,11 @@ export class Configuration {
   private _plugins: IEventPlugin[] = [];
 
   /**
-   * A list of handlers that will be fired when configuration changes.
+   * A list of subscribers that will be fired when configuration changes.
    * @type {Array}
    * @private
    */
-  private _handlers: Array<(config: Configuration) => void> = [];
+  private _subscribers: Array<(config: Configuration) => void> = [];
 
   /**
    * The API key that will be used when sending events to the server.
@@ -611,17 +624,17 @@ export class Configuration {
     this.services.log = new ConsoleLog();
   }
 
-  public onChanged(handler: (config: Configuration) => void): void {
-    handler && this._handlers.push(handler);
+  public subscribe(handler: (config: Configuration) => void): void {
+    handler && this._subscribers.push(handler);
   }
 
   protected changed() {
-    const handlers = this._handlers; // optimization for minifier.
+    const handlers = this._subscribers; // optimization for minifier.
     for (const handler of handlers) {
       try {
         handler(this);
       } catch (ex) {
-        this.services.log.error(`Error calling onChanged handler: ${ex}`);
+        this.services.log.error(`Error calling subscribe handler: ${ex}`);
       }
     }
   }

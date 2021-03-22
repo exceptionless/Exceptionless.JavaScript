@@ -9,7 +9,7 @@ export function createFixture(): { contextData: ContextData, context: EventPlugi
     parse: (c: EventPluginContext, exception: Error) => Promise.resolve({
       type: exception.name,
       message: exception.message,
-      stack_trace: (exception as any).testStack || null
+      stack_trace: null
     })
   };
   const client: ExceptionlessClient = new ExceptionlessClient();
