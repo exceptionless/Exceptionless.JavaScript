@@ -26,7 +26,7 @@ export class ExceptionlessClient {
       }
 
       SettingsManager.applySavedServerSettings(this.config);
-      this.config.onChanged(() => this.updateSettingsTimer(this._timeoutId > 0 ? 5000 : 0));
+      this.config.subscribe(() => this.updateSettingsTimer(this._timeoutId > 0 ? 5000 : 0));
       this.config.services.queue.onEventsPosted(() => this.updateSettingsTimer());
     }
 

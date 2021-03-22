@@ -12,18 +12,6 @@ export class ClientSettings {
 export class SettingsManager {
   private static _isUpdatingSettings: boolean = false;
 
-  /**
-   * A list of handlers that will be fired when the settings change.
-   * @type {Array}
-   * @private
-   */
-  private static _handlers: Array<(config: Configuration) => void> = [];
-
-  // TODO: see if this is still needed.
-  public static onChanged(handler: (config: Configuration) => void): void {
-    handler && this._handlers.push(handler);
-  }
-
   public static applySavedServerSettings(config: Configuration): void {
     if (!config || !config.isValid) {
       return;
@@ -32,7 +20,6 @@ export class SettingsManager {
     const savedSettings = this.getSavedServerSettings(config);
     config.services.log.info(`Applying saved settings: v${savedSettings.version}`);
     config.settings = merge(config.settings, savedSettings.settings);
-    this.changed(config);
   }
 
   public static getVersion(config: Configuration): number {
@@ -79,7 +66,7 @@ export class SettingsManager {
         return;
       }
 
-      config.settings = merge(config.settings, response.data.settings);
+      const settings = merge(config.settings, response.data.settings);
 
       // TODO: Store snapshot of settings after reading from config and attributes and use that to revert to defaults.
       // Remove any existing server settings that are not in the new server settings.
@@ -89,25 +76,14 @@ export class SettingsManager {
           continue;
         }
 
-        delete config.settings[key];
+        delete settings[key];
       }
 
+      config.settings = settings;
       config.services.storage.settings.save(response.data);
       log.info(`Updated settings: v${response.data.version}`);
-      this.changed(config);
     } finally {
       this._isUpdatingSettings = false;
-    }
-  }
-
-  private static changed(config: Configuration) {
-    const handlers = this._handlers; // optimization for minifier.
-    for (const handler of handlers) {
-      try {
-        handler(config);
-      } catch (ex) {
-        config.services.log.error(`Error calling onChanged handler: ${ex}`);
-      }
     }
   }
 

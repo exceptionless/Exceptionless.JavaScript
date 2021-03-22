@@ -6,5 +6,5 @@ export interface IEventPlugin {
   name?: string;
   startup?(context: PluginContext): Promise<void>;
   suspend?(context: PluginContext): Promise<void>;
-  run(context: EventPluginContext): Promise<void>;
+  run?(context: EventPluginContext): Promise<void>;
 }

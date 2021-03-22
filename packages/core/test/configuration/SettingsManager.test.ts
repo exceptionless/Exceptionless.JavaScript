@@ -6,12 +6,11 @@ describe("SettingsManager", () => {
     const config = new Configuration();
     config.apiKey = "UNIT_TEST_API_KEY";
 
-    SettingsManager.onChanged((configuration: Configuration) => {
+    config.subscribe((configuration: Configuration) => {
       expect(configuration.settings).not.toBeUndefined();
       done();
     });
 
     SettingsManager.applySavedServerSettings(config);
-    (SettingsManager as any)._handlers = [];
   });
 });
