@@ -81,6 +81,5 @@ export {
   randomNumber,
   startsWith,
   stringify,
-  toBoolean,
-  nameof
+  toBoolean
 } from "./Utils.js";

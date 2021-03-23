@@ -54,8 +54,6 @@ export function merge<T>(defaultValues: T, values: T): T {
   return <T>result;
 }
 
-export const nameof = <T>(name: keyof T) => name;
-
 export function parseVersion(source: string): string {
   if (!source) {
     return null;

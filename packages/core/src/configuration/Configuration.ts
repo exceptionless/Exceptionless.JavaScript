@@ -21,21 +21,20 @@ import { guid } from "../Utils.js";
 import { KnownEventDataKeys } from "../models/Event.js";
 
 export class Configuration {
-  private handler = {
-    set: (target, key, value) => {
-      console.log(key, ` set to ${value}`);
-      target[key] = value;
-      return true;
-    }
-  };
-
   constructor() {
+    // TODO: Can we make this seamless via setters.
+    this.services = new Proxy({
+      lastReferenceIdManager: new DefaultLastReferenceIdManager(),
+      log: new NullLog(),
+      storage: new InMemoryStorageProvider(),
+      queue: new DefaultEventQueue(this)
+    }, this.subscriberHandler);
+
     // TODO: Verify this works in derived classes.
-    return new Proxy(this, this.handler);
+    return new Proxy(this, this.subscriberHandler);
   }
 
   // TODO: add flag if your suspended.
-  // TODO: change version to be a string.
   /**
    * A default list of tags that will automatically be added to every
    * report submitted to the server.
@@ -61,21 +60,16 @@ export class Configuration {
   public enabled: boolean = true;
 
   public services: {
-      environmentInfoCollector?: IEnvironmentInfoCollector,
-      errorParser?: IErrorParser,
-      lastReferenceIdManager: ILastReferenceIdManager,
-      log: ILog,
-      moduleCollector?: IModuleCollector,
-      requestInfoCollector?: IRequestInfoCollector,
-      submissionClient?: ISubmissionClient,
-      storage: IStorageProvider,
-      queue: IEventQueue
-  } = new Proxy({
-      lastReferenceIdManager: new DefaultLastReferenceIdManager(),
-      log: new NullLog(),
-      storage: new InMemoryStorageProvider(),
-      queue: new DefaultEventQueue(this)
-  }, this.handler);
+    environmentInfoCollector?: IEnvironmentInfoCollector,
+    errorParser?: IErrorParser,
+    lastReferenceIdManager: ILastReferenceIdManager,
+    log: ILog,
+    moduleCollector?: IModuleCollector,
+    requestInfoCollector?: IRequestInfoCollector,
+    submissionClient?: ISubmissionClient,
+    storage: IStorageProvider,
+    queue: IEventQueue
+  };
 
   /**
    * Maximum number of events that should be sent to the server together in a batch. (Defaults to 50)
@@ -174,7 +168,7 @@ export class Configuration {
   public set apiKey(value: string) {
     this._apiKey = value || null;
     this.services.log.info(`apiKey: ${this._apiKey}`);
-    this.changed();
+    this.notifySubscribers();
   }
 
   /**
@@ -203,7 +197,7 @@ export class Configuration {
       this._configServerUrl = value;
       this._heartbeatServerUrl = value;
       this.services.log.info(`serverUrl: ${value}`);
-      this.changed();
+      this.notifySubscribers();
     }
   }
 
@@ -223,7 +217,7 @@ export class Configuration {
     if (value) {
       this._configServerUrl = value;
       this.services.log.info(`configServerUrl: ${value}`);
-      this.changed();
+      this.notifySubscribers();
     }
   }
 
@@ -243,7 +237,7 @@ export class Configuration {
     if (value) {
       this._heartbeatServerUrl = value;
       this.services.log.info(`heartbeatServerUrl: ${value}`);
-      this.changed();
+      this.notifySubscribers();
     }
   }
 
@@ -272,7 +266,7 @@ export class Configuration {
 
     this._updateSettingsWhenIdleInterval = value;
     this.services.log.info(`updateSettingsWhenIdleInterval: ${value}`);
-    this.changed();
+    this.notifySubscribers();
   }
 
   /**
@@ -327,7 +321,7 @@ export class Configuration {
     this._includePostData = val;
     this._includeQueryString = val;
     this.services.log.info(`includePrivateInformation: ${val}`);
-    this.changed();
+    this.notifySubscribers();
   }
 
   /**
@@ -344,7 +338,7 @@ export class Configuration {
    */
   public set includeUserName(value: boolean) {
     this._includeUserName = value === true;
-    this.changed();
+    this.notifySubscribers();
   }
 
   /**
@@ -361,7 +355,7 @@ export class Configuration {
    */
   public set includeMachineName(value: boolean) {
     this._includeMachineName = value === true;
-    this.changed();
+    this.notifySubscribers();
   }
 
   /**
@@ -378,7 +372,7 @@ export class Configuration {
    */
   public set includeIpAddress(value: boolean) {
     this._includeIpAddress = value === true;
-    this.changed();
+    this.notifySubscribers();
   }
 
   /**
@@ -397,7 +391,7 @@ export class Configuration {
    */
   public set includeCookies(value: boolean) {
     this._includeCookies = value === true;
-    this.changed();
+    this.notifySubscribers();
   }
 
   /**
@@ -416,7 +410,7 @@ export class Configuration {
    */
   public set includePostData(value: boolean) {
     this._includePostData = value === true;
-    this.changed();
+    this.notifySubscribers();
   }
 
   /**
@@ -435,7 +429,7 @@ export class Configuration {
    */
   public set includeQueryString(value: boolean) {
     this._includeQueryString = value === true;
-    this.changed();
+    this.notifySubscribers();
   }
 
   /**
@@ -490,16 +484,8 @@ export class Configuration {
    * @param priority Used to determine plugins priority.
    * @param pluginAction A function that is run.
    */
-  public addPlugin(
-    name: string,
-    priority: number,
-    pluginAction: (context: EventPluginContext) => Promise<void>,
-  ): void;
-  public addPlugin(
-    pluginOrName: IEventPlugin | string,
-    priority?: number,
-    pluginAction?: (context: EventPluginContext) => Promise<void>,
-  ): void {
+  public addPlugin(name: string, priority: number, pluginAction: (context: EventPluginContext) => Promise<void>): void;
+  public addPlugin(pluginOrName: IEventPlugin | string, priority?: number, pluginAction?: (context: EventPluginContext) => Promise<void>): void {
     const plugin: IEventPlugin = pluginAction
       ? { name: pluginOrName as string, priority, run: pluginAction }
       : pluginOrName as IEventPlugin;
@@ -559,12 +545,21 @@ export class Configuration {
   }
 
   /**
-   * Automatically set the application version for events.
+   * The application version for events.
+   */
+  public get version(): string {
+    return <string>this.defaultData[KnownEventDataKeys.Version];
+  }
+
+  /**
+   * Set the application version for events.
    * @param version
    */
-  public setVersion(version: string): void {
+  public set version(version: string) {
     if (version) {
       this.defaultData[KnownEventDataKeys.Version] = version;
+    } else {
+      delete this.defaultData[KnownEventDataKeys.Version];
     }
   }
 
@@ -587,9 +582,7 @@ export class Configuration {
       this.defaultData[KnownEventDataKeys.UserInfo] = userInfo;
     }
 
-    this.services.log.info(
-      `user identity: ${shouldRemove ? "null" : userInfo.identity}`,
-    );
+    this.services.log.info(`user identity: ${shouldRemove ? "null" : userInfo.identity}`);
   }
 
   /**
@@ -603,10 +596,7 @@ export class Configuration {
   /**
    * Automatically send a heartbeat to keep the session alive.
    */
-  public useSessions(
-    sendHeartbeats: boolean = true,
-    heartbeatInterval: number = 30000,
-  ): void {
+  public useSessions(sendHeartbeats: boolean = true, heartbeatInterval: number = 30000): void {
     if (sendHeartbeats) {
       this.addPlugin(new HeartbeatPlugin(heartbeatInterval));
     }
@@ -628,9 +618,8 @@ export class Configuration {
     handler && this._subscribers.push(handler);
   }
 
-  protected changed() {
-    const handlers = this._subscribers; // optimization for minifier.
-    for (const handler of handlers) {
+  protected notifySubscribers() {
+    for (const handler of this._subscribers) {
       try {
         handler(this);
       } catch (ex) {
@@ -638,4 +627,15 @@ export class Configuration {
       }
     }
   }
+
+  // TODO: Rework handlers as it will set property values with the friendly key as well as private members.
+  private subscriberHandler = {
+    set: (target, key: string | symbol, value: unknown): boolean => {
+      this.services.log.trace(`${typeof key === "symbol" ? key.toString() : key} set to ${value}`);
+      target[key] = value;
+      this.notifySubscribers();
+      return true;
+    }
+  };
+
 }
