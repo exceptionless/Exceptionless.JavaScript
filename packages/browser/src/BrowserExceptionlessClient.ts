@@ -59,12 +59,6 @@ export class BrowserExceptionlessClient extends ExceptionlessClient {
   }
 }
 
-//function processUnhandledException(stackTrace: TraceKit.StackTrace, options?: any): void {
-//  const builder = ExceptionlessClient.default.createUnhandledException(new Error(stackTrace.message || (options || {}).status || "Script error"), "onerror");
-//  builder.pluginContextData["@@_TraceKit.StackTrace"] = stackTrace;
-//  builder.submit();
-//}
-
 /*
   TODO: We currently are unable to parse string exceptions.
   function processJQueryAjaxError(event, xhr, settings, error:string): void {
@@ -85,15 +79,10 @@ export class BrowserExceptionlessClient extends ExceptionlessClient {
 //TraceKit.report.subscribe(processUnhandledException);
 //TraceKit.extendToAsynchronousCallbacks();
 
-// window && window.addEventListener && window.addEventListener("beforeunload", function () {
-//   ExceptionlessClient.default.config.queue.process(true);
-// });
 
 // if (typeof $ !== "undefined" && $(document)) {
 //   $(document).ajaxError(processJQueryAjaxError);
 // }
-
-//(Error as any).stackTraceLimit = Infinity;
 //declare var $;
 
 // browser plugin startup method wires up all handlers?

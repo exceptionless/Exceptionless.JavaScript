@@ -82,4 +82,5 @@ export {
   startsWith,
   stringify,
   toBoolean,
+  nameof
 } from "./Utils.js";
