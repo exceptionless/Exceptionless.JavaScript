@@ -4,9 +4,9 @@ import {
   PluginContext
 } from "@exceptionless/core";
 
-export class LifeCyclePlugin implements IEventPlugin {
-  public priority: number = 100;
-  public name: string = "LifeCyclePlugin";
+export class BrowserWrapFunctions implements IEventPlugin {
+  public priority: number = 110;
+  public name: string = "BrowserWrapFunctions";
 
   private _client: ExceptionlessClient = null;
 
@@ -16,7 +16,9 @@ export class LifeCyclePlugin implements IEventPlugin {
     }
 
     this._client = context.client;
-    globalThis.addEventListener("beforeunload", async () => await this._client.processQueue());
+
+    // TODO: TraceKit.extendToAsynchronousCallbacks();
+
     return Promise.resolve();
   }
 }
