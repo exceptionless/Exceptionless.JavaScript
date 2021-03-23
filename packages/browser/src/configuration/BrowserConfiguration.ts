@@ -7,7 +7,6 @@ export class BrowserConfiguration extends Configuration {
     if (BrowserLocalStorage.isAvailable()) {
       this.services.storage = new BrowserLocalStorageProvider();
       SettingsManager.applySavedServerSettings(this);
-      super.changed();
     }
   }
 }
