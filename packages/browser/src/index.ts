@@ -1,4 +1,7 @@
 export { BrowserConfiguration } from "./configuration/BrowserConfiguration.js";
+export { BrowserGlobalHandlerPlugin } from "./plugins/BrowserGlobalHandlerPlugin.js";
+export { BrowserLifeCyclePlugin } from "./plugins/BrowserLifeCyclePlugin.js";
+export { BrowserWrapFunctions } from "./plugins/BrowserWrapFunctions.js";
 export { BrowserErrorParser } from "./services/BrowserErrorParser.js";
 export { BrowserModuleCollector } from "./services/BrowserModuleCollector.js";
 export { BrowserRequestInfoCollector } from "./services/BrowserRequestInfoCollector.js";

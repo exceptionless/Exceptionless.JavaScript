@@ -4,6 +4,9 @@ import {
 } from "@exceptionless/core";
 
 import { BrowserConfiguration } from "./configuration/BrowserConfiguration.js";
+import { BrowserGlobalHandlerPlugin } from "./plugins/BrowserGlobalHandlerPlugin.js";
+import { BrowserLifeCyclePlugin } from "./plugins/BrowserLifeCyclePlugin.js";
+import { BrowserWrapFunctions } from "./plugins/BrowserWrapFunctions.js";
 import { BrowserErrorParser } from "./services/BrowserErrorParser.js";
 import { BrowserModuleCollector } from "./services/BrowserModuleCollector.js";
 import { BrowserRequestInfoCollector } from "./services/BrowserRequestInfoCollector.js";
@@ -15,30 +18,33 @@ export class BrowserExceptionlessClient extends ExceptionlessClient {
   }
 
   public async startup(configurationOrApiKey?: (config: BrowserConfiguration) => void | string): Promise<void> {
+    const config = this.config;
     if (configurationOrApiKey) {
       const settings = this.getDefaultsSettingsFromScriptTag();
       if (settings?.apiKey) {
-        this.config.apiKey = settings.apiKey;
+        config.apiKey = settings.apiKey;
       }
 
       if (settings?.serverUrl) {
-        this.config.serverUrl = settings.serverUrl;
+        config.serverUrl = settings.serverUrl;
       }
 
       if (settings?.serverUrl) {
-        this.config.serverUrl = settings.serverUrl;
+        config.serverUrl = settings.serverUrl;
       }
 
       if (settings?.includePrivateInformation) {
-        this.config.includePrivateInformation = settings.includePrivateInformation === "true";
+        config.includePrivateInformation = settings.includePrivateInformation === "true";
       }
 
-      this.config.services.errorParser = new BrowserErrorParser();
-      this.config.services.moduleCollector = new BrowserModuleCollector();
-      this.config.services.requestInfoCollector = new BrowserRequestInfoCollector();
-      this.config.services.submissionClient = new BrowserFetchSubmissionClient(this.config);
+      config.addPlugin(new BrowserGlobalHandlerPlugin());
+      config.addPlugin(new BrowserLifeCyclePlugin());
+      config.addPlugin(new BrowserWrapFunctions());
 
-      // TODO: Register platform specific plugins.
+      config.services.errorParser = new BrowserErrorParser();
+      config.services.moduleCollector = new BrowserModuleCollector();
+      config.services.requestInfoCollector = new BrowserRequestInfoCollector();
+      config.services.submissionClient = new BrowserFetchSubmissionClient(config);
     }
 
     await super.startup(configurationOrApiKey);
@@ -58,31 +64,3 @@ export class BrowserExceptionlessClient extends ExceptionlessClient {
     return null;
   }
 }
-
-/*
-  TODO: We currently are unable to parse string exceptions.
-  function processJQueryAjaxError(event, xhr, settings, error:string): void {
-  let client = ExceptionlessClient.default;
-  if (xhr.status === 404) {
-  client.submitNotFound(settings.url);
-  } else if (xhr.status !== 401) {
-  client.createUnhandledException(error, "JQuery.ajaxError")
-  .setSource(settings.url)
-  .setProperty("status", xhr.status)
-  .setProperty("request", settings.data)
-  .setProperty("response", xhr.responseText && xhr.responseText.slice && xhr.responseText.slice(0, 1024))
-  .submit();
-  }
-  }
-  */
-
-//TraceKit.report.subscribe(processUnhandledException);
-//TraceKit.extendToAsynchronousCallbacks();
-
-
-// if (typeof $ !== "undefined" && $(document)) {
-//   $(document).ajaxError(processJQueryAjaxError);
-// }
-//declare var $;
-
-// browser plugin startup method wires up all handlers?
