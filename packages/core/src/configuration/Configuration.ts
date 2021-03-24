@@ -167,8 +167,6 @@ export class Configuration {
    */
   public set apiKey(value: string) {
     this._apiKey = value || null;
-    this.services.log.info(`apiKey: ${this._apiKey}`);
-    this.notifySubscribers();
   }
 
   /**
@@ -196,8 +194,6 @@ export class Configuration {
       this._serverUrl = value;
       this._configServerUrl = value;
       this._heartbeatServerUrl = value;
-      this.services.log.info(`serverUrl: ${value}`);
-      this.notifySubscribers();
     }
   }
 
@@ -216,8 +212,6 @@ export class Configuration {
   public set configServerUrl(value: string) {
     if (value) {
       this._configServerUrl = value;
-      this.services.log.info(`configServerUrl: ${value}`);
-      this.notifySubscribers();
     }
   }
 
@@ -236,8 +230,6 @@ export class Configuration {
   public set heartbeatServerUrl(value: string) {
     if (value) {
       this._heartbeatServerUrl = value;
-      this.services.log.info(`heartbeatServerUrl: ${value}`);
-      this.notifySubscribers();
     }
   }
 
@@ -265,8 +257,6 @@ export class Configuration {
     }
 
     this._updateSettingsWhenIdleInterval = value;
-    this.services.log.info(`updateSettingsWhenIdleInterval: ${value}`);
-    this.notifySubscribers();
   }
 
   /**
@@ -320,8 +310,6 @@ export class Configuration {
     this._includeCookies = val;
     this._includePostData = val;
     this._includeQueryString = val;
-    this.services.log.info(`includePrivateInformation: ${val}`);
-    this.notifySubscribers();
   }
 
   /**
@@ -338,7 +326,6 @@ export class Configuration {
    */
   public set includeUserName(value: boolean) {
     this._includeUserName = value === true;
-    this.notifySubscribers();
   }
 
   /**
@@ -355,7 +342,6 @@ export class Configuration {
    */
   public set includeMachineName(value: boolean) {
     this._includeMachineName = value === true;
-    this.notifySubscribers();
   }
 
   /**
@@ -372,7 +358,6 @@ export class Configuration {
    */
   public set includeIpAddress(value: boolean) {
     this._includeIpAddress = value === true;
-    this.notifySubscribers();
   }
 
   /**
@@ -391,7 +376,6 @@ export class Configuration {
    */
   public set includeCookies(value: boolean) {
     this._includeCookies = value === true;
-    this.notifySubscribers();
   }
 
   /**
@@ -410,7 +394,6 @@ export class Configuration {
    */
   public set includePostData(value: boolean) {
     this._includePostData = value === true;
-    this.notifySubscribers();
   }
 
   /**
@@ -429,7 +412,6 @@ export class Configuration {
    */
   public set includeQueryString(value: boolean) {
     this._includeQueryString = value === true;
-    this.notifySubscribers();
   }
 
   /**
@@ -628,14 +610,12 @@ export class Configuration {
     }
   }
 
-  // TODO: Rework handlers as it will set property values with the friendly key as well as private members.
   private subscriberHandler = {
-    set: (target, key: string | symbol, value: unknown): boolean => {
+    set: (target, key: string | symbol, value: unknown, receiver: unknown): boolean => {
       this.services.log.trace(`${typeof key === "symbol" ? key.toString() : key} set to ${value}`);
       target[key] = value;
       this.notifySubscribers();
       return true;
     }
   };
-
 }
