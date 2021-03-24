@@ -1,5 +1,6 @@
 {
-  "name": "exapp",
+  "name": "exceptionless-express-sample",
+  "private": true,
   "version": "1.0.0",
   "description": "Exceptionless Sample Node App",
   "main": "app.js",
