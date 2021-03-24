@@ -3,6 +3,7 @@ import { Configuration } from "../../src/configuration/Configuration.js";
 describe("Configuration", () => {
   test("should override configuration defaults", () => {
     let config = new Configuration();
+    config.useDebugLogger();
     expect(config.apiKey).toBeUndefined();
 
     config.apiKey = "UNIT_TEST_API_KEY";
