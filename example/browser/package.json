@@ -1,0 +1,13 @@
+{
+  "name": "exceptionless-browser-sample",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Exceptionless Sample Browser App",
+  "main": "index.js",
+  "type": "module",
+  "author": "Exceptionless",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "@exceptionless/browser": "2.0.0-pre"
+  }
+}

@@ -1,3 +1,30 @@
+//import { Exceptionless } from "../../packages/browser/dist/index.min.js";
+
+Exceptionless.startup(c => {
+  c.serverUrl = "http://localhost:5000";
+  c.updateSettingsWhenIdleInterval = 15000;
+  c.useDebugLogger();
+  c.useLocalStorage();
+  c.setUserIdentity("12345678", "Blake");
+  c.useSessions();
+
+  // set some default data
+  c.defaultData["SampleUser"] = {
+    id: 1,
+    name: "Blake",
+    password: "123456",
+    passwordResetToken: "a reset token",
+    myPasswordValue: "123456",
+    myPassword: "123456",
+    customValue: "Password",
+    value: {
+      Password: "123456"
+    }
+  };
+
+  c.defaultTags.push("Example", "JavaScript");
+});
+
 function getNonexistentData() {
   /* random comment */ nonexistentArray[arguments[0]]; // second random comment;
 }

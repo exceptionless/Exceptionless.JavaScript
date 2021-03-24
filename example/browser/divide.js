@@ -1,4 +1,4 @@
-function divide(numerator, denominator) {
+export default function (numerator, denominator) {
   if (denominator == 0) {
     throw new Error("Division by zero.");
   }
