@@ -33,7 +33,8 @@
   },
   "scripts": {
     "build": "tsc -p tsconfig.json",
-    "build:watch": "tsc -p tsconfig.json -w --preserveWatchOutput"
+    "build:watch": "tsc -p tsconfig.json -w --preserveWatchOutput",
+    "test": ""
   },
   "sideEffects": false,
   "devDependencies": {

@@ -10,5 +10,10 @@
   "dependencies": {
     "express": "4.16.4",
     "@exceptionless/node": "2.0.0-pre"
+  },
+  "scripts": {
+    "build": "",
+    "build:watch": "",
+    "test": ""
   }
 }
