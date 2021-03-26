@@ -2,24 +2,22 @@ export { Configuration } from "./configuration/Configuration.js";
 export { SettingsManager } from "./configuration/SettingsManager.js";
 
 export { DefaultLastReferenceIdManager } from "./lastReferenceIdManager/DefaultLastReferenceIdManager.js";
-export { ILastReferenceIdManager } from "./lastReferenceIdManager/ILastReferenceIdManager.js";
+export type { ILastReferenceIdManager } from "./lastReferenceIdManager/ILastReferenceIdManager.js";
 
-export { ILog } from "./logging/ILog.js";
+export type { ILog } from "./logging/ILog.js";
 export { ConsoleLog } from "./logging/ConsoleLog.js";
 export { NullLog } from "./logging/NullLog.js";
 
-export {
-  Event,
-  KnownEventDataKeys
-} from "./models/Event.js";
-export { EnvironmentInfo } from "./models/data/EnvironmentInfo.js";
-export { ManualStackingInfo } from "./models/data/ManualStackingInfo.js";
-export { RequestInfo } from "./models/data/RequestInfo.js";
-export { UserDescription } from "./models/data/UserDescription.js";
-export { UserInfo } from "./models/data/UserInfo.js";
-export { ModuleInfo } from "./models/data/ModuleInfo.js";
+export type { Event } from "./models/Event.js";
+export { KnownEventDataKeys } from "./models/Event.js";
+export type { EnvironmentInfo } from "./models/data/EnvironmentInfo.js";
+export type { ManualStackingInfo } from "./models/data/ManualStackingInfo.js";
+export type { RequestInfo } from "./models/data/RequestInfo.js";
+export type { UserDescription } from "./models/data/UserDescription.js";
+export type { UserInfo } from "./models/data/UserInfo.js";
+export type { ModuleInfo } from "./models/data/ModuleInfo.js";
 
-export {
+export type {
   ErrorInfo,
   InnerErrorInfo,
   MethodInfo,
@@ -41,30 +39,27 @@ export { ContextData } from "./plugins/ContextData.js";
 export { PluginContext } from "./plugins/PluginContext.js";
 export { EventPluginContext } from "./plugins/EventPluginContext.js";
 export { EventPluginManager } from "./plugins/EventPluginManager.js";
-export { IEventPlugin } from "./plugins/IEventPlugin.js";
+export type { IEventPlugin } from "./plugins/IEventPlugin.js";
 
 export { DefaultEventQueue } from "./queue/DefaultEventQueue.js";
-export { IEventQueue } from "./queue/IEventQueue.js";
+export type { IEventQueue } from "./queue/IEventQueue.js";
 
-export { IEnvironmentInfoCollector } from "./services/IEnvironmentInfoCollector.js";
-export { IErrorParser } from "./services/IErrorParser.js";
-export { IModuleCollector } from "./services/IModuleCollector.js";
-export { IRequestInfoCollector } from "./services/IRequestInfoCollector.js";
+export type { IEnvironmentInfoCollector } from "./services/IEnvironmentInfoCollector.js";
+export type { IErrorParser } from "./services/IErrorParser.js";
+export type { IModuleCollector } from "./services/IModuleCollector.js";
+export type { IRequestInfoCollector } from "./services/IRequestInfoCollector.js";
 
 export { InMemoryStorage } from "./storage/InMemoryStorage.js";
 export { InMemoryStorageProvider } from "./storage/InMemoryStorageProvider.js";
-export { IStorage } from "./storage/IStorage.js";
-export { IStorageItem } from "./storage/IStorageItem.js";
-export { IStorageProvider } from "./storage/IStorageProvider.js";
+export type { IStorage } from "./storage/IStorage.js";
+export type { IStorageItem } from "./storage/IStorageItem.js";
+export type { IStorageProvider } from "./storage/IStorageProvider.js";
 export { KeyValueStorageBase } from "./storage/KeyValueStorageBase.js";
 
-export { ISubmissionClient } from "./submission/ISubmissionClient.js";
+export type { ISubmissionClient } from "./submission/ISubmissionClient.js";
 export { Response } from "./submission/Response.js";
-export {
-  FetchOptions,
-  SubmissionClientBase,
-} from "./submission/SubmissionClientBase.js";
-
+export type { FetchOptions } from "./submission/SubmissionClientBase.js";
+export { SubmissionClientBase } from "./submission/SubmissionClientBase.js";
 export { EventBuilder } from "./EventBuilder.js";
 export { ExceptionlessClient } from "./ExceptionlessClient.js";
 

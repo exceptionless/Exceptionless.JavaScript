@@ -14,7 +14,7 @@ export class NodeLifeCyclePlugin implements IEventPlugin {
 
   public startup(context: PluginContext): Promise<void> {
     if (this._client) {
-      return;
+      return Promise.resolve();
     }
 
     this._client = context.client;

@@ -34,7 +34,7 @@
     "./package.json": "./package.json"
   },
   "scripts": {
-    "build": "tsc -p tsconfig.json && esbuild dist/index.js --bundle --minify --sourcemap --target=es2020 --outfile=dist/index.min.js",
+    "build": "tsc -p tsconfig.json && esbuild src/index.ts --bundle --minify --sourcemap --target=es2020 --format=esm --outfile=dist/index.min.js",
     "build:watch": "tsc -p tsconfig.json -w --preserveWatchOutput",
     "test": ""
   },

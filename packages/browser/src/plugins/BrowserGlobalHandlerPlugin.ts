@@ -14,14 +14,14 @@ export class BrowserGlobalHandlerPlugin implements IEventPlugin {
 
   public startup(context: PluginContext): Promise<void> {
     if (this._client) {
-      return;
+      return Promise.resolve();
     }
 
     this._client = context.client;
     Error.stackTraceLimit = 50;
 
     // TODO: Discus if we want to unwire this handler in suspend?
-    const originalOnError: OnErrorEventHandlerNonNull = globalThis.onerror;
+    const originalOnError: OnErrorEventHandler = globalThis.onerror;
     globalThis.onerror = (event: Event | string, source?: string, lineno?: number, colno?: number, error?: Error) => {
       // TODO: Handle async
       void this._client.createUnhandledException(error || this.buildError(event, source, lineno, colno), "onerror")
