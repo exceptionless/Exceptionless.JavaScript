@@ -1,7 +1,7 @@
 {
-  "name": "exceptionless-express-sample",
+  "name": "@exceptionless/express-sample",
   "private": true,
-  "version": "1.0.0",
+  "version": "2.0.0-pre",
   "description": "Exceptionless Sample Node App",
   "main": "app.js",
   "type": "module",

@@ -1,7 +1,4 @@
-import {
-  Configuration,
-  ExceptionlessClient,
-} from "@exceptionless/core";
+import { ExceptionlessClient } from "@exceptionless/core";
 
 import { NodeConfiguration } from "./configuration/NodeConfiguration.js";
 import { NodeGlobalHandlerPlugin } from "./plugins/NodeGlobalHandlerPlugin.js";
