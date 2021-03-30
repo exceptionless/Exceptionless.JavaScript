@@ -11,8 +11,8 @@ export class BrowserFetchSubmissionClient extends SubmissionClientBase {
       method: options.method,
       headers: {
         "Accept": "application/json",
-        "Authorization": `client:${this.config.apiKey}`,
-        "X-Exceptionless-Client": this.config.userAgent
+        "Authorization": `Bearer ${this.config.apiKey}`,
+        "User-Agent": this.config.userAgent
       },
       body: options.body
     };
@@ -24,6 +24,6 @@ export class BrowserFetchSubmissionClient extends SubmissionClientBase {
 
     const response = await fetch(url, requestOptions);
     const settingsVersion: number = parseInt(response.headers.get(this.ConfigurationVersionHeader), 10);
-    return new Response(response.status, response.statusText, settingsVersion, await response.json())
+    return new Response(response.status, response.statusText, settingsVersion, response.ok ? await response.json() : await response.text())
   }
 }
