@@ -1,31 +1,30 @@
 <!DOCTYPE html>
 <html>
-<head lang="en">
-  <meta charset="UTF-8">
-  <meta http-equiv="X-UA-Compatible" content="IE=Edge">
-  <title>Exceptionless Test</title>
-</head>
-<body>
-<script type="module" src="index.js"></script>
-<script type="module" src="divide.js"></script>
+  <head lang="en">
+    <meta charset="UTF-8" />
+    <title>Exceptionless Test</title>
+  </head>
+  <body>
+    <h1>Error Submission</h1>
+    <button id="throw-custom-error">Throw custom error</button>
+    <button id="throw-division-by-zero-error">Throw division by zero</button>
+    <button id="throw-index-out-of-range">Throw index out of range</button>
+    <button id="throw-index-out-of-range-custom-stacking">Throw index out of range (Custom Stacking)</button>
+    <button id="throw-string-error">Throw string error</button>
+    <button id="throw-ignored-error">Throw ignored error</button>
+    <button onclick="throwReferenceError('function-does-exist')">Throw uncaught reference error</button>
 
-<button onclick="throwDivisionByZero()">Division By Zero</button>
-<button onclick="throwIndexOutOfRange(100)">Index Out Of Range</button>
-<button onclick="throwIndexOutOfRange(100, true)">Index Out Of Range with custom stacking</button>
-<button onclick="throwStringError()">Throw String Message</button>
-<button onclick="sendEvents(10)">Send 10 random events</button>
-<button onclick="sendEvents(100)">Send 100 random events</button>
-<button onclick="sendEvents(100, 0)">Send 100 exceptions</button>
-<br />
-<br />
-<button onclick="sendEvents(100, 1)">Send 100 log messages</button>
-<button onclick="sendEvents(1, 1)">Send trace log event</button>
-<button onclick="sendEvents(1, 2)">Send debug log event</button>
-<button onclick="sendEvents(1, 3)">Send info log event</button>
-<button onclick="sendEvents(1, 4)">Send warn log event</button>
-<button onclick="sendEvents(1, 5)">Send error log event</button>
-<br />
-<br />
-<button onclick="logClientConfigurationSettings()">Log Client Configuration Settings (settings sent from server)</button>
-</body>
+    <h1>Log Submission</h1>
+    <button class="submit-log">Submit log event</button>
+    <button class="submit-log" data-level="trace">Submit trace log event</button>
+    <button class="submit-log" data-level="debug">Submit debug log event</button>
+    <button class="submit-log" data-level="info">Submit info log event</button>
+    <button class="submit-log" data-level="warn">Submit warn log event</button>
+    <button class="submit-log" data-level="error">Submit error log event</button>
+
+    <h1>Diagnostics</h1>
+    <button id="config-settings-log">Log Client Configuration Settings (settings sent from server)</button>
+
+    <script type="module" src="index.js"></script>
+  </body>
 </html>
