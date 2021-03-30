@@ -1,4 +1,5 @@
 import { Exceptionless } from "../../node_modules/@exceptionless/browser/dist/index.min.js";
+import { divide } from "./math.js";
 
 Exceptionless.startup(c => {
   c.apiKey = "LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw";
@@ -24,81 +25,94 @@ Exceptionless.startup(c => {
   };
 
   c.defaultTags.push("Example", "JavaScript");
+  c.settings["@@error:MediaError"] = "Off"
 });
 
-function getNonexistentData() {
-  /* random comment */ nonexistentArray[arguments[0]]; // second random comment;
-}
+document.addEventListener("DOMContentLoaded", () => {
+  const elements = document.querySelectorAll(".submit-log");
+  for (const element of elements) {
+    element.addEventListener("click", (event) => {
+      const level = event.target.attributes["data-level"];
+      Exceptionless.submitLog("sendEvents", `This is a log message with level: ${level || "<no log level>"}`, level);
+    });
+  }
 
-function sendEvents(numberToSends, eventType) {
-  for (var index = 0; index < numberToSends; index++) {
-    switch (eventType || getRandomInt(0, 5)) {
-      case 0: {
-        throwIndexOutOfRange();
-        break;
+  document.querySelector("#throw-custom-error").addEventListener("click", () => {
+    throw new CustomError("A Custom Error", 500);
+  });
+
+  document.querySelector("#throw-division-by-zero-error").addEventListener("click", () => {
+    divide(10, 0);
+  });
+
+  document.querySelector("#throw-index-out-of-range").addEventListener("click", () => {
+    throwIndexOutOfRange();
+  });
+
+  document.querySelector("#throw-index-out-of-range-custom-stacking").addEventListener("click", () => {
+    throwIndexOutOfRange(1, true);
+  });
+
+  document.querySelector("#throw-string-error").addEventListener("click", () => {
+    throwStringError();
+  });
+
+  document.querySelector("#throw-ignored-error").addEventListener("click", () => {
+    throw new MediaError("An Ignored Exception Type");
+  });
+
+  document.querySelector("#config-settings-log").addEventListener("click", () => {
+    console.log(Exceptionless.config.settings);
+  });
+});
+
+function throwIndexOutOfRange(indexer, withCustomStacking) {
+  try {
+    getNonexistentData(indexer);
+  } catch (e) {
+    if (withCustomStacking) {
+      if (Math.random() < .5) {
+        Exceptionless.createException(e).setManualStackingKey("MyCustomStackingKey").submit();
+      } else {
+        Exceptionless.createException(e).setManualStackingInfo({
+          File: "index.js",
+          Function: "throwIndexOutOfRange"
+        }, "Custom Index Out Of Range Exception").submit();
       }
-      case 1: {
-        exceptionless.ExceptionlessClient.default.submitLog("sendEvents", "This is a test trace message", "trace");
-        break;
-      }
-      case 2: {
-        exceptionless.ExceptionlessClient.default.submitLog("sendEvents", "This is a test debug message", "debug");
-        break;
-      }
-      case 3: {
-        exceptionless.ExceptionlessClient.default.submitLog("sendEvents", "This is a test info message", "info");
-        break;
-      }
-      case 4: {
-        exceptionless.ExceptionlessClient.default.submitLog("sendEvents", "This is a test warn message", "warn");
-        break;
-      }
-      case 5: {
-        exceptionless.ExceptionlessClient.default.submitLog("sendEvents", "This is a test error message", "error");
-        break;
-      }
+    } else {
+      Exceptionless.submitException(e);
     }
   }
 }
 
-function getRandomInt(min, max) {
-  exceptionless.ExceptionlessClient.default.submitLog("getting random int min:" + min + " max:" + max);
-  return Math.floor(Math.random() * (max - min + 1)) + min;
-}
-
-function throwDivisionByZero() {
-  return divide(10, 0);
+function getNonexistentData(...args) {
+  /* random comment */ nonexistentArray[args[0]]; // second random comment;
 }
 
 function throwStringError() {
   return throwStringErrorImpl("string error message");
 }
 
-function throwIndexOutOfRange(indexer, withCustomStacking) {
-  try {
-    getNonexistentData(indexer);
-  } catch (e) {
-    var client = exceptionless.ExceptionlessClient.default;
-    if (withCustomStacking) {
-      if (Math.random() < .5) {
-        client.createException(e).setManualStackingKey("MyCustomStackingKey").submit();
-      } else {
-        client.createException(e).setManualStackingInfo({
-          File: "index.js",
-          Function: "throwIndexOutOfRange"
-        }, "Custom Index Out Of Range Exception").submit();
-      }
-    } else {
-      client.submitException(e);
-    }
-  }
-}
-
 function throwStringErrorImpl(message) {
-  throw new Error(message);
+  throw message;
 }
 
-function logClientConfigurationSettings() {
-  var client = exceptionless.ExceptionlessClient.default;
-  console.log(client.config.settings);
+class CustomError extends Error {
+  constructor(message, code) {
+    super(message);
+    this.name = "CustomError";
+    this.code = code; // Extra property;
+  }
+
+  getValue() {
+    return 5;
+  }
+
+  getPromiseValue() {
+    return new Promise(r => r({ expensive: "call" }));
+  }
+
+  get getThrowsError() {
+    throw new Error("Not Implemented");
+  }
 }
