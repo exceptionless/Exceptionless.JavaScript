@@ -17,8 +17,8 @@ export class NodeFetchSubmissionClient extends SubmissionClientBase {
       method: options.method,
       headers: {
         "Accept": "application/json",
-        "Authorization": `client:${this.config.apiKey}`,
-        "X-Exceptionless-Client": this.config.userAgent
+        "Authorization": `Bearer ${this.config.apiKey}`,
+        "User-Agent": this.config.userAgent
       },
       body: options.body
     };
