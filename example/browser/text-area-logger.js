@@ -1,4 +1,4 @@
-export class TextAreaSelfLogger {
+export class TextAreaLogger {
   constructor(elementId, logger) {
     if (!elementId) {
       throw new Error("elementId is required");
@@ -36,9 +36,9 @@ export class TextAreaSelfLogger {
 
   log(level, message) {
     if (this.element) {
-      this.element.innerHTML += `\n[${level}] Exceptionless: ${message}`;
+      this.element.innerHTML += `\n[${level}] ${message}`;
     } else {
-      this.messageBuffer.push(`[${level}] Exceptionless: ${message}`)
+      this.messageBuffer.push(`[${level}] ${message}`)
     }
   }
 }

@@ -1,14 +1,15 @@
 import { Exceptionless } from "../../node_modules/@exceptionless/browser/dist/index.min.js";
 import { divide } from "./math.js";
-import { TextAreaSelfLogger } from "./text-area-logger.js";
+import { TextAreaLogger } from "./text-area-logger.js";
 
 Exceptionless.startup(c => {
+  c.useDebugLogger();
+  c.services.log = new TextAreaLogger("logs", c.services.log);
+
   c.apiKey = "LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw";
   c.serverUrl = "http://localhost:5000";
   c.updateSettingsWhenIdleInterval = 15000;
   c.useLocalStorage();
-  c.useDebugLogger();
-  c.services.log = new TextAreaSelfLogger("logs", c.services.log);
   c.setUserIdentity("12345678", "Blake");
   c.useSessions();
 
@@ -34,7 +35,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const elements = document.querySelectorAll(".submit-log");
   for (const element of elements) {
     element.addEventListener("click", (event) => {
-      const level = event.target.attributes["data-level"];
+      const level = event.target.attributes["data-level"]?.value;
       Exceptionless.submitLog("sendEvents", `This is a log message with level: ${level || "<no log level>"}`, level);
     });
   }
@@ -64,7 +65,7 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   document.querySelector("#config-settings-log").addEventListener("click", () => {
-    console.log(Exceptionless.config.settings);
+    Exceptionless.config.services.log.info(JSON.stringify(Exceptionless.config.settings));
   });
 });
 
