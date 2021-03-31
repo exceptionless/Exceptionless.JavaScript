@@ -21,34 +21,24 @@ export class BrowserGlobalHandlerPlugin implements IEventPlugin {
     Error.stackTraceLimit = 50;
 
     // TODO: Discus if we want to unwire this handler in suspend?
-    const originalOnError: OnErrorEventHandler = globalThis.onerror;
-    globalThis.onerror = (event: Event | string, source?: string, lineno?: number, colno?: number, error?: Error) => {
-      // TODO: Handle async
-      void this._client.createUnhandledException(error || this.buildError(event, source, lineno, colno), "onerror")
-        .setSource(source)
-        .submit();
+    window.addEventListener("error", async event => {
+      await this._client.submitUnhandledException(this.getError(event), "onerror");
+    });
 
-      // eslint-disable-next-line prefer-rest-params
-      return originalOnError ? originalOnError.apply(this, ...arguments) : false;
-    };
-
-    const originalOnunhandledrejection = globalThis.onunhandledrejection;
-    globalThis.onunhandledrejection = (pre: PromiseRejectionEvent) => {
-      let error = pre.reason;
+    window.addEventListener("unhandledrejection", async event => {
+      let error = event.reason;
       try {
-        const reason = (<any>pre).detail?.reason;
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
+        const reason = (<any>event).detail?.reason;
         if (reason) {
           error = reason;
         }
         // eslint-disable-next-line no-empty
       } catch (ex) { }
 
-      // TODO: Handle async
-      void this._client.submitUnhandledException(error, "onunhandledrejection");
+      await this._client.submitUnhandledException(error, "onunhandledrejection");
+    });
 
-      // eslint-disable-next-line prefer-rest-params
-      return originalOnunhandledrejection ? originalOnunhandledrejection.apply(this, ...arguments) : false;
-    };
 
     if (typeof $ !== "undefined" && $(document)) {
       $(document).ajaxError((event: Event, xhr: { responseText: string, status: number }, settings: { data: unknown, url: string }, error: string) => {
@@ -70,28 +60,28 @@ export class BrowserGlobalHandlerPlugin implements IEventPlugin {
     return Promise.resolve();
   }
 
-  private buildError(event: Event | string, source?: string, lineno?: number, colno?: number): Error {
-    if (Object.prototype.toString.call(event) === "[object ErrorEvent]") {
-      // TODO: See if this is the error event.
-      return (<ErrorEvent>event).error;
+  private getError(event: ErrorEvent): Error {
+    const { error, message, filename, lineno, colno } = event;
+    if (typeof error === "object") {
+      return error;
     }
 
     let name: string = "Error";
-    let message: string = Object.prototype.toString.call(event) === '[object ErrorEvent]' ? (<ErrorEvent>event).error : null;
-    if (message) {
-      const errorNameRegex: RegExp = /^(?:[Uu]ncaught (?:exception: )?)?(?:((?:Aggregate|Eval|Internal|Range|Reference|Syntax|Type|URI|)Error): )?(.*)$)/i;
-      const [_, errorName, errorMessage] = errorNameRegex.exec(message);
+    let msg: string = message || event.error;
+    if (msg) {
+      const errorNameRegex: RegExp = /^(?:[Uu]ncaught (?:exception: )?)?(?:((?:Aggregate|Eval|Internal|Range|Reference|Syntax|Type|URI|)Error): )?(.*)$/i;
+      const [_, errorName, errorMessage] = errorNameRegex.exec(msg);
       if (errorName) {
         name = errorName;
       }
       if (errorMessage) {
-        message = errorMessage;
+        msg = errorMessage;
       }
     }
 
-    const error = new Error(message || "Script error.");
-    error.name = name;
-    error.stack = `at ${source || ""}:${!isNaN(lineno) ? lineno : 0}${!isNaN(colno) ? ":" + colno : ""}`;
-    return error;
+    const ex = new Error(msg || "Script error.");
+    ex.name = name;
+    ex.stack = `at ${filename || ""}:${!isNaN(lineno) ? lineno : 0}${!isNaN(colno) ? ":" + colno : ""}`;
+    return ex;
   }
 }
