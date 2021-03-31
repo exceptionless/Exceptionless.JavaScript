@@ -130,14 +130,13 @@ export class DefaultEventQueue implements IEventQueue {
   public suspendProcessing(durationInMinutes?: number, discardFutureQueuedItems?: boolean, clearQueue?: boolean): void {
     const config: Configuration = this.config; // Optimization for minifier.
 
+    const currentDate = new Date();
     if (!durationInMinutes || durationInMinutes <= 0) {
-      durationInMinutes = 5;
+      durationInMinutes = Math.ceil(currentDate.getMinutes() / 15) * 15 - currentDate.getMinutes();
     }
 
     config.services.log.info(`Suspending processing for ${durationInMinutes} minutes.`);
-    this._suspendProcessingUntil = new Date(
-      new Date().getTime() + (durationInMinutes * 60000),
-    );
+    this._suspendProcessingUntil = new Date(currentDate.getTime() + (durationInMinutes * 60000));
 
     if (discardFutureQueuedItems) {
       this._discardQueuedItemsUntil = this._suspendProcessingUntil;
