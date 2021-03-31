@@ -61,7 +61,12 @@ export class SettingsManager {
     this._isUpdatingSettings = true;
     const response = await config.services.submissionClient.getSettings(version);
     try {
-      if (!config || !response || !response.success || !response.data) {
+      if (response.status === 304) {
+        log.trace("Settings are up-to-date");
+        return;
+      }
+
+      if (!response?.success || !response.data) {
         log.warn(`${unableToUpdateMessage}: ${response.message}`);
         return;
       }
