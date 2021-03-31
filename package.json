@@ -17,7 +17,7 @@
   "scripts": {
     "clean": "rimraf packages/*/dist examples/*/dist",
     "build": "npm run build --workspaces",
-    "build:watch": "npm run build:watch --workspaces",
+    "watch": "npm run watch --workspaces",
     "lint": "eslint . --ext .ts",
     "lint:fix": "eslint . --ext .ts --fix",
     "test": "npm test --workspaces"
