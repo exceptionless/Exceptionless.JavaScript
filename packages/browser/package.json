@@ -35,7 +35,7 @@
   },
   "scripts": {
     "build": "tsc -p tsconfig.json && esbuild src/index.ts --bundle --minify --sourcemap --target=es2020 --format=esm --outfile=dist/index.min.js",
-    "build:watch": "tsc -p tsconfig.json -w --preserveWatchOutput",
+    "watch": "tsc -p tsconfig.json -w --preserveWatchOutput",
     "test": ""
   },
   "sideEffects": [
