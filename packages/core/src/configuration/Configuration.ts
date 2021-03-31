@@ -471,8 +471,8 @@ export class Configuration {
     const plugin: IEventPlugin = pluginAction
       ? { name: pluginOrName as string, priority, run: pluginAction }
       : pluginOrName as IEventPlugin;
-    if (!plugin || !plugin.run) {
-      this.services.log.error("Add plugin failed: Run method not defined");
+    if (!plugin || !(plugin.startup || plugin.run)) {
+      this.services.log.error("Add plugin failed: startup or run method not defined");
       return;
     }
 
@@ -509,9 +509,7 @@ export class Configuration {
    * @param name
    */
   public removePlugin(pluginOrName: IEventPlugin | string): void {
-    const name: string = typeof pluginOrName === "string"
-      ? pluginOrName
-      : pluginOrName.name;
+    const name: string = typeof pluginOrName === "string" ? pluginOrName : pluginOrName.name;
     if (!name) {
       this.services.log.error("Remove plugin failed: Plugin name not defined");
       return;
