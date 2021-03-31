@@ -13,17 +13,17 @@ export class SettingsManager {
   private static _isUpdatingSettings: boolean = false;
 
   public static applySavedServerSettings(config: Configuration): void {
-    if (!config || !config.isValid) {
+    if (!config?.isValid) {
       return;
     }
 
     const savedSettings = this.getSavedServerSettings(config);
-    config.services.log.info(`Applying saved settings: v${savedSettings.version}`);
+    config.services.log.trace(`Applying saved settings: v${savedSettings.version}`);
     config.settings = merge(config.settings, savedSettings.settings);
   }
 
   public static getVersion(config: Configuration): number {
-    if (!config || !config.isValid) {
+    if (!config?.isValid) {
       return 0;
     }
 
@@ -42,14 +42,14 @@ export class SettingsManager {
   }
 
   public static async updateSettings(config: Configuration, version?: number): Promise<void> {
-    if (!config || !config.enabled || this._isUpdatingSettings) {
+    if (!config?.enabled || this._isUpdatingSettings) {
       return;
     }
 
     const { log } = config.services;
     const unableToUpdateMessage = "Unable to update settings";
     if (!config.isValid) {
-      log.error(`${unableToUpdateMessage}: ApiKey is not set.`);
+      log.error(`${unableToUpdateMessage}: ApiKey is not set`);
       return;
     }
 
@@ -57,7 +57,7 @@ export class SettingsManager {
       version = this.getVersion(config);
     }
 
-    log.info(`Checking for updated settings from: v${version}.`);
+    log.trace(`Checking for updated settings from: v${version}`);
     this._isUpdatingSettings = true;
     const response = await config.services.submissionClient.getSettings(version);
     try {
@@ -66,13 +66,14 @@ export class SettingsManager {
         return;
       }
 
-      const settings = merge(config.settings, response.data.settings);
+      const data = JSON.parse(response.data);
+      const settings = merge(config.settings, data.settings);
 
       // TODO: Store snapshot of settings after reading from config and attributes and use that to revert to defaults.
       // Remove any existing server settings that are not in the new server settings.
       const savedServerSettings = SettingsManager.getSavedServerSettings(config);
       for (const key in savedServerSettings) {
-        if (response.data.settings[key]) {
+        if (data.settings[key]) {
           continue;
         }
 
@@ -81,7 +82,7 @@ export class SettingsManager {
 
       config.settings = settings;
       config.services.storage.settings.save(response.data);
-      log.info(`Updated settings: v${response.data.version}`);
+      log.trace(`Updated settings: v${data.version}`);
     } finally {
       this._isUpdatingSettings = false;
     }

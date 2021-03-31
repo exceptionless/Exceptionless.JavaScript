@@ -69,11 +69,11 @@ export class DefaultEventQueue implements IEventQueue {
     this.ensureQueueTimer();
 
     const timestamp = config.services.storage.queue.save(event);
-    const logText = `type=${event.type} ${event.reference_id ? "refid=" + event.reference_id : ""}`;
+    const logText = `type=${event.type} ${event.reference_id ? "refid=" + event.reference_id : ""} source=${event.source} message=${event.message}`;
     if (timestamp) {
       log.info(`Enqueuing event: ${timestamp} ${logText}`);
     } else {
-      log.error(`Could not enqueue event ${logText}`);
+      log.error(`Could not enqueue event: ${logText}`);
     }
   }
 
@@ -86,7 +86,7 @@ export class DefaultEventQueue implements IEventQueue {
       return;
     }
 
-    log.info("Processing queue...");
+    log.trace("Processing queue...");
     if (!this.config.enabled) {
       log.info(`Configuration is disabled: ${queueNotProcessed}`);
       return;
@@ -111,7 +111,7 @@ export class DefaultEventQueue implements IEventQueue {
       const response = await this.config.services.submissionClient.submitEvents(events.map((e) => e.value));
       this.processSubmissionResponse(response, events);
       this.eventsPosted(events.map((e) => e.value), response);
-      log.info("Finished processing queue.");
+      log.trace("Finished processing queue.");
       this._processingQueue = false;
     } catch (ex) {
       log.error(`Error processing queue: ${ex}`);
@@ -194,32 +194,28 @@ export class DefaultEventQueue implements IEventQueue {
     const log: ILog = config.services.log; // Optimization for minifier.
 
     if (response.status === 202) {
-      log.info(`Sent ${events.length} events.`);
+      log.info(`Sent ${events.length} events`);
       this.removeEvents(events);
       return;
     }
 
     if (response.status === 429 || response.rateLimitRemaining === 0 || response.status === 503) {
       // You are currently over your rate limit or the servers are under stress.
-      log.error("Server returned service unavailable.");
+      log.error("Server returned service unavailable");
       this.suspendProcessing();
       return;
     }
 
     if (response.status === 402) {
       // If the organization over the rate limit then discard the event.
-      log.info(
-        "Too many events have been submitted, please upgrade your plan.",
-      );
+      log.info("Too many events have been submitted, please upgrade your plan");
       this.suspendProcessing(null, true, true);
       return;
     }
 
     if (response.status === 401 || response.status === 403) {
       // The api key was suspended or could not be authorized.
-      log.info(
-        `Unable to authenticate, please check your configuration. ${noSubmission}`,
-      );
+      log.info(`Unable to authenticate, please check your configuration. ${noSubmission}`);
       this.suspendProcessing(15);
       this.removeEvents(events);
       return;
