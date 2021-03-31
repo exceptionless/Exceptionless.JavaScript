@@ -1,10 +1,11 @@
 
-export class Response<T> {
+export class Response {
   constructor(
     public status: number,
     public message: string,
+    public rateLimitRemaining: number,
     public settingsVersion: number,
-    public data: T
+    public data: string
   ) { }
 
   public get success(): boolean {

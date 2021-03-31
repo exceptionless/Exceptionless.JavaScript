@@ -14,7 +14,7 @@ describe("TestSubmissionClient", () => {
 
   test("should submit events", async () => {
     const fetchMock = TestSubmissionClient.prototype.fetch = jest.fn()
-      .mockReturnValueOnce(new Response<void>(202, "", -1, undefined));
+      .mockReturnValueOnce(new Response(202, "", undefined, undefined, undefined));
 
     const events = [{ type: "log", message: "From js client", reference_id: "123454321" }];
     const client = new TestSubmissionClient(config);
@@ -29,7 +29,7 @@ describe("TestSubmissionClient", () => {
 
   test("should submit invalid object data", async () => {
     const fetchMock = TestSubmissionClient.prototype.fetch = jest.fn()
-      .mockReturnValueOnce(new Response<void>(202, "", -1, undefined));
+      .mockReturnValueOnce(new Response(202, "", undefined, undefined, undefined));
 
     const events: Event[] = [{
       type: "log", message: "From js client", reference_id: "123454321", data: {
@@ -50,7 +50,7 @@ describe("TestSubmissionClient", () => {
 
   test("should submit user description", async () => {
     const fetchMock = TestSubmissionClient.prototype.fetch = jest.fn()
-      .mockReturnValueOnce(new Response<void>(202, "", -1, undefined));
+      .mockReturnValueOnce(new Response(202, "", undefined, undefined, undefined));
 
     const description: UserDescription = {
       email_address: "norply@exceptionless.io",
@@ -69,8 +69,8 @@ describe("TestSubmissionClient", () => {
 
   test("should submit heartbeat", async () => {
     const fetchMock = TestSubmissionClient.prototype.fetch = jest.fn()
-      .mockReturnValueOnce(new Response<void>(200, "", 1, undefined))
-      .mockReturnValueOnce(new Response<ClientSettings>(200, "", 1, new ClientSettings({}, 1)));
+      .mockReturnValueOnce(new Response(200, "", undefined, 1, undefined))
+      .mockReturnValueOnce(new Response(200, "", undefined, 1, JSON.stringify(new ClientSettings({}, 1))));
 
     const client = config.services.submissionClient = new TestSubmissionClient(config);
     await client.submitHeartbeat("sessionId", true);
@@ -83,7 +83,7 @@ describe("TestSubmissionClient", () => {
 
   test("should get project settings", async () => {
     const fetchMock = TestSubmissionClient.prototype.fetch = jest.fn()
-      .mockReturnValueOnce(new Response<ClientSettings>(200, "", undefined, new ClientSettings({}, 1)));
+      .mockReturnValueOnce(new Response(200, "", undefined, undefined, JSON.stringify(new ClientSettings({}, 1))));
 
     const client = new TestSubmissionClient(config);
     await client.getSettings(0);
