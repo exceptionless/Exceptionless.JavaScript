@@ -14,18 +14,19 @@ export interface FetchOptions {
 }
 
 export abstract class SubmissionClientBase implements ISubmissionClient {
+  protected readonly RateLimitRemainingHeader: string = "x-ratelimit-remaining";
   protected readonly ConfigurationVersionHeader: string = "x-exceptionless-configversion";
 
   public constructor(protected config: Configuration) { }
 
-  public getSettings(version: number): Promise<Response<ClientSettings>> {
+  public getSettings(version: number): Promise<Response> {
     const url = `${this.config.serverUrl}/api/v2/projects/config?v=${version}`;
     return this.fetch<ClientSettings>(url, {
       method: "GET",
     });
   }
 
-  public async submitEvents(events: Event[]): Promise<Response<void>> {
+  public async submitEvents(events: Event[]): Promise<Response> {
     const url = `${this.config.serverUrl}/api/v2/events`;
     const response = await this.fetch<void>(url, {
       method: "POST",
@@ -36,10 +37,8 @@ export abstract class SubmissionClientBase implements ISubmissionClient {
     return response;
   }
 
-  public async submitUserDescription(referenceId: string, description: UserDescription): Promise<Response<void>> {
-    const url = `${this.config.serverUrl}/api/v2/events/by-ref/${
-      encodeURIComponent(referenceId)
-    }/user-description`;
+  public async submitUserDescription(referenceId: string, description: UserDescription): Promise<Response> {
+    const url = `${this.config.serverUrl}/api/v2/events/by-ref/${encodeURIComponent(referenceId)}/user-description`;
 
     const response = await this.fetch<void>(url, {
       method: "POST",
@@ -50,15 +49,11 @@ export abstract class SubmissionClientBase implements ISubmissionClient {
     return response;
   }
 
-  public async submitHeartbeat(sessionIdOrUserId: string, closeSession: boolean): Promise<Response<void>> {
+  public async submitHeartbeat(sessionIdOrUserId: string, closeSession: boolean): Promise<Response> {
     const url = `${this.config.heartbeatServerUrl}/api/v2/events/session/heartbeat?id=${sessionIdOrUserId}&close=${closeSession}`;
-
-    const response = await this.fetch<void>(url, {
+    return await this.fetch<void>(url, {
       method: "GET"
     });
-
-    await this.updateSettingsVersion(response.settingsVersion);
-    return response;
   }
 
   protected async updateSettingsVersion(settingsVersion: number): Promise<void> {
@@ -69,5 +64,5 @@ export abstract class SubmissionClientBase implements ISubmissionClient {
     }
   }
 
-  protected abstract fetch<T>(url: string, options: FetchOptions): Promise<Response<T>>;
+  protected abstract fetch<T>(url: string, options: FetchOptions): Promise<Response>;
 }

@@ -12,7 +12,7 @@ export class DefaultEventQueue implements IEventQueue {
    * @private
    */
   private _handlers: Array<
-    (events: Event[], response: Response<void>) => void
+    (events: Event[], response: Response) => void
   > = [];
 
   /**
@@ -150,11 +150,11 @@ export class DefaultEventQueue implements IEventQueue {
   }
 
   // TODO: See if this makes sense.
-  public onEventsPosted(handler: (events: Event[], response: Response<void>) => void): void {
+  public onEventsPosted(handler: (events: Event[], response: Response) => void): void {
     handler && this._handlers.push(handler);
   }
 
-  private eventsPosted(events: Event[], response: Response<void>) {
+  private eventsPosted(events: Event[], response: Response) {
     const handlers = this._handlers; // optimization for minifier.
     for (const handler of handlers) {
       try {
@@ -188,11 +188,8 @@ export class DefaultEventQueue implements IEventQueue {
     }
   }
 
-  private processSubmissionResponse(
-    response: Response<void>,
-    events: IStorageItem[],
-  ): void {
-    const noSubmission: string = "The event will not be submitted."; // Optimization for minifier.
+  private processSubmissionResponse(response: Response, events: IStorageItem[]): void {
+    const noSubmission: string = "The event will not be submitted"; // Optimization for minifier.
     const config: Configuration = this.config; // Optimization for minifier.
     const log: ILog = config.services.log; // Optimization for minifier.
 
@@ -202,7 +199,7 @@ export class DefaultEventQueue implements IEventQueue {
       return;
     }
 
-    if (response.status === 429 || response.status === 503) {
+    if (response.status === 429 || response.rateLimitRemaining === 0 || response.status === 503) {
       // You are currently over your rate limit or the servers are under stress.
       log.error("Server returned service unavailable.");
       this.suspendProcessing();

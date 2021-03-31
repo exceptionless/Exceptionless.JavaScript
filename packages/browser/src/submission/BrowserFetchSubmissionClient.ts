@@ -5,7 +5,7 @@ import {
 } from "@exceptionless/core";
 
 export class BrowserFetchSubmissionClient extends SubmissionClientBase {
-  protected async fetch<T>(url: string, options: FetchOptions): Promise<Response<T>> {
+  protected async fetch(url: string, options: FetchOptions): Promise<Response> {
     // TODO: Figure out how to set a 10000 timeout.
     const requestOptions: RequestInit = {
       method: options.method,
@@ -23,7 +23,8 @@ export class BrowserFetchSubmissionClient extends SubmissionClientBase {
     }
 
     const response = await fetch(url, requestOptions);
+    const rateLimitRemaining: number = parseInt(response.headers.get(this.RateLimitRemainingHeader), 10);
     const settingsVersion: number = parseInt(response.headers.get(this.ConfigurationVersionHeader), 10);
-    return new Response(response.status, response.statusText, settingsVersion, response.ok ? await response.json() : await response.text())
+    return new Response(response.status, response.statusText, rateLimitRemaining, settingsVersion, await response.text())
   }
 }

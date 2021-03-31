@@ -11,5 +11,5 @@ export interface IEventQueue {
   /** Suspends processing of events for a specific duration */
   suspendProcessing(durationInMinutes?: number, discardFutureQueuedItems?: boolean, clearQueue?: boolean): void;
   // TODO: See if this makes sense.
-  onEventsPosted(handler: (events: Event[], response: Response<void>) => void): void;
+  onEventsPosted(handler: (events: Event[], response: Response) => void): void;
 }
