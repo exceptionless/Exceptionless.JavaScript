@@ -14,11 +14,11 @@ import { IEnvironmentInfoCollector } from "../services/IEnvironmentInfoCollector
 import { IErrorParser } from "../services/IErrorParser.js";
 import { IModuleCollector } from "../services/IModuleCollector.js";
 import { IRequestInfoCollector } from "../services/IRequestInfoCollector.js";
-import { InMemoryStorageProvider } from "../storage/InMemoryStorageProvider.js";
-import { IStorageProvider } from "../storage/IStorageProvider.js";
 import { ISubmissionClient } from "../submission/ISubmissionClient.js";
 import { guid } from "../Utils.js";
 import { KnownEventDataKeys } from "../models/Event.js";
+import { InMemoryStorage } from "../storage/InMemoryStorage.js";
+import { IStorage } from "../storage/IStorage.js";
 
 export class Configuration {
   constructor() {
@@ -26,7 +26,7 @@ export class Configuration {
     this.services = new Proxy({
       lastReferenceIdManager: new DefaultLastReferenceIdManager(),
       log: new NullLog(),
-      storage: new InMemoryStorageProvider(),
+      storage: new InMemoryStorage(),
       queue: new DefaultEventQueue(this)
     }, this.subscriberHandler);
 
@@ -67,7 +67,7 @@ export class Configuration {
     moduleCollector?: IModuleCollector,
     requestInfoCollector?: IRequestInfoCollector,
     submissionClient?: ISubmissionClient,
-    storage: IStorageProvider,
+    storage: IStorage,
     queue: IEventQueue
   };
 

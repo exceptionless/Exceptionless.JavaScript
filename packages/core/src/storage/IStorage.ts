@@ -1,8 +1,8 @@
-import { IStorageItem } from "./IStorageItem.js";
-
 export interface IStorage {
-  save(value: any): number;
-  get(limit?: number): IStorageItem[];
-  remove(timestamp: number): void;
-  clear(): void;
+  readonly length: Promise<number>;
+  clear(): Promise<void>;
+  getItem(key: string): Promise<string | null>;
+  key(index: number): Promise<string | null>;
+  removeItem(key: string): Promise<void>;
+  setItem(key: string, value: string): Promise<void>;
 }

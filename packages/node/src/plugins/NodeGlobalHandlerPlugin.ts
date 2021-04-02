@@ -4,8 +4,6 @@ import {
   PluginContext
 } from "@exceptionless/core";
 
-import { addListener } from "process";
-
 export class NodeGlobalHandlerPlugin implements IEventPlugin {
   public priority: number = 100;
   public name: string = "NodeGlobalHandlerPlugin";
@@ -20,12 +18,12 @@ export class NodeGlobalHandlerPlugin implements IEventPlugin {
     this._client = context.client;
     Error.stackTraceLimit = 50;
 
-    addListener("uncaughtException", async (error: Error) => {
-      await this._client.submitUnhandledException(error, "uncaughtException");
+    process.addListener("uncaughtException", (error: Error) => {
+      void this._client?.submitUnhandledException(error, "uncaughtException");
     });
 
-    addListener("unhandledRejection", async (error: Error) => {
-      await this._client.submitUnhandledException(error, "unhandledRejection");
+    process.addListener("unhandledRejection", (reason: unknown | null | undefined, promise: Promise<any>) => {
+      void this._client?.submitUnhandledException(<Error>reason, "unhandledRejection");
     });
 
     return Promise.resolve();

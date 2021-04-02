@@ -50,11 +50,7 @@ export type { IModuleCollector } from "./services/IModuleCollector.js";
 export type { IRequestInfoCollector } from "./services/IRequestInfoCollector.js";
 
 export { InMemoryStorage } from "./storage/InMemoryStorage.js";
-export { InMemoryStorageProvider } from "./storage/InMemoryStorageProvider.js";
 export type { IStorage } from "./storage/IStorage.js";
-export type { IStorageItem } from "./storage/IStorageItem.js";
-export type { IStorageProvider } from "./storage/IStorageProvider.js";
-export { KeyValueStorageBase } from "./storage/KeyValueStorageBase.js";
 
 export type { ISubmissionClient } from "./submission/ISubmissionClient.js";
 export { Response } from "./submission/Response.js";

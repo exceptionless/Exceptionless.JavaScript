@@ -2,7 +2,6 @@ import { Configuration } from "../configuration/Configuration.js";
 import { ILog } from "../logging/ILog.js";
 import { Event } from "../models/Event.js";
 import { IEventQueue } from "../queue/IEventQueue.js";
-import { IStorageItem } from "../storage/IStorageItem.js";
 import { Response } from "../submission/Response.js";
 
 export class DefaultEventQueue implements IEventQueue {
@@ -251,7 +250,7 @@ export class DefaultEventQueue implements IEventQueue {
     this.suspendProcessing();
   }
 
-  private removeEvents(events: IStorageItem[]) {
+  private removeEvents(events: string[]) {
     for (let index = 0; index < (events || []).length; index++) {
       this.config.services.storage.queue.remove(events[index].timestamp);
     }
