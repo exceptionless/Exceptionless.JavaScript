@@ -1,47 +1,37 @@
 import { IStorage } from "./IStorage.js";
-import { IStorageItem } from "./IStorageItem.js";
 
 export class InMemoryStorage implements IStorage {
-  private maxItems: number;
-  private items: IStorageItem[] = [];
-  private lastTimestamp: number = 0;
+  private items = new Map<string, string>();
 
-  constructor(maxItems: number) {
-    this.maxItems = maxItems;
+  constructor(private maxItems: number = 250) { }
+
+  public get length(): Promise<number> {
+    return Promise.resolve(this.items.size);
   }
 
-  public save(value: any): number {
-    if (!value) {
-      return null;
+  public clear(): Promise<void> {
+    this.items.clear();
+    return Promise.resolve();
+  }
+
+  public getItem(key: string): Promise<string> {
+    return Promise.resolve(this.items.get(key));
+  }
+
+  public key(index: number): Promise<string> {
+    const keys = Array.from(this.items.keys())
+    return Promise.resolve(keys[index]);
+  }
+
+  public removeItem(key: string): Promise<void> {
+    this.items.delete(key);
+    return Promise.resolve();
+  }
+
+  public async setItem(key: string, value: string): Promise<void> {
+    this.items.set(key, value);
+    while (this.items.size > this.maxItems) {
+      await this.removeItem(await this.key(0));
     }
-
-    const items = this.items;
-    const timestamp = Math.max(Date.now(), this.lastTimestamp + 1);
-    const item = { timestamp, value };
-
-    if (items.push(item) > this.maxItems) {
-      items.shift();
-    }
-
-    this.lastTimestamp = timestamp;
-    return item.timestamp;
-  }
-
-  public get(limit?: number): IStorageItem[] {
-    return this.items.slice(0, limit);
-  }
-
-  public remove(timestamp: number): void {
-    const items = this.items;
-    for (let i = 0; i < items.length; i++) {
-      if (items[i].timestamp === timestamp) {
-        items.splice(i, 1);
-        return;
-      }
-    }
-  }
-
-  public clear(): void {
-    this.items = [];
   }
 }

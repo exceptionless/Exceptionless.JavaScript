@@ -27,14 +27,14 @@ export class NodeEnvironmentInfoCollector implements IEnvironmentInfoCollector {
   public getEnvironmentInfo(context: EventPluginContext): EnvironmentInfo {
     function getIpAddresses(): string {
       const ips: string[] = [];
-      const interfaces = networkInterfaces();
-      Object.keys(interfaces).forEach((name) => {
-        interfaces[name].forEach((network: NetworkInterfaceInfo) => {
-          if ("IPv4" === network.family && !network.internal) {
+
+      for (const ni of Object.values(networkInterfaces())) {
+        for (const network of ni || []) {
+          if (!network.internal && "IPv4" === network.family) {
             ips.push(network.address);
           }
-        });
-      });
+        }
+      }
 
       return ips.join(", ");
     }

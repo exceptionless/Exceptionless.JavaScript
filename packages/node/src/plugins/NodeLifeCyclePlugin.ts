@@ -4,8 +4,6 @@ import {
   PluginContext
 } from "@exceptionless/core";
 
-import { on } from "process";
-
 export class NodeLifeCyclePlugin implements IEventPlugin {
   public priority: number = 105;
   public name: string = "NodeLifeCyclePlugin";
@@ -19,13 +17,13 @@ export class NodeLifeCyclePlugin implements IEventPlugin {
 
     this._client = context.client;
 
-    on("beforeExit", async (code: number) => {
-      const message: string = this.getExitCodeReason(code);
-      if (message !== null) {
-        await this._client.submitLog("beforeExit", message, "Error");
+    process.on("beforeExit", (code: number) => {
+      const message = this.getExitCodeReason(code);
+      if (message) {
+        void this._client?.submitLog("beforeExit", message, "Error");
       }
 
-      await this._client.suspend();
+      void this._client?.suspend();
       // Application will now exit.
     });
 
