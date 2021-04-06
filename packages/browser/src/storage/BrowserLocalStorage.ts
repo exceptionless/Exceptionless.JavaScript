@@ -1,48 +1,50 @@
-import { KeyValueStorageBase } from "@exceptionless/core";
+import { IStorage } from "@exceptionless/core";
 
-export class BrowserLocalStorage extends KeyValueStorageBase {
-  private prefix: string;
+export class BrowserLocalStorage implements IStorage {
+  constructor(private prefix: string = "exceptionless:") { }
 
-  public static isAvailable(): boolean {
-    try {
-      const storage = window.localStorage;
-      const x = "__storage_test__";
-      storage.setItem(x, x);
-      storage.removeItem(x);
-      return true;
-    } catch (e) {
-      return false;
+  public length(): Promise<number> {
+    return Promise.resolve(this.getKeys().length);
+  }
+
+  public clear(): Promise<void> {
+    for (const key of this.getKeys()) {
+      window.localStorage.removeItem(key);
     }
+
+    return Promise.resolve();
   }
 
-  constructor(namespace: string, prefix: string = "com.exceptionless.", maxItems: number = 20) {
-    super(maxItems);
-
-    this.prefix = prefix + namespace + "-";
+  public getItem(key: string): Promise<string> {
+    return Promise.resolve(window.localStorage.getItem(this.getKey(key)));
   }
 
-  public writeValue(key: string, value: string): void {
-    window.localStorage.setItem(key, value);
+  public key(index: number): Promise<string> {
+    const keys = this.getKeys();
+    return Promise.resolve(keys[index]);
   }
 
-  public readValue(key: string): string {
-    return window.localStorage.getItem(key);
+  public keys(): Promise<string[]> {
+    return Promise.resolve(this.getKeys());
   }
 
-  public removeValue(key: string): void {
-    window.localStorage.removeItem(key);
+  public removeItem(key: string): Promise<void> {
+    window.localStorage.removeItem(this.getKey(key));
+    return Promise.resolve();
   }
 
-  public getAllKeys(): string[] {
+  public setItem(key: string, value: string): Promise<void> {
+    window.localStorage.setItem(this.getKey(key), value);
+    return Promise.resolve();
+  }
+
+  private getKeys(): string[] {
     return Object.keys(window.localStorage)
-      .filter((key) => key.indexOf(this.prefix) === 0);
+      .filter(key => key.startsWith(this.prefix))
+      .map(key => key?.substr(this.prefix.length));
   }
 
-  public getKey(timestamp: number): string {
-    return this.prefix + timestamp;
-  }
-
-  public getTimestamp(key: string): number {
-    return parseInt(key.substr(this.prefix.length), 10);
+  private getKey(key: string): string {
+    return this.prefix + key;
   }
 }

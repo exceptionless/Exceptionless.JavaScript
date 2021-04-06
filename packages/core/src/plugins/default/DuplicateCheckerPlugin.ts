@@ -25,14 +25,13 @@ export class DuplicateCheckerPlugin implements IEventPlugin {
 
   public startup(context: PluginContext): Promise<void> {
     this._intervalId = clearInterval(this._intervalId);
-    this._intervalId = setInterval(() => this.submitEvents(), this._interval);
+    this._intervalId = setInterval(() => void this.submitEvents(), this._interval);
     return Promise.resolve();
   }
 
-  public suspend(context: PluginContext): Promise<void> {
+  public async suspend(context: PluginContext): Promise<void> {
     this._intervalId = clearInterval(this._intervalId);
-    this.submitEvents();
-    return Promise.resolve();
+    await this.submitEvents();
   }
 
   public run(context: EventPluginContext): Promise<void> {
@@ -90,9 +89,9 @@ export class DuplicateCheckerPlugin implements IEventPlugin {
     return Promise.resolve();
   }
 
-  private submitEvents() {
+  private async submitEvents(): Promise<void> {
     while (this._mergedEvents.length > 0) {
-      this._mergedEvents.shift().resubmit();
+      await this._mergedEvents.shift().resubmit();
     }
   }
 }
@@ -113,16 +112,16 @@ class MergedEvent {
     this._count = count;
   }
 
-  public incrementCount(count: number) {
+  public incrementCount(count: number): void {
     this._count += count;
   }
 
-  public resubmit() {
+  public async resubmit(): Promise<void> {
     this._context.event.count = this._count;
-    this._context.client.config.services.queue.enqueue(this._context.event);
+    await this._context.client.config.services.queue.enqueue(this._context.event);
   }
 
-  public updateDate(date: Date) {
+  public updateDate(date: Date): void {
     if (date > this._context.event.date) {
       this._context.event.date = date;
     }

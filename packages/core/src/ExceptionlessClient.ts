@@ -25,7 +25,7 @@ export class ExceptionlessClient {
         configurationOrApiKey(this.config);
       }
 
-      this.config.services.queue.onEventsPosted(() => this.updateSettingsTimer());
+      this.config.services.queue.onEventsPosted(() => Promise.resolve(this.updateSettingsTimer()));
     }
 
     this.updateSettingsTimer(configurationOrApiKey ? 5000 : 0);
@@ -208,7 +208,7 @@ export class ExceptionlessClient {
       ev.date = new Date();
     }
 
-    config.services.queue.enqueue(ev);
+    await config.services.queue.enqueue(ev);
 
     if (ev.reference_id && ev.reference_id.length > 0) {
       context.log.info(`Setting last reference id "${ev.reference_id}"`);

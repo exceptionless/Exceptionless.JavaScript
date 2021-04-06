@@ -3,9 +3,9 @@ import { IStorage } from "./IStorage.js";
 export class InMemoryStorage implements IStorage {
   private items = new Map<string, string>();
 
-  constructor(private maxItems: number = 250) { }
+  constructor() { }
 
-  public get length(): Promise<number> {
+  public length(): Promise<number> {
     return Promise.resolve(this.items.size);
   }
 
@@ -18,9 +18,13 @@ export class InMemoryStorage implements IStorage {
     return Promise.resolve(this.items.get(key));
   }
 
-  public key(index: number): Promise<string> {
-    const keys = Array.from(this.items.keys())
+  public async key(index: number): Promise<string> {
+    const keys = await this.keys();
     return Promise.resolve(keys[index]);
+  }
+
+  public keys(): Promise<string[]> {
+    return Promise.resolve(Array.from(this.items.keys()));
   }
 
   public removeItem(key: string): Promise<void> {
@@ -28,10 +32,8 @@ export class InMemoryStorage implements IStorage {
     return Promise.resolve();
   }
 
-  public async setItem(key: string, value: string): Promise<void> {
+  public setItem(key: string, value: string): Promise<void> {
     this.items.set(key, value);
-    while (this.items.size > this.maxItems) {
-      await this.removeItem(await this.key(0));
-    }
+    return Promise.resolve();
   }
 }
