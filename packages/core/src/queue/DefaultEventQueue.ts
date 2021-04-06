@@ -4,15 +4,18 @@ import { Event } from "../models/Event.js";
 import { IEventQueue } from "../queue/IEventQueue.js";
 import { Response } from "../submission/Response.js";
 
+interface EventQueueItem {
+  file: string,
+  event: Event
+}
+
 export class DefaultEventQueue implements IEventQueue {
   /**
    * A list of handlers that will be fired when events are submitted.
    * @type {Array}
    * @private
    */
-  private _handlers: Array<
-    (events: Event[], response: Response) => void
-  > = [];
+  private _handlers: Array<(events: Event[], response: Response) => Promise<void>> = [];
 
   /**
    * Suspends processing until the specified time.
@@ -42,10 +45,19 @@ export class DefaultEventQueue implements IEventQueue {
    */
   private _queueTimerId: any;
 
-  constructor(private config: Configuration) {}
+  private readonly QUEUE_PREFIX: string = "q:";
+  private _lastFileTimestamp: number = 0;
+  private _queue: EventQueueItem[] = [];
+  private _loadPersistedEvents = true;
+
+  // TODO: Implement support for max queue items.
+  constructor(
+    private config: Configuration,
+    private maxItems: number = 250
+  ) { }
 
   /** Enqueue an event and resumes any queue timers */
-  public enqueue(event: Event): void {
+  public async enqueue(event: Event): Promise<void> {
     const eventWillNotBeQueued: string = "The event will not be queued."; // optimization for minifier.
     const config: Configuration = this.config; // Optimization for minifier.
     const log: ILog = config.services.log; // Optimization for minifier.
@@ -67,18 +79,14 @@ export class DefaultEventQueue implements IEventQueue {
 
     this.ensureQueueTimer();
 
-    const timestamp = config.services.storage.queue.save(event);
-    const logText = `type=${event.type} ${event.reference_id ? "refid=" + event.reference_id : ""} source=${event.source} message=${event.message}`;
-    if (timestamp) {
-      log.info(`Enqueuing event: ${timestamp} ${logText}`);
-    } else {
-      log.error(`Could not enqueue event: ${logText}`);
-    }
+    const file = await this.enqueueEvent(event);
+    const logText = `type=${event.type} ${event.reference_id ? "reference_id=" + event.reference_id : ""} source=${event.source} message=${event.message}`;
+    log.info(`Enqueued event: ${file} (${logText})`);
   }
 
   /** Processes all events in the queue and resumes any queue timers */
   public async process(): Promise<void> {
-    const queueNotProcessed: string = "The queue will not be processed."; // optimization for minifier.
+    const queueNotProcessed: string = "The queue will not be processed"; // optimization for minifier.
     const { log } = this.config.services;
 
     if (this._processingQueue) {
@@ -100,21 +108,30 @@ export class DefaultEventQueue implements IEventQueue {
     this.ensureQueueTimer();
 
     try {
-      const events = this.config.services.storage.queue.get(this.config.submissionBatchSize);
-      if (!events || events.length === 0) {
+      if (this._loadPersistedEvents) {
+        if (this.config.usePersistedQueueStorage) {
+          await this.loadEvents();
+        }
+
+        this._loadPersistedEvents = false;
+      }
+
+      const items = this._queue.slice(0, this.config.submissionBatchSize);
+      if (!items || items.length === 0) {
         this._processingQueue = false;
         return;
       }
 
-      log.info(`Sending ${events.length} events to ${this.config.serverUrl}`);
-      const response = await this.config.services.submissionClient.submitEvents(events.map((e) => e.value));
-      this.processSubmissionResponse(response, events);
-      this.eventsPosted(events.map((e) => e.value), response);
-      log.trace("Finished processing queue.");
+      log.info(`Sending ${items.length} events to ${this.config.serverUrl}`);
+      const events = items.map(i => i.event);
+      const response = await this.config.services.submissionClient.submitEvents(events);
+      await this.processSubmissionResponse(response, items);
+      await this.eventsPosted(events, response);
+      log.trace("Finished processing queue");
       this._processingQueue = false;
     } catch (ex) {
       log.error(`Error processing queue: ${ex}`);
-      this.suspendProcessing();
+      await this.suspendProcessing();
       this._processingQueue = false;
     }
   }
@@ -126,7 +143,7 @@ export class DefaultEventQueue implements IEventQueue {
   }
 
   /** Suspends processing of events for a specific duration */
-  public suspendProcessing(durationInMinutes?: number, discardFutureQueuedItems?: boolean, clearQueue?: boolean): void {
+  public async suspendProcessing(durationInMinutes?: number, discardFutureQueuedItems?: boolean, clearQueue?: boolean): Promise<void> {
     const config: Configuration = this.config; // Optimization for minifier.
 
     const currentDate = new Date();
@@ -143,20 +160,20 @@ export class DefaultEventQueue implements IEventQueue {
 
     if (clearQueue) {
       // Account is over the limit and we want to ensure that the sample size being sent in will contain newer errors.
-      config.services.storage.queue.clear();
+      await this.removeEvents(this._queue);
     }
   }
 
   // TODO: See if this makes sense.
-  public onEventsPosted(handler: (events: Event[], response: Response) => void): void {
+  public onEventsPosted(handler: (events: Event[], response: Response) => Promise<void>): void {
     handler && this._handlers.push(handler);
   }
 
-  private eventsPosted(events: Event[], response: Response) {
+  private async eventsPosted(events: Event[], response: Response): Promise<void> {
     const handlers = this._handlers; // optimization for minifier.
     for (const handler of handlers) {
       try {
-        handler(events, response);
+        await handler(events, response);
       } catch (ex) {
         this.config.services.log.error(`Error calling onEventsPosted handler: ${ex}`);
       }
@@ -186,44 +203,44 @@ export class DefaultEventQueue implements IEventQueue {
     }
   }
 
-  private processSubmissionResponse(response: Response, events: IStorageItem[]): void {
+  private async processSubmissionResponse(response: Response, items: EventQueueItem[]): Promise<void> {
     const noSubmission: string = "The event will not be submitted"; // Optimization for minifier.
     const config: Configuration = this.config; // Optimization for minifier.
     const log: ILog = config.services.log; // Optimization for minifier.
 
     if (response.status === 202) {
-      log.info(`Sent ${events.length} events`);
-      this.removeEvents(events);
+      log.info(`Sent ${items.length} events`);
+      await this.removeEvents(items);
       return;
     }
 
     if (response.status === 429 || response.rateLimitRemaining === 0 || response.status === 503) {
       // You are currently over your rate limit or the servers are under stress.
       log.error("Server returned service unavailable");
-      this.suspendProcessing();
+      await this.suspendProcessing();
       return;
     }
 
     if (response.status === 402) {
       // If the organization over the rate limit then discard the event.
       log.info("Too many events have been submitted, please upgrade your plan");
-      this.suspendProcessing(null, true, true);
+      await this.suspendProcessing(null, true, true);
       return;
     }
 
     if (response.status === 401 || response.status === 403) {
       // The api key was suspended or could not be authorized.
       log.info(`Unable to authenticate, please check your configuration. ${noSubmission}`);
-      this.suspendProcessing(15);
-      this.removeEvents(events);
+      await this.suspendProcessing(15);
+      await this.removeEvents(items);
       return;
     }
 
     if (response.status === 400 || response.status === 404) {
       // The service end point could not be found.
       log.error(`Error while trying to submit data: ${response.message}`);
-      this.suspendProcessing(60 * 4);
-      this.removeEvents(events);
+      await this.suspendProcessing(60 * 4);
+      await this.removeEvents(items);
       return;
     }
 
@@ -231,28 +248,65 @@ export class DefaultEventQueue implements IEventQueue {
       const message = "Event submission discarded for being too large.";
       if (config.submissionBatchSize > 1) {
         log.error(`${message} Retrying with smaller batch size.`);
-        config.submissionBatchSize = Math.max(
-          1,
-          Math.round(config.submissionBatchSize / 1.5),
-        );
+        config.submissionBatchSize = Math.max(1, Math.round(config.submissionBatchSize / 1.5));
       } else {
         log.error(`${message} ${noSubmission}`);
-        this.removeEvents(events);
+        await this.removeEvents(items);
       }
 
       return;
     }
 
-    log.error(
-      `Error submitting events: ${response.message ||
-        "Please check the network tab for more info."}`,
-    );
-    this.suspendProcessing();
+    log.error(`Error submitting events: ${response.message || "Please check the network tab for more info."}`);
+    await this.suspendProcessing();
   }
 
-  private removeEvents(events: string[]) {
-    for (let index = 0; index < (events || []).length; index++) {
-      this.config.services.storage.queue.remove(events[index].timestamp);
+  private async loadEvents(): Promise<void> {
+    if (this.config.usePersistedQueueStorage) {
+      try {
+        const storage = this.config.services.storage;
+        const files: string[] = await storage.keys();
+
+        for (const file of files) {
+          if (file?.startsWith(this.QUEUE_PREFIX)) {
+            const json = await storage.getItem(file);
+            this._queue.push({ file, event: JSON.parse(json) });
+          }
+        }
+      } catch (ex) {
+        this.config.services.log.error(`Error loading queue items from storage: ${ex.message}`)
+      }
     }
+  }
+
+  private async enqueueEvent(event: Event): Promise<string> {
+    this._lastFileTimestamp = Math.max(Date.now(), this._lastFileTimestamp + 1);
+    const file = `${this.QUEUE_PREFIX}${this._lastFileTimestamp}`;
+
+    this._queue.push({ file, event });
+    if (this.config.usePersistedQueueStorage) {
+      try {
+        await this.config.services.storage.setItem(file, JSON.stringify(event));
+      } catch (ex) {
+        this.config.services.log.error(`Error saving queue item to storage: ${ex.message}`)
+      }
+    }
+
+    return file;
+  }
+
+  private async removeEvents(items: EventQueueItem[]): Promise<void> {
+    const files = items.map(i => i.file);
+    if (this.config.usePersistedQueueStorage) {
+      for (const file of files) {
+        try {
+          await this.config.services.storage.removeItem(file);
+        } catch (ex) {
+          this.config.services.log.error(`Error removing queue item from storage: ${ex.message}`)
+        }
+      }
+    }
+
+    this._queue = this._queue.filter(i => !files.includes(i.file));
   }
 }

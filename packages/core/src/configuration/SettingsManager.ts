@@ -10,29 +10,30 @@ export class ClientSettings {
 }
 
 export class SettingsManager {
+  private static readonly SETTINGS_FILE_NAME: string = "settings.json";
   private static _isUpdatingSettings: boolean = false;
 
-  public static applySavedServerSettings(config: Configuration): void {
+  public static async applySavedServerSettings(config: Configuration): Promise<void> {
     if (!config?.isValid) {
       return;
     }
 
-    const savedSettings = this.getSavedServerSettings(config);
+    const savedSettings = await this.getSavedServerSettings(config);
     config.services.log.trace(`Applying saved settings: v${savedSettings.version}`);
     config.settings = merge(config.settings, savedSettings.settings);
   }
 
-  public static getVersion(config: Configuration): number {
+  public static async getVersion(config: Configuration): Promise<number> {
     if (!config?.isValid) {
       return 0;
     }
 
-    const savedSettings = this.getSavedServerSettings(config);
+    const savedSettings = await this.getSavedServerSettings(config);
     return savedSettings.version || 0;
   }
 
   public static async checkVersion(version: number, config: Configuration): Promise<void> {
-    const currentVersion: number = this.getVersion(config);
+    const currentVersion: number = await this.getVersion(config);
     if (version <= currentVersion) {
       return;
     }
@@ -54,7 +55,7 @@ export class SettingsManager {
     }
 
     if (!version || version < 0) {
-      version = this.getVersion(config);
+      version = await this.getVersion(config);
     }
 
     log.trace(`Checking for updated settings from: v${version}`);
@@ -76,7 +77,7 @@ export class SettingsManager {
 
       // TODO: Store snapshot of settings after reading from config and attributes and use that to revert to defaults.
       // Remove any existing server settings that are not in the new server settings.
-      const savedServerSettings = SettingsManager.getSavedServerSettings(config);
+      const savedServerSettings = await SettingsManager.getSavedServerSettings(config);
       for (const key in savedServerSettings) {
         if (data.settings[key]) {
           continue;
@@ -86,17 +87,17 @@ export class SettingsManager {
       }
 
       config.settings = settings;
-      config.services.storage.settings.save(response.data);
+      await config.services.storage.setItem(SettingsManager.SETTINGS_FILE_NAME, data);
       log.trace(`Updated settings: v${data.version}`);
     } finally {
       this._isUpdatingSettings = false;
     }
   }
 
-  private static getSavedServerSettings(config: Configuration): ClientSettings {
-    const item = config.services.storage.settings.get()[0];
-    if (item && item.value && item.value.version && item.value.settings) {
-      return item.value;
+  private static async getSavedServerSettings(config: Configuration): Promise<ClientSettings> {
+    const settings = await config.services.storage.getItem(SettingsManager.SETTINGS_FILE_NAME);
+    if (settings) {
+      return JSON.parse(settings) as ClientSettings;
     }
 
     return { version: 0, settings: {} };

@@ -1,79 +1,67 @@
 import {
-  existsSync,
   mkdirSync,
-  readdirSync,
-  readFileSync,
-  unlinkSync,
-  writeFileSync
 } from "fs";
 
 import {
-  basename,
+  readdir,
+  readFile,
+  unlink,
+  writeFile
+} from "fs/promises";
+
+import {
   dirname,
   join,
-  resolve,
-  sep
+  resolve
 } from "path";
 
 import { argv } from "process";
 
-import { KeyValueStorageBase } from "@exceptionless/core";
+import { IStorage } from "@exceptionless/core";
 
-export class NodeFileStorage extends KeyValueStorageBase {
+export class NodeFileStorage implements IStorage {
   private directory: string;
 
-  constructor(namespace: string, folder?: string, maxItems: number = 20) {
-    super(maxItems);
-
+  constructor(folder?: string) {
     if (!folder) {
       folder = argv && argv.length > 1 ? join(dirname(argv[1]), ".exceptionless") : ".exceptionless";
     }
 
-    const subFolder = join(folder, namespace);
-    this.directory = resolve(subFolder);
-
-    this.mkdir(this.directory);
+    this.directory = resolve(folder);
+    mkdirSync(this.directory, { recursive: true });
   }
 
-  public writeValue(key: string, value: string): void {
-    writeFileSync(key, value);
+  public async length(): Promise<number> {
+    const keys = await this.keys();
+    return keys.length;
   }
 
-  public readValue(key: string): string {
-    return readFileSync(key, "utf8");
-  }
-
-  public removeValue(key: string): void {
-    unlinkSync(key);
-  }
-
-  public getAllKeys(): string[] {
-    return readdirSync(this.directory).map((file) => join(this.directory, file));
-  }
-
-  public getKey(timestamp: number): string {
-    return join(this.directory, `${timestamp}.json`);
-  }
-
-  public getTimestamp(key: string): number {
-    return parseInt(basename(key, ".json"), 10);
-  }
-
-  private mkdir(directory: string): void {
-    const dirs = directory.split(sep);
-    let root = "";
-
-    while (dirs.length > 0) {
-      const dir = dirs.shift();
-      if (dir === "") {
-        root = sep;
-      }
-
-      if (!existsSync(root + dir)) {
-        mkdirSync(root + dir);
-      }
-
-      root += dir + sep;
+  public async clear(): Promise<void> {
+    for (const key of await this.keys()) {
+      await this.removeItem(key);
     }
+
+    return Promise.resolve();
+  }
+
+  public async getItem(key: string): Promise<string> {
+    return await readFile(join(this.directory, key), "utf8");
+  }
+
+  public async key(index: number): Promise<string> {
+    const keys = await this.keys();
+    return Promise.resolve(keys[index]);
+  }
+
+  public async keys(): Promise<string[]> {
+    return await readdir(this.directory);
+  }
+
+  public async removeItem(key: string): Promise<void> {
+    await unlink(join(this.directory, key));
+  }
+
+  public async setItem(key: string, value: string): Promise<void> {
+    await writeFile(join(this.directory, key), value);
   }
 }

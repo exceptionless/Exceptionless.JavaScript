@@ -7,20 +7,15 @@ import {
   rmSync
 } from "fs";
 
-const directory: string = "./test-data";
-const nodeFileStorageFactory = (maxItems?: number): IStorage => {
-  return new NodeFileStorage("test", directory, maxItems);
-};
-
 function resetStorageDirectory() {
   rmSync(directory, { recursive: true, force: true });
   mkdirSync(directory);
 }
 
+const directory: string = "./test/data";
 describeStorage(
   "NodeFileStorage",
-  nodeFileStorageFactory,
+  (): IStorage => new NodeFileStorage(directory),
   resetStorageDirectory,
-  resetStorageDirectory,
-  true
+  resetStorageDirectory
 );

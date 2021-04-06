@@ -85,30 +85,26 @@ export class Configuration {
   /**
    * The API key that will be used when sending events to the server.
    * @type {string}
-   * @private
    */
-  private _apiKey: string;
+  public apiKey: string;
 
   /**
    * The server url that all events will be sent to.
    * @type {string}
-   * @private
    */
   private _serverUrl: string = "https://collector.exceptionless.io";
 
   /**
    * The config server url that all configuration will be retrieved from.
    * @type {string}
-   * @private
    */
-  private _configServerUrl: string = "https://config.exceptionless.io";
+  public configServerUrl: string = "https://config.exceptionless.io";
 
   /**
    * The heartbeat server url that all heartbeats will be sent to.
    * @type {string}
-   * @private
    */
-  private _heartbeatServerUrl: string = "https://heartbeat.exceptionless.io";
+  public heartbeatServerUrl: string = "https://heartbeat.exceptionless.io";
 
   /**
    * How often the client should check for updated server settings when idle. The default is every 2 minutes.
@@ -154,22 +150,6 @@ export class Configuration {
   private _subscribers: Array<(config: Configuration) => void> = [];
 
   /**
-   * The API key that will be used when sending events to the server.
-   * @returns {string}
-   */
-  public get apiKey(): string {
-    return this._apiKey;
-  }
-
-  /**
-   * The API key that will be used when sending events to the server.
-   * @param value
-   */
-  public set apiKey(value: string) {
-    this._apiKey = value || null;
-  }
-
-  /**
    * Returns true if the apiKey is valid.
    * @returns {boolean}
    */
@@ -192,44 +172,8 @@ export class Configuration {
   public set serverUrl(value: string) {
     if (value) {
       this._serverUrl = value;
-      this._configServerUrl = value;
-      this._heartbeatServerUrl = value;
-    }
-  }
-
-  /**
-   * The config server url that all configuration will be retrieved from.
-   * @returns {string}
-   */
-  public get configServerUrl(): string {
-    return this._configServerUrl;
-  }
-
-  /**
-   * The config server url that all configuration will be retrieved from.
-   * @param value
-   */
-  public set configServerUrl(value: string) {
-    if (value) {
-      this._configServerUrl = value;
-    }
-  }
-
-  /**
-   * The heartbeat server url that all heartbeats will be sent to.
-   * @returns {string}
-   */
-  public get heartbeatServerUrl(): string {
-    return this._heartbeatServerUrl;
-  }
-
-  /**
-   * The heartbeat server url that all heartbeats will be sent to.
-   * @param value
-   */
-  public set heartbeatServerUrl(value: string) {
-    if (value) {
-      this._heartbeatServerUrl = value;
+      this.configServerUrl = value;
+      this.heartbeatServerUrl = value;
     }
   }
 
@@ -546,10 +490,7 @@ export class Configuration {
   public setUserIdentity(userInfo: UserInfo): void;
   public setUserIdentity(identity: string): void;
   public setUserIdentity(identity: string, name: string): void;
-  public setUserIdentity(
-    userInfoOrIdentity: UserInfo | string,
-    name?: string,
-  ): void {
+  public setUserIdentity(userInfoOrIdentity: UserInfo | string, name?: string): void {
     const userInfo: UserInfo = typeof userInfoOrIdentity !== "string"
       ? userInfoOrIdentity
       : { identity: userInfoOrIdentity, name };
@@ -588,6 +529,14 @@ export class Configuration {
   public useReferenceIds(): void {
     this.addPlugin(new ReferenceIdPlugin());
   }
+
+
+  /**
+   * Writes events to storage on enqueue and removes them when submitted. (Defaults to false)
+   * This setting only works in environments that supports persisted storage.
+   * There is also a performance penalty of extra IO/serialization.
+   */
+  public usePersistedQueueStorage: boolean = false;
 
   // TODO: Support a min log level.
   public useDebugLogger(): void {
