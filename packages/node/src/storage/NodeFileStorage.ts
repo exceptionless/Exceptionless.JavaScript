@@ -45,12 +45,20 @@ export class NodeFileStorage implements IStorage {
   }
 
   public async getItem(key: string): Promise<string> {
-    return await readFile(join(this.directory, key), "utf8");
+    try {
+      return await readFile(join(this.directory, key), "utf8");
+    } catch (ex) {
+      if (ex.code === "ENOENT") {
+        return null;
+      }
+
+      throw ex;
+    }
   }
 
   public async key(index: number): Promise<string> {
     const keys = await this.keys();
-    return Promise.resolve(keys[index]);
+    return Promise.resolve(index < keys.length ? keys[index] : null);
   }
 
   public async keys(): Promise<string[]> {
@@ -58,7 +66,15 @@ export class NodeFileStorage implements IStorage {
   }
 
   public async removeItem(key: string): Promise<void> {
-    await unlink(join(this.directory, key));
+    try {
+      await unlink(join(this.directory, key));
+    } catch (ex) {
+      if (ex.code !== "ENOENT") {
+        throw ex;
+      }
+    }
+
+    return null;
   }
 
   public async setItem(key: string, value: string): Promise<void> {

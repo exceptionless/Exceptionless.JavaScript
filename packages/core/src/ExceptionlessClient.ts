@@ -26,42 +26,55 @@ export class ExceptionlessClient {
       }
 
       this.config.services.queue.onEventsPosted(() => Promise.resolve(this.updateSettingsTimer()));
+      await SettingsManager.applySavedServerSettings(this.config);
     }
 
-    this.updateSettingsTimer(configurationOrApiKey ? 5000 : 0);
+    this.updateSettingsTimer(!!configurationOrApiKey);
     await EventPluginManager.startup(new PluginContext(this));
-    await this.processQueue();
+    const { queue } = this.config.services;
+    await queue.startup();
+    if (this.config.usePersistedQueueStorage) {
+      // TODO: Can we schedule this as part of startup?
+      await queue.process();
+    }
   }
 
   /** Submit events, pause any timers and go into low power mode. */
   public async suspend(): Promise<void> {
     await EventPluginManager.suspend(new PluginContext(this));
-    await this.processQueue();
-    await this.config.services.queue.suspend();
-    this.updateSettingsTimer(0, -1);
+    const { queue } = this.config.services;
+    await queue.suspend();
+    await queue.process();
+    this.suspendSettingsTimer();
+  }
+
+  private suspendSettingsTimer(): void {
+    this._timeoutId = clearTimeout(this._timeoutId);
+    this._intervalId = clearInterval(this._intervalId);
   }
 
   public async processQueue(): Promise<void> {
     await this.config.services.queue.process();
   }
 
-  // TODO: Look into better async scheduling..
-  private updateSettingsTimer(initialDelay: number = 0, updateWhenIdleInterval?: number) {
-    this._timeoutId = clearTimeout(this._timeoutId);
-    this._intervalId = clearInterval(this._intervalId);
+  private updateSettingsTimer(startingUp: boolean = false) {
+    this.suspendSettingsTimer();
 
-    const interval = updateWhenIdleInterval || this.config.updateSettingsWhenIdleInterval;
+    const interval = this.config.updateSettingsWhenIdleInterval;
     if (interval > 0) {
+      let initialDelay: number = interval;
+      if (startingUp) {
+        initialDelay = this.config.settingsVersion > 0 ? 15000 : 5000;
+      }
+
       this.config.services.log.info(`Update settings every ${interval}ms (${initialDelay || 0}ms delay)`);
-      // TODO: Fix awaiting promise.
+      // TODO: Look into better async scheduling..
       const updateSettings = () => void SettingsManager.updateSettings(this.config);
-      if (initialDelay > 0) {
+      if (initialDelay < interval) {
         this._timeoutId = setTimeout(updateSettings, initialDelay);
       }
 
       this._intervalId = setInterval(updateSettings, interval);
-    } else {
-      this.config.services.log.info("Turning off update settings");
     }
   }
 

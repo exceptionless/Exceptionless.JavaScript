@@ -35,10 +35,11 @@ export class TextAreaLogger {
   }
 
   log(level, message) {
+    const formattedMessage = `${new Date().toISOString()} [${level}] ${message}`;
     if (this.element) {
-      this.element.innerHTML += `\n[${level}] ${message}`;
+      this.element.innerHTML += `\n${formattedMessage}`;
     } else {
-      this.messageBuffer.push(`[${level}] ${message}`)
+      this.messageBuffer.push(formattedMessage)
     }
   }
 }

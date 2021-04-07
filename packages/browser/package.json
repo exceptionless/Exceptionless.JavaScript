@@ -33,14 +33,24 @@
     ".": "./dist/index.js",
     "./package.json": "./package.json"
   },
+  "jest": {
+    "moduleFileExtensions": [
+      "js",
+      "ts"
+    ],
+    "moduleNameMapper": {
+      "^@exceptionless/(.*)$": "<rootDir>/../$1/src"
+    },
+    "preset": "ts-jest",
+    "resolver": "jest-ts-webcompat-resolver",
+    "testEnvironment": "jsdom"
+  },
   "scripts": {
     "build": "tsc -p tsconfig.json && esbuild src/index.ts --bundle --minify --sourcemap --target=es2020 --format=esm --outfile=dist/index.min.js",
     "watch": "tsc -p tsconfig.json -w --preserveWatchOutput",
     "test": "jest"
   },
-  "sideEffects": [
-    "dist/index.js"
-  ],
+  "sideEffects": false,
   "devDependencies": {
     "@jest/globals": "26.6.2",
     "esbuild": "0.8.49",

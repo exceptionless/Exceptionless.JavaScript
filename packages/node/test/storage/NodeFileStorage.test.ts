@@ -1,5 +1,5 @@
-import { describeStorage } from "../../../core/test/storage/InMemoryStorage.test.js";
-import { IStorage } from "../../../core/src/storage/IStorage.js";
+import { IStorage } from "@exceptionless/core";
+import { describeStorage } from "../../../core/test/storage/StorageTestBase.js";
 import { NodeFileStorage } from "../../src/storage/NodeFileStorage.js";
 
 import {

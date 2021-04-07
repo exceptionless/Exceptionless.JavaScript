@@ -81,6 +81,7 @@ export class Configuration {
    * the client and will be automatically updated from the server.
    */
   public settings: Record<string, string> = {};
+  public settingsVersion: number = 0;
 
   /**
    * The API key that will be used when sending events to the server.

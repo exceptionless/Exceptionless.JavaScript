@@ -2,10 +2,12 @@ import { Event } from "../models/Event.js";
 import { Response } from "../submission/Response.js";
 
 export interface IEventQueue {
-  /** Enqueue an event and resumes any queue timers */
+  /** Enqueue an event */
   enqueue(event: Event): Promise<void>;
-  /** Processes all events in the queue and resumes any queue timers */
+  /** Processes all events in the queue */
   process(): Promise<void>;
+  /** Starts queue timers */
+  startup(): Promise<void>;
   /** Suspends queue timers */
   suspend(): Promise<void>;
   /** Suspends processing of events for a specific duration */
