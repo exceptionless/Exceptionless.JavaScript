@@ -2,14 +2,14 @@ import { Exceptionless } from "../../node_modules/@exceptionless/browser/dist/in
 import { divide } from "./math.js";
 import { TextAreaLogger } from "./text-area-logger.js";
 
-Exceptionless.startup(c => {
+await Exceptionless.startup(c => {
   c.useDebugLogger();
   c.services.log = new TextAreaLogger("logs", c.services.log);
 
   c.apiKey = "LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw";
   c.serverUrl = "http://localhost:5000";
   c.updateSettingsWhenIdleInterval = 15000;
-  c.useLocalStorage();
+  c.usePersistedQueueStorage = true;
   c.setUserIdentity("12345678", "Blake");
   c.useSessions();
 

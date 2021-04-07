@@ -9,19 +9,19 @@ export class BrowserLocalStorage implements IStorage {
 
   public clear(): Promise<void> {
     for (const key of this.getKeys()) {
-      window.localStorage.removeItem(key);
+      localStorage.removeItem(this.getKey(key));
     }
 
     return Promise.resolve();
   }
 
   public getItem(key: string): Promise<string> {
-    return Promise.resolve(window.localStorage.getItem(this.getKey(key)));
+    return Promise.resolve(localStorage.getItem(this.getKey(key)));
   }
 
   public key(index: number): Promise<string> {
     const keys = this.getKeys();
-    return Promise.resolve(keys[index]);
+    return Promise.resolve(index < keys.length ? keys[index] : null);
   }
 
   public keys(): Promise<string[]> {
@@ -29,17 +29,17 @@ export class BrowserLocalStorage implements IStorage {
   }
 
   public removeItem(key: string): Promise<void> {
-    window.localStorage.removeItem(this.getKey(key));
+    localStorage.removeItem(this.getKey(key));
     return Promise.resolve();
   }
 
   public setItem(key: string, value: string): Promise<void> {
-    window.localStorage.setItem(this.getKey(key), value);
+    localStorage.setItem(this.getKey(key), value);
     return Promise.resolve();
   }
 
   private getKeys(): string[] {
-    return Object.keys(window.localStorage)
+    return Object.keys(localStorage)
       .filter(key => key.startsWith(this.prefix))
       .map(key => key?.substr(this.prefix.length));
   }

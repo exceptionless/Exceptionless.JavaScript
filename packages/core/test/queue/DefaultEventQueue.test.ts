@@ -9,6 +9,7 @@ describe("DefaultEventQueue", () => {
     config = new Configuration();
     config.apiKey = "UNIT_TEST_API_KEY";
     config.serverUrl = "http://server.localhost:5000";
+    config.usePersistedQueueStorage = true;
 
     expect(await config.services.storage.length()).toBe(0);
   });

@@ -3,7 +3,6 @@ import { Configuration } from "../../src/configuration/Configuration.js";
 describe("Configuration", () => {
   test("should override configuration defaults", () => {
     let config = new Configuration();
-    config.useDebugLogger();
     expect(config.apiKey).toBeUndefined();
 
     config.apiKey = "UNIT_TEST_API_KEY";
@@ -81,5 +80,17 @@ describe("Configuration", () => {
     expect(config.plugins[0].priority).toBe(1);
     expect(config.plugins[1].priority).toBe(2);
     expect(config.plugins[2].priority).toBe(3);
+  });
+
+  test("should call subscribe handler", done => {
+    const config = new Configuration();
+    expect(config.apiKey).toBeUndefined();
+
+    config.subscribe((configuration: Configuration) => {
+      expect(configuration.apiKey).not.toBeUndefined();
+      done();
+    });
+
+    config.apiKey = "UNIT_TEST_API_KEY";
   });
 });

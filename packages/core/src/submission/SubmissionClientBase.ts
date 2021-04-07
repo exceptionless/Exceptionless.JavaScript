@@ -56,11 +56,11 @@ export abstract class SubmissionClientBase implements ISubmissionClient {
     });
   }
 
-  protected async updateSettingsVersion(settingsVersion: number): Promise<void> {
-    if (!isNaN(settingsVersion)) {
-      await SettingsManager.checkVersion(settingsVersion, this.config);
-    } else {
+  protected async updateSettingsVersion(serverSettingsVersion: number): Promise<void> {
+    if (isNaN(serverSettingsVersion)) {
       this.config.services.log.error("No config version header was returned.");
+    } else if (serverSettingsVersion > this.config.settingsVersion) {
+      await SettingsManager.updateSettings(this.config);
     }
   }
 

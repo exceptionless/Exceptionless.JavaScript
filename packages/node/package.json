@@ -37,16 +37,15 @@
       "^@exceptionless/(.*)$": "<rootDir>/../$1/src"
     },
     "preset": "ts-jest",
-    "resolver": "jest-ts-webcompat-resolver"
+    "resolver": "jest-ts-webcompat-resolver",
+    "testEnvironment": "node"
   },
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "watch": "tsc -p tsconfig.json -w --preserveWatchOutput",
     "test": "jest"
   },
-  "sideEffects": [
-    "dist/index.js"
-  ],
+  "sideEffects": false,
   "devDependencies": {
     "@types/stack-trace": "0.0.29",
     "@jest/globals": "26.6.2",

@@ -3,11 +3,10 @@ const app = express()
 
 import { Exceptionless } from "../../node_modules/@exceptionless/node/dist/index.js";
 
-Exceptionless.startup(c => {
+await Exceptionless.startup(c => {
   c.apiKey = "LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw";
   c.serverUrl = "http://localhost:5000";
   c.useDebugLogger();
-  c.useLocalStorage();
 
   c.defaultTags.push("Example", "Node");
 

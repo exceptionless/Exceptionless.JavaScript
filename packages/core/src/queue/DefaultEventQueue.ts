@@ -56,7 +56,6 @@ export class DefaultEventQueue implements IEventQueue {
     private maxItems: number = 250
   ) { }
 
-  /** Enqueue an event and resumes any queue timers */
   public async enqueue(event: Event): Promise<void> {
     const eventWillNotBeQueued: string = "The event will not be queued."; // optimization for minifier.
     const config: Configuration = this.config; // Optimization for minifier.
@@ -77,14 +76,11 @@ export class DefaultEventQueue implements IEventQueue {
       return;
     }
 
-    this.ensureQueueTimer();
-
     const file = await this.enqueueEvent(event);
     const logText = `type=${event.type} ${event.reference_id ? "reference_id=" + event.reference_id : ""} source=${event.source} message=${event.message}`;
     log.info(`Enqueued event: ${file} (${logText})`);
   }
 
-  /** Processes all events in the queue and resumes any queue timers */
   public async process(): Promise<void> {
     const queueNotProcessed: string = "The queue will not be processed"; // optimization for minifier.
     const { log } = this.config.services;
@@ -105,8 +101,6 @@ export class DefaultEventQueue implements IEventQueue {
     }
 
     this._processingQueue = true;
-    this.ensureQueueTimer();
-
     try {
       if (this._loadPersistedEvents) {
         if (this.config.usePersistedQueueStorage) {
@@ -136,13 +130,20 @@ export class DefaultEventQueue implements IEventQueue {
     }
   }
 
-  /** Suspends queue timers */
+  public async startup(): Promise<void> {
+    if (!this._queueTimerId) {
+      // TODO: Fix awaiting promise.
+      this._queueTimerId = setInterval(() => void this.onProcessQueue(), 10000);
+    }
+
+    return Promise.resolve();
+  }
+
   public suspend(): Promise<void> {
     this._queueTimerId = clearInterval(this._queueTimerId);
     return Promise.resolve();
   }
 
-  /** Suspends processing of events for a specific duration */
   public async suspendProcessing(durationInMinutes?: number, discardFutureQueuedItems?: boolean, clearQueue?: boolean): Promise<void> {
     const config: Configuration = this.config; // Optimization for minifier.
 
@@ -183,13 +184,6 @@ export class DefaultEventQueue implements IEventQueue {
   private areQueuedItemsDiscarded(): boolean {
     return this._discardQueuedItemsUntil &&
       this._discardQueuedItemsUntil > new Date();
-  }
-
-  private ensureQueueTimer(): void {
-    if (!this._queueTimerId) {
-      // TODO: Fix awaiting promise.
-      this._queueTimerId = setInterval(() => void this.onProcessQueue(), 10000);
-    }
   }
 
   private isQueueProcessingSuspended(): boolean {
@@ -281,7 +275,7 @@ export class DefaultEventQueue implements IEventQueue {
 
   private async enqueueEvent(event: Event): Promise<string> {
     this._lastFileTimestamp = Math.max(Date.now(), this._lastFileTimestamp + 1);
-    const file = `${this.QUEUE_PREFIX}${this._lastFileTimestamp}`;
+    const file = `${this.QUEUE_PREFIX}${this._lastFileTimestamp}.json`;
 
     this._queue.push({ file, event });
     if (this.config.usePersistedQueueStorage) {

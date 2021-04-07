@@ -1,5 +1,5 @@
-import { describeStorage } from "@exceptionless/core/test/storage/InMemoryStorage.test";
-import { IStorage } from "@exceptionless/core/src/storage/IStorage";
+import { IStorage } from "@exceptionless/core";
+import { describeStorage } from "../../../core/test/storage/StorageTestBase.js";
 import { BrowserLocalStorage } from "../../src/storage/BrowserLocalStorage.js";
 
 function resetLocalStorage() {
