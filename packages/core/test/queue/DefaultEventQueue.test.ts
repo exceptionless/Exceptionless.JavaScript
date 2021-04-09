@@ -1,5 +1,6 @@
 import { Configuration } from "../../src/configuration/Configuration.js";
 import { Event } from "../../src/models/Event.js";
+import { DefaultEventQueue } from "../../src/queue/DefaultEventQueue.js";
 import { delay } from "../helpers.js";
 
 describe("DefaultEventQueue", () => {
@@ -57,6 +58,15 @@ describe("DefaultEventQueue", () => {
     if (!(config.services.queue as any)._suspendProcessingUntil) {
       expect(await config.services.storage.length()).toBe(0);
     } else {
+      expect(await config.services.storage.length()).toBe(1);
+    }
+  });
+
+  test("should respect max items", async () => {
+    config.services.queue = new DefaultEventQueue(config, 1);
+    const event: Event = { type: "log", reference_id: "123454321" };
+    for (let index = 0; index < 2; index++) {
+      await config.services.queue.enqueue(event);
       expect(await config.services.storage.length()).toBe(1);
     }
   });
