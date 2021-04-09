@@ -50,7 +50,6 @@ export class DefaultEventQueue implements IEventQueue {
   private _queue: EventQueueItem[] = [];
   private _loadPersistedEvents = true;
 
-  // TODO: Implement support for max queue items.
   constructor(
     private config: Configuration,
     private maxItems: number = 250
@@ -277,12 +276,21 @@ export class DefaultEventQueue implements IEventQueue {
     this._lastFileTimestamp = Math.max(Date.now(), this._lastFileTimestamp + 1);
     const file = `${this.QUEUE_PREFIX}${this._lastFileTimestamp}.json`;
 
-    this._queue.push({ file, event });
-    if (this.config.usePersistedQueueStorage) {
+    const { storage, log } = this.config.services;
+    const useStorage: boolean = this.config.usePersistedQueueStorage;
+    if (this._queue.push({ file, event }) > this.maxItems) {
+      log.trace("Removing oldest queue entry: maxItems exceeded");
+      const item = this._queue.shift();
+      if (useStorage) {
+        await storage.removeItem(item.file);
+      }
+    }
+
+    if (useStorage) {
       try {
-        await this.config.services.storage.setItem(file, JSON.stringify(event));
+        await storage.setItem(file, JSON.stringify(event));
       } catch (ex) {
-        this.config.services.log.error(`Error saving queue item to storage: ${ex.message}`)
+        log.error(`Error saving queue item to storage: ${ex.message}`)
       }
     }
 
