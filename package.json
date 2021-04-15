@@ -15,7 +15,7 @@
     "resolver": "jest-ts-webcompat-resolver"
   },
   "scripts": {
-    "clean": "rimraf packages/*/dist examples/*/dist",
+    "clean": "rimraf packages/*/dist example/*/dist",
     "build": "npm run build --workspaces",
     "watch": "npm run watch --workspaces",
     "lint": "eslint . --ext .ts",
