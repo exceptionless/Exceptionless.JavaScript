@@ -1,0 +1,64 @@
+{
+  "name": "@exceptionless/react",
+  "version": "2.0.0-pre",
+  "description": "JavaScript client for Exceptionless",
+  "author": {
+    "name": "exceptionless",
+    "url": "https://exceptionless.com"
+  },
+  "keywords": [
+    "exceptionless",
+    "error",
+    "feature",
+    "logging",
+    "tracking",
+    "reporting",
+    "react"
+  ],
+  "repository": {
+    "url": "git://github.com/exceptionless/Exceptionless.JavaScript.git",
+    "type": "git"
+  },
+  "bugs": {
+    "url": "https://github.com/exceptionless/Exceptionless.JavaScript/issues"
+  },
+  "private": true,
+  "license": "Apache-2.0",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "unpkg": "dist/index.min.js",
+  "jsdelivr": "dist/index.min.js",
+  "exports": {
+    ".": "./dist/index.js",
+    "./package.json": "./package.json"
+  },
+  "jest": {
+    "moduleFileExtensions": [
+      "js",
+      "ts"
+    ],
+    "moduleNameMapper": {
+      "^@exceptionless/(.*)$": "<rootDir>/../$1/src"
+    },
+    "preset": "ts-jest",
+    "resolver": "jest-ts-webcompat-resolver",
+    "testEnvironment": "jsdom"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json && esbuild src/index.ts --bundle --minify --sourcemap --target=es2020 --format=esm --outfile=dist/index.min.js",
+    "watch": "tsc -p tsconfig.json -w --preserveWatchOutput",
+    "test": "jest"
+  },
+  "sideEffects": false,
+  "devDependencies": {
+    "@jest/globals": "26.6.2",
+    "esbuild": "0.8.49",
+    "jest": "26.6.3",
+    "jest-ts-webcompat-resolver": "1.0.0",
+    "ts-jest": "26.5.1"
+  },
+  "dependencies": {
+    "@exceptionless/browser": "2.0.0-pre"
+  }
+}
