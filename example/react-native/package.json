@@ -1,13 +1,17 @@
 {
+  "name": "react-native-sample",
   "main": "index.js",
   "scripts": {
     "android": "react-native run-android",
     "ios": "react-native run-ios",
     "web": "expo start --web",
     "start": "react-native start",
+    "build": "",
+    "watch": "",
     "test": "jest"
   },
   "dependencies": {
+    "@exceptionless/browser": "2.0.0-pre",
     "expo": "~40.0.0",
     "expo-splash-screen": "~0.8.0",
     "expo-updates": "~0.4.0",

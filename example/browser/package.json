@@ -1,5 +1,5 @@
 {
-  "name": "@exceptionless/browser-sample",
+  "name": "browser-sample",
   "private": true,
   "version": "2.0.0-pre",
   "description": "Exceptionless Sample Browser App",
