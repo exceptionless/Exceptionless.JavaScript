@@ -3,7 +3,8 @@
   "compilerOptions": {
     "lib": ["DOM", "ES2020"],
     "outDir": "dist",
-    "rootDir": "src"
+    "rootDir": "src", 
+    "jsx": "react",
   },
   "include": ["src"]
 }
