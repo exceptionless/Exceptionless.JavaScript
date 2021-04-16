@@ -1,5 +1,3 @@
-import ExceptionlessBoundary from "./ExceptionlessBoundary";
-import { Exceptionless } from "@exceptionless/browser";
+export { Exceptionless } from "@exceptionless/browser";
 
-export { ExceptionlessBoundary, Exceptionless };
-
+export { ExceptionlessErrorBoundary } from "./ExceptionlessErrorBoundary.js";
