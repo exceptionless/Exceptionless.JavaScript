@@ -1,6 +1,7 @@
 {
   "recommendations": [
     "andys8.jest-snippets",
+    "davidanson.vscode-markdownlint",
     "dbaeumer.vscode-eslint",
     "editorconfig.editorconfig",
     "esbenp.prettier-vscode",
