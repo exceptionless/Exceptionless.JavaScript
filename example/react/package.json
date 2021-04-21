@@ -1,6 +1,5 @@
 {
   "name": "react-example",
-  "version": "0.1.0",
   "private": true,
   "devDependencies": {
     "@testing-library/jest-dom": "^5.11.4",
@@ -9,7 +8,7 @@
     "react-scripts": "4.0.3"
   },
   "dependencies": {
-    "@exceptionless/react": "2.0.0-pre",
+    "@exceptionless/react": "2.0.0-pre1",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
     "web-vitals": "^1.0.1"

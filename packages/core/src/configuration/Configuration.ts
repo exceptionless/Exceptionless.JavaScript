@@ -512,7 +512,8 @@ export class Configuration {
    * @returns {string}
    */
   public get userAgent(): string {
-    return "exceptionless-js/1.0.0.0";
+    // TODO: Should this be moved to submission implementations?
+    return "exceptionless-js/2.0.0-pre1";
   }
 
   /**
