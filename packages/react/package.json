@@ -1,6 +1,6 @@
 {
   "name": "@exceptionless/react",
-  "version": "2.0.0-pre",
+  "version": "2.0.0-pre1",
   "description": "JavaScript client for Exceptionless",
   "author": {
     "name": "exceptionless",
@@ -22,7 +22,6 @@
   "bugs": {
     "url": "https://github.com/exceptionless/Exceptionless.JavaScript/issues"
   },
-  "private": true,
   "license": "Apache-2.0",
   "type": "module",
   "main": "dist/index.js",
@@ -49,6 +48,9 @@
     "test": ""
   },
   "sideEffects": false,
+  "publishConfig": {
+    "access": "public"
+  },
   "devDependencies": {
     "@jest/globals": "26.6.2",
     "@types/react": "17.0.3",
@@ -58,6 +60,6 @@
     "ts-jest": "26.5.1"
   },
   "dependencies": {
-    "@exceptionless/browser": "2.0.0-pre"
+    "@exceptionless/browser": "2.0.0-pre1"
   }
 }

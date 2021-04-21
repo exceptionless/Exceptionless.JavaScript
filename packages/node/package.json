@@ -1,6 +1,6 @@
 {
   "name": "@exceptionless/node",
-  "version": "2.0.0-pre",
+  "version": "2.0.0-pre1",
   "description": "JavaScript client for Exceptionless",
   "author": {
     "name": "exceptionless",
@@ -22,7 +22,6 @@
   "bugs": {
     "url": "https://github.com/exceptionless/Exceptionless.JavaScript/issues"
   },
-  "private": true,
   "license": "Apache-2.0",
   "type": "module",
   "main": "dist/index.js",
@@ -46,6 +45,9 @@
     "test": "jest"
   },
   "sideEffects": false,
+  "publishConfig": {
+    "access": "public"
+  },
   "devDependencies": {
     "@types/stack-trace": "0.0.29",
     "@jest/globals": "26.6.2",
@@ -55,7 +57,7 @@
     "typescript": "4.2.4"
   },
   "dependencies": {
-    "@exceptionless/core": "2.0.0-pre",
+    "@exceptionless/core": "2.0.0-pre1",
     "node-fetch": "2.6.1",
     "stack-trace": "0.0.10"
   }

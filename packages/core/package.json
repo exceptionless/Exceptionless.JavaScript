@@ -1,6 +1,6 @@
 {
   "name": "@exceptionless/core",
-  "version": "2.0.0-pre",
+  "version": "2.0.0-pre1",
   "description": "JavaScript client for Exceptionless",
   "author": {
     "name": "exceptionless",
@@ -22,7 +22,6 @@
   "bugs": {
     "url": "https://github.com/exceptionless/Exceptionless.JavaScript/issues"
   },
-  "private": true,
   "license": "Apache-2.0",
   "type": "module",
   "main": "dist/index.js",
@@ -45,6 +44,9 @@
     "test": "jest"
   },
   "sideEffects": false,
+  "publishConfig": {
+    "access": "public"
+  },
   "devDependencies": {
     "@jest/globals": "26.6.2",
     "jest": "26.6.3",

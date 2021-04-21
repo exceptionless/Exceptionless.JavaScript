@@ -1,6 +1,6 @@
 {
   "name": "@exceptionless/angularjs",
-  "version": "2.0.0-pre",
+  "version": "2.0.0-pre1",
   "description": "JavaScript client for Exceptionless",
   "author": {
     "name": "exceptionless",
@@ -22,7 +22,6 @@
   "bugs": {
     "url": "https://github.com/exceptionless/Exceptionless.JavaScript/issues"
   },
-  "private": true,
   "license": "Apache-2.0",
   "type": "module",
   "main": "dist/index.js",
@@ -37,11 +36,14 @@
     "test": ""
   },
   "sideEffects": false,
+  "publishConfig": {
+    "access": "public"
+  },
   "devDependencies": {
     "@types/angular": "1.8.0"
   },
   "dependencies": {
-    "@exceptionless/browser": "2.0.0-pre",
+    "@exceptionless/browser": "2.0.0-pre1",
     "angular": "1.8.2"
   }
 }
