@@ -1,9 +1,9 @@
 import express from "express";
-const app = express()
+const app = express();
 
 import { Exceptionless } from "@exceptionless/node";
 
-await Exceptionless.startup(c => {
+await Exceptionless.startup((c) => {
   c.apiKey = "LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw";
   c.serverUrl = "http://localhost:5000";
   c.useDebugLogger();
@@ -20,8 +20,8 @@ await Exceptionless.startup(c => {
     myPassword: "123456",
     customValue: "Password",
     value: {
-      Password: "123456"
-    }
+      Password: "123456",
+    },
   };
 });
 
@@ -39,12 +39,23 @@ app.get("/boom", function boom(req, res) {
   throw new Error("Boom!!");
 });
 
-app.use(function(err, req, res, next) {
-  Exceptionless.createUnhandledException(err, "express").addRequestInfo(req).submit();
+app.get("/trycatch", function trycatch(req, res) {
+  try {
+    throw new Error("Caught in try/catch");
+  } catch (error) {
+    Exceptionless.submitException(error);
+    res.status(404).send("Error caught in try/catch");
+  }
+});
+
+app.use(function (err, req, res, next) {
+  Exceptionless.createUnhandledException(err, "express")
+    .addRequestInfo(req)
+    .submit();
   res.status(500).send("Something broke!");
 });
 
-app.use(function(req, res, next) {
+app.use(function (req, res, next) {
   Exceptionless.createNotFound(req.originalUrl).addRequestInfo(req).submit();
   res.status(404).send("Sorry cant find that!");
 });
