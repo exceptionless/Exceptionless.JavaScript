@@ -45,6 +45,10 @@ class App extends Component {
     }
   };
 
+  unhandledExceptionExample = () => {
+    throw new Error("Unhandled exception");
+  };
+
   renderExample = () => {
     if (this.state.error) {
       throw new Error("I crashed!");
@@ -62,6 +66,14 @@ class App extends Component {
               <button onClick={this.throwErrorInComponent}>
                 Simulate Error
               </button>
+              <div>
+                <p>
+                  Throw an uncaught error and make sure Exceptionless tracks it.
+                </p>
+                <button onClick={this.unhandledExceptionExample}>
+                  Throw unhandled error
+                </button>
+              </div>
               <p>
                 The following buttons simulated handled events outside the
                 component.

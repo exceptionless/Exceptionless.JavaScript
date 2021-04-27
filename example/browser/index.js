@@ -1,8 +1,8 @@
-import { Exceptionless } from "../../node_modules/@exceptionless/browser/dist/index.min.js";
+import { Exceptionless } from "../../packages/browser/dist/index";
 import { divide } from "./math.js";
 import { TextAreaLogger } from "./text-area-logger.js";
 
-await Exceptionless.startup(c => {
+await Exceptionless.startup((c) => {
   c.useDebugLogger();
   c.services.log = new TextAreaLogger("logs", c.services.log);
 
@@ -23,12 +23,12 @@ await Exceptionless.startup(c => {
     myPassword: "123456",
     customValue: "Password",
     value: {
-      Password: "123456"
-    }
+      Password: "123456",
+    },
   };
 
   c.defaultTags.push("Example", "JavaScript");
-  c.settings["@@error:MediaError"] = "Off"
+  c.settings["@@error:MediaError"] = "Off";
 });
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -36,37 +36,57 @@ document.addEventListener("DOMContentLoaded", () => {
   for (const element of elements) {
     element.addEventListener("click", (event) => {
       const level = event.target.attributes["data-level"]?.value;
-      Exceptionless.submitLog("sendEvents", `This is a log message with level: ${level || "<no log level>"}`, level);
+      Exceptionless.submitLog(
+        "sendEvents",
+        `This is a log message with level: ${level || "<no log level>"}`,
+        level
+      );
     });
   }
 
-  document.querySelector("#throw-custom-error").addEventListener("click", () => {
-    throw new CustomError("A Custom Error", 500);
-  });
+  document
+    .querySelector("#throw-custom-error")
+    .addEventListener("click", () => {
+      throw new CustomError("A Custom Error", 500);
+    });
 
-  document.querySelector("#throw-division-by-zero-error").addEventListener("click", () => {
-    divide(10, 0);
-  });
+  document
+    .querySelector("#throw-division-by-zero-error")
+    .addEventListener("click", () => {
+      divide(10, 0);
+    });
 
-  document.querySelector("#throw-index-out-of-range").addEventListener("click", () => {
-    throwIndexOutOfRange();
-  });
+  document
+    .querySelector("#throw-index-out-of-range")
+    .addEventListener("click", () => {
+      throwIndexOutOfRange();
+    });
 
-  document.querySelector("#throw-index-out-of-range-custom-stacking").addEventListener("click", () => {
-    throwIndexOutOfRange(1, true);
-  });
+  document
+    .querySelector("#throw-index-out-of-range-custom-stacking")
+    .addEventListener("click", () => {
+      throwIndexOutOfRange(1, true);
+    });
 
-  document.querySelector("#throw-string-error").addEventListener("click", () => {
-    throwStringError();
-  });
+  document
+    .querySelector("#throw-string-error")
+    .addEventListener("click", () => {
+      throwStringError();
+    });
 
-  document.querySelector("#throw-ignored-error").addEventListener("click", () => {
-    throw new MediaError("An Ignored Exception Type");
-  });
+  document
+    .querySelector("#throw-ignored-error")
+    .addEventListener("click", () => {
+      throw new MediaError("An Ignored Exception Type");
+    });
 
-  document.querySelector("#config-settings-log").addEventListener("click", () => {
-    Exceptionless.config.services.log.info(JSON.stringify(Exceptionless.config.settings));
-  });
+  document
+    .querySelector("#config-settings-log")
+    .addEventListener("click", () => {
+      Exceptionless.config.services.log.info(
+        JSON.stringify(Exceptionless.config.settings)
+      );
+    });
 });
 
 function throwIndexOutOfRange(indexer, withCustomStacking) {
@@ -74,13 +94,20 @@ function throwIndexOutOfRange(indexer, withCustomStacking) {
     getNonexistentData(indexer);
   } catch (e) {
     if (withCustomStacking) {
-      if (Math.random() < .5) {
-        Exceptionless.createException(e).setManualStackingKey("MyCustomStackingKey").submit();
+      if (Math.random() < 0.5) {
+        Exceptionless.createException(e)
+          .setManualStackingKey("MyCustomStackingKey")
+          .submit();
       } else {
-        Exceptionless.createException(e).setManualStackingInfo({
-          File: "index.js",
-          Function: "throwIndexOutOfRange"
-        }, "Custom Index Out Of Range Exception").submit();
+        Exceptionless.createException(e)
+          .setManualStackingInfo(
+            {
+              File: "index.js",
+              Function: "throwIndexOutOfRange",
+            },
+            "Custom Index Out Of Range Exception"
+          )
+          .submit();
       }
     } else {
       Exceptionless.submitException(e);
@@ -112,7 +139,7 @@ class CustomError extends Error {
   }
 
   getPromiseValue() {
-    return new Promise(r => r({ expensive: "call" }));
+    return new Promise((r) => r({ expensive: "call" }));
   }
 
   get getThrowsError() {
