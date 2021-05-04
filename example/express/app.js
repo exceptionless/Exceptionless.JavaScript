@@ -4,8 +4,8 @@ const app = express();
 import { Exceptionless } from "@exceptionless/node";
 
 await Exceptionless.startup((c) => {
-  c.apiKey = "LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw";
-  c.serverUrl = "http://localhost:5000";
+  c.apiKey = "W7pdTehUAH8IrCxd4PllAs6ZheUpGLcrd6WpodDl";
+  // c.serverUrl = "http://localhost:5000";
   c.useDebugLogger();
 
   c.defaultTags.push("Example", "Node");
