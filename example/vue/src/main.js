@@ -1,6 +1,6 @@
 import { createApp } from "vue";
 import App from "./App.vue";
-import { Exceptionless } from "@exceptionless/vue";
+import { Exceptionless } from "@exceptionless/browser";
 
 Exceptionless.startup((c) => {
   c.useDebugLogger();
