@@ -17,14 +17,14 @@ export class NodeRequestInfoCollector implements IRequestInfoCollector {
     const config = context.client.config;
     const exclusions = config.dataExclusions;
 
-    // TODO: include referrer
     const request = context.contextData[REQUEST_KEY];
     const requestInfo: RequestInfo = {
       user_agent: request.headers["user-agent"],
-      is_secure: request.secure,
       http_method: request.method,
-      host: request.hostname || request.host,
+      is_secure: request.secure,
+      host: request.hostname,
       path: request.path,
+      referrer: request.headers.referer
     };
 
     const host = request.headers.host;

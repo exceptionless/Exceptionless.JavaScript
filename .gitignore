@@ -11,3 +11,4 @@ test-data
 packages/node/test-data
 
 yarn.lock
+example/express/.exceptionless

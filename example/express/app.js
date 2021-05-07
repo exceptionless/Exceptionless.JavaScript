@@ -25,13 +25,13 @@ await Exceptionless.startup((c) => {
   };
 });
 
-app.get("/", function index(req, res) {
-  Exceptionless.submitLog("loading index content");
+app.get("/", async (req, res) => {
+  await Exceptionless.submitLog("loading index content");
   res.send("Hello World!");
 });
 
-app.get("/about", function about(req, res) {
-  Exceptionless.submitFeatureUsage("about");
+app.get("/about", async (req, res) => {
+  await Exceptionless.submitFeatureUsage("about");
   res.send("About");
 });
 
@@ -39,34 +39,42 @@ app.get("/boom", function boom(req, res) {
   throw new Error("Boom!!");
 });
 
-app.get("/trycatch", function trycatch(req, res) {
+app.get("/trycatch", async (req, res) => {
   try {
     throw new Error("Caught in try/catch");
   } catch (error) {
-    Exceptionless.submitException(error);
-    res.status(404).send("Error caught in try/catch");
+    await Exceptionless.createException(error)
+      .addRequestInfo(req)
+      .submit();
+
+    res.status(500).send("Error caught in try/catch");
   }
 });
 
-app.use(function (err, req, res, next) {
-  Exceptionless.createUnhandledException(err, "express")
+app.use(async (err, req, res, next) => {
+  if (res.headersSent) {
+    return next(err)
+  }
+
+  await Exceptionless.createUnhandledException(err, "express")
     .addRequestInfo(req)
     .submit();
+
   res.status(500).send("Something broke!");
 });
 
-app.use(function (req, res, next) {
-  Exceptionless.createNotFound(req.originalUrl).addRequestInfo(req).submit();
+app.use(async (req, res) => {
+  await Exceptionless.createNotFound(req.originalUrl).addRequestInfo(req).submit();
   res.status(404).send("Sorry cant find that!");
 });
 
-const server = app.listen(3000, function () {
+const server = app.listen(3000, async () => {
   var host = server.address().address;
   var port = server.address().port;
 
   var message = "Example app listening at http://" + host + port;
   console.log(message);
-  Exceptionless.submitLog("app", message, "Info");
+  await Exceptionless.submitLog("app", message, "Info");
 });
 
 export default app;

@@ -4,38 +4,24 @@ import {
   ErrorInfo,
   EventPluginContext,
   IErrorParser,
-  ParameterInfo,
   StackFrameInfo,
 } from "@exceptionless/core";
 
 export class NodeErrorParser implements IErrorParser {
   public parse(context: EventPluginContext, exception: Error): Promise<ErrorInfo> {
-    function getParameters(parameters: string | string[]): ParameterInfo[] {
-      const params: string[] = (typeof parameters === "string" ? [parameters] : parameters) || [];
-
-      const items: ParameterInfo[] = [];
-      for (const param of params) {
-        items.push({ name: param });
-      }
-
-      return items;
-    }
-
     function getStackFrames(stackFrames: any[]): StackFrameInfo[] {
       const frames: StackFrameInfo[] = [];
 
       for (const frame of stackFrames) {
         frames.push({
-          name: frame.getMethodName() || frame.getFunctionName(),
-          parameters: getParameters(frame.getArgs()),
-          file_name: frame.getFileName(),
-          line_number: frame.getLineNumber() || 0,
-          column: frame.getColumnNumber() || 0,
-          declaring_type: frame.getTypeName(),
+          name: frame.methodName || frame.functionName,
+          parameters: [], // TODO: See if there is a way to get this.
+          file_name: frame.fileName,
+          line_number: frame.lineNumber || 0,
+          column: frame.columnNumber || 0,
+          declaring_type: frame.typeName,
           data: {
-            is_native: frame.isNative() ||
-              (frame.filename && frame.filename[0] !== "/" &&
-                frame.filename[0] !== "."),
+            is_native: frame.native || (frame.fileName && frame.fileName[0] !== "/" && frame.fileName[0] !== "."),
           },
         });
       }
