@@ -1,8 +1,8 @@
 import { createApp } from "vue";
 import App from "./App.vue";
-import { Exceptionless } from "@exceptionless/browser";
+import { Exceptionless } from "@exceptionless/vue";
 
-await Exceptionless.startup((c) => {
+Exceptionless.startup((c) => {
   c.useDebugLogger();
 
   c.apiKey = "LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw";
