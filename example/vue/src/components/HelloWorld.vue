@@ -27,12 +27,12 @@ defineProps({
 
 const state = reactive({ error: "" })
 
-const throwError = () => {
+const throwError = async () => {
   try {
     throw new Error("Whoops, it broke");
   } catch (error) {
     state.error = error.message;
-    Exceptionless.submitException(error);
+    await Exceptionless.submitException(error);
   }
 }
 </script>

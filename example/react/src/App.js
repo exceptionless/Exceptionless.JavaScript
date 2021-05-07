@@ -28,20 +28,20 @@ class App extends Component {
     this.setState({ error: true });
   };
 
-  submitMessage = () => {
+  submitMessage = async () => {
     const message = "Hello, world!";
     this.setState({ message: "", errorInfo: "" });
-    Exceptionless.submitLog(message);
+    await Exceptionless.submitLog(message);
     this.setState({ message });
   };
 
-  tryCatchExample = () => {
+  tryCatchExample = async () => {
     try {
       this.setState({ message: "", errorInfo: "" });
       throw new Error("Caught in the try/catch");
     } catch (error) {
       this.setState({ errorInfo: error.message });
-      Exceptionless.submitException(error);
+      await Exceptionless.submitException(error);
     }
   };
 

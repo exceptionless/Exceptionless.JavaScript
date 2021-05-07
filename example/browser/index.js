@@ -89,17 +89,17 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 });
 
-function throwIndexOutOfRange(indexer, withCustomStacking) {
+async function throwIndexOutOfRange(indexer, withCustomStacking) {
   try {
     getNonexistentData(indexer);
   } catch (e) {
     if (withCustomStacking) {
       if (Math.random() < 0.5) {
-        Exceptionless.createException(e)
+        await Exceptionless.createException(e)
           .setManualStackingKey("MyCustomStackingKey")
           .submit();
       } else {
-        Exceptionless.createException(e)
+        await Exceptionless.createException(e)
           .setManualStackingInfo(
             {
               File: "index.js",
@@ -110,7 +110,7 @@ function throwIndexOutOfRange(indexer, withCustomStacking) {
           .submit();
       }
     } else {
-      Exceptionless.submitException(e);
+      await Exceptionless.submitException(e);
     }
   }
 }
