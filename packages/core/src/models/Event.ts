@@ -1,3 +1,10 @@
+import { ErrorInfo } from "./data/ErrorInfo.js";
+import { EnvironmentInfo } from "./data/EnvironmentInfo.js";
+import { RequestInfo } from "./data/RequestInfo.js";
+import { UserInfo } from "./data/UserInfo.js";
+import { UserDescription } from "./data/UserDescription.js";
+import { ManualStackingInfo } from "./data/ManualStackingInfo.js";
+
 export interface Event {
   /** The event type (ie. error, log message, feature usage). */
   type?: string;
@@ -18,7 +25,7 @@ export interface Event {
   /** An optional identifier to be used for referencing this event instance at a later time. */
   reference_id?: string;
   /** Optional data entries that contain additional information about this event. */
-  data?: Record<string, any>; // TODO: Add typing for known keys.
+  data?: IData;
 }
 
 export const enum KnownEventDataKeys {
@@ -32,5 +39,18 @@ export const enum KnownEventDataKeys {
   Version = "@version",
   Level = "@level",
   SubmissionMethod = "@submission_method",
-  ManualStackingInfo = "@stack"
+  ManualStackingInfo = "@stack",
+}
+
+interface IData extends Record<string, any> {
+  "@error": ErrorInfo;
+  "@simple_error": any; // TODO: Need a model for simple error
+  "@request": RequestInfo;
+  "@environment": EnvironmentInfo;
+  "@user": UserInfo;
+  "@user_description": UserDescription;
+  "@version": string;
+  "@level": string;
+  "@submission_method": string;
+  "@stack": ManualStackingInfo;
 }
