@@ -27,6 +27,8 @@
     "ncaught",
     "ratelimit",
     "tsproject",
+    "vite",
+    "vitejs",
     "webcompat"
   ],
   "eslint.validate": [

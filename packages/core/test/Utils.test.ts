@@ -91,6 +91,7 @@ describe("Utils", () => {
       });
     });
 
+    /*
     test.skip("should respect maxDepth", () => {
       const deepObject = {
         a: {
@@ -104,6 +105,7 @@ describe("Utils", () => {
 
       expect(deepObject).toBe("TODO");
     });
+    */
 
     test("should serialize inherited properties", () => {
       const Foo = function () { this.a = "a"; };
