@@ -43,14 +43,14 @@ export const enum KnownEventDataKeys {
 }
 
 interface IData extends Record<string, any> {
-  "@error": ErrorInfo;
-  "@simple_error": any; // TODO: Need a model for simple error
-  "@request": RequestInfo;
-  "@environment": EnvironmentInfo;
-  "@user": UserInfo;
-  "@user_description": UserDescription;
-  "@version": string;
-  "@level": string;
-  "@submission_method": string;
-  "@stack": ManualStackingInfo;
+  "@error"?: ErrorInfo;
+  "@simple_error"?: any; // TODO: Need a model for simple error
+  "@request"?: RequestInfo;
+  "@environment"?: EnvironmentInfo;
+  "@user"?: UserInfo;
+  "@user_description"?: UserDescription;
+  "@version"?: string;
+  "@level"?: string;
+  "@submission_method"?: string;
+  "@stack"?: ManualStackingInfo;
 }
