@@ -13,15 +13,11 @@
     "logging",
     "tracking",
     "reporting",
-    "react"
+    "vue"
   ],
   "repository": {
     "url": "git://github.com/exceptionless/Exceptionless.JavaScript.git",
     "type": "git"
-  },
-  "exports": {
-    ".": "./dist/index.js",
-    "./package.json": "./package.json"
   },
   "bugs": {
     "url": "https://github.com/exceptionless/Exceptionless.JavaScript/issues"
@@ -29,41 +25,17 @@
   "license": "Apache-2.0",
   "type": "module",
   "main": "dist/index.js",
+  "exports": {
+    ".": "./dist/index.js",
+    "./package.json": "./package.json"
+  },
   "scripts": {
-    "serve": "vue-cli-service serve",
-    "build": "vue-cli-service build",
-    "lint": "vue-cli-service lint"
+    "build": "tsc -p tsconfig.json",
+    "watch": "tsc -p tsconfig.json -w --preserveWatchOutput",
+    "test": ""
   },
   "dependencies": {
-    "core-js": "^3.6.5",
-    "vue": "^3.0.0"
+    "@exceptionless/browser": "2.0.0-pre1"
   },
-  "devDependencies": {
-    "@vue/cli-plugin-babel": "~4.5.0",
-    "@vue/cli-plugin-eslint": "~4.5.0",
-    "@vue/cli-service": "~4.5.0",
-    "@vue/compiler-sfc": "^3.0.0",
-    "babel-eslint": "^10.1.0",
-    "eslint": "^6.7.2",
-    "eslint-plugin-vue": "^7.0.0"
-  },
-  "eslintConfig": {
-    "root": true,
-    "env": {
-      "node": true
-    },
-    "extends": [
-      "plugin:vue/vue3-essential",
-      "eslint:recommended"
-    ],
-    "parserOptions": {
-      "parser": "babel-eslint"
-    },
-    "rules": {}
-  },
-  "browserslist": [
-    "> 1%",
-    "last 2 versions",
-    "not dead"
-  ]
+  "sideEffects": false
 }

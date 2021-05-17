@@ -1,26 +1,22 @@
-## Exceptionless React
+# Exceptionless React
 
-The Exceptionless React package provides a native way to handle errors and events in React. This means errors inside your components, which tend to crash your entire app, can be sent to Exceptionless and you can be alerted. Additionally, you can use this package to catch errors throughout your non-component functions such as in Redux actions, utility functions, etc. 
+The Exceptionless React package provides a native way to handle errors and events in React. This means errors inside your components, which tend to crash your entire app, can be sent to Exceptionless and you can be alerted. Additionally, you can use this package to catch errors throughout your non-component functions such as in Redux actions, utility functions, etc.
 
-### Getting Started 
+## Getting Started
 
-To use this package, your must be using ES6 and Node 15+. 
+To use this package, your must be using ES6 and Node 15+.
 
-**Install** 
+### Install
 
-NPM: 
+NPM:
 
-`npm install @exceptionless/react` 
+`npm install @exceptionless/react`
 
-Yarn: 
-
-`yarn add @exceptionless/react` 
-
-### Configuration 
+## Configuration
 
 Inside your `index.js` file or your `App.js` file, you can configure and start Exceptionless as follows.
 
-**Class Components**
+### Class Components
 
 ```jsx
 class App extends Component {
@@ -45,26 +41,26 @@ class App extends Component {
 export default App;
 ```
 
-### Handling Events 
+## Handling Events
 
-While errors within the components themselves are automatically sent to Exceptionless, you will still want to handle events that happen outside the components. 
+While errors within the components themselves are automatically sent to Exceptionless, you will still want to handle events that happen outside the components.
 
 Because the Exceptionless client is a singleton, it is available anywhere in your app where you import it. Here's an example from a file we'll call `utilities.js`.
 
 ```js
-export const myUtilityFunction = () => {
+export const myUtilityFunction = async () => {
   try {
     //  Handle successful run of code
   } catch(e) {
     //  If there's an error, send it to Exceptionless
-    Exceptionless.submitException(e);
+    await  Exceptionless.submitException(e);
   }
 }
 ```
 
-You can also sent events and logs that are not errors by simply calling the built-in methods on the Exceptionless class: 
+You can also sent events and logs that are not errors by simply calling the built-in methods on the Exceptionless class:
 
 ```js
-Exceptionless.submitLog("Hello, world!");
-Exceptionless.submitFeatureUsage("New Shopping Cart Feature");
+await Exceptionless.submitLog("Hello, world!");
+await Exceptionless.submitFeatureUsage("New Shopping Cart Feature");
 ```

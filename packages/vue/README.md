@@ -1,24 +1,13 @@
-# vue
+# Exceptionless vue
 
-## Project setup
-```
-npm install
-```
+The Exceptionless Vue package provides a native way to handle errors and events in React. This means errors inside your components, which tend to crash your entire app, can be sent to Exceptionless and you can be alerted. Additionally, you can use this package to catch errors throughout your non-component functions such as in Redux actions, utility functions, etc.
 
-### Compiles and hot-reloads for development
-```
-npm run serve
-```
+## Getting Started
 
-### Compiles and minifies for production
-```
-npm run build
-```
+To use this package, your must be using ES6 and Node 15+.
 
-### Lints and fixes files
-```
-npm run lint
-```
+### Install
 
-### Customize configuration
-See [Configuration Reference](https://cli.vuejs.org/config/).
+NPM:
+
+`npm install @exceptionless/vue`

@@ -30,18 +30,6 @@
     ".": "./dist/index.js",
     "./package.json": "./package.json"
   },
-  "jest": {
-    "moduleFileExtensions": [
-      "js",
-      "ts"
-    ],
-    "moduleNameMapper": {
-      "^@exceptionless/(.*)$": "<rootDir>/../$1/src"
-    },
-    "preset": "ts-jest",
-    "resolver": "jest-ts-webcompat-resolver",
-    "testEnvironment": "jsdom"
-  },
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "watch": "tsc -p tsconfig.json -w --preserveWatchOutput",
