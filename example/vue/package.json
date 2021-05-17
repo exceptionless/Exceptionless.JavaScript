@@ -1,13 +1,17 @@
 {
-  "name": "vue",
-  "version": "0.0.0",
+  "name": "vue-example",
+  "private": true,
+  "version": "2.0.0-pre1",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "watch": "",
+    "test": "",
     "serve": "vite preview"
   },
   "dependencies": {
-    "vue": "^3.0.5"
+    "vue": "^3.0.11",
+    "@exceptionless/vue": "2.0.0-pre1"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^1.2.2",

@@ -1,6 +1,6 @@
 import { createApp } from "vue";
 import App from "./App.vue";
-import { Exceptionless } from "@exceptionless/browser";
+import { Exceptionless, ExceptionlessErrorHandler } from "@exceptionless/vue";
 
 Exceptionless.startup((c) => {
   c.useDebugLogger();
@@ -29,4 +29,6 @@ Exceptionless.startup((c) => {
   c.defaultTags.push("Example", "JavaScript");
 });
 
-createApp(App).mount("#app");
+const app = createApp(App);
+app.config.errorHandler = ExceptionlessErrorHandler;
+app.mount("#app");
