@@ -26,6 +26,14 @@ jobs:
           node-version: ${{ matrix.node_version }}
       - name: NPM install with caching
         uses: bahmutov/npm-install@v1
+      - name: Build Version
+        run: |
+          npm install --global replace-in-files-cli
+          dotnet tool install --global minver-cli --version 2.5.0
+          version=$(minver --tag-prefix v)
+          echo "MINVERVERSIONOVERRIDE=$version" >> $GITHUB_ENV
+          npm run version -- $version
+          replace-in-files --regex='\/(v?((\d+)\.(\d+)(\.(\d+))?)(?:-([\dA-Za-z-]+(?:\.[\dA-Za-z-]+)*))?(?:\+([\dA-Za-z-]+(?:\.[\dA-Za-z-]+)*))?)' --replacement=/$version packages/core/src/configuration/Configuration.ts
       - name: Build
         run: npm run build
       - name: Lint

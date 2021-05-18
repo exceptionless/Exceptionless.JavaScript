@@ -1,7 +1,7 @@
 {
   "name": "express-sample",
   "private": true,
-  "version": "2.0.0-pre1",
+  "version": "2.0.0-dev",
   "description": "Exceptionless Sample Node App",
   "main": "app.js",
   "type": "module",
@@ -9,7 +9,7 @@
   "license": "Apache-2.0",
   "dependencies": {
     "express": "4.16.4",
-    "@exceptionless/node": "2.0.0-pre1"
+    "@exceptionless/node": "2.0.0-dev"
   },
   "scripts": {
     "build": "",
