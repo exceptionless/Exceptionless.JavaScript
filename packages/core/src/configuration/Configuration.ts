@@ -513,7 +513,7 @@ export class Configuration {
    */
   public get userAgent(): string {
     // TODO: Should this be moved to submission implementations?
-    return "exceptionless-js/2.0.0-pre1";
+    return "exceptionless-js/2.0.0-dev";
   }
 
   /**

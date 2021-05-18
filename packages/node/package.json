@@ -1,6 +1,6 @@
 {
   "name": "@exceptionless/node",
-  "version": "2.0.0-pre1",
+  "version": "2.0.0-dev",
   "description": "JavaScript client for Exceptionless",
   "author": {
     "name": "exceptionless",
@@ -57,7 +57,7 @@
     "typescript": "4.2.4"
   },
   "dependencies": {
-    "@exceptionless/core": "2.0.0-pre1",
+    "@exceptionless/core": "2.0.0-dev",
     "node-fetch": "2.6.1",
     "stack-trace": "1.0.0-pre1"
   }

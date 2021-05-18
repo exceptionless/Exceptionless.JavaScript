@@ -1,6 +1,6 @@
 {
   "name": "@exceptionless/vue",
-  "version": "2.0.0-pre1",
+  "version": "2.0.0-dev",
   "description": "JavaScript client for Exceptionless",
   "author": {
     "name": "exceptionless",
@@ -35,7 +35,7 @@
     "test": ""
   },
   "dependencies": {
-    "@exceptionless/browser": "2.0.0-pre1"
+    "@exceptionless/browser": "2.0.0-dev"
   },
   "sideEffects": false
 }
