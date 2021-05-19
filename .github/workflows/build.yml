@@ -30,7 +30,7 @@ jobs:
         run: |
           npm install --global replace-in-files-cli
           dotnet tool install --global minver-cli --version 2.5.0
-          version=$(minver --tag-prefix v)
+          echo $(minver --tag-prefix v) >> $version
           echo "MINVERVERSIONOVERRIDE=$version" >> $GITHUB_ENV
           npm run version -- $version
           replace-in-files --regex='\/(v?((\d+)\.(\d+)(\.(\d+))?)(?:-([\dA-Za-z-]+(?:\.[\dA-Za-z-]+)*))?(?:\+([\dA-Za-z-]+(?:\.[\dA-Za-z-]+)*))?)' --replacement=/$version packages/core/src/configuration/Configuration.ts
