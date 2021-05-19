@@ -32,6 +32,7 @@ jobs:
         uses: thefringeninja/action-minver@2.0.0-preview1
         id: version
         with:
+          minimum-major-minor: 2.0.0
           tag-prefix: v
       - name: Build Version
         run: |
@@ -45,6 +46,11 @@ jobs:
         run: npm run lint
       - name: Run Tests
         run: npm test
+      - name: Publish Release Packages
+        if: startsWith(github.ref, 'refs/tags/v') && matrix.os == 'ubuntu-latest'
+        run: npm publish --workspaces --access public
+        env:
+          NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
       - name: Push CI Packages
         if: github.event_name != 'pull_request' && matrix.os == 'ubuntu-latest'
         run: |
@@ -52,8 +58,3 @@ jobs:
           npm publish --workspaces --access public
         env:
           NODE_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
-      - name: Publish Release Packages
-        if: startsWith(github.ref, 'refs/tags/v') && matrix.os == 'ubuntu-latest'
-        run: npm publish --workspaces --access public
-        env:
-          NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
