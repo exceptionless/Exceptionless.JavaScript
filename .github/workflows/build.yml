@@ -33,6 +33,7 @@ jobs:
           tag-prefix: v
       - name: Build Version
         run: |
+          npm --version
           npm install --global replace-in-files-cli
           echo "MINVERVERSIONOVERRIDE=${{steps.version.outputs.version}}" >> $GITHUB_ENV
           npm run version -- ${{steps.version.outputs.version}}
