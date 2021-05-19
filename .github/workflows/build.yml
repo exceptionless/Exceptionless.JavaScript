@@ -24,6 +24,8 @@ jobs:
         uses: actions/setup-node@v2
         with:
           node-version: ${{ matrix.node_version }}
+      - name: Install latest NPM
+        run: npm install -g npm@7
       - name: NPM install with caching
         uses: bahmutov/npm-install@v1
       - name: Set Min Version
@@ -33,7 +35,6 @@ jobs:
           tag-prefix: v
       - name: Build Version
         run: |
-          npm --version
           npm install --global replace-in-files-cli
           echo "MINVERVERSIONOVERRIDE=${{steps.version.outputs.version}}" >> $GITHUB_ENV
           npm run version -- ${{steps.version.outputs.version}}
