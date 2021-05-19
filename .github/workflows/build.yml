@@ -32,7 +32,7 @@ jobs:
         uses: thefringeninja/action-minver@2.0.0-preview1
         id: version
         with:
-          minimum-major-minor: 2.0.0
+          minimum-major-minor: 2.0
           tag-prefix: v
       - name: Build Version
         run: |
