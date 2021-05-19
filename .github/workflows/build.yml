@@ -26,14 +26,17 @@ jobs:
           node-version: ${{ matrix.node_version }}
       - name: NPM install with caching
         uses: bahmutov/npm-install@v1
+      - name: Set Min Version
+        uses: thefringeninja/action-minver
+        id: version
+        with:
+          tag-prefix: v
       - name: Build Version
         run: |
           npm install --global replace-in-files-cli
-          dotnet tool install --global minver-cli --version 2.5.0
-          echo $(minver --tag-prefix v) >> $version
-          echo "MINVERVERSIONOVERRIDE=$version" >> $GITHUB_ENV
-          npm run version -- $version
-          replace-in-files --regex='\/(v?((\d+)\.(\d+)(\.(\d+))?)(?:-([\dA-Za-z-]+(?:\.[\dA-Za-z-]+)*))?(?:\+([\dA-Za-z-]+(?:\.[\dA-Za-z-]+)*))?)' --replacement=/$version packages/core/src/configuration/Configuration.ts
+          echo "MINVERVERSIONOVERRIDE=${{steps.version.outputs.version}}" >> $GITHUB_ENV
+          npm run version -- ${{steps.version.outputs.version}}
+          replace-in-files --regex='\/(v?((\d+)\.(\d+)(\.(\d+))?)(?:-([\dA-Za-z-]+(?:\.[\dA-Za-z-]+)*))?(?:\+([\dA-Za-z-]+(?:\.[\dA-Za-z-]+)*))?)' --replacement=/${{steps.version.outputs.version}} packages/core/src/configuration/Configuration.ts
       - name: Build
         run: npm run build
       - name: Lint
