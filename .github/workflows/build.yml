@@ -54,6 +54,9 @@ jobs:
       - name: Push CI Packages
         if: github.event_name != 'pull_request' && matrix.os == 'ubuntu-latest'
         run: |
-          npm config set "@exceptionless:registry" https://npm.pkg.github.com/exceptionless
-          npm config set //npm.pkg.github.com/:_authToken ${{secrets.GITHUB_TOKEN}}
+          echo "//npm.pkg.github.com/:_authToken=${NODE_AUTH_TOKEN}" > .npmrc
+          echo "@exceptionless:registry=https://npm.pkg.github.com" >> .npmrc
+          echo "always-auth=true" >> .npmrc
           npm publish --workspaces --access public
+        env:
+          NODE_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
