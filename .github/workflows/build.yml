@@ -52,7 +52,7 @@ jobs:
         run: npm publish --workspaces --access public
         env:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
-      name: Setup GitHub CI Node.js environment
+      - name: Setup GitHub CI Node.js environment
         if: github.event_name != 'pull_request' && matrix.os == 'ubuntu-latest'
         uses: actions/setup-node@v2
         with:
