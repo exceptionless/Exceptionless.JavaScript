@@ -34,8 +34,11 @@
     "watch": "tsc -p tsconfig.json -w --preserveWatchOutput",
     "test": ""
   },
+  "sideEffects": false,
+  "publishConfig": {
+    "access": "public"
+  },
   "dependencies": {
     "@exceptionless/browser": "2.0.0-dev"
-  },
-  "sideEffects": false
+  }
 }

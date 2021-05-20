@@ -8,12 +8,6 @@
     "@testing-library/user-event": "^13.1.3",
     "react-scripts": "4.0.3"
   },
-  "dependencies": {
-    "@exceptionless/react": "2.0.0-dev",
-    "react": "^17.0.2",
-    "react-dom": "^17.0.2",
-    "web-vitals": "^1.0.1"
-  },
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
@@ -38,5 +32,14 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "dependencies": {
+    "@exceptionless/react": "2.0.0-dev",
+    "react": "^17.0.2",
+    "react-dom": "^17.0.2",
+    "web-vitals": "^1.0.1"
+  },
+  "publishConfig": {
+    "access": "restricted"
   }
 }

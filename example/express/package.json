@@ -7,15 +7,18 @@
   "type": "module",
   "author": "Exceptionless",
   "license": "Apache-2.0",
-  "dependencies": {
-    "express": "4.16.4",
-    "@exceptionless/node": "2.0.0-dev"
-  },
   "scripts": {
     "build": "",
     "watch": "",
     "test": "",
     "dev": "nodemon app.js",
     "start": "node app.js"
+  },
+  "publishConfig": {
+    "access": "restricted"
+  },
+  "dependencies": {
+    "express": "4.16.4",
+    "@exceptionless/node": "2.0.0-dev"
   }
 }
