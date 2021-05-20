@@ -24,6 +24,7 @@ jobs:
         uses: actions/setup-node@v2
         with:
           node-version: ${{ matrix.node_version }}
+          registry-url: 'https://registry.npmjs.org'
       - name: Install latest NPM
         run: npm install -g npm@7
       - name: NPM install with caching
@@ -51,12 +52,15 @@ jobs:
         run: npm publish --workspaces --access public
         env:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
-      - name: Push CI Packages
+      name: Setup GitHub CI Node.js environment
         if: github.event_name != 'pull_request' && matrix.os == 'ubuntu-latest'
-        run: |
-          echo "//npm.pkg.github.com/:_authToken=${NODE_AUTH_TOKEN}" > .npmrc
-          echo "@exceptionless:registry=https://npm.pkg.github.com" >> .npmrc
-          echo "always-auth=true" >> .npmrc
-          npm publish --workspaces --access public
+        uses: actions/setup-node@v2
+        with:
+          node-version: ${{ matrix.node_version }}
+          registry-url: 'https://npm.pkg.github.com'
+          scope: '@exceptionless'
+      - name: Push GitHub CI Packages
+        if: github.event_name != 'pull_request' && matrix.os == 'ubuntu-latest'
+        run: npm publish --workspaces --access public
         env:
           NODE_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
