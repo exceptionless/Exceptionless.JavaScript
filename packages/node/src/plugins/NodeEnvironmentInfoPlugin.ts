@@ -1,4 +1,10 @@
-import { argv, memoryUsage, pid, title, version } from "process";
+import {
+  argv,
+  memoryUsage,
+  pid,
+  title,
+  version
+} from "process";
 
 import {
   arch,
@@ -7,7 +13,6 @@ import {
   freemem,
   hostname,
   loadavg,
-  NetworkInterfaceInfo,
   networkInterfaces,
   platform,
   release,
@@ -20,11 +25,27 @@ import {
 import {
   EnvironmentInfo,
   EventPluginContext,
-  IEnvironmentInfoCollector,
+  IEventPlugin,
+  KnownEventDataKeys
 } from "@exceptionless/core";
 
-export class NodeEnvironmentInfoCollector implements IEnvironmentInfoCollector {
-  public getEnvironmentInfo(context: EventPluginContext): EnvironmentInfo {
+export class NodeEnvironmentInfoPlugin implements IEventPlugin {
+  public priority: number = 80;
+  public name: string = "NodeEnvironmentInfoPlugin";
+
+  public run(context: EventPluginContext): Promise<void> {
+    // PERF: Ensure module info is cached and rework below statement.
+    if (!context.event.data[KnownEventDataKeys.EnvironmentInfo]) {
+      const environmentInfo: EnvironmentInfo = this.getEnvironmentInfo(context);
+      if (environmentInfo) {
+        context.event.data[KnownEventDataKeys.EnvironmentInfo] = environmentInfo;
+      }
+    }
+
+    return Promise.resolve();
+  }
+
+  private getEnvironmentInfo(context: EventPluginContext): EnvironmentInfo {
     function getIpAddresses(): string {
       const ips: string[] = [];
 

@@ -27,7 +27,6 @@ export type {
 
 export { ConfigurationDefaultsPlugin } from "./plugins/default/ConfigurationDefaultsPlugin.js";
 export { DuplicateCheckerPlugin } from "./plugins/default/DuplicateCheckerPlugin.js";
-export { EnvironmentInfoPlugin } from "./plugins/default/EnvironmentInfoPlugin.js";
 export { ErrorPlugin } from "./plugins/default/ErrorPlugin.js";
 export { EventExclusionPlugin } from "./plugins/default/EventExclusionPlugin.js";
 export { HeartbeatPlugin } from "./plugins/default/HeartbeatPlugin.js";
@@ -42,7 +41,6 @@ export type { IEventPlugin } from "./plugins/IEventPlugin.js";
 export { DefaultEventQueue } from "./queue/DefaultEventQueue.js";
 export type { IEventQueue } from "./queue/IEventQueue.js";
 
-export type { IEnvironmentInfoCollector } from "./services/IEnvironmentInfoCollector.js";
 export type { IErrorParser } from "./services/IErrorParser.js";
 
 export { InMemoryStorage } from "./storage/InMemoryStorage.js";
