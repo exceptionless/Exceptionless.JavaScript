@@ -40,7 +40,7 @@
     "access": "public"
   },
   "devDependencies": {
-    "@types/angular": "1.8.0"
+    "@types/angular": "1.8.1"
   },
   "dependencies": {
     "@exceptionless/browser": "2.0.0-dev",
