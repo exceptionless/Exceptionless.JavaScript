@@ -1,5 +1,13 @@
 import { ModuleInfo } from "./ModuleInfo.js";
 
+export interface SimpleError {
+  message?: string;
+  type?: string;
+  stack_trace?: string;
+  data?: any;
+  inner?: SimpleError;
+}
+
 export interface InnerErrorInfo {
   message?: string;
   type?: string;
