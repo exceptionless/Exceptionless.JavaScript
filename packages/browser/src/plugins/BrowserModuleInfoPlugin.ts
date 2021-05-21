@@ -11,11 +11,11 @@ import {
 export class BrowserModuleInfoPlugin implements IEventPlugin {
   public priority: number = 50;
   public name: string = "BrowserModuleInfoPlugin";
-  private _cachedModules: ModuleInfo[] = null;
+  private _modules: ModuleInfo[] = null;
 
   public startup(context: PluginContext): Promise<void> {
-    if (!this._cachedModules) {
-      this._cachedModules = this.getModules();
+    if (!this._modules) {
+      this._modules = this.getModules();
     }
 
     return Promise.resolve();
@@ -23,8 +23,8 @@ export class BrowserModuleInfoPlugin implements IEventPlugin {
 
   public run(context: EventPluginContext): Promise<void> {
     const error = context.event.data[KnownEventDataKeys.Error];
-    if (this._cachedModules?.length > 0 && !error?.modules) {
-      error.modules = this._cachedModules;
+    if (this._modules?.length > 0 && !error?.modules) {
+      error.modules = this._modules;
     }
 
     return Promise.resolve();

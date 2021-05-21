@@ -32,13 +32,13 @@ import {
 export class NodeEnvironmentInfoPlugin implements IEventPlugin {
   public priority: number = 80;
   public name: string = "NodeEnvironmentInfoPlugin";
+  private _environmentInfo: EnvironmentInfo = null;
 
   public run(context: EventPluginContext): Promise<void> {
-    // PERF: Ensure module info is cached and rework below statement.
     if (!context.event.data[KnownEventDataKeys.EnvironmentInfo]) {
-      const environmentInfo: EnvironmentInfo = this.getEnvironmentInfo(context);
-      if (environmentInfo) {
-        context.event.data[KnownEventDataKeys.EnvironmentInfo] = environmentInfo;
+      const info: EnvironmentInfo = this.getEnvironmentInfo(context);
+      if (info) {
+        context.event.data[KnownEventDataKeys.EnvironmentInfo] = info;
       }
     }
 
@@ -60,14 +60,25 @@ export class NodeEnvironmentInfoPlugin implements IEventPlugin {
       return ips.join(", ");
     }
 
+    function populateMemoryAndUptimeInfo(ei: EnvironmentInfo) {
+      ei.process_memory_size = memoryUsage().heapTotal;
+      ei.total_physical_memory = totalmem();
+      ei.available_physical_memory = freemem();
+      ei.data.loadavg = loadavg();
+      ei.data.uptime = uptime();
+    }
+
     if (!cpus) {
       return null;
     }
 
-    const environmentInfo: EnvironmentInfo = {
+    if (this._environmentInfo) {
+      populateMemoryAndUptimeInfo(this._environmentInfo);
+      return this._environmentInfo;
+    }
+
+    const info: EnvironmentInfo = {
       processor_count: cpus().length,
-      total_physical_memory: totalmem(),
-      available_physical_memory: freemem(),
       command_line: argv.join(" "),
       process_name: (title || "").replace(/[\uE000-\uF8FF]/g, ""),
       process_id: pid + "",
@@ -79,26 +90,27 @@ export class NodeEnvironmentInfoPlugin implements IEventPlugin {
       // install_id: "",
       runtime_version: version,
       data: {
-        loadavg: loadavg(),
         platform: platform(),
-        tmpdir: tmpdir(),
-        uptime: uptime(),
+        tmpdir: tmpdir()
       },
     };
 
     const config = context.client.config;
     if (config.includeMachineName) {
-      environmentInfo.machine_name = hostname();
+      info.machine_name = hostname();
     }
 
     if (config.includeIpAddress) {
-      environmentInfo.ip_address = getIpAddresses();
+      info.ip_address = getIpAddresses();
     }
 
     if (endianness) {
-      environmentInfo.data.endianness = endianness();
+      info.data.endianness = endianness();
     }
 
-    return environmentInfo;
+    populateMemoryAndUptimeInfo(info);
+
+    this._environmentInfo = info;
+    return this._environmentInfo;
   }
 }
