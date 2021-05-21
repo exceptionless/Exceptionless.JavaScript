@@ -10,7 +10,6 @@ import { EventPluginContext } from "../plugins/EventPluginContext.js";
 import { IEventPlugin } from "../plugins/IEventPlugin.js";
 import { DefaultEventQueue } from "../queue/DefaultEventQueue.js";
 import { IEventQueue } from "../queue/IEventQueue.js";
-import { IEnvironmentInfoCollector } from "../services/IEnvironmentInfoCollector.js";
 import { IErrorParser } from "../services/IErrorParser.js";
 import { ISubmissionClient } from "../submission/ISubmissionClient.js";
 import { guid } from "../Utils.js";
@@ -58,7 +57,6 @@ export class Configuration {
   public enabled: boolean = true;
 
   public services: {
-    environmentInfoCollector?: IEnvironmentInfoCollector,
     errorParser?: IErrorParser,
     lastReferenceIdManager: ILastReferenceIdManager,
     log: ILog,
