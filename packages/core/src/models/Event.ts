@@ -1,4 +1,7 @@
-import { ErrorInfo } from "./data/ErrorInfo.js";
+import {
+  ErrorInfo,
+  SimpleError
+} from "./data/ErrorInfo.js";
 import { EnvironmentInfo } from "./data/EnvironmentInfo.js";
 import { RequestInfo } from "./data/RequestInfo.js";
 import { UserInfo } from "./data/UserInfo.js";
@@ -44,7 +47,7 @@ export const enum KnownEventDataKeys {
 
 interface IData extends Record<string, any> {
   "@error"?: ErrorInfo;
-  "@simple_error"?: any; // TODO: Need a model for simple error
+  "@simple_error"?: SimpleError;
   "@request"?: RequestInfo;
   "@environment"?: EnvironmentInfo;
   "@user"?: UserInfo;
