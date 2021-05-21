@@ -12,7 +12,6 @@ import { DefaultEventQueue } from "../queue/DefaultEventQueue.js";
 import { IEventQueue } from "../queue/IEventQueue.js";
 import { IEnvironmentInfoCollector } from "../services/IEnvironmentInfoCollector.js";
 import { IErrorParser } from "../services/IErrorParser.js";
-import { IModuleCollector } from "../services/IModuleCollector.js";
 import { IRequestInfoCollector } from "../services/IRequestInfoCollector.js";
 import { ISubmissionClient } from "../submission/ISubmissionClient.js";
 import { guid } from "../Utils.js";
@@ -64,7 +63,6 @@ export class Configuration {
     errorParser?: IErrorParser,
     lastReferenceIdManager: ILastReferenceIdManager,
     log: ILog,
-    moduleCollector?: IModuleCollector,
     requestInfoCollector?: IRequestInfoCollector,
     submissionClient?: ISubmissionClient,
     storage: IStorage,

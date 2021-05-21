@@ -4,7 +4,6 @@ import { DuplicateCheckerPlugin } from "./default/DuplicateCheckerPlugin.js";
 import { EnvironmentInfoPlugin } from "./default/EnvironmentInfoPlugin.js";
 import { ErrorPlugin } from "./default/ErrorPlugin.js";
 import { EventExclusionPlugin } from "./default/EventExclusionPlugin.js";
-import { ModuleInfoPlugin } from "./default/ModuleInfoPlugin.js";
 import { RequestInfoPlugin } from "./default/RequestInfoPlugin.js";
 import { SubmissionMethodPlugin } from "./default/SubmissionMethodPlugin.js";
 import { EventPluginContext } from "./EventPluginContext.js";
@@ -63,7 +62,6 @@ export class EventPluginManager {
     config.addPlugin(new ErrorPlugin());
     config.addPlugin(new DuplicateCheckerPlugin());
     config.addPlugin(new EventExclusionPlugin());
-    config.addPlugin(new ModuleInfoPlugin());
     config.addPlugin(new RequestInfoPlugin());
     config.addPlugin(new EnvironmentInfoPlugin());
     config.addPlugin(new SubmissionMethodPlugin());
