@@ -32,7 +32,6 @@ export { ErrorPlugin } from "./plugins/default/ErrorPlugin.js";
 export { EventExclusionPlugin } from "./plugins/default/EventExclusionPlugin.js";
 export { HeartbeatPlugin } from "./plugins/default/HeartbeatPlugin.js";
 export { ReferenceIdPlugin } from "./plugins/default/ReferenceIdPlugin.js";
-export { RequestInfoPlugin } from "./plugins/default/RequestInfoPlugin.js";
 export { SubmissionMethodPlugin } from "./plugins/default/SubmissionMethodPlugin.js";
 export { ContextData } from "./plugins/ContextData.js";
 export { PluginContext } from "./plugins/PluginContext.js";
@@ -45,7 +44,6 @@ export type { IEventQueue } from "./queue/IEventQueue.js";
 
 export type { IEnvironmentInfoCollector } from "./services/IEnvironmentInfoCollector.js";
 export type { IErrorParser } from "./services/IErrorParser.js";
-export type { IRequestInfoCollector } from "./services/IRequestInfoCollector.js";
 
 export { InMemoryStorage } from "./storage/InMemoryStorage.js";
 export type { IStorage } from "./storage/IStorage.js";
