@@ -12,7 +12,6 @@ import { DefaultEventQueue } from "../queue/DefaultEventQueue.js";
 import { IEventQueue } from "../queue/IEventQueue.js";
 import { IEnvironmentInfoCollector } from "../services/IEnvironmentInfoCollector.js";
 import { IErrorParser } from "../services/IErrorParser.js";
-import { IRequestInfoCollector } from "../services/IRequestInfoCollector.js";
 import { ISubmissionClient } from "../submission/ISubmissionClient.js";
 import { guid } from "../Utils.js";
 import { KnownEventDataKeys } from "../models/Event.js";
@@ -63,7 +62,6 @@ export class Configuration {
     errorParser?: IErrorParser,
     lastReferenceIdManager: ILastReferenceIdManager,
     log: ILog,
-    requestInfoCollector?: IRequestInfoCollector,
     submissionClient?: ISubmissionClient,
     storage: IStorage,
     queue: IEventQueue

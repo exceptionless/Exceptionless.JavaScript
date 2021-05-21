@@ -1,13 +1,34 @@
 import {
   EventPluginContext,
   getCookies,
-  IRequestInfoCollector,
+  IEventPlugin,
+  isMatch,
+  KnownEventDataKeys,
   RequestInfo,
   stringify,
 } from "@exceptionless/core";
 
-export class NodeRequestInfoCollector implements IRequestInfoCollector {
-  public getRequestInfo(context: EventPluginContext): RequestInfo {
+export class NodeRequestInfoPlugin implements IEventPlugin {
+  public priority: number = 70;
+  public name: string = "NodeRequestInfoPlugin";
+
+  public run(context: EventPluginContext): Promise<void> {
+    if (!context.event.data[KnownEventDataKeys.RequestInfo]) {
+      const requestInfo: RequestInfo = this.getRequestInfo(context);
+      if (requestInfo) {
+        if (isMatch(requestInfo.user_agent, context.client.config.userAgentBotPatterns)) {
+          context.log.info("Cancelling event as the request user agent matches a known bot pattern");
+          context.cancelled = true;
+        } else {
+          context.event.data[KnownEventDataKeys.RequestInfo] = requestInfo;
+        }
+      }
+    }
+
+    return Promise.resolve();
+  }
+
+  private getRequestInfo(context: EventPluginContext): RequestInfo {
     // TODO: Move this into a known keys.
     const REQUEST_KEY: string = "@request"; // optimization for minifier.
     if (!context.contextData[REQUEST_KEY]) {

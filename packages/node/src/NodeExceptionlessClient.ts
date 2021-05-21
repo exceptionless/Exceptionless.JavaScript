@@ -5,10 +5,10 @@ import {
 
 import { NodeGlobalHandlerPlugin } from "./plugins/NodeGlobalHandlerPlugin.js";
 import { NodeLifeCyclePlugin } from "./plugins/NodeLifeCyclePlugin.js";
+import { NodeRequestInfoPlugin } from "./plugins/NodeRequestInfoPlugin.js";
 import { NodeWrapFunctions } from "./plugins/NodeWrapFunctions.js";
 import { NodeEnvironmentInfoCollector } from "./services/NodeEnvironmentInfoCollector.js";
 import { NodeErrorParser } from "./services/NodeErrorParser.js";
-import { NodeRequestInfoCollector } from "./services/NodeRequestInfoCollector.js";
 import { NodeFileStorage } from "./storage/NodeFileStorage.js";
 import { NodeFetchSubmissionClient } from "./submission/NodeFetchSubmissionClient.js";
 
@@ -20,11 +20,11 @@ export class NodeExceptionlessClient extends ExceptionlessClient {
       config.services.storage = new NodeFileStorage();
       config.services.environmentInfoCollector = new NodeEnvironmentInfoCollector();
       config.services.errorParser = new NodeErrorParser();
-      config.services.requestInfoCollector = new NodeRequestInfoCollector();
       config.services.submissionClient = new NodeFetchSubmissionClient(config);
 
       config.addPlugin(new NodeGlobalHandlerPlugin());
       config.addPlugin(new NodeLifeCyclePlugin());
+      config.addPlugin(new NodeRequestInfoPlugin());
       config.addPlugin(new NodeWrapFunctions());
     }
 

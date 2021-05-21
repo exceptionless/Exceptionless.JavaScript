@@ -1,13 +1,34 @@
 import {
   EventPluginContext,
   getCookies,
-  IRequestInfoCollector,
+  IEventPlugin,
+  isMatch,
+  KnownEventDataKeys,
   parseQueryString,
   RequestInfo,
 } from "@exceptionless/core";
 
-export class BrowserRequestInfoCollector implements IRequestInfoCollector {
-  public getRequestInfo(context: EventPluginContext): RequestInfo {
+export class BrowserRequestInfoPlugin implements IEventPlugin {
+  public priority: number = 70;
+  public name: string = "BrowserRequestInfoPlugin";
+
+  public run(context: EventPluginContext): Promise<void> {
+    if (!context.event.data[KnownEventDataKeys.RequestInfo]) {
+      const requestInfo: RequestInfo = this.getRequestInfo(context);
+      if (requestInfo) {
+        if (isMatch(requestInfo.user_agent, context.client.config.userAgentBotPatterns)) {
+          context.log.info("Cancelling event as the request user agent matches a known bot pattern");
+          context.cancelled = true;
+        } else {
+          context.event.data[KnownEventDataKeys.RequestInfo] = requestInfo;
+        }
+      }
+    }
+
+    return Promise.resolve();
+  }
+
+  private getRequestInfo(context: EventPluginContext): RequestInfo {
     if (!document || !navigator || !location) {
       return null;
     }
