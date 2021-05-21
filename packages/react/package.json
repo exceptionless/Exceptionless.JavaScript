@@ -41,11 +41,11 @@
   },
   "devDependencies": {
     "@jest/globals": "26.6.2",
-    "@types/react": "17.0.3",
-    "@types/react-dom": "17.0.3",
+    "@types/react": "17.0.6",
+    "@types/react-dom": "17.0.5",
     "jest": "26.6.3",
     "jest-ts-webcompat-resolver": "1.0.0",
-    "ts-jest": "26.5.1"
+    "ts-jest": "26.5.6"
   },
   "dependencies": {
     "@exceptionless/browser": "2.0.0-dev"
