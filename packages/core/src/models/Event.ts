@@ -31,7 +31,7 @@ export interface Event {
   data?: IData;
 }
 
-export const enum KnownEventDataKeys {
+export enum KnownEventDataKeys {
   Error = "@error",
   SimpleError = "@simple_error",
   RequestInfo = "@request",
