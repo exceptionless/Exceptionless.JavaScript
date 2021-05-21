@@ -1,12 +1,36 @@
 import {
+  EventPluginContext,
   getHashCode,
-  IModuleCollector,
+  IEventPlugin,
+  KnownEventDataKeys,
   ModuleInfo,
   parseVersion,
+  PluginContext
 } from "@exceptionless/core";
 
-export class BrowserModuleCollector implements IModuleCollector {
-  public getModules(): ModuleInfo[] {
+export class BrowserModuleInfoPlugin implements IEventPlugin {
+  public priority: number = 50;
+  public name: string = "BrowserModuleInfoPlugin";
+  private _cachedModules: ModuleInfo[] = null;
+
+  public startup(context: PluginContext): Promise<void> {
+    if (!this._cachedModules) {
+      this._cachedModules = this.getModules();
+    }
+
+    return Promise.resolve();
+  }
+
+  public run(context: EventPluginContext): Promise<void> {
+    const error = context.event.data[KnownEventDataKeys.Error];
+    if (this._cachedModules?.length > 0 && !error?.modules) {
+      error.modules = this._cachedModules;
+    }
+
+    return Promise.resolve();
+  }
+
+  private getModules(): ModuleInfo[] {
     if (!document || !document.getElementsByTagName) {
       return null;
     }

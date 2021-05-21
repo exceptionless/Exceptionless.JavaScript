@@ -1,8 +1,8 @@
 export { BrowserGlobalHandlerPlugin } from "./plugins/BrowserGlobalHandlerPlugin.js";
 export { BrowserLifeCyclePlugin } from "./plugins/BrowserLifeCyclePlugin.js";
 export { BrowserWrapFunctions } from "./plugins/BrowserWrapFunctions.js";
+export { BrowserModuleInfoPlugin } from "./plugins/BrowserModuleInfoPlugin.js";
 export { BrowserErrorParser } from "./services/BrowserErrorParser.js";
-export { BrowserModuleCollector } from "./services/BrowserModuleCollector.js";
 export { BrowserRequestInfoCollector } from "./services/BrowserRequestInfoCollector.js";
 export { BrowserLocalStorage } from "./storage/BrowserLocalStorage.js";
 export { BrowserFetchSubmissionClient } from "./submission/BrowserFetchSubmissionClient.js";
