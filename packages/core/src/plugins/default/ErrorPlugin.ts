@@ -4,8 +4,8 @@ import { EventPluginContext } from "../EventPluginContext.js";
 import { IEventPlugin } from "../IEventPlugin.js";
 
 export class ErrorPlugin implements IEventPlugin {
-  public priority: number = 30;
-  public name: string = "ErrorPlugin";
+  public priority = 30;
+  public name = "ErrorPlugin";
 
   public async run(context: EventPluginContext): Promise<void> {
     const IGNORED_ERROR_PROPERTIES: string[] = [

@@ -1,5 +1,5 @@
 export interface ModuleInfo {
-  data?: any;
+  data?: Record<string, unknown>;
   module_id?: number;
   name?: string;
   version?: string;

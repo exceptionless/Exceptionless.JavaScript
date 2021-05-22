@@ -3,8 +3,8 @@ import { EventPluginContext } from "../EventPluginContext.js";
 import { IEventPlugin } from "../IEventPlugin.js";
 
 export class ConfigurationDefaultsPlugin implements IEventPlugin {
-  public priority: number = 10;
-  public name: string = "ConfigurationDefaultsPlugin";
+  public priority = 10;
+  public name = "ConfigurationDefaultsPlugin";
 
   public run(context: EventPluginContext): Promise<void> {
     const config = context.client.config;

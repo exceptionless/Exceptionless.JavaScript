@@ -1,12 +1,11 @@
-import { InnerErrorInfo } from "../../models/data/ErrorInfo.js";
 import { KnownEventDataKeys } from "../../models/Event.js";
 import { isMatch, startsWith, toBoolean } from "../../Utils.js";
 import { EventPluginContext } from "../EventPluginContext.js";
 import { IEventPlugin } from "../IEventPlugin.js";
 
 export class EventExclusionPlugin implements IEventPlugin {
-  public priority: number = 45;
-  public name: string = "EventExclusionPlugin";
+  public priority = 45;
+  public name = "EventExclusionPlugin";
 
   public run(context: EventPluginContext): Promise<void> {
     const ev = context.event;
@@ -15,14 +14,14 @@ export class EventExclusionPlugin implements IEventPlugin {
 
     if (ev.type === "log") {
       const minLogLevel = this.getMinLogLevel(settings, ev.source);
-      const logLevel = this.getLogLevel(ev.data[KnownEventDataKeys.Level]);
+      const logLevel = this.getLogLevel(ev.data![KnownEventDataKeys.Level]);
 
       if (logLevel !== -1 && (logLevel === 6 || logLevel < minLogLevel)) {
         log.info("Cancelling log event due to minimum log level.");
         context.cancelled = true;
       }
     } else if (ev.type === "error") {
-      let error: InnerErrorInfo = ev.data[KnownEventDataKeys.Error];
+      let error = ev.data![KnownEventDataKeys.Error];
       while (!context.cancelled && error) {
         if (this.getTypeAndSourceSetting(settings, ev.type, error.type, true) === false) {
           log.info(`Cancelling error from excluded exception type: ${error.type}`);
@@ -39,7 +38,7 @@ export class EventExclusionPlugin implements IEventPlugin {
     return Promise.resolve();
   }
 
-  public getLogLevel(level: string): number {
+  public getLogLevel(level: string | undefined): number {
     switch ((level || "").toLowerCase().trim()) {
       case "trace":
       case "true":
@@ -66,14 +65,14 @@ export class EventExclusionPlugin implements IEventPlugin {
     }
   }
 
-  public getMinLogLevel(configSettings: Record<string, string>, source): number {
+  public getMinLogLevel(configSettings: Record<string, string>, source: string | undefined): number {
     return this.getLogLevel(this.getTypeAndSourceSetting(configSettings, "log", source, "other") + "");
   }
 
   private getTypeAndSourceSetting(
     configSettings: Record<string, string> = {},
     type: string,
-    source: string,
+    source: string | undefined,
     defaultValue: string | boolean,
   ): string | boolean {
     if (!type) {
@@ -85,7 +84,7 @@ export class EventExclusionPlugin implements IEventPlugin {
     }
 
     const isLog: boolean = type === "log";
-    const sourcePrefix: string = `@@${type}:`;
+    const sourcePrefix = `@@${type}:`;
 
     const value: string = configSettings[sourcePrefix + source];
     if (value) {

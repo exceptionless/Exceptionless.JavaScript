@@ -44,12 +44,13 @@ export type { IEventQueue } from "./queue/IEventQueue.js";
 export type { IErrorParser } from "./services/IErrorParser.js";
 
 export { InMemoryStorage } from "./storage/InMemoryStorage.js";
+export { LocalStorage } from "./storage/LocalStorage.js";
 export type { IStorage } from "./storage/IStorage.js";
 
 export type { ISubmissionClient } from "./submission/ISubmissionClient.js";
 export { Response } from "./submission/Response.js";
-export type { FetchOptions } from "./submission/SubmissionClientBase.js";
-export { SubmissionClientBase } from "./submission/SubmissionClientBase.js";
+export type { FetchOptions } from "./submission/DefaultSubmissionClient.js";
+export { DefaultSubmissionClient } from "./submission/DefaultSubmissionClient.js";
 export { EventBuilder } from "./EventBuilder.js";
 export { ExceptionlessClient } from "./ExceptionlessClient.js";
 
@@ -60,11 +61,10 @@ export {
   guid,
   isEmpty,
   isMatch,
-  merge,
   parseQueryString,
   parseVersion,
   randomNumber,
   startsWith,
   stringify,
-  toBoolean
+  toBoolean,
 } from "./Utils.js";

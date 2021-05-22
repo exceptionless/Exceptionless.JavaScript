@@ -1,5 +1,5 @@
 import { Configuration } from "../../src/configuration/Configuration.js";
-import { ClientSettings } from "../../src/configuration/SettingsManager.js";
+import { ServerSettings } from "../../src/configuration/SettingsManager.js";
 import { Event } from "../../src/models/Event.js";
 import { UserDescription } from "../../src/models/data/UserDescription.js";
 import { Response } from "../../src/submission/Response.js";
@@ -51,7 +51,7 @@ describe("TestSubmissionClient", () => {
   test("should submit user description", async () => {
     const fetchMock = TestSubmissionClient.prototype.fetch = jest.fn()
       .mockReturnValueOnce(new Response(202, "", undefined, 1, undefined))
-      .mockReturnValueOnce(new Response(202, "", undefined, undefined, JSON.stringify(new ClientSettings({}, 1))));
+      .mockReturnValueOnce(new Response(202, "", undefined, undefined, JSON.stringify(new ServerSettings({}, 1))));
 
     const description: UserDescription = {
       email_address: "norply@exceptionless.io",
@@ -83,7 +83,7 @@ describe("TestSubmissionClient", () => {
 
   test("should get project settings", async () => {
     const fetchMock = TestSubmissionClient.prototype.fetch = jest.fn()
-      .mockReturnValueOnce(new Response(200, "", undefined, undefined, JSON.stringify(new ClientSettings({}, 1))));
+      .mockReturnValueOnce(new Response(200, "", undefined, undefined, JSON.stringify(new ServerSettings({}, 1))));
 
     const client = new TestSubmissionClient(config);
     await client.getSettings(0);

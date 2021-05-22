@@ -43,7 +43,6 @@
     "@types/angular": "1.8.1"
   },
   "dependencies": {
-    "@exceptionless/browser": "2.0.0-dev",
-    "angular": "1.8.2"
+    "@exceptionless/browser": "2.0.0-dev"
   }
 }

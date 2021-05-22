@@ -18,8 +18,7 @@ export class EventBuilder {
   public client: ExceptionlessClient;
   public pluginContextData: ContextData;
 
-  private _validIdentifierErrorMessage: string =
-    "must contain between 8 and 100 alphanumeric or '-' characters."; // optimization for minifier.
+  private _validIdentifierErrorMessage = "must contain between 8 and 100 alphanumeric or '-' characters.";
 
   constructor(
     event: Event,
@@ -75,7 +74,7 @@ export class EventBuilder {
     return this;
   }
 
-  public setMessage(message: string): EventBuilder {
+  public setMessage(message: string | null | undefined): EventBuilder {
     if (message) {
       this.target.message = message;
     }
@@ -145,7 +144,7 @@ export class EventBuilder {
    * @returns {EventBuilder}
    */
   public setManualStackingInfo(
-    signatureData: any,
+    signatureData: Record<string, string>,
     title?: string,
   ): EventBuilder {
     if (signatureData) {
@@ -199,14 +198,14 @@ export class EventBuilder {
   /**
    * Adds the object to extended data. Uses @excludedPropertyNames
    * to exclude data from being included in the event.
-   * @param name The data object to add.
-   * @param value The name of the object to add.
+   * @param name The name of the object to add.
+   * @param value The data object to add.
    * @param maxDepth The max depth of the object to include.
    * @param excludedPropertyNames Any property names that should be excluded.
    */
   public setProperty(
     name: string,
-    value: any,
+    value: unknown,
     maxDepth?: number,
     excludedPropertyNames?: string[],
   ): EventBuilder {

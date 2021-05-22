@@ -3,7 +3,7 @@ export function getHashCode(source: string): number {
     return 0;
   }
 
-  let hash: number = 0;
+  let hash = 0;
   for (let index = 0; index < source.length; index++) {
     const character = source.charCodeAt(index);
     hash = ((hash << 5) - hash) + character;
@@ -13,13 +13,16 @@ export function getHashCode(source: string): number {
   return hash;
 }
 
-export function getCookies(cookies: string, exclusions?: string[]): Record<string, string> {
+export function getCookies(
+  cookies: string,
+  exclusions?: string[],
+): Record<string, string> | null {
   const result: Record<string, string> = {};
 
   const parts: string[] = (cookies || "").split("; ");
   for (const part of parts) {
     const cookie: string[] = part.split("=");
-    if (!isMatch(cookie[0], exclusions)) {
+    if (!isMatch(cookie[0], exclusions || [])) {
       result[cookie[0]] = cookie[1];
     }
   }
@@ -27,39 +30,22 @@ export function getCookies(cookies: string, exclusions?: string[]): Record<strin
   return !isEmpty(result) ? result : null;
 }
 
-// TODO: PERF this to generate reference id.
 export function guid(): string {
   function s4() {
     return Math.floor((1 + Math.random()) * 0x10000).toString(16).substring(1);
   }
 
-  return s4() + s4() + "-" + s4() + "-" + s4() + "-" + s4() + "-" + s4() + s4() + s4();
+  return s4() + s4() + "-" + s4() + "-" + s4() + "-" + s4() + "-" + s4() +
+    s4() + s4();
 }
 
-export function merge<T>(defaultValues: T, values: T): T {
-  const result = {};
-
-  for (const key in defaultValues || {}) {
-    if (defaultValues[key] !== undefined && defaultValues[key] !== null) {
-      result[key] = defaultValues[key];
-    }
-  }
-
-  for (const key in values || {}) {
-    if (values[key] !== undefined && values[key] !== null) {
-      result[key] = values[key];
-    }
-  }
-
-  return <T>result;
-}
-
-export function parseVersion(source: string): string {
+export function parseVersion(source: string): string | null {
   if (!source) {
     return null;
   }
 
-  const versionRegex = /(v?((\d+)\.(\d+)(\.(\d+))?)(?:-([\dA-Za-z-]+(?:\.[\dA-Za-z-]+)*))?(?:\+([\dA-Za-z-]+(?:\.[\dA-Za-z-]+)*))?)/;
+  const versionRegex =
+    /(v?((\d+)\.(\d+)(\.(\d+))?)(?:-([\dA-Za-z-]+(?:\.[\dA-Za-z-]+)*))?(?:\+([\dA-Za-z-]+(?:\.[\dA-Za-z-]+)*))?)/;
   const matches = versionRegex.exec(source);
   if (matches && matches.length > 0) {
     return matches[0];
@@ -68,25 +54,28 @@ export function parseVersion(source: string): string {
   return null;
 }
 
-export function parseQueryString(query: string, exclusions?: string[]): Record<string, string> {
+export function parseQueryString(
+  query: string,
+  exclusions?: string[],
+): Record<string, string> {
   if (!query || query.length === 0) {
-    return null;
+    return {};
   }
 
   const pairs: string[] = query.split("&");
   if (pairs.length === 0) {
-    return null;
+    return {};
   }
 
   const result: Record<string, string> = {};
   for (const pair of pairs) {
     const parts = pair.split("=");
-    if (!isMatch(parts[0], exclusions)) {
+    if (!exclusions || !isMatch(parts[0], exclusions)) {
       result[decodeURIComponent(parts[0])] = decodeURIComponent(parts[1]);
     }
   }
 
-  return !isEmpty(result) ? result : null;
+  return !isEmpty(result) ? result : {};
 }
 
 export function randomNumber(): number {
@@ -98,7 +87,11 @@ export function randomNumber(): number {
  * @param input the value to check against the @pattern.
  * @param pattern The pattern to check, supports wild cards (*).
  */
-export function isMatch(input: string, patterns: string[], ignoreCase: boolean = true): boolean {
+export function isMatch(
+  input: string | undefined,
+  patterns: string[],
+  ignoreCase = true,
+): boolean {
   if (typeof input !== "string") {
     return false;
   }
@@ -112,7 +105,10 @@ export function isMatch(input: string, patterns: string[], ignoreCase: boolean =
     }
 
     if (pattern) {
-      pattern = (ignoreCase ? pattern.toLowerCase() : pattern).replace(trim, "")
+      pattern = (ignoreCase ? pattern.toLowerCase() : pattern).replace(
+        trim,
+        "",
+      );
     }
 
     if (!pattern) {
@@ -153,8 +149,11 @@ export function isMatch(input: string, patterns: string[], ignoreCase: boolean =
   });
 }
 
-export function isEmpty(input: Record<string, unknown> | unknown) {
-  return input === null || (typeof (input) === "object" && Object.keys(input).length === 0);
+export function isEmpty(
+  input: Record<string, unknown> | null | undefined | unknown,
+) {
+  return input === null || input === undefined ||
+    Object.keys(input).length === 0;
 }
 
 export function startsWith(input: string, prefix: string): boolean {
@@ -165,12 +164,6 @@ export function endsWith(input: string, suffix: string): boolean {
   return input.indexOf(suffix, input.length - suffix.length) !== -1;
 }
 
-/**
- * Stringifies an object with optional exclusions and max depth.
- * @param data The data object to add.
- * @param exclusions Any property names that should be excluded.
- * @param maxDepth The max depth of the object to include.
- */
 export function stringify(data: any, exclusions?: string[], maxDepth?: number): string {
   function stringifyImpl(obj: any, excludedKeys: string[]): string {
     const cache: string[] = [];
@@ -217,18 +210,76 @@ export function stringify(data: any, exclusions?: string[], maxDepth?: number): 
   return stringifyImpl(data, exclusions);
 }
 
+/**
+ * Stringifies an object with optional exclusions and max depth.
+ * @param data The data object to add.
+ * @param exclusions Any property names that should be excluded.
+ * @param maxDepth The max depth of the object to include.
+ */
+export function stringify2(
+  data: unknown,
+  exclusions?: string[],
+  maxDepth = -1,
+): string {
+  const seen = new WeakSet();
+
+  function stringifyImpl(
+    obj: unknown,
+    excludedKeys: string[],
+    currentDepth: number,
+    currentScope: string,
+  ): string {
+    return JSON.stringify(obj, (key: string, value: unknown) => {
+      if (isMatch(key, excludedKeys)) {
+        return;
+      }
+
+      if (typeof value === "object" && value !== null) {
+        if (seen.has(value)) {
+          return;
+        }
+
+        seen.add(value);
+
+        if (currentDepth >= maxDepth)
+          return;
+
+        return stringifyImpl(
+          value,
+          excludedKeys,
+          currentDepth + 1,
+          key.length > 0 ? currentScope + "." + key : currentScope,
+        );
+      }
+
+      return value;
+    });
+  }
+
+  return stringifyImpl(data, exclusions, 1, "");
+}
+
 export function toBoolean(input, defaultValue: boolean = false): boolean {
   if (typeof input === "boolean") {
     return input;
   }
 
-  if (input === null || typeof input !== "number" && typeof input !== "string") {
+  if (
+    input === null || typeof input !== "number" && typeof input !== "string"
+  ) {
     return defaultValue;
   }
 
   switch ((input + "").toLowerCase().trim()) {
-    case "true": case "yes": case "1": return true;
-    case "false": case "no": case "0": case null: return false;
+    case "true":
+    case "yes":
+    case "1":
+      return true;
+    case "false":
+    case "no":
+    case "0":
+    case null:
+      return false;
   }
 
   return defaultValue;

@@ -31,7 +31,10 @@
     "./package.json": "./package.json"
   },
   "jest": {
-    "moduleFileExtensions": ["js", "ts"],
+    "moduleFileExtensions": [
+      "js",
+      "ts"
+    ],
     "moduleNameMapper": {
       "^@exceptionless/(.*)$": "<rootDir>/../$1/src"
     },
@@ -50,6 +53,7 @@
   },
   "devDependencies": {
     "@types/stack-trace": "0.0.29",
+    "@types/node": "^15.6.0",
     "@jest/globals": "26.6.2",
     "jest": "26.6.3",
     "jest-ts-webcompat-resolver": "1.0.0",

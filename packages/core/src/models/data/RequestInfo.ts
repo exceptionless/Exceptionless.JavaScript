@@ -7,8 +7,8 @@ export interface RequestInfo {
   path?: string;
   referrer?: string;
   client_ip_address?: string;
-  cookies?: any;
-  post_data?: any;
-  query_string?: any;
-  data?: any;
+  cookies?: Record<string, string>;
+  post_data?: Record<string, unknown>;
+  query_string?: Record<string, string>;
+  data?: Record<string, unknown>;
 }

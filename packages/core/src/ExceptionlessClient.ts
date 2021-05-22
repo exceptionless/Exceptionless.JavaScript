@@ -9,8 +9,8 @@ import { EventPluginManager } from "./plugins/EventPluginManager.js";
 import { PluginContext } from "./plugins/PluginContext.js";
 
 export class ExceptionlessClient {
-  private _intervalId: any;
-  private _timeoutId: any;
+  private _intervalId = 0;
+  private _timeoutId = 0;
 
   public constructor(public config: Configuration = new Configuration()) { }
 
@@ -25,7 +25,9 @@ export class ExceptionlessClient {
         configurationOrApiKey(this.config);
       }
 
-      this.config.services.queue.onEventsPosted(() => Promise.resolve(this.updateSettingsTimer()));
+      this.config.services.queue.onEventsPosted(() =>
+        Promise.resolve(this.updateSettingsTimer())
+      );
       await SettingsManager.applySavedServerSettings(this.config);
     }
 
@@ -49,15 +51,17 @@ export class ExceptionlessClient {
   }
 
   private suspendSettingsTimer(): void {
-    this._timeoutId = clearTimeout(this._timeoutId);
-    this._intervalId = clearInterval(this._intervalId);
+    clearTimeout(this._timeoutId);
+    this._timeoutId = 0;
+    clearInterval(this._intervalId);
+    this._intervalId = 0;
   }
 
   public async processQueue(): Promise<void> {
     await this.config.services.queue.process();
   }
 
-  private updateSettingsTimer(startingUp: boolean = false) {
+  private updateSettingsTimer(startingUp = false) {
     this.suspendSettingsTimer();
 
     const interval = this.config.updateSettingsWhenIdleInterval;
@@ -67,9 +71,12 @@ export class ExceptionlessClient {
         initialDelay = this.config.settingsVersion > 0 ? 15000 : 5000;
       }
 
-      this.config.services.log.info(`Update settings every ${interval}ms (${initialDelay || 0}ms delay)`);
+      this.config.services.log.info(
+        `Update settings every ${interval}ms (${initialDelay || 0}ms delay)`,
+      );
       // TODO: Look into better async scheduling..
-      const updateSettings = () => void SettingsManager.updateSettings(this.config);
+      const updateSettings = () =>
+        void SettingsManager.updateSettings(this.config);
       if (initialDelay < interval) {
         this._timeoutId = setTimeout(updateSettings, initialDelay);
       }
@@ -91,7 +98,7 @@ export class ExceptionlessClient {
   public createUnhandledException(exception: Error, submissionMethod?: string): EventBuilder {
     const builder = this.createException(exception);
     builder.pluginContextData.markAsUnhandledError();
-    builder.pluginContextData.setSubmissionMethod(submissionMethod);
+    builder.pluginContextData.setSubmissionMethod(submissionMethod || "");
 
     return builder;
   }
@@ -115,7 +122,8 @@ export class ExceptionlessClient {
     let builder = this.createEvent().setType("log");
 
     if (level) {
-      builder = builder.setSource(sourceOrMessage).setMessage(message).setProperty(KnownEventDataKeys.Level, level);
+      builder = builder.setSource(sourceOrMessage).setMessage(message)
+        .setProperty(KnownEventDataKeys.Level, level);
     } else if (message) {
       builder = builder.setSource(sourceOrMessage).setMessage(message);
     } else {
@@ -123,12 +131,14 @@ export class ExceptionlessClient {
 
       try {
         // TODO: Look into using https://www.stevefenton.co.uk/Content/Blog/Date/201304/Blog/Obtaining-A-Class-Name-At-Runtime-In-TypeScript/
-        const caller: any = this.createLog.caller;
+        const caller = this.createLog.caller;
         builder = builder.setSource(
           caller && caller.caller && caller.caller.name,
         );
       } catch (e) {
-        this.config.services.log.trace("Unable to resolve log source: " + e.message);
+        this.config.services.log.trace(
+          "Unable to resolve log source: " + e.message,
+        );
       }
     }
 
@@ -160,15 +170,25 @@ export class ExceptionlessClient {
 
   public async submitSessionEnd(sessionIdOrUserId: string): Promise<void> {
     if (sessionIdOrUserId && this.config.enabled && this.config.isValid) {
-      this.config.services.log.info(`Submitting session end: ${sessionIdOrUserId}`);
-      await this.config.services.submissionClient.submitHeartbeat(sessionIdOrUserId, true);
+      this.config.services.log.info(
+        `Submitting session end: ${sessionIdOrUserId}`,
+      );
+      await this.config.services.submissionClient.submitHeartbeat(
+        sessionIdOrUserId,
+        true,
+      );
     }
   }
 
   public async submitSessionHeartbeat(sessionIdOrUserId: string): Promise<void> {
     if (sessionIdOrUserId && this.config.enabled && this.config.isValid) {
-      this.config.services.log.info(`Submitting session heartbeat: ${sessionIdOrUserId}`);
-      await this.config.services.submissionClient.submitHeartbeat(sessionIdOrUserId, false);
+      this.config.services.log.info(
+        `Submitting session heartbeat: ${sessionIdOrUserId}`,
+      );
+      await this.config.services.submissionClient.submitHeartbeat(
+        sessionIdOrUserId,
+        false,
+      );
     }
   }
 
@@ -239,15 +259,19 @@ export class ExceptionlessClient {
    * @param callback The submission response.
    */
   public async updateUserEmailAndDescription(referenceId: string, email: string, description: string): Promise<void> {
-    if (!referenceId || !email || !description || !this.config.enabled || !this.config.isValid) {
+    if (
+      !referenceId || !email || !description || !this.config.enabled ||
+      !this.config.isValid
+    ) {
       return;
     }
 
     const userDescription: UserDescription = {
       email_address: email,
-      description
+      description,
     };
-    const response = await this.config.services.submissionClient.submitUserDescription(referenceId, userDescription);
+    const response = await this.config.services.submissionClient
+      .submitUserDescription(referenceId, userDescription);
     if (!response.success) {
       this.config.services.log.error(
         `Failed to submit user email and description for event "${referenceId}": ${response.status} ${response.message}`,
@@ -259,7 +283,7 @@ export class ExceptionlessClient {
    * Gets the last event client id that was submitted to the server.
    * @returns {string} The event client id.
    */
-  public getLastReferenceId(): string {
+  public getLastReferenceId(): string | null {
     return this.config.services.lastReferenceIdManager.getLast();
   }
 }

@@ -5,7 +5,7 @@ import { ContextData } from "./ContextData.js";
 import { PluginContext } from "./PluginContext.js";
 
 export class EventPluginContext extends PluginContext {
-  public cancelled: boolean = false;
+  public cancelled = false;
 
   constructor(
     client: ExceptionlessClient,

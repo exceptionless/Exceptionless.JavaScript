@@ -1,7 +1,4 @@
-import {
-  ErrorInfo,
-  SimpleError
-} from "./data/ErrorInfo.js";
+import { ErrorInfo, SimpleError } from "./data/ErrorInfo.js";
 import { EnvironmentInfo } from "./data/EnvironmentInfo.js";
 import { RequestInfo } from "./data/RequestInfo.js";
 import { UserInfo } from "./data/UserInfo.js";
@@ -45,7 +42,7 @@ export enum KnownEventDataKeys {
   ManualStackingInfo = "@stack",
 }
 
-interface IData extends Record<string, any> {
+export interface IData extends Record<string, unknown> {
   "@error"?: ErrorInfo;
   "@simple_error"?: SimpleError;
   "@request"?: RequestInfo;

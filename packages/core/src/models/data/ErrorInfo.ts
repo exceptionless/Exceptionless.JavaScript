@@ -4,7 +4,7 @@ export interface SimpleError {
   message?: string;
   type?: string;
   stack_trace?: string;
-  data?: any;
+  data?: Record<string, unknown>;
   inner?: SimpleError;
 }
 
@@ -12,7 +12,7 @@ export interface InnerErrorInfo {
   message?: string;
   type?: string;
   code?: string;
-  data?: any;
+  data?: Record<string, unknown>;
   inner?: InnerErrorInfo;
   stack_trace?: StackFrameInfo[];
   target_method?: MethodInfo;
@@ -23,7 +23,7 @@ export interface ErrorInfo extends InnerErrorInfo {
 }
 
 export interface MethodInfo {
-  data?: any;
+  data?: Record<string, unknown>;
   generic_arguments?: string[];
   parameters?: ParameterInfo[];
   is_signature_target?: boolean;
@@ -34,7 +34,7 @@ export interface MethodInfo {
 }
 
 export interface ParameterInfo {
-  data?: any;
+  data?: Record<string, unknown>;
   generic_arguments?: string[];
   name?: string;
   type?: string;

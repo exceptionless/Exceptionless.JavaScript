@@ -1,6 +1,6 @@
-import { IStorage } from "@exceptionless/core";
+import { IStorage } from "./IStorage.js";
 
-export class BrowserLocalStorage implements IStorage {
+export class LocalStorage implements IStorage {
   constructor(private prefix: string = "exceptionless:") { }
 
   public length(): Promise<number> {

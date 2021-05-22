@@ -14,13 +14,22 @@ export class InMemoryStorage implements IStorage {
     return Promise.resolve();
   }
 
-  public getItem(key: string): Promise<string> {
-    return Promise.resolve(this.items.has(key) ? this.items.get(key) : null);
+  public getItem(key: string): Promise<string | null> {
+    const value = this.items.get(key);
+    return Promise.resolve(value ? value : null);
   }
 
-  public async key(index: number): Promise<string> {
+  public async key(index: number): Promise<string | null> {
+    if (index < 0)
+      return Promise.resolve(null);
+
     const keys = await this.keys();
-    return Promise.resolve(index < keys.length ? keys[index] : null);
+
+    if (index > keys.length)
+      return Promise.resolve(null);
+
+    const key = keys[index];
+    return Promise.resolve(key ? key : null);
   }
 
   public keys(): Promise<string[]> {

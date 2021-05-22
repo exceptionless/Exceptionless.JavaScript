@@ -3,16 +3,15 @@ import { KnownEventDataKeys } from "../../models/Event.js";
 import { getHashCode } from "../../Utils.js";
 import { EventPluginContext } from "../EventPluginContext.js";
 import { IEventPlugin } from "../IEventPlugin.js";
-import { PluginContext } from "../PluginContext.js";
 
 export class DuplicateCheckerPlugin implements IEventPlugin {
-  public priority: number = 1010;
-  public name: string = "DuplicateCheckerPlugin";
+  public priority = 1010;
+  public name = "DuplicateCheckerPlugin";
 
   private _mergedEvents: MergedEvent[] = [];
   private _processedHashCodes: TimestampedHash[] = [];
   private _getCurrentTime: () => number;
-  private _intervalId: any;
+  private _intervalId = 0;
   private _interval: number;
 
   constructor(
@@ -23,14 +22,15 @@ export class DuplicateCheckerPlugin implements IEventPlugin {
     this._interval = interval;
   }
 
-  public startup(context: PluginContext): Promise<void> {
-    this._intervalId = clearInterval(this._intervalId);
+  public startup(): Promise<void> {
+    clearInterval(this._intervalId);
     this._intervalId = setInterval(() => void this.submitEvents(), this._interval);
     return Promise.resolve();
   }
 
-  public async suspend(context: PluginContext): Promise<void> {
-    this._intervalId = clearInterval(this._intervalId);
+  public async suspend(): Promise<void> {
+    clearInterval(this._intervalId);
+    this._intervalId = 0;
     await this.submitEvents();
   }
 
@@ -50,7 +50,7 @@ export class DuplicateCheckerPlugin implements IEventPlugin {
       return hash;
     }
 
-    const error = context.event.data[KnownEventDataKeys.Error];
+    const error = context.event.data![KnownEventDataKeys.Error];
     const hashCode = calculateHashCode(error);
     if (hashCode) {
       const count = context.event.count || 1;

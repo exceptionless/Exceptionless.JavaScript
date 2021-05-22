@@ -18,7 +18,6 @@ export class BrowserGlobalHandlerPlugin implements IEventPlugin {
     }
 
     this._client = context.client;
-    Error.stackTraceLimit = 50;
 
     // TODO: Discus if we want to unwire this handler in suspend?
     window.addEventListener("error", async event => {

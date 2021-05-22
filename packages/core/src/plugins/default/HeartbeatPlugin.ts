@@ -1,39 +1,39 @@
-import { UserInfo } from "../../models/data/UserInfo.js";
 import { KnownEventDataKeys } from "../../models/Event.js";
 import { EventPluginContext } from "../EventPluginContext.js";
 import { IEventPlugin } from "../IEventPlugin.js";
-import { PluginContext } from "../PluginContext.js";
 
 export class HeartbeatPlugin implements IEventPlugin {
-  public priority: number = 100;
-  public name: string = "HeartbeatPlugin";
+  public priority = 100;
+  public name = "HeartbeatPlugin";
 
   private _interval: number;
-  private _intervalId: any;
+  private _intervalId = 0;
 
   constructor(heartbeatInterval: number = 30000) {
     this._interval = heartbeatInterval >= 30000 ? heartbeatInterval : 60000;
   }
 
-  public startup(context: PluginContext): Promise<void> {
-    this._intervalId = clearInterval(this._intervalId);
+  public startup(): Promise<void> {
+    clearInterval(this._intervalId);
+    this._intervalId = 0;
     // TODO: Do we want to send a heartbeat for the last user?
     return Promise.resolve();
   }
 
-  public suspend(context: PluginContext): Promise<void> {
-    this._intervalId = clearInterval(this._intervalId);
+  public suspend(): Promise<void> {
+    clearInterval(this._intervalId);
+    this._intervalId = 0;
     return Promise.resolve();
   }
 
   public run(context: EventPluginContext): Promise<void> {
-    this._intervalId = clearInterval(this._intervalId);
+    clearInterval(this._intervalId);
+    this._intervalId = 0;
 
-    const user: UserInfo = context.event.data[KnownEventDataKeys.UserInfo];
-    if (user && user.identity) {
-      // TODO: Fix awaiting promise.
+    const user = context.event.data![KnownEventDataKeys.UserInfo];
+    if (user?.identity) {
       this._intervalId = setInterval(
-        () => void context.client.submitSessionHeartbeat(user.identity),
+        async () => await context.client.submitSessionHeartbeat(user.identity),
         this._interval,
       );
     }

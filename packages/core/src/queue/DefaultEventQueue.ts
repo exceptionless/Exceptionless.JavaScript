@@ -22,31 +22,31 @@ export class DefaultEventQueue implements IEventQueue {
    * @type {Date}
    * @private
    */
-  private _suspendProcessingUntil: Date;
+  private _suspendProcessingUntil?: Date;
 
   /**
    * Discards queued items until the specified time.
    * @type {Date}
    * @private
    */
-  private _discardQueuedItemsUntil: Date;
+  private _discardQueuedItemsUntil?: Date;
 
   /**
    * Returns true if the queue is processing.
    * @type {boolean}
    * @private
    */
-  private _processingQueue: boolean = false;
+  private _processingQueue = false;
 
   /**
    * Processes the queue every xx seconds.
    * @type {Timer}
    * @private
    */
-  private _queueTimerId: any;
+  private _queueTimerId = 0;
 
   private readonly QUEUE_PREFIX: string = "q:";
-  private _lastFileTimestamp: number = 0;
+  private _lastFileTimestamp = 0;
   private _queue: EventQueueItem[] = [];
   private _loadPersistedEvents = true;
 
@@ -56,9 +56,9 @@ export class DefaultEventQueue implements IEventQueue {
   ) { }
 
   public async enqueue(event: Event): Promise<void> {
-    const eventWillNotBeQueued: string = "The event will not be queued."; // optimization for minifier.
-    const config: Configuration = this.config; // Optimization for minifier.
-    const log: ILog = config.services.log; // Optimization for minifier.
+    const eventWillNotBeQueued = "The event will not be queued.";
+    const config: Configuration = this.config;
+    const log: ILog = config.services.log;
 
     if (!config.enabled) {
       log.info(`Configuration is disabled. ${eventWillNotBeQueued}`);
@@ -81,7 +81,7 @@ export class DefaultEventQueue implements IEventQueue {
   }
 
   public async process(): Promise<void> {
-    const queueNotProcessed: string = "The queue will not be processed"; // optimization for minifier.
+    const queueNotProcessed = "The queue will not be processed";
     const { log } = this.config.services;
 
     if (this._processingQueue) {
@@ -129,8 +129,8 @@ export class DefaultEventQueue implements IEventQueue {
     }
   }
 
-  public async startup(): Promise<void> {
-    if (!this._queueTimerId) {
+  public startup(): Promise<void> {
+    if (this._queueTimerId === 0) {
       // TODO: Fix awaiting promise.
       this._queueTimerId = setInterval(() => void this.onProcessQueue(), 10000);
     }
@@ -139,7 +139,8 @@ export class DefaultEventQueue implements IEventQueue {
   }
 
   public suspend(): Promise<void> {
-    this._queueTimerId = clearInterval(this._queueTimerId);
+    clearInterval(this._queueTimerId);
+    this._queueTimerId = 0;
     return Promise.resolve();
   }
 
@@ -170,7 +171,7 @@ export class DefaultEventQueue implements IEventQueue {
   }
 
   private async eventsPosted(events: Event[], response: Response): Promise<void> {
-    const handlers = this._handlers; // optimization for minifier.
+    const handlers = this._handlers;
     for (const handler of handlers) {
       try {
         await handler(events, response);
@@ -182,12 +183,12 @@ export class DefaultEventQueue implements IEventQueue {
 
   private areQueuedItemsDiscarded(): boolean {
     return this._discardQueuedItemsUntil &&
-      this._discardQueuedItemsUntil > new Date();
+      this._discardQueuedItemsUntil > new Date() || false;
   }
 
   private isQueueProcessingSuspended(): boolean {
     return this._suspendProcessingUntil &&
-      this._suspendProcessingUntil > new Date();
+      this._suspendProcessingUntil > new Date() || false;
   }
 
   private async onProcessQueue(): Promise<void> {
@@ -197,9 +198,9 @@ export class DefaultEventQueue implements IEventQueue {
   }
 
   private async processSubmissionResponse(response: Response, items: EventQueueItem[]): Promise<void> {
-    const noSubmission: string = "The event will not be submitted"; // Optimization for minifier.
-    const config: Configuration = this.config; // Optimization for minifier.
-    const log: ILog = config.services.log; // Optimization for minifier.
+    const noSubmission = "The event will not be submitted";
+    const config: Configuration = this.config;
+    const log: ILog = config.services.log;
 
     if (response.status === 202) {
       log.info(`Sent ${items.length} events`);
@@ -217,7 +218,7 @@ export class DefaultEventQueue implements IEventQueue {
     if (response.status === 402) {
       // If the organization over the rate limit then discard the event.
       log.info("Too many events have been submitted, please upgrade your plan");
-      await this.suspendProcessing(null, true, true);
+      await this.suspendProcessing(0, true, true);
       return;
     }
 
@@ -263,7 +264,8 @@ export class DefaultEventQueue implements IEventQueue {
         for (const file of files) {
           if (file?.startsWith(this.QUEUE_PREFIX)) {
             const json = await storage.getItem(file);
-            this._queue.push({ file, event: JSON.parse(json) });
+            if (json)
+              this._queue.push({ file, event: JSON.parse(json) });
           }
         }
       } catch (ex) {
@@ -281,7 +283,7 @@ export class DefaultEventQueue implements IEventQueue {
     if (this._queue.push({ file, event }) > this.maxItems) {
       log.trace("Removing oldest queue entry: maxItems exceeded");
       const item = this._queue.shift();
-      if (useStorage) {
+      if (useStorage && item) {
         await storage.removeItem(item.file);
       }
     }
