@@ -3,8 +3,8 @@ import { EventPluginContext } from "../EventPluginContext.js";
 import { IEventPlugin } from "../IEventPlugin.js";
 
 export class ReferenceIdPlugin implements IEventPlugin {
-  public priority: number = 20;
-  public name: string = "ReferenceIdPlugin";
+  public priority = 20;
+  public name = "ReferenceIdPlugin";
 
   public run(context: EventPluginContext): Promise<void> {
     if (!context.event.reference_id && context.event.type === "error") {

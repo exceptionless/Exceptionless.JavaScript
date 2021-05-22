@@ -22,7 +22,10 @@
     {
       "type": "npm",
       "script": "test",
-      "group": "test",
+      "group": {
+        "kind": "test",
+        "isDefault": true
+      },
       "label": "npm: test"
     },
     {

@@ -1,5 +1,5 @@
 export interface UserDescription {
   email_address?: string;
-  description?: string;
-  data?: any;
+  description: string;
+  data?: Record<string, unknown>;
 }

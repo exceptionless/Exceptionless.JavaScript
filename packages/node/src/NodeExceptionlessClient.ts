@@ -10,7 +10,6 @@ import { NodeRequestInfoPlugin } from "./plugins/NodeRequestInfoPlugin.js";
 import { NodeWrapFunctions } from "./plugins/NodeWrapFunctions.js";
 import { NodeErrorParser } from "./services/NodeErrorParser.js";
 import { NodeFileStorage } from "./storage/NodeFileStorage.js";
-import { NodeFetchSubmissionClient } from "./submission/NodeFetchSubmissionClient.js";
 
 export class NodeExceptionlessClient extends ExceptionlessClient {
   public async startup(configurationOrApiKey?: (config: Configuration) => void | string): Promise<void> {
@@ -19,7 +18,6 @@ export class NodeExceptionlessClient extends ExceptionlessClient {
     if (configurationOrApiKey) {
       config.services.storage = new NodeFileStorage();
       config.services.errorParser = new NodeErrorParser();
-      config.services.submissionClient = new NodeFetchSubmissionClient(config);
 
       config.addPlugin(new NodeEnvironmentInfoPlugin());
       config.addPlugin(new NodeGlobalHandlerPlugin());

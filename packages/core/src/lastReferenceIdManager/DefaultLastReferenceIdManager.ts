@@ -3,16 +3,13 @@ import { ILastReferenceIdManager } from "./ILastReferenceIdManager.js";
 export class DefaultLastReferenceIdManager implements ILastReferenceIdManager {
   /**
    * Gets the last event's reference id that was submitted to the server.
-   * @type {string}
-   * @private
    */
-  private _lastReferenceId: string = null;
+  private _lastReferenceId: string | null = null;
 
   /**
    * Gets the last event's reference id that was submitted to the server.
-   * @returns {string}
    */
-  public getLast(): string {
+  public getLast(): string | null {
     return this._lastReferenceId;
   }
 
@@ -25,7 +22,6 @@ export class DefaultLastReferenceIdManager implements ILastReferenceIdManager {
 
   /**
    * Sets the last event's reference id.
-   * @param eventId
    */
   public setLast(eventId: string): void {
     this._lastReferenceId = eventId;

@@ -1,10 +1,10 @@
 import { Response } from "../../src/submission/Response.js";
 import {
   FetchOptions,
-  SubmissionClientBase
-} from "../../src/submission/SubmissionClientBase.js";
+  DefaultSubmissionClient
+} from "../../src/submission/DefaultSubmissionClient.js";
 
-export class TestSubmissionClient extends SubmissionClientBase {
+export class TestSubmissionClient extends DefaultSubmissionClient {
   public fetch<T>(url: string, options: FetchOptions): Promise<Response> {
     throw new Error("Missing mock");
   }

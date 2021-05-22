@@ -6,9 +6,11 @@ const enum KnownContextKeys {
 }
 
 // TODO: Look into ways of improving this.
-export class ContextData {
-  public getException(): Error {
-    return this[KnownContextKeys.Exception] || null;
+export class ContextData implements Record<string, unknown> {
+  [x: string]: unknown;
+
+  public getException(): Error | null {
+    return this[KnownContextKeys.Exception] as Error || null;
   }
 
   public setException(exception: Error): void {
@@ -29,8 +31,8 @@ export class ContextData {
     return !!this[KnownContextKeys.IsUnhandledError];
   }
 
-  public getSubmissionMethod(): string {
-    return this[KnownContextKeys.SubmissionMethod] || null;
+  public getSubmissionMethod(): string | null {
+    return this[KnownContextKeys.SubmissionMethod] as string || null;
   }
 
   public setSubmissionMethod(method: string): void {

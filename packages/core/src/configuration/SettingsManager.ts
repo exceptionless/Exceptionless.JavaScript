@@ -1,17 +1,15 @@
-import { ILog } from "../logging/ILog.js";
-import { merge } from "../Utils.js";
 import { Configuration } from "./Configuration.js";
 
-export class ClientSettings {
+export class ServerSettings {
   constructor(
-    public settings: { [key: string]: string },
+    public settings: Record<string, string>,
     public version: number
   ) { }
 }
 
 export class SettingsManager {
-  private static readonly SETTINGS_FILE_NAME: string = "settings.json";
-  private static _isUpdatingSettings: boolean = false;
+  private static readonly SettingsKey: string = "settings";
+  private static _isUpdatingSettings = false;
 
   public static async applySavedServerSettings(config: Configuration): Promise<void> {
     if (!config?.isValid) {
@@ -20,9 +18,7 @@ export class SettingsManager {
 
     const savedSettings = await this.getSavedServerSettings(config);
     if (savedSettings) {
-      config.services.log.trace(`Applying saved settings: v${savedSettings.version}`);
-      config.settings = merge(config.settings, savedSettings.settings);
-      config.settingsVersion = savedSettings.version;
+      config.applyServerSettings(savedSettings);
     }
   }
 
@@ -55,25 +51,10 @@ export class SettingsManager {
         return;
       }
 
-      const data: ClientSettings = JSON.parse(response.data);
-      log.info(`Updating settings from v${version} to v${data.version}`);
-      const settings = merge(config.settings, data.settings);
+      config.applyServerSettings(response.data);
 
-      // TODO: Store snapshot of settings after reading from config and attributes and use that to revert to defaults.
-      // Remove any existing server settings that are not in the new server settings.
-      const savedServerSettings = await SettingsManager.getSavedServerSettings(config);
-      for (const key in savedServerSettings || {}) {
-        if (data.settings[key]) {
-          continue;
-        }
-
-        delete settings[key];
-      }
-
-      config.settings = settings;
-      config.settingsVersion = data.version;
-      await config.services.storage.setItem(SettingsManager.SETTINGS_FILE_NAME, response.data);
-      log.trace(`Updated settings: v${data.version}`);
+      await config.services.storage.setItem(SettingsManager.SettingsKey, JSON.stringify(response.data));
+      log.trace(`Updated settings: v${response.data.version}`);
     } catch (ex) {
       log.error(`Error updating settings: ${ex.message}`);
     } finally {
@@ -81,12 +62,12 @@ export class SettingsManager {
     }
   }
 
-  private static async getSavedServerSettings(config: Configuration): Promise<ClientSettings> {
+  private static async getSavedServerSettings(config: Configuration): Promise<ServerSettings> {
     try {
-      const settings = await config.services.storage.getItem(SettingsManager.SETTINGS_FILE_NAME);
-      return settings && JSON.parse(settings) as ClientSettings;
+      const settings = await config.services.storage.getItem(SettingsManager.SettingsKey);
+      return settings && JSON.parse(settings) as ServerSettings || new ServerSettings({}, 0);
     } catch {
-      return null;
+      return new ServerSettings({}, 0);
     }
   }
 }

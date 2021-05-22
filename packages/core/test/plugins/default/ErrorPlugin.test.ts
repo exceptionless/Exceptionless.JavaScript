@@ -8,6 +8,7 @@ import {
 
 import { CapturedExceptions } from "./exceptions.js";
 import { createFixture } from "./EventPluginTestFixture.js";
+import { ErrorInfo } from "../../../src/models/data/ErrorInfo.js";
 
 function BaseTestError() {
   this.name = "NotImplementedError";
@@ -104,11 +105,11 @@ function describeForCapturedExceptions(specDefinitions: (exception: any) => void
   });
 }
 
-function getError(event: Event) {
+function getError(event: Event): ErrorInfo {
   return event?.data?.[KnownEventDataKeys.Error];
 }
 
-function getAdditionalData(event: Event) {
+function getAdditionalData(event: Event): any {
   const error = getError(event);
   return error?.data?.["@ext"];
 }
