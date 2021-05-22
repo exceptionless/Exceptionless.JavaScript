@@ -5,7 +5,7 @@ import {
 } from "../../src/submission/DefaultSubmissionClient.js";
 
 export class TestSubmissionClient extends DefaultSubmissionClient {
-  public fetch<T>(url: string, options: FetchOptions): Promise<Response> {
+  public apiFetch<T>(url: string, options: FetchOptions): Promise<Response<T>> {
     throw new Error("Missing mock");
   }
 }
