@@ -32,7 +32,7 @@ export { EventExclusionPlugin } from "./plugins/default/EventExclusionPlugin.js"
 export { HeartbeatPlugin } from "./plugins/default/HeartbeatPlugin.js";
 export { ReferenceIdPlugin } from "./plugins/default/ReferenceIdPlugin.js";
 export { SubmissionMethodPlugin } from "./plugins/default/SubmissionMethodPlugin.js";
-export { ContextData } from "./plugins/ContextData.js";
+export { EventContext as ContextData } from "./models/EventContext.js";
 export { PluginContext } from "./plugins/PluginContext.js";
 export { EventPluginContext } from "./plugins/EventPluginContext.js";
 export { EventPluginManager } from "./plugins/EventPluginManager.js";

@@ -5,8 +5,7 @@ const enum KnownContextKeys {
   SubmissionMethod = "@@_SubmissionMethod"
 }
 
-// TODO: Look into ways of improving this.
-export class ContextData implements Record<string, unknown> {
+export class EventContext implements Record<string, unknown> {
   [x: string]: unknown;
 
   public getException(): Error | null {

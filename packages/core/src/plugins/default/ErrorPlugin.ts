@@ -27,7 +27,7 @@ export class ErrorPlugin implements IEventPlugin {
       "stacktrace"
     ];
 
-    const exception = context.contextData.getException();
+    const exception = context.eventContext.getException();
     if (exception) {
       context.event.type = "error";
 

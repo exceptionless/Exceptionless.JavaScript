@@ -31,14 +31,14 @@ export class NodeRequestInfoPlugin implements IEventPlugin {
   private getRequestInfo(context: EventPluginContext): RequestInfo {
     // TODO: Move this into a known keys.
     const REQUEST_KEY: string = "@request";
-    if (!context.contextData[REQUEST_KEY]) {
+    if (!context.eventContext[REQUEST_KEY]) {
       return null;
     }
 
     const config = context.client.config;
     const exclusions = config.dataExclusions;
 
-    const request: any = context.contextData[REQUEST_KEY];
+    const request: any = context.eventContext[REQUEST_KEY];
     const requestInfo: RequestInfo = {
       user_agent: request.headers["user-agent"],
       http_method: request.method,
