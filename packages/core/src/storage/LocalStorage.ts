@@ -1,7 +1,7 @@
 import { IStorage } from "./IStorage.js";
 
 export class LocalStorage implements IStorage {
-  constructor(private prefix: string = "exceptionless:") { }
+  constructor(private prefix: string = "exceptionless-", private storage: Storage = globalThis.localStorage) { }
 
   public length(): Promise<number> {
     return Promise.resolve(this.getKeys().length);
@@ -9,14 +9,14 @@ export class LocalStorage implements IStorage {
 
   public clear(): Promise<void> {
     for (const key of this.getKeys()) {
-      localStorage.removeItem(this.getKey(key));
+      this.storage.removeItem(this.getKey(key));
     }
 
     return Promise.resolve();
   }
 
   public getItem(key: string): Promise<string> {
-    return Promise.resolve(localStorage.getItem(this.getKey(key)));
+    return Promise.resolve(this.storage.getItem(this.getKey(key)));
   }
 
   public key(index: number): Promise<string> {
@@ -29,17 +29,17 @@ export class LocalStorage implements IStorage {
   }
 
   public removeItem(key: string): Promise<void> {
-    localStorage.removeItem(this.getKey(key));
+    this.storage.removeItem(this.getKey(key));
     return Promise.resolve();
   }
 
   public setItem(key: string, value: string): Promise<void> {
-    localStorage.setItem(this.getKey(key), value);
+    this.storage.setItem(this.getKey(key), value);
     return Promise.resolve();
   }
 
   private getKeys(): string[] {
-    return Object.keys(localStorage)
+    return Object.keys(this.storage)
       .filter(key => key.startsWith(this.prefix))
       .map(key => key?.substr(this.prefix.length));
   }

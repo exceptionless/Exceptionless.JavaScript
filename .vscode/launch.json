@@ -2,6 +2,17 @@
   "version": "0.2.0",
   "configurations": [
     {
+      "name": "Express",
+      "program": "${workspaceRoot}/example/express/app.js",
+      "request": "launch",
+      "preLaunchTask": "npm: build",
+      "cwd": "${workspaceRoot}/example/express",
+      "skipFiles": [
+        "<node_internals>/**"
+      ],
+      "type": "pwa-node"
+    },
+    {
       "name": "Test",
       "request": "launch",
       "type": "node",
@@ -31,18 +42,6 @@
       "windows": {
         "program": "${workspaceFolder}/node_modules/jest/bin/jest",
       },
-      "cwd": "${workspaceRoot}"
-    },
-    {
-      "name": "Express",
-      "request": "launch",
-      "type": "node",
-      "program": "${workspaceRoot}/example/express/app.js",
-      "runtimeArgs": [
-        "--nolazy"
-      ],
-      "console": "integratedTerminal",
-      "sourceMaps": true,
       "cwd": "${workspaceRoot}"
     }
   ]

@@ -13,7 +13,7 @@ export class DefaultSubmissionClient implements ISubmissionClient {
   protected readonly ConfigurationVersionHeader: string =
     "x-exceptionless-configversion";
 
-  public constructor(protected config: Configuration) { }
+  public constructor(protected config: Configuration, private fetch = globalThis.fetch) { }
 
   public getSettings(version: number): Promise<Response<ServerSettings>> {
     const url = `${this.config.serverUrl}/api/v2/projects/config?v=${version}`;
@@ -80,7 +80,7 @@ export class DefaultSubmissionClient implements ISubmissionClient {
       requestOptions.headers["Content-Type"] = "application/json";
     }
 
-    const response = await fetch(url, requestOptions);
+    const response = await this.fetch(url, requestOptions);
     const rateLimitRemaining: number = parseInt(response.headers.get(this.RateLimitRemainingHeader) || "", 10);
     const settingsVersion: number = parseInt(response.headers.get(this.ConfigurationVersionHeader) || "", 10);
 

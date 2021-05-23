@@ -1,6 +1,8 @@
 import {
   Configuration,
-  ExceptionlessClient
+  DefaultSubmissionClient,
+  ExceptionlessClient,
+  LocalStorage
 } from "@exceptionless/core";
 
 import { NodeEnvironmentInfoPlugin } from "./plugins/NodeEnvironmentInfoPlugin.js";
@@ -9,14 +11,23 @@ import { NodeLifeCyclePlugin } from "./plugins/NodeLifeCyclePlugin.js";
 import { NodeRequestInfoPlugin } from "./plugins/NodeRequestInfoPlugin.js";
 import { NodeWrapFunctions } from "./plugins/NodeWrapFunctions.js";
 import { NodeErrorParser } from "./services/NodeErrorParser.js";
-import { NodeFileStorage } from "./storage/NodeFileStorage.js";
+import { LocalStorage as LocalStoragePolyfill } from "node-localstorage";
+import fetch from "node-fetch";
 
 export class NodeExceptionlessClient extends ExceptionlessClient {
   public async startup(configurationOrApiKey?: (config: Configuration) => void | string): Promise<void> {
     const config = this.config;
 
     if (configurationOrApiKey) {
-      config.services.storage = new NodeFileStorage();
+      if (!globalThis?.localStorage) {
+        config.services.storage = new LocalStorage(undefined, new LocalStoragePolyfill(process.cwd() + '/.exceptionless'));
+      }
+      if (!globalThis?.fetch) {
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        config.services.submissionClient = new DefaultSubmissionClient(config, fetch);
+      }
+
       config.services.errorParser = new NodeErrorParser();
 
       config.addPlugin(new NodeEnvironmentInfoPlugin());
