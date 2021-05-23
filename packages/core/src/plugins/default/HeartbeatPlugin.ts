@@ -30,10 +30,10 @@ export class HeartbeatPlugin implements IEventPlugin {
     clearInterval(this._intervalId);
     this._intervalId = 0;
 
-    const user = context.event.data![KnownEventDataKeys.UserInfo];
+    const user = context.event.data[KnownEventDataKeys.UserInfo];
     if (user?.identity) {
       this._intervalId = setInterval(
-        async () => await context.client.submitSessionHeartbeat(user.identity),
+        () => void context.client.submitSessionHeartbeat(user.identity),
         this._interval,
       );
     }

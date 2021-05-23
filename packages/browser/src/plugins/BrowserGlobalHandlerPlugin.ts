@@ -20,11 +20,11 @@ export class BrowserGlobalHandlerPlugin implements IEventPlugin {
     this._client = context.client;
 
     // TODO: Discus if we want to unwire this handler in suspend?
-    window.addEventListener("error", async event => {
-      await this._client.submitUnhandledException(this.getError(event), "onerror");
+    window.addEventListener("error", event => {
+      void this._client.submitUnhandledException(this.getError(event), "onerror");
     });
 
-    window.addEventListener("unhandledrejection", async event => {
+    window.addEventListener("unhandledrejection", event => {
       let error = event.reason;
       try {
         // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
@@ -35,7 +35,7 @@ export class BrowserGlobalHandlerPlugin implements IEventPlugin {
         // eslint-disable-next-line no-empty
       } catch (ex) { }
 
-      await this._client.submitUnhandledException(error, "onunhandledrejection");
+      void this._client.submitUnhandledException(error, "onunhandledrejection");
     });
 
 
