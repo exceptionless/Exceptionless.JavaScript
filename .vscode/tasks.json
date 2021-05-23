@@ -33,6 +33,41 @@
       "script": "lint",
       "problemMatcher": "$eslint-stylish",
       "label": "npm: lint"
+    },
+    {
+      "type": "npm",
+      "script": "watch --workspace=packages/browser",
+      "isBackground": true,
+      "problemMatcher": "$tsc",
+      "label": "npm: watch browser"
+    },
+    {
+      "type": "npm",
+      "script": "watch --workspace=packages/core",
+      "isBackground": true,
+      "problemMatcher": "$tsc",
+      "label": "npm: watch core"
+    },
+    {
+      "type": "npm",
+      "script": "watch --workspace=packages/react",
+      "isBackground": true,
+      "problemMatcher": "$tsc",
+      "label": "npm: watch react"
+    },
+    {
+      "type": "npm",
+      "script": "watch --workspace=packages/vue",
+      "isBackground": true,
+      "problemMatcher": "$tsc",
+      "label": "npm: watch vue"
+    },
+    {
+      "type": "npm",
+      "script": "watch --workspace=packages/node",
+      "isBackground": true,
+      "problemMatcher": "$tsc",
+      "label": "npm: watch node"
     }
   ]
 }

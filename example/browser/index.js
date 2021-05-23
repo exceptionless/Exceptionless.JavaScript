@@ -1,4 +1,4 @@
-import { Exceptionless } from "../../node_modules/@exceptionless/browser/dist/index.min.js";
+import { Exceptionless } from "../../node_modules/@exceptionless/browser/dist/index.bundle.js";
 import { divide } from "./math.js";
 import { TextAreaLogger } from "./text-area-logger.js";
 
