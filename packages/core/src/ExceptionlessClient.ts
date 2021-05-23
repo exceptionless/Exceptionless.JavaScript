@@ -3,7 +3,7 @@ import { SettingsManager } from "./configuration/SettingsManager.js";
 import { EventBuilder } from "./EventBuilder.js";
 import { Event, KnownEventDataKeys } from "./models/Event.js";
 import { UserDescription } from "./models/data/UserDescription.js";
-import { ContextData } from "./plugins/ContextData.js";
+import { EventContext } from "./models/EventContext.js";
 import { EventPluginContext } from "./plugins/EventPluginContext.js";
 import { EventPluginManager } from "./plugins/EventPluginManager.js";
 import { PluginContext } from "./plugins/PluginContext.js";
@@ -86,7 +86,7 @@ export class ExceptionlessClient {
   }
 
   public createException(exception: Error): EventBuilder {
-    const pluginContextData = new ContextData();
+    const pluginContextData = new EventContext();
     pluginContextData.setException(exception);
     return this.createEvent(pluginContextData).setType("error");
   }
@@ -97,8 +97,8 @@ export class ExceptionlessClient {
 
   public createUnhandledException(exception: Error, submissionMethod?: string): EventBuilder {
     const builder = this.createException(exception);
-    builder.pluginContextData.markAsUnhandledError();
-    builder.pluginContextData.setSubmissionMethod(submissionMethod || "");
+    builder.context.markAsUnhandledError();
+    builder.context.setSubmissionMethod(submissionMethod || "");
 
     return builder;
   }
@@ -192,28 +192,28 @@ export class ExceptionlessClient {
     }
   }
 
-  public createEvent(pluginContextData?: ContextData): EventBuilder {
-    return new EventBuilder({ date: new Date() }, this, pluginContextData);
+  public createEvent(context?: EventContext): EventBuilder {
+    return new EventBuilder({ date: new Date() }, this, context);
   }
 
   /**
-   * Submits the event to be sent to the server.
+   * Submits the event to the server.
    *
-   * @param event The event data.
-   * @param pluginContextData Any contextual data objects to be used by Exceptionless plugins to gather default information for inclusion in the report information.
-   * @param callback
+   * @param event The event
+   * @param context Contextual data used by event plugins to enrich the event details
    */
-  public async submitEvent(event: Event, pluginContextData?: ContextData): Promise<EventPluginContext> {
-    const context = new EventPluginContext(this, event, pluginContextData);
+  public async submitEvent(event: Event, context?: EventContext): Promise<EventPluginContext> {
+    const pluginContext = new EventPluginContext(this, event, context);
+
     if (!event) {
       context.cancelled = true;
-      return context;
+      return pluginContext;
     }
 
     if (!this.config.enabled || !this.config.isValid) {
       this.config.services.log.info("Event submission is currently disabled.");
       context.cancelled = true;
-      return context;
+      return pluginContext;
     }
 
     if (!event.data) {
@@ -224,13 +224,12 @@ export class ExceptionlessClient {
       event.tags = [];
     }
 
-    await EventPluginManager.run(context);
+    await EventPluginManager.run(pluginContext);
     if (context.cancelled) {
-      return context;
+      return pluginContext;
     }
 
-    const config = context.client.config;
-    const ev = context.event;
+    const ev = pluginContext.event;
 
     // ensure all required data
     if (!ev.type || ev.type.length === 0) {
@@ -241,14 +240,14 @@ export class ExceptionlessClient {
       ev.date = new Date();
     }
 
-    await config.services.queue.enqueue(ev);
+    await this.config.services.queue.enqueue(ev);
 
     if (ev.reference_id && ev.reference_id.length > 0) {
-      context.log.info(`Setting last reference id "${ev.reference_id}"`);
-      config.services.lastReferenceIdManager.setLast(ev.reference_id);
+      pluginContext.log.info(`Setting last reference id "${ev.reference_id}"`);
+      this.config.services.lastReferenceIdManager.setLast(ev.reference_id);
     }
 
-    return context;
+    return pluginContext;
   }
 
   /**

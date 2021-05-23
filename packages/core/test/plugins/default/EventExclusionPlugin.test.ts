@@ -1,9 +1,6 @@
 import { Configuration } from "../../../src/configuration/Configuration.js";
 import { ExceptionlessClient } from "../../../src/ExceptionlessClient.js";
-import {
-  Event,
-  KnownEventDataKeys
-} from "../../../src/models/Event.js";
+import { Event, KnownEventDataKeys } from "../../../src/models/Event.js";
 import { InnerErrorInfo } from "../../../src/models/data/ErrorInfo.js";
 import { EventExclusionPlugin } from "../../../src/plugins/default/EventExclusionPlugin.js";
 import { EventPluginContext } from "../../../src/plugins/EventPluginContext.js";

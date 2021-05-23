@@ -1,7 +1,6 @@
 import { ExceptionlessClient } from "../ExceptionlessClient.js";
 import { ILog } from "../logging/ILog.js";
 
-
 export class PluginContext {
   constructor(public client: ExceptionlessClient) { }
 

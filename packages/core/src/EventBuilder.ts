@@ -1,33 +1,23 @@
 import { ExceptionlessClient } from "./ExceptionlessClient.js";
-import {
-  Event,
-  KnownEventDataKeys
-} from "./models/Event.js";
+import { Event, KnownEventDataKeys } from "./models/Event.js";
 import { ManualStackingInfo } from "./models/data/ManualStackingInfo.js";
 import { RequestInfo } from "./models/data/RequestInfo.js";
 import { UserInfo } from "./models/data/UserInfo.js";
-import { ContextData } from "./plugins/ContextData.js";
+import { EventContext } from "./models/EventContext.js";
+import { isEmpty, stringify } from "./Utils.js";
 import { EventPluginContext } from "./plugins/EventPluginContext.js";
-import {
-  isEmpty,
-  stringify
-} from "./Utils.js";
 
 export class EventBuilder {
   public target: Event;
   public client: ExceptionlessClient;
-  public pluginContextData: ContextData;
+  public context: EventContext;
 
   private _validIdentifierErrorMessage = "must contain between 8 and 100 alphanumeric or '-' characters.";
 
-  constructor(
-    event: Event,
-    client: ExceptionlessClient,
-    pluginContextData?: ContextData,
-  ) {
+  constructor(event: Event, client: ExceptionlessClient, context?: EventContext) {
     this.target = event;
     this.client = client;
-    this.pluginContextData = pluginContextData || new ContextData();
+    this.context = context || new EventContext();
   }
 
   public setType(type: string): EventBuilder {
@@ -59,7 +49,6 @@ export class EventBuilder {
    * Allows you to reference a parent event by its ReferenceId property. This allows you to have parent and child relationships.
    * @param name Reference name
    * @param id The reference id that points to a specific event
-   * @returns {EventBuilder}
    */
   public setEventReference(name: string, id: string): EventBuilder {
     if (!name) {
@@ -100,10 +89,7 @@ export class EventBuilder {
   public setUserIdentity(userInfo: UserInfo): EventBuilder;
   public setUserIdentity(identity: string): EventBuilder;
   public setUserIdentity(identity: string, name: string): EventBuilder;
-  public setUserIdentity(
-    userInfoOrIdentity: UserInfo | string,
-    name?: string,
-  ): EventBuilder {
+  public setUserIdentity(userInfoOrIdentity: UserInfo | string, name?: string): EventBuilder {
     const userInfo = typeof userInfoOrIdentity !== "string"
       ? userInfoOrIdentity
       : { identity: userInfoOrIdentity, name };
@@ -120,12 +106,8 @@ export class EventBuilder {
    *
    * @param emailAddress The email address
    * @param description The user"s description of the event.
-   * @returns {EventBuilder}
    */
-  public setUserDescription(
-    emailAddress: string,
-    description: string,
-  ): EventBuilder {
+  public setUserDescription(emailAddress: string, description: string): EventBuilder {
     if (emailAddress && description) {
       this.setProperty(KnownEventDataKeys.UserDescription, {
         email_address: emailAddress,
@@ -141,12 +123,8 @@ export class EventBuilder {
    * stacking information.
    * @param signatureData A dictionary of strings to use for stacking.
    * @param title An optional title for the stacking information.
-   * @returns {EventBuilder}
    */
-  public setManualStackingInfo(
-    signatureData: Record<string, string>,
-    title?: string,
-  ): EventBuilder {
+  public setManualStackingInfo(signatureData: Record<string, string>, title?: string): EventBuilder {
     if (signatureData) {
       const stack: ManualStackingInfo = { signature_data: signatureData };
       if (title) {
@@ -163,12 +141,8 @@ export class EventBuilder {
    * Changes default stacking behavior by setting the stacking key.
    * @param manualStackingKey The manual stacking key.
    * @param title An optional title for the stacking information.
-   * @returns {EventBuilder}
    */
-  public setManualStackingKey(
-    manualStackingKey: string,
-    title?: string,
-  ): EventBuilder {
+  public setManualStackingKey(manualStackingKey: string, title?: string): EventBuilder {
     if (manualStackingKey) {
       const data = { ManualStackingKey: manualStackingKey };
       this.setManualStackingInfo(data, title);
@@ -180,7 +154,6 @@ export class EventBuilder {
   /**
    * Sets the event value.
    * @param value The value of the event.
-   * @returns {EventBuilder}
    */
   public setValue(value: number): EventBuilder {
     if (value) {
@@ -203,12 +176,7 @@ export class EventBuilder {
    * @param maxDepth The max depth of the object to include.
    * @param excludedPropertyNames Any property names that should be excluded.
    */
-  public setProperty(
-    name: string,
-    value: unknown,
-    maxDepth?: number,
-    excludedPropertyNames?: string[],
-  ): EventBuilder {
+  public setProperty(name: string, value: unknown, maxDepth?: number, excludedPropertyNames?: string[]): EventBuilder {
     if (!name || (value === undefined || value == null)) {
       return this;
     }
@@ -241,14 +209,14 @@ export class EventBuilder {
 
   public addRequestInfo(request: RequestInfo): EventBuilder {
     if (request) {
-      this.pluginContextData[KnownEventDataKeys.RequestInfo] = request;
+      this.context[KnownEventDataKeys.RequestInfo] = request;
     }
 
     return this;
   }
 
   public submit(): Promise<EventPluginContext> {
-    return this.client.submitEvent(this.target, this.pluginContextData);
+    return this.client.submitEvent(this.target, this.context);
   }
 
   private isValidIdentifier(value: string): boolean {

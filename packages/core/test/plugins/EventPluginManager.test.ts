@@ -1,4 +1,4 @@
-import { ContextData } from "../../src/plugins/ContextData.js";
+import { EventContext } from "../../src/models/EventContext.js";
 import { ExceptionlessClient } from "../../src/ExceptionlessClient.js";
 import { EventPluginContext } from "../../src/plugins/EventPluginContext.js";
 import { EventPluginManager } from "../../src/plugins/EventPluginManager.js";
@@ -9,7 +9,7 @@ describe("EventPluginManager", () => {
     const client = new ExceptionlessClient();
     client.config.apiKey = "UNIT_TEST_API_KEY";
 
-    const context = new EventPluginContext(client, {}, new ContextData());
+    const context = new EventPluginContext(client, {});
     expect(context.event.source).toBeUndefined();
     expect(context.event.geo).toBeUndefined();
 
@@ -38,7 +38,7 @@ describe("EventPluginManager", () => {
     const client = new ExceptionlessClient();
     client.config.apiKey = "UNIT_TEST_API_KEY";
 
-    const context = new EventPluginContext(client, {}, new ContextData());
+    const context = new EventPluginContext(client, {});
     expect(client.config.plugins).not.toBeNull();
     while (client.config.plugins.length > 0) {
       client.config.removePlugin(client.config.plugins[0]);
@@ -60,7 +60,7 @@ describe("EventPluginManager", () => {
   test("throwing error should stop plugin execution.", async () => {
     const client = new ExceptionlessClient();
     client.config.apiKey = "UNIT_TEST_API_KEY";
-    const context = new EventPluginContext(client, {}, new ContextData());
+    const context = new EventPluginContext(client, {});
 
     expect(client.config.plugins).not.toBeNull();
     while (client.config.plugins.length > 0) {
@@ -82,7 +82,7 @@ describe("EventPluginManager", () => {
   test("should cancel via timeout.", async () => {
     const client = new ExceptionlessClient();
     client.config.apiKey = "UNIT_TEST_API_KEY";
-    const context = new EventPluginContext(client, {}, new ContextData());
+    const context = new EventPluginContext(client, {});
 
     expect(client.config.plugins).not.toBeNull();
     while (client.config.plugins.length > 0) {
@@ -104,7 +104,7 @@ describe("EventPluginManager", () => {
   test("should ensure config plugins are not wrapped.", async () => {
     const client = new ExceptionlessClient();
     client.config.apiKey = "UNIT_TEST_API_KEY";
-    const context = new EventPluginContext(client, {}, new ContextData());
+    const context = new EventPluginContext(client, {});
 
     expect(client.config.plugins).not.toBeNull();
     while (client.config.plugins.length > 0) {
