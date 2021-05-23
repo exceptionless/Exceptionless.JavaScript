@@ -50,7 +50,7 @@ export class DuplicateCheckerPlugin implements IEventPlugin {
       return hash;
     }
 
-    const error = context.event.data![KnownEventDataKeys.Error];
+    const error = context.event.data[KnownEventDataKeys.Error];
     const hashCode = calculateHashCode(error);
     if (hashCode) {
       const count = context.event.count || 1;

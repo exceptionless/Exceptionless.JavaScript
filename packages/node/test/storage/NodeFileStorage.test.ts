@@ -1,6 +1,6 @@
-import { IStorage } from "@exceptionless/core";
+import { IStorage, LocalStorage } from "@exceptionless/core";
 import { describeStorage } from "../../../core/test/storage/StorageTestBase.js";
-import { NodeFileStorage } from "../../src/storage/NodeFileStorage.js";
+import { LocalStorage as LocalStoragePolyfill } from "node-localstorage";
 
 import {
   mkdirSync,
@@ -15,7 +15,7 @@ function resetStorageDirectory() {
 const directory: string = "./test/data";
 describeStorage(
   "NodeFileStorage",
-  (): IStorage => new NodeFileStorage(directory),
+  (): IStorage => new LocalStorage(undefined, new LocalStoragePolyfill(directory)),
   resetStorageDirectory,
   resetStorageDirectory
 );
