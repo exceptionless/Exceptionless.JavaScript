@@ -33,10 +33,7 @@ export class DefaultSubmissionClient implements ISubmissionClient {
     return response;
   }
 
-  public async submitUserDescription(
-    referenceId: string,
-    description: UserDescription,
-  ): Promise<Response> {
+  public async submitUserDescription(referenceId: string, description: UserDescription): Promise<Response> {
     const url = `${this.config.serverUrl}/api/v2/events/by-ref/${encodeURIComponent(referenceId)
       }/user-description`;
 
@@ -50,10 +47,7 @@ export class DefaultSubmissionClient implements ISubmissionClient {
     return response;
   }
 
-  public async submitHeartbeat(
-    sessionIdOrUserId: string,
-    closeSession: boolean,
-  ): Promise<Response<void>> {
+  public async submitHeartbeat(sessionIdOrUserId: string, closeSession: boolean): Promise<Response<void>> {
     const url =
       `${this.config.heartbeatServerUrl}/api/v2/events/session/heartbeat?id=${sessionIdOrUserId}&close=${closeSession}`;
     return await this.apiFetch<void>(url, {
@@ -90,12 +84,15 @@ export class DefaultSubmissionClient implements ISubmissionClient {
     const rateLimitRemaining: number = parseInt(response.headers.get(this.RateLimitRemainingHeader) || "", 10);
     const settingsVersion: number = parseInt(response.headers.get(this.ConfigurationVersionHeader) || "", 10);
 
+    const responseText = await response.text();
+    const data = responseText && responseText.length > 0 ? JSON.parse(responseText) as T : null;
+
     return new Response<T>(
       response.status,
       response.statusText,
       rateLimitRemaining,
       settingsVersion,
-      await response.json() as T,
+      data,
     );
   }
 

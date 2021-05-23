@@ -43,8 +43,8 @@
     "testEnvironment": "node"
   },
   "scripts": {
-    "build": "tsc -p tsconfig.json",
-    "watch": "tsc -p tsconfig.json -w --preserveWatchOutput",
+    "build": "tsc -p tsconfig.json && esbuild src/index.ts --bundle --sourcemap --platform=node --target=node12 --format=cjs --outfile=dist/index.bundle.js",
+    "watch": "tsc -p ../core/tsconfig.json -w --preserveWatchOutput & tsc -p tsconfig.json -w --preserveWatchOutput & esbuild src/index.ts --bundle --platform=node --sourcemap --target=node12 --format=cjs --watch --outfile=dist/index.bundle.js",
     "test": "jest"
   },
   "sideEffects": false,
