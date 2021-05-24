@@ -1,9 +1,13 @@
 import {
-  EventPluginContext,
   ErrorInfo,
-  IErrorParser,
+  EventPluginContext,
+  IEventPlugin,
+  IgnoredErrorProperties,
+  KnownEventDataKeys,
   ParameterInfo,
-  StackFrameInfo
+  StackFrameInfo,
+  stringify,
+  isEmpty
 } from "@exceptionless/core";
 
 import {
@@ -11,8 +15,34 @@ import {
   StackFrame
 } from "stacktrace-js";
 
-export class BrowserErrorParser implements IErrorParser {
-  public async parse(context: EventPluginContext, exception: Error): Promise<ErrorInfo> {
+export class BrowserErrorPlugin implements IEventPlugin {
+  public priority = 30;
+  public name = "BrowserErrorPlugin";
+
+  public async run(context: EventPluginContext): Promise<void> {
+    const exception = context.eventContext.getException();
+    if (exception) {
+      context.event.type = "error";
+
+      if (!context.event.data[KnownEventDataKeys.Error]) {
+        const result = await this.parse(exception);
+        if (result) {
+          const exclusions = context.client.config.dataExclusions.concat(IgnoredErrorProperties);
+          const additionalData = JSON.parse(stringify(exception, exclusions));
+          if (!isEmpty(additionalData)) {
+            if (!result.data) {
+              result.data = {};
+            }
+            result.data["@ext"] = additionalData;
+          }
+
+          context.event.data[KnownEventDataKeys.Error] = result;
+        }
+      }
+    }
+  }
+
+  private async parse(exception: Error): Promise<ErrorInfo> {
     function getParameters(parameters: string | string[]): ParameterInfo[] {
       const params: string[] = (typeof parameters === "string" ? [parameters] : parameters) || [];
 

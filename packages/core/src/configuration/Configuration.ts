@@ -10,7 +10,6 @@ import { EventPluginContext } from "../plugins/EventPluginContext.js";
 import { IEventPlugin } from "../plugins/IEventPlugin.js";
 import { DefaultEventQueue } from "../queue/DefaultEventQueue.js";
 import { IEventQueue } from "../queue/IEventQueue.js";
-import { IErrorParser } from "../services/IErrorParser.js";
 import { ISubmissionClient } from "../submission/ISubmissionClient.js";
 import { DefaultSubmissionClient } from "../submission/DefaultSubmissionClient.js";
 import { guid } from "../Utils.js";
@@ -543,7 +542,6 @@ export class Configuration {
 }
 
 interface IConfigurationServices {
-  errorParser?: IErrorParser;
   lastReferenceIdManager: ILastReferenceIdManager;
   log: ILog;
   submissionClient: ISubmissionClient;
