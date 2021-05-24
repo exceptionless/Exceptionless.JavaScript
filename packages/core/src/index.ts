@@ -27,10 +27,10 @@ export type {
 
 export { ConfigurationDefaultsPlugin } from "./plugins/default/ConfigurationDefaultsPlugin.js";
 export { DuplicateCheckerPlugin } from "./plugins/default/DuplicateCheckerPlugin.js";
-export { ErrorPlugin } from "./plugins/default/ErrorPlugin.js";
 export { EventExclusionPlugin } from "./plugins/default/EventExclusionPlugin.js";
 export { HeartbeatPlugin } from "./plugins/default/HeartbeatPlugin.js";
 export { ReferenceIdPlugin } from "./plugins/default/ReferenceIdPlugin.js";
+export { IgnoredErrorProperties, SimpleErrorPlugin } from "./plugins/default/SimpleErrorPlugin.js"
 export { SubmissionMethodPlugin } from "./plugins/default/SubmissionMethodPlugin.js";
 export { EventContext as ContextData } from "./models/EventContext.js";
 export { PluginContext } from "./plugins/PluginContext.js";
@@ -40,8 +40,6 @@ export type { IEventPlugin } from "./plugins/IEventPlugin.js";
 
 export { DefaultEventQueue } from "./queue/DefaultEventQueue.js";
 export type { IEventQueue } from "./queue/IEventQueue.js";
-
-export type { IErrorParser } from "./services/IErrorParser.js";
 
 export { InMemoryStorage } from "./storage/InMemoryStorage.js";
 export { LocalStorage } from "./storage/LocalStorage.js";

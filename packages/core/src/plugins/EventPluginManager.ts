@@ -1,7 +1,7 @@
 import { Configuration } from "../configuration/Configuration.js";
 import { ConfigurationDefaultsPlugin } from "./default/ConfigurationDefaultsPlugin.js";
 import { DuplicateCheckerPlugin } from "./default/DuplicateCheckerPlugin.js";
-import { ErrorPlugin } from "./default/ErrorPlugin.js";
+import { SimpleErrorPlugin } from "./default/SimpleErrorPlugin.js";
 import { EventExclusionPlugin } from "./default/EventExclusionPlugin.js";
 import { SubmissionMethodPlugin } from "./default/SubmissionMethodPlugin.js";
 import { EventPluginContext } from "./EventPluginContext.js";
@@ -57,7 +57,7 @@ export class EventPluginManager {
 
   public static addDefaultPlugins(config: Configuration): void {
     config.addPlugin(new ConfigurationDefaultsPlugin());
-    config.addPlugin(new ErrorPlugin());
+    config.addPlugin(new SimpleErrorPlugin());
     config.addPlugin(new DuplicateCheckerPlugin());
     config.addPlugin(new EventExclusionPlugin());
     config.addPlugin(new SubmissionMethodPlugin());

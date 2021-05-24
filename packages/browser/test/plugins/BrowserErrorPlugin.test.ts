@@ -1,9 +1,8 @@
-import { ErrorPlugin } from "../../../src/plugins/default/ErrorPlugin.js";
-import { EventPluginContext } from "../../../src/plugins/EventPluginContext.js";
-import { Event, KnownEventDataKeys } from "../../../src/models/Event.js";
-import { CapturedExceptions } from "./exceptions.js";
-import { createFixture } from "./EventPluginTestFixture.js";
-import { ErrorInfo } from "../../../src/models/data/ErrorInfo.js";
+import { BrowserErrorPlugin } from "../../src/plugins/BrowserErrorPlugin.js";
+import { EventPluginContext } from "./../../../core/src/plugins/EventPluginContext.js";
+import { Event, KnownEventDataKeys } from "./../../../core/src/models/Event.js";
+import { CapturedExceptions } from "./../../../core/test/plugins/default/exceptions.js";
+import { ErrorInfo } from "./../../../core/src/models/data/ErrorInfo.js";
 
 function BaseTestError() {
   this.name = "NotImplementedError";
@@ -18,8 +17,8 @@ function DerivedTestError() {
 
 DerivedTestError.prototype = new BaseTestError();
 
-describe("ErrorPlugin", () => {
-  const target = new ErrorPlugin();
+describe("BrowserErrorPlugin", () => {
+  const target = new BrowserErrorPlugin();
   let context: EventPluginContext;
 
   beforeEach(() => {
@@ -109,4 +108,22 @@ function throwAndCatch(error: any): Error {
   } catch (exception) {
     return exception;
   }
+}
+
+function createFixture(): EventPluginContext {
+  const errorParser: IErrorParser = {
+    parse: (c: EventPluginContext, exception: Error) => Promise.resolve({
+      type: exception.name,
+      message: exception.message,
+      stack_trace: null
+    })
+  };
+  const client: ExceptionlessClient = new ExceptionlessClient();
+  client.config.services.errorParser = errorParser;
+
+  const event: Event = {
+    data: {}
+  };
+
+  return new EventPluginContext(client, event);
 }
