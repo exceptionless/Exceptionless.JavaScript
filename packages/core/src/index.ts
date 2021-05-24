@@ -39,7 +39,6 @@ export { EventPluginManager } from "./plugins/EventPluginManager.js";
 export type { IEventPlugin } from "./plugins/IEventPlugin.js";
 
 export { DefaultEventQueue } from "./queue/DefaultEventQueue.js";
-export type { IEventQueue } from "./queue/IEventQueue.js";
 
 export { InMemoryStorage } from "./storage/InMemoryStorage.js";
 export { LocalStorage } from "./storage/LocalStorage.js";
