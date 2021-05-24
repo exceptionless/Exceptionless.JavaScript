@@ -28,6 +28,7 @@
     "ncaught",
     "npmrc",
     "ratelimit",
+    "sourceloc",
     "tsproject",
     "vite",
     "vitejs",
