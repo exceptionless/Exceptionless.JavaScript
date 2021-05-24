@@ -9,7 +9,6 @@ import { ReferenceIdPlugin } from "../plugins/default/ReferenceIdPlugin.js";
 import { EventPluginContext } from "../plugins/EventPluginContext.js";
 import { IEventPlugin } from "../plugins/IEventPlugin.js";
 import { DefaultEventQueue } from "../queue/DefaultEventQueue.js";
-import { IEventQueue } from "../queue/IEventQueue.js";
 import { ISubmissionClient } from "../submission/ISubmissionClient.js";
 import { DefaultSubmissionClient } from "../submission/DefaultSubmissionClient.js";
 import { guid } from "../Utils.js";
@@ -546,5 +545,5 @@ interface IConfigurationServices {
   log: ILog;
   submissionClient: ISubmissionClient;
   storage: IStorage;
-  queue: IEventQueue;
+  queue: DefaultEventQueue;
 }
