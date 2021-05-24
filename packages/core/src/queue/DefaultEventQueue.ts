@@ -1,6 +1,7 @@
 import { Configuration } from "../configuration/Configuration.js";
 import { ILog } from "../logging/ILog.js";
 import { Event } from "../models/Event.js";
+import { IEventQueue } from "../queue/IEventQueue.js";
 import { Response } from "../submission/Response.js";
 
 interface EventQueueItem {
@@ -8,7 +9,7 @@ interface EventQueueItem {
   event: Event
 }
 
-export class DefaultEventQueue {
+export class DefaultEventQueue implements IEventQueue {
   /**
    * A list of handlers that will be fired when events are submitted.
    * @type {Array}
