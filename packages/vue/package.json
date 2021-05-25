@@ -25,6 +25,9 @@
   "license": "Apache-2.0",
   "type": "module",
   "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "unpkg": "dist/index.bundle.min.js",
+  "jsdelivr": "dist/index.bundle.min.js",
   "exports": {
     ".": "./dist/index.js",
     "./package.json": "./package.json"
@@ -37,6 +40,9 @@
   "sideEffects": false,
   "publishConfig": {
     "access": "public"
+  },
+  "devDependencies": {
+    "esbuild": "0.12.2"
   },
   "dependencies": {
     "@exceptionless/browser": "2.0.0-dev"

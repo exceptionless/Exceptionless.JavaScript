@@ -26,8 +26,8 @@
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
-  "unpkg": "dist/index.min.js",
-  "jsdelivr": "dist/index.min.js",
+  "unpkg": "dist/index.bundle.min.js",
+  "jsdelivr": "dist/index.bundle.min.js",
   "exports": {
     ".": "./dist/index.js",
     "./package.json": "./package.json"
@@ -54,9 +54,9 @@
     "access": "public"
   },
   "devDependencies": {
-    "@jest/globals": "26.6.2",
-    "esbuild": "0.12.1",
-    "jest": "26.6.3",
+    "@jest/globals": "27.0.1",
+    "esbuild": "0.12.2",
+    "jest": "27.0.1",
     "jest-ts-webcompat-resolver": "1.0.0",
     "ts-jest": "26.5.6"
   },
