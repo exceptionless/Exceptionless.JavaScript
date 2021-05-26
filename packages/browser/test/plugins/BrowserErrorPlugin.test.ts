@@ -1,8 +1,15 @@
-import { BrowserErrorPlugin } from "../../src/plugins/BrowserErrorPlugin.js";
-import { EventPluginContext } from "./../../../core/src/plugins/EventPluginContext.js";
-import { Event, KnownEventDataKeys } from "./../../../core/src/models/Event.js";
+
+import {
+  ErrorInfo,
+  Event,
+  EventPluginContext,
+  ExceptionlessClient,
+  KnownEventDataKeys
+} from "@exceptionless/core";
+
 import { CapturedExceptions } from "./../../../core/test/plugins/default/exceptions.js";
-import { ErrorInfo } from "./../../../core/src/models/data/ErrorInfo.js";
+
+import { BrowserErrorPlugin } from "../../src/plugins/BrowserErrorPlugin.js";
 
 function BaseTestError() {
   this.name = "NotImplementedError";
@@ -18,24 +25,37 @@ function DerivedTestError() {
 DerivedTestError.prototype = new BaseTestError();
 
 describe("BrowserErrorPlugin", () => {
-  const target = new BrowserErrorPlugin();
+  const plugin = new BrowserErrorPlugin();
   let context: EventPluginContext;
 
   beforeEach(() => {
-    (context = createFixture());
+    plugin.parse = (exception: Error): Promise<ErrorInfo> => {
+      return Promise.resolve({
+        type: exception.name,
+        message: exception.message,
+        stack_trace: null
+      })
+    };
+
+    const client: ExceptionlessClient = new ExceptionlessClient();
+    const event: Event = {
+      data: {}
+    };
+
+    context = new EventPluginContext(client, event);
   });
 
-  function processError(error): Promise<void> {
+  function processError(error: Error | string | unknown): Promise<void> {
     const exception = throwAndCatch(error);
     context.eventContext.setException(exception);
-    return target.run(context);
+    return plugin.run(context);
   }
 
   describe("additional data", () => {
     describeForCapturedExceptions((exception) => {
       test("should ignore default error properties", async () => {
         context.eventContext.setException(exception);
-        await target.run(context);
+        await plugin.run(context);
         const additionalData = getAdditionalData(context.event);
         expect(additionalData).toBeUndefined();
       });
@@ -77,7 +97,7 @@ describe("BrowserErrorPlugin", () => {
       exception.someFunction = () => { };
       context.eventContext.setException(exception);
 
-      await target.run(context);
+      await plugin.run(context);
 
       const additionalData = getAdditionalData(context.event);
       expect(additionalData).toBeUndefined();
@@ -89,7 +109,7 @@ function describeForCapturedExceptions(specDefinitions: (exception: any) => void
   const keys = Object.getOwnPropertyNames(CapturedExceptions);
   keys.forEach((key) => {
     const exception = CapturedExceptions[key];
-    describe(key, () => { specDefinitions(exception); });
+    describe(key, () => specDefinitions(exception));
   });
 }
 
@@ -102,28 +122,10 @@ function getAdditionalData(event: Event): any {
   return error?.data?.["@ext"];
 }
 
-function throwAndCatch(error: any): Error {
+function throwAndCatch(error: Error | string | unknown): Error {
   try {
     throw error;
   } catch (exception) {
     return exception;
   }
-}
-
-function createFixture(): EventPluginContext {
-  const errorParser: IErrorParser = {
-    parse: (c: EventPluginContext, exception: Error) => Promise.resolve({
-      type: exception.name,
-      message: exception.message,
-      stack_trace: null
-    })
-  };
-  const client: ExceptionlessClient = new ExceptionlessClient();
-  client.config.services.errorParser = errorParser;
-
-  const event: Event = {
-    data: {}
-  };
-
-  return new EventPluginContext(client, event);
 }
