@@ -42,7 +42,7 @@ export class BrowserErrorPlugin implements IEventPlugin {
     }
   }
 
-  private async parse(exception: Error): Promise<ErrorInfo> {
+  public async parse(exception: Error): Promise<ErrorInfo> {
     function getParameters(parameters: string | string[]): ParameterInfo[] {
       const params: string[] = (typeof parameters === "string" ? [parameters] : parameters) || [];
 

@@ -4,11 +4,10 @@ export class LocalStorage implements IStorage {
   constructor(private prefix: string = "exceptionless-", private storage: Storage = globalThis.localStorage) { }
 
   public length(): Promise<number> {
-    return Promise.resolve(this.storage.length);
+    return Promise.resolve(this.getKeys().length);
   }
 
   public clear(): Promise<void> {
-    return Promise.resolve(this.storage.clear());
     for (const key of this.getKeys()) {
       this.storage.removeItem(this.getKey(key));
     }

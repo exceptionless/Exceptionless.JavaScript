@@ -55,10 +55,10 @@
   },
   "devDependencies": {
     "@jest/globals": "27.0.1",
-    "esbuild": "0.12.2",
+    "esbuild": "0.12.3",
     "jest": "27.0.1",
     "jest-ts-webcompat-resolver": "1.0.0",
-    "ts-jest": "26.5.6"
+    "ts-jest": "27.0.0"
   },
   "dependencies": {
     "@exceptionless/core": "2.0.0-dev",
