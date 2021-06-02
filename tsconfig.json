@@ -19,7 +19,7 @@
     "pretty": true,
     "skipLibCheck": true,
     "sourceMap": true,
-    "strict": false,
+    "strict": true,
     "target": "ES2019"
   }
 }

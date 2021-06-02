@@ -8,12 +8,22 @@ export class ConfigurationDefaultsPlugin implements IEventPlugin {
 
   public run(context: EventPluginContext): Promise<void> {
     const config = context.client.config;
-    context.event.tags.push(...config.defaultTags);
+    const ev = context.event;
+
+    if (config.defaultTags) {
+      ev.tags = [...ev.tags || [], ...config.defaultTags];
+    }
 
     const defaultData: Record<string, unknown> = config.defaultData || {};
-    for (const key in config.defaultData || {}) {
-      if (context.event.data[key] === undefined && !isEmpty(defaultData[key])) {
-        context.event.data[key] = defaultData[key];
+    if (defaultData) {
+      if (!ev.data) {
+        ev.data = {};
+      }
+
+      for (const key in config.defaultData || {}) {
+        if (ev.data[key] === undefined && !isEmpty(defaultData[key])) {
+          ev.data[key] = defaultData[key];
+        }
       }
     }
 

@@ -9,7 +9,7 @@ describe("EventPluginManager", () => {
     const client = new ExceptionlessClient();
     client.config.apiKey = "UNIT_TEST_API_KEY";
 
-    const context = new EventPluginContext(client, {});
+    const context = new EventPluginContext(client, {}, new EventContext());
     expect(context.event.source).toBeUndefined();
     expect(context.event.geo).toBeUndefined();
 
@@ -38,7 +38,7 @@ describe("EventPluginManager", () => {
     const client = new ExceptionlessClient();
     client.config.apiKey = "UNIT_TEST_API_KEY";
 
-    const context = new EventPluginContext(client, {});
+    const context = new EventPluginContext(client, {}, new EventContext());
     expect(client.config.plugins).not.toBeNull();
     while (client.config.plugins.length > 0) {
       client.config.removePlugin(client.config.plugins[0]);
@@ -60,7 +60,7 @@ describe("EventPluginManager", () => {
   test("throwing error should stop plugin execution.", async () => {
     const client = new ExceptionlessClient();
     client.config.apiKey = "UNIT_TEST_API_KEY";
-    const context = new EventPluginContext(client, {});
+    const context = new EventPluginContext(client, {}, new EventContext());
 
     expect(client.config.plugins).not.toBeNull();
     while (client.config.plugins.length > 0) {
@@ -82,7 +82,7 @@ describe("EventPluginManager", () => {
   test("should cancel via timeout.", async () => {
     const client = new ExceptionlessClient();
     client.config.apiKey = "UNIT_TEST_API_KEY";
-    const context = new EventPluginContext(client, {});
+    const context = new EventPluginContext(client, {}, new EventContext());
 
     expect(client.config.plugins).not.toBeNull();
     while (client.config.plugins.length > 0) {
@@ -104,7 +104,7 @@ describe("EventPluginManager", () => {
   test("should ensure config plugins are not wrapped.", async () => {
     const client = new ExceptionlessClient();
     client.config.apiKey = "UNIT_TEST_API_KEY";
-    const context = new EventPluginContext(client, {});
+    const context = new EventPluginContext(client, {}, new EventContext());
 
     expect(client.config.plugins).not.toBeNull();
     while (client.config.plugins.length > 0) {

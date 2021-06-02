@@ -6,6 +6,7 @@ import {
   StackFrameInfo
 } from "../../../src/models/data/ErrorInfo.js";
 import { delay } from "../../helpers.js";
+import { EventContext } from "../../../src/models/EventContext.js";
 
 const Exception1StackTrace = [
   {
@@ -62,7 +63,7 @@ describe("DuplicateCheckerPlugin", () => {
           stack_trace: stackTrace
         }
       }
-    });
+    }, new EventContext());
 
     await plugin.run(context);
     return context;

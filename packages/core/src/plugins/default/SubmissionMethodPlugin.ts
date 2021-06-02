@@ -8,7 +8,7 @@ export class SubmissionMethodPlugin implements IEventPlugin {
 
   public run(context: EventPluginContext): Promise<void> {
     const submissionMethod = context.eventContext.getSubmissionMethod();
-    if (submissionMethod) {
+    if (submissionMethod && context.event.data) {
       context.event.data[KnownEventDataKeys.SubmissionMethod] = submissionMethod;
     }
 

@@ -10,7 +10,7 @@ export class BrowserGlobalHandlerPlugin implements IEventPlugin {
   public priority: number = 100;
   public name: string = "BrowserGlobalHandlerPlugin";
 
-  private _client: ExceptionlessClient = null;
+  private _client: ExceptionlessClient | undefined;
 
   public startup(context: PluginContext): Promise<void> {
     if (this._client) {
@@ -21,7 +21,7 @@ export class BrowserGlobalHandlerPlugin implements IEventPlugin {
 
     // TODO: Discus if we want to unwire this handler in suspend?
     window.addEventListener("error", event => {
-      void this._client.submitUnhandledException(this.getError(event), "onerror");
+      void this._client?.submitUnhandledException(this.getError(event), "onerror");
     });
 
     window.addEventListener("unhandledrejection", event => {
@@ -35,7 +35,7 @@ export class BrowserGlobalHandlerPlugin implements IEventPlugin {
         // eslint-disable-next-line no-empty
       } catch (ex) { }
 
-      void this._client.submitUnhandledException(error, "onunhandledrejection");
+      void this._client?.submitUnhandledException(error, "onunhandledrejection");
     });
 
 
@@ -43,10 +43,10 @@ export class BrowserGlobalHandlerPlugin implements IEventPlugin {
       $(document).ajaxError((event: Event, xhr: { responseText: string, status: number }, settings: { data: unknown, url: string }, error: string) => {
         if (xhr.status === 404) {
           // TODO: Handle async
-          void this._client.submitNotFound(settings.url);
+          void this._client?.submitNotFound(settings.url);
         } else if (xhr.status !== 401) {
           // TODO: Handle async
-          void this._client.createUnhandledException(new Error(error), "JQuery.ajaxError")
+          void this._client?.createUnhandledException(new Error(error), "JQuery.ajaxError")
             .setSource(settings.url)
             .setProperty("status", xhr.status)
             .setProperty("request", settings.data)
@@ -69,12 +69,15 @@ export class BrowserGlobalHandlerPlugin implements IEventPlugin {
     let msg: string = message || event.error;
     if (msg) {
       const errorNameRegex: RegExp = /^(?:[Uu]ncaught (?:exception: )?)?(?:((?:Aggregate|Eval|Internal|Range|Reference|Syntax|Type|URI|)Error): )?(.*)$/i;
-      const [_, errorName, errorMessage] = errorNameRegex.exec(msg);
-      if (errorName) {
-        name = errorName;
-      }
-      if (errorMessage) {
-        msg = errorMessage;
+      const regexResult = errorNameRegex.exec(msg);
+      if (regexResult) {
+        const [_, errorName, errorMessage] = regexResult;
+        if (errorName) {
+          name = errorName;
+        }
+        if (errorMessage) {
+          msg = errorMessage;
+        }
       }
     }
 

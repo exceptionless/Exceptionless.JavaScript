@@ -2,13 +2,13 @@
 import {
   ErrorInfo,
   Event,
+  EventContext,
   EventPluginContext,
   ExceptionlessClient,
   KnownEventDataKeys
 } from "@exceptionless/core";
 
 import { CapturedExceptions } from "./../../../core/test/plugins/default/exceptions.js";
-
 import { BrowserErrorPlugin } from "../../src/plugins/BrowserErrorPlugin.js";
 
 function BaseTestError() {
@@ -30,11 +30,12 @@ describe("BrowserErrorPlugin", () => {
 
   beforeEach(() => {
     plugin.parse = (exception: Error): Promise<ErrorInfo> => {
-      return Promise.resolve({
+      return Promise.resolve(<ErrorInfo>{
         type: exception.name,
         message: exception.message,
-        stack_trace: null
-      })
+        stack_trace: undefined,
+        modules: undefined
+      });
     };
 
     const client: ExceptionlessClient = new ExceptionlessClient();
@@ -42,7 +43,7 @@ describe("BrowserErrorPlugin", () => {
       data: {}
     };
 
-    context = new EventPluginContext(client, event);
+    context = new EventPluginContext(client, event, new EventContext());
   });
 
   function processError(error: Error | string | unknown): Promise<void> {
@@ -68,22 +69,22 @@ describe("BrowserErrorPlugin", () => {
       await processError(error);
       const additionalData = getAdditionalData(context.event);
       expect(additionalData).not.toBeNull();
-      expect(additionalData.someProperty).toBe("Test");
+      expect(additionalData?.someProperty).toBe("Test");
     });
 
     test("should support custom exception types", async () => {
       await processError(new BaseTestError());
       const additionalData = getAdditionalData(context.event);
       expect(additionalData).not.toBeNull();
-      expect(additionalData.someProperty).toBe("Test");
+      expect(additionalData?.someProperty).toBe("Test");
     });
 
     test("should support inherited properties", async () => {
       await processError(new DerivedTestError());
       const additionalData = getAdditionalData(context.event);
       expect(additionalData).not.toBeNull();
-      expect(additionalData.someProperty).toBe("Test");
-      expect(additionalData.someOtherProperty).toBe("Test2");
+      expect(additionalData?.someProperty).toBe("Test");
+      expect(additionalData?.someOtherProperty).toBe("Test2");
     });
 
     test("shouldn't set empty additional data", async () => {
@@ -113,13 +114,13 @@ function describeForCapturedExceptions(specDefinitions: (exception: any) => void
   });
 }
 
-function getError(event: Event): ErrorInfo {
+function getError(event: Event): ErrorInfo | undefined {
   return event?.data?.[KnownEventDataKeys.Error];
 }
 
-function getAdditionalData(event: Event): any {
+function getAdditionalData(event: Event): Record<string, unknown> | undefined {
   const error = getError(event);
-  return error?.data?.["@ext"];
+  return error?.data?.["@ext"] as Record<string, unknown>;
 }
 
 function throwAndCatch(error: Error | string | unknown): Error {

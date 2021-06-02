@@ -363,12 +363,12 @@ export class Configuration {
    * Register an plugin to be used in this configuration.
    */
   public addPlugin(
-    name: string,
+    name: string | undefined,
     priority: number,
     pluginAction: (context: EventPluginContext) => Promise<void>,
   ): void;
   public addPlugin(
-    pluginOrName: IEventPlugin | string,
+    pluginOrName: IEventPlugin | string | undefined,
     priority?: number,
     pluginAction?: (context: EventPluginContext) => Promise<void>,
   ): void {

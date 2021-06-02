@@ -25,7 +25,7 @@ export interface Event {
   /** An optional identifier to be used for referencing this event instance at a later time. */
   reference_id?: string;
   /** Optional data entries that contain additional information about this event. */
-  data?: IData;
+  data?: IEventData;
 }
 
 export enum KnownEventDataKeys {
@@ -42,7 +42,7 @@ export enum KnownEventDataKeys {
   ManualStackingInfo = "@stack",
 }
 
-export interface IData extends Record<string, unknown> {
+export interface IEventData extends Record<string, unknown> {
   "@error"?: ErrorInfo;
   "@simple_error"?: SimpleError;
   "@request"?: RequestInfo;

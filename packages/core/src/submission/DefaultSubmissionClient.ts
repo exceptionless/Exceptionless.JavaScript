@@ -92,7 +92,7 @@ export class DefaultSubmissionClient implements ISubmissionClient {
       response.statusText,
       rateLimitRemaining,
       settingsVersion,
-      data,
+      <T>data,
     );
   }
 

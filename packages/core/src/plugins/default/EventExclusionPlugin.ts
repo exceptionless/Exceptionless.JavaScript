@@ -14,14 +14,14 @@ export class EventExclusionPlugin implements IEventPlugin {
 
     if (ev.type === "log") {
       const minLogLevel = this.getMinLogLevel(settings, ev.source);
-      const logLevel = this.getLogLevel(ev.data[KnownEventDataKeys.Level]);
+      const logLevel = this.getLogLevel(ev.data && ev.data[KnownEventDataKeys.Level]);
 
       if (logLevel !== -1 && (logLevel === 6 || logLevel < minLogLevel)) {
         log.info("Cancelling log event due to minimum log level.");
         context.cancelled = true;
       }
     } else if (ev.type === "error") {
-      let error = ev.data[KnownEventDataKeys.Error];
+      let error = ev.data && ev.data[KnownEventDataKeys.Error];
       while (!context.cancelled && error) {
         if (this.getTypeAndSourceSetting(settings, ev.type, error.type, true) === false) {
           log.info(`Cancelling error from excluded exception type: ${error.type}`);
@@ -71,7 +71,7 @@ export class EventExclusionPlugin implements IEventPlugin {
 
   private getTypeAndSourceSetting(
     configSettings: Record<string, string> = {},
-    type: string,
+    type: string | undefined,
     source: string | undefined,
     defaultValue: string | boolean,
   ): string | boolean {

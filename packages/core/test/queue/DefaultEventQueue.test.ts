@@ -18,7 +18,6 @@ describe("DefaultEventQueue", () => {
   afterEach(() => {
     const queue: any = config.services.queue;
     clearInterval(queue._queueTimer);
-    config = null;
   });
 
   test("should enqueue event", async () => {

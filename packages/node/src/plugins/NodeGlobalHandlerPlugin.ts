@@ -8,7 +8,7 @@ export class NodeGlobalHandlerPlugin implements IEventPlugin {
   public priority: number = 100;
   public name: string = "NodeGlobalHandlerPlugin";
 
-  private _client: ExceptionlessClient = null;
+  private _client: ExceptionlessClient | undefined;
 
   public startup(context: PluginContext): Promise<void> {
     if (this._client) {

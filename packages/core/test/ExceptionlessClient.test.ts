@@ -22,7 +22,7 @@ describe("ExceptionlessClient", () => {
 
     context = await client.submitException(error);
     expect(context.event.reference_id).not.toBeUndefined();
-    const lastReference: string = lastReferenceIdManager.getLast();
+    const lastReference = lastReferenceIdManager.getLast();
     expect(context.event.reference_id).toBe(lastReference);
 
     context = await client.submitException(error);
@@ -31,15 +31,15 @@ describe("ExceptionlessClient", () => {
     expect(context.event.reference_id).toBe(lastReferenceIdManager.getLast());
   });
 
-  test("should accept null source", () => {
+  test("should accept undefined source", () => {
     const client = new ExceptionlessClient();
     client.config.apiKey = "UNIT_TEST_API_KEY";
 
-    const builder = client.createLog(null, "Unit Test message", "Trace");
+    const builder = client.createLog(undefined, "Unit Test message", "Trace");
 
     expect(builder.target.source).toBeUndefined();
     expect(builder.target.message).toBe("Unit Test message");
-    expect(builder.target.data[KnownEventDataKeys.Level]).toBe("Trace");
+    expect(builder.target.data?.[KnownEventDataKeys.Level]).toBe("Trace");
   });
 
   test("should accept source and message", () => {
@@ -60,7 +60,7 @@ describe("ExceptionlessClient", () => {
 
     expect(builder.target.source).toBe("source");
     expect(builder.target.message).toBe("Unit Test message");
-    expect(builder.target.data[KnownEventDataKeys.Level]).toBe("Info");
+    expect(builder.target.data?.[KnownEventDataKeys.Level]).toBe("Info");
   });
 
   test("should allow construction via a configuration object", () => {

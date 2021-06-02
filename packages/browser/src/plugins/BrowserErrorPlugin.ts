@@ -24,7 +24,7 @@ export class BrowserErrorPlugin implements IEventPlugin {
     if (exception) {
       context.event.type = "error";
 
-      if (!context.event.data[KnownEventDataKeys.Error]) {
+      if (context.event.data && !context.event.data[KnownEventDataKeys.Error]) {
         const result = await this.parse(exception);
         if (result) {
           const exclusions = context.client.config.dataExclusions.concat(IgnoredErrorProperties);

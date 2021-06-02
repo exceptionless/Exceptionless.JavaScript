@@ -14,7 +14,7 @@ describe("TestSubmissionClient", () => {
 
   test("should submit events", async () => {
     const fetchMock = TestSubmissionClient.prototype.apiFetch = jest.fn()
-      .mockReturnValueOnce(new Response(202, "", undefined, undefined, undefined));
+      .mockReturnValueOnce(new Response(202, "", NaN, NaN, undefined));
 
     const events = [{ type: "log", message: "From js client", reference_id: "123454321" }];
     const client = new TestSubmissionClient(config);
@@ -29,7 +29,7 @@ describe("TestSubmissionClient", () => {
 
   test("should submit invalid object data", async () => {
     const fetchMock = TestSubmissionClient.prototype.apiFetch = jest.fn()
-      .mockReturnValueOnce(new Response(202, "", undefined, undefined, undefined));
+      .mockReturnValueOnce(new Response(202, "", NaN, NaN, undefined));
 
     const events: Event[] = [{
       type: "log", message: "From js client", reference_id: "123454321", data: {
@@ -50,8 +50,8 @@ describe("TestSubmissionClient", () => {
 
   test("should submit user description", async () => {
     const fetchMock = TestSubmissionClient.prototype.apiFetch = jest.fn()
-      .mockReturnValueOnce(new Response(202, "", undefined, 1, undefined))
-      .mockReturnValueOnce(new Response(202, "", undefined, undefined, JSON.stringify(new ServerSettings({}, 1))));
+      .mockReturnValueOnce(new Response(202, "", NaN, 1, undefined))
+      .mockReturnValueOnce(new Response(202, "", NaN, NaN, JSON.stringify(new ServerSettings({}, 1))));
 
     const description: UserDescription = {
       email_address: "norply@exceptionless.io",
@@ -72,7 +72,7 @@ describe("TestSubmissionClient", () => {
 
   test("should submit heartbeat", async () => {
     const fetchMock = TestSubmissionClient.prototype.apiFetch = jest.fn()
-      .mockReturnValueOnce(new Response(200, "", undefined, undefined, undefined));
+      .mockReturnValueOnce(new Response(200, "", NaN, NaN, undefined));
 
     const client = new TestSubmissionClient(config);
     await client.submitHeartbeat("sessionId", true);
@@ -83,7 +83,7 @@ describe("TestSubmissionClient", () => {
 
   test("should get project settings", async () => {
     const fetchMock = TestSubmissionClient.prototype.apiFetch = jest.fn()
-      .mockReturnValueOnce(new Response(200, "", undefined, undefined, JSON.stringify(new ServerSettings({}, 1))));
+      .mockReturnValueOnce(new Response(200, "", NaN, NaN, JSON.stringify(new ServerSettings({}, 1))));
 
     const client = new TestSubmissionClient(config);
     await client.getSettings(0);

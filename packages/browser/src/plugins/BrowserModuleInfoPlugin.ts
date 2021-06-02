@@ -11,7 +11,7 @@ import {
 export class BrowserModuleInfoPlugin implements IEventPlugin {
   public priority: number = 50;
   public name: string = "BrowserModuleInfoPlugin";
-  private _modules: ModuleInfo[] = null;
+  private _modules: ModuleInfo[] | undefined;
 
   public startup(context: PluginContext): Promise<void> {
     if (!this._modules) {
@@ -22,17 +22,17 @@ export class BrowserModuleInfoPlugin implements IEventPlugin {
   }
 
   public run(context: EventPluginContext): Promise<void> {
-    const error = context.event.data[KnownEventDataKeys.Error];
-    if (this._modules?.length > 0 && !error?.modules) {
+    const error = context.event.data?.[KnownEventDataKeys.Error];
+    if (error && !error?.modules && this._modules?.length) {
       error.modules = this._modules;
     }
 
     return Promise.resolve();
   }
 
-  private getModules(): ModuleInfo[] {
+  private getModules(): ModuleInfo[] | undefined {
     if (!document || !document.getElementsByTagName) {
-      return null;
+      return;
     }
 
     const modules: ModuleInfo[] = [];
@@ -44,7 +44,7 @@ export class BrowserModuleInfoPlugin implements IEventPlugin {
           modules.push({
             module_id: index,
             name: scripts[index].src.split("?")[0],
-            version: parseVersion(scripts[index].src),
+            version: <string>parseVersion(scripts[index].src),
           });
         } else if (scripts[index].innerHTML) {
           modules.push({

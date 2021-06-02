@@ -8,7 +8,7 @@ export class NodeLifeCyclePlugin implements IEventPlugin {
   public priority: number = 105;
   public name: string = "NodeLifeCyclePlugin";
 
-  private _client: ExceptionlessClient = null;
+  private _client: ExceptionlessClient | undefined;
 
   public startup(context: PluginContext): Promise<void> {
     if (this._client) {
@@ -35,7 +35,7 @@ export class NodeLifeCyclePlugin implements IEventPlugin {
   * From now on, only synchronous code may run. As soon as this method
   * ends, the application inevitably will exit.
   */
-  private getExitCodeReason(exitCode: number): string {
+  private getExitCodeReason(exitCode: number): string | null {
     if (exitCode === 1) {
       return "Uncaught Fatal Exception";
     }

@@ -164,7 +164,7 @@ export class EventBuilder {
   }
 
   public addTags(...tags: string[]): EventBuilder {
-    this.target.tags = [...this.target.tags, ...tags];
+    this.target.tags = [...this.target.tags || [], ...tags];
     return this;
   }
 

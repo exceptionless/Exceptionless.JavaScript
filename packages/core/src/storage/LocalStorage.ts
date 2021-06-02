@@ -15,11 +15,11 @@ export class LocalStorage implements IStorage {
     return Promise.resolve();
   }
 
-  public getItem(key: string): Promise<string> {
+  public getItem(key: string): Promise<string | null> {
     return Promise.resolve(this.storage.getItem(this.getKey(key)));
   }
 
-  public key(index: number): Promise<string> {
+  public key(index: number): Promise<string | null> {
     const keys = this.getKeys();
     return Promise.resolve(index < keys.length ? keys[index] : null);
   }

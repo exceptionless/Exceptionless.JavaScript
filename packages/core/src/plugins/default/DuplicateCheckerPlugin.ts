@@ -35,22 +35,22 @@ export class DuplicateCheckerPlugin implements IEventPlugin {
   }
 
   public run(context: EventPluginContext): Promise<void> {
-    function calculateHashCode(e: InnerErrorInfo): number {
+    function calculateHashCode(error: InnerErrorInfo | undefined): number {
       let hash = 0;
-      while (e) {
-        if (e.message && e.message.length) {
-          hash += (hash * 397) ^ getHashCode(e.message);
+      while (error) {
+        if (error.message && error.message.length) {
+          hash += (hash * 397) ^ getHashCode(error.message);
         }
-        if (e.stack_trace && e.stack_trace.length) {
-          hash += (hash * 397) ^ getHashCode(JSON.stringify(e.stack_trace));
+        if (error.stack_trace && error.stack_trace.length) {
+          hash += (hash * 397) ^ getHashCode(JSON.stringify(error.stack_trace));
         }
-        e = e.inner;
+        error = error.inner;
       }
 
       return hash;
     }
 
-    const error = context.event.data[KnownEventDataKeys.Error];
+    const error = context.event.data?.[KnownEventDataKeys.Error];
     const hashCode = calculateHashCode(error);
     if (hashCode) {
       const count = context.event.count || 1;
@@ -91,7 +91,7 @@ export class DuplicateCheckerPlugin implements IEventPlugin {
 
   private async submitEvents(): Promise<void> {
     while (this._mergedEvents.length > 0) {
-      await this._mergedEvents.shift().resubmit();
+      await this._mergedEvents.shift()?.resubmit();
     }
   }
 }
@@ -121,9 +121,10 @@ class MergedEvent {
     await this._context.client.config.services.queue.enqueue(this._context.event);
   }
 
-  public updateDate(date: Date): void {
-    if (date > this._context.event.date) {
-      this._context.event.date = date;
+  public updateDate(date?: Date): void {
+    const ev = this._context.event;
+    if (date && ev.date && date > ev.date) {
+      ev.date = date;
     }
   }
 }

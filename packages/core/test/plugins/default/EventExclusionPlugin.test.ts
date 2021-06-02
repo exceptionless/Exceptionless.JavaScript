@@ -3,34 +3,35 @@ import { Event, KnownEventDataKeys } from "../../../src/models/Event.js";
 import { InnerErrorInfo } from "../../../src/models/data/ErrorInfo.js";
 import { EventExclusionPlugin } from "../../../src/plugins/default/EventExclusionPlugin.js";
 import { EventPluginContext } from "../../../src/plugins/EventPluginContext.js";
+import { EventContext } from "../../../src/models/EventContext.js";
 
 describe("EventExclusionPlugin", () => {
   describe("should exclude log levels", () => {
-    const run = async (source: string, level: string, settingKey: string, settingValue: string): Promise<boolean> => {
+    const run = async (source: string | undefined, level: string | null | undefined, settingKey: string | null | undefined, settingValue: string | null | undefined): Promise<boolean> => {
       const client = new ExceptionlessClient();
-      if (settingKey) {
-        client.config.settings[settingKey] = settingValue;
+      if (typeof settingKey == "string") {
+        client.config.settings[settingKey] = settingValue as string;
       }
 
       const ev: Event = { type: "log", source, data: {} };
-      if (level) {
+      if (ev.data && level) {
         ev.data[KnownEventDataKeys.Level] = level;
       }
 
-      const context = new EventPluginContext(client, ev);
+      const context = new EventPluginContext(client, ev, new EventContext());
       const plugin = new EventExclusionPlugin();
       await plugin.run(context);
 
       return context.cancelled;
     }
 
-    test("<null>", async () => expect(await run(null, null, null, null)).toBe(false));
+    test("<null>", async () => expect(await run(undefined, null, null, null)).toBe(false));
     test("Test", async () => expect(await run("Test", null, null, null)).toBe(false));
     test("[Trace] Test", async () => expect(await run("Test", "Trace", null, null)).toBe(false));
     test("[Off] Test", async () => expect(await run("Test", "Off", null, null)).toBe(true));
     test("[Abc] Test", async () => expect(await run("Test", "Abc", null, null)).toBe(false));
-    test("[Trace] <null> (source min level: Off", async () => expect(await run(null, "Trace", "@@log:", "Off")).toBe(true));
-    test("[Trace] <null> (global min level: Off", async () => expect(await run(null, "Trace", "@@log:*", "Off")).toBe(true));
+    test("[Trace] <null> (source min level: Off", async () => expect(await run(undefined, "Trace", "@@log:", "Off")).toBe(true));
+    test("[Trace] <null> (global min level: Off", async () => expect(await run(undefined, "Trace", "@@log:*", "Off")).toBe(true));
     test("[Trace] <undefined> (source min level: Off", async () => expect(await run(undefined, "Trace", "@@log:", "Off")).toBe(true));
     test("[Trace] <undefined> (global min level: Off", async () => expect(await run(undefined, "Trace", "@@log:*", "Off")).toBe(true));
     test("[Trace] <empty> (source min level: Off", async () => expect(await run("", "Trace", "@@log:", "Off")).toBe(true)); // Becomes Global Log Level
@@ -48,26 +49,26 @@ describe("EventExclusionPlugin", () => {
   });
 
   describe("should exclude log levels with info default", () => {
-    const run = async (source: string, level: string, settingKey: string, settingValue: string): Promise<boolean> => {
+    const run = async (source: string | undefined, level: string | null | undefined, settingKey: string | null | undefined, settingValue: string | null | undefined): Promise<boolean> => {
       const client = new ExceptionlessClient();
       client.config.settings["@@log:*"] = "Info";
-      if (settingKey) {
-        client.config.settings[settingKey] = settingValue;
+      if (typeof settingKey === "string") {
+        client.config.settings[settingKey] = settingValue as string;
       }
 
       const ev: Event = { type: "log", source, data: {} };
-      if (level) {
+      if (ev.data && level) {
         ev.data[KnownEventDataKeys.Level] = level;
       }
 
-      const context = new EventPluginContext(client, ev);
+      const context = new EventPluginContext(client, ev, new EventContext());
       const plugin = new EventExclusionPlugin();
       await plugin.run(context);
 
       return context.cancelled;
     }
 
-    test("<null>", async () => expect(await run(null, null, null, null)).toBe(false));
+    test("<null>", async () => expect(await run(undefined, null, null, null)).toBe(false));
     test("Test", async () => expect(await run("Test", null, null, null)).toBe(false));
     test("[Trace] Test", async () => expect(await run("Test", "Trace", null, null)).toBe(true));
     test("[Warn] Test", async () => expect(await run("Test", "Warn", null, null)).toBe(false));
@@ -79,7 +80,6 @@ describe("EventExclusionPlugin", () => {
     const plugin = new EventExclusionPlugin();
     const settings: Record<string, string> = { "@@log:": "Info", "@@log:*": "Debug" };
 
-    test("<null> (global min level: info)", () => expect(plugin.getMinLogLevel(settings, null)).toBe(2));
     test("<undefined> (global min level: info)", () => expect(plugin.getMinLogLevel(settings, undefined)).toBe(2));
     test("<empty> (source min level: info)", () => expect(plugin.getMinLogLevel(settings, "")).toBe(2));
     test("* (global min level: debug)", () => expect(plugin.getMinLogLevel(settings, "*")).toBe(1));
@@ -100,7 +100,6 @@ describe("EventExclusionPlugin", () => {
     };
 
     test("<undefined> (source min level: off)", () => expect(plugin.getMinLogLevel(settings, undefined)).toBe(5));
-    test("<null> (source min level: off)", () => expect(plugin.getMinLogLevel(settings, null)).toBe(5));
     test("<empty> (source min level: off)", () => expect(plugin.getMinLogLevel(settings, "")).toBe(5));
     test("* (source min level: off)", () => expect(plugin.getMinLogLevel(settings, "*")).toBe(5));
     test("abc (source min level: off)", () => expect(plugin.getMinLogLevel(settings, "abc")).toBe(5));
@@ -118,7 +117,6 @@ describe("EventExclusionPlugin", () => {
     };
 
     test("<undefined> (source min level: debug)", () => expect(plugin.getMinLogLevel(settings, undefined)).toBe(1));
-    test("<null> (source min level: debug)", () => expect(plugin.getMinLogLevel(settings, null)).toBe(1));
     test("<empty> (source min level: debug)", () => expect(plugin.getMinLogLevel(settings, "")).toBe(1));
     test("fallback (global min level: debug)", () => expect(plugin.getMinLogLevel(settings, "fallback")).toBe(5));
     test("abc (source min level: off)", () => expect(plugin.getMinLogLevel(settings, "abc")).toBe(6));
@@ -141,22 +139,22 @@ describe("EventExclusionPlugin", () => {
   });
 
   describe("should exclude source type", () => {
-    const run = async (type: string, source: string, settingKey: string, settingValue: string): Promise<boolean> => {
+    const run = async (type: string | null | undefined, source: string | undefined, settingKey: string | null | undefined, settingValue: string | null | undefined): Promise<boolean> => {
       const client = new ExceptionlessClient();
 
-      if (settingKey) {
-        client.config.settings[settingKey] = settingValue;
+      if (typeof settingKey === "string") {
+        client.config.settings[settingKey] = settingValue as string;
       }
 
-      const context = new EventPluginContext(client, { type, source, data: {} });
+      const context = new EventPluginContext(client, { type: <string>type, source, data: {} }, new EventContext());
       const plugin = new EventExclusionPlugin();
       await plugin.run(context);
 
       return context.cancelled;
     }
 
-    test("<null>", async () => expect(await run(null, null, null, null)).toBe(false));
-    test("usage=<null>", async () => expect(await run("usage", null, null, null)).toBe(false));
+    test("<null>", async () => expect(await run(null, undefined, null, null)).toBe(false));
+    test("usage=<null>", async () => expect(await run("usage", undefined, null, null)).toBe(false));
     test("usage=test", async () => expect(await run("usage", "test", null, null)).toBe(false));
     test("usage=test on", async () => expect(await run("usage", "test", "@@usage:Test", "true")).toBe(false));
     test("usage=test off", async () => expect(await run("usage", "test", "@@usage:Test", "false")).toBe(true));
@@ -164,18 +162,18 @@ describe("EventExclusionPlugin", () => {
     test("404=/unknown (global off)", async () => expect(await run("404", "/unknown", "@@404:*", "false")).toBe(true));
     test("404=/unknown on", async () => expect(await run("404", "/unknown", "@@404:/unknown", "true")).toBe(false));
     test("404=/unknown off", async () => expect(await run("404", "/unknown", "@@404:/unknown", "false")).toBe(true));
-    test("404=<null> off", async () => expect(await run("404", null, "@@404:*", "false")).toBe(true));
+    test("404=<null> off", async () => expect(await run("404", undefined, "@@404:*", "false")).toBe(true));
     test("404=<undefined> empty off", async () => expect(await run("404", undefined, "@@404:", "false")).toBe(true));
     test("404=<undefined> global off", async () => expect(await run("404", undefined, "@@404:*", "false")).toBe(true));
-    test("404=<null> empty off", async () => expect(await run("404", null, "@@404:", "false")).toBe(true));
+    test("404=<null> empty off", async () => expect(await run("404", undefined, "@@404:", "false")).toBe(true));
     test("404=<empty> off", async () => expect(await run("404", "", "@@404:", "false")).toBe(true));
   });
 
   describe("should exclude exception type", () => {
-    const run = async (settingKey: string): Promise<boolean> => {
+    const run = async (settingKey: string | null | undefined): Promise<boolean> => {
       const client = new ExceptionlessClient();
 
-      if (settingKey) {
+      if (typeof settingKey === "string") {
         client.config.settings[settingKey] = "false";
       }
 
@@ -188,7 +186,7 @@ describe("EventExclusionPlugin", () => {
             stack_trace: []
           }
         }
-      });
+      }, new EventContext());
 
       const plugin = new EventExclusionPlugin();
       await plugin.run(context);
