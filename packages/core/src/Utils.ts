@@ -149,11 +149,16 @@ export function isMatch(
   });
 }
 
-export function isEmpty(
-  input: Record<string, unknown> | null | undefined | unknown,
-) {
-  return input === null || input === undefined ||
-    Object.keys(input).length === 0;
+export function isEmpty(input: Record<string, unknown> | null | undefined | unknown): boolean {
+  if (input === null || input === undefined) {
+    return true;
+  }
+
+  if (typeof input == "object") {
+    return Object.keys(<Record<string, unknown>>input).length === 0;
+  }
+
+  return false;
 }
 
 export function startsWith(input: string, prefix: string): boolean {
@@ -195,19 +200,19 @@ export function stringify(data: any, exclusions?: string[], maxDepth?: number): 
       flattened[prop] = data[prop];
     }
 
-    return stringifyImpl(flattened, exclusions);
+    return stringifyImpl(flattened, exclusions || []);
   }
 
   if (({}).toString.call(data) === "[object Array]") {
-    const result = [];
+    const result: unknown[] = [];
     for (let index = 0; index < data.length; index++) {
-      result[index] = JSON.parse(stringifyImpl(data[index], exclusions));
+      result[index] = JSON.parse(stringifyImpl(data[index], exclusions || []));
     }
 
     return JSON.stringify(result);
   }
 
-  return stringifyImpl(data, exclusions);
+  return stringifyImpl(data, exclusions || []);
 }
 
 /**
@@ -256,7 +261,7 @@ export function stringify2(
     });
   }
 
-  return stringifyImpl(data, exclusions, 1, "");
+  return stringifyImpl(data, exclusions || [], 1, "");
 }
 
 export function toBoolean(input, defaultValue: boolean = false): boolean {

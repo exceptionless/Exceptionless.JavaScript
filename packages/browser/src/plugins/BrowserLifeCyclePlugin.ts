@@ -8,7 +8,7 @@ export class BrowserLifeCyclePlugin implements IEventPlugin {
   public priority: number = 105;
   public name: string = "BrowserLifeCyclePlugin";
 
-  private _client: ExceptionlessClient = null;
+  private _client: ExceptionlessClient | undefined;
 
   public startup(context: PluginContext): Promise<void> {
     if (this._client) {
@@ -17,12 +17,12 @@ export class BrowserLifeCyclePlugin implements IEventPlugin {
 
     this._client = context.client;
 
-    globalThis.addEventListener("beforeunload", () => void this._client.suspend());
+    globalThis.addEventListener("beforeunload", () => void this._client?.suspend());
     document.addEventListener("visibilitychange", () => {
       if (document.visibilityState === 'visible') {
-        void this._client.startup()
+        void this._client?.startup()
       } else {
-        void this._client.suspend()
+        void this._client?.suspend()
       }
     });
 

@@ -13,8 +13,8 @@ export class NodeRequestInfoPlugin implements IEventPlugin {
   public name: string = "NodeRequestInfoPlugin";
 
   public run(context: EventPluginContext): Promise<void> {
-    if (!context.event.data[KnownEventDataKeys.RequestInfo]) {
-      const requestInfo: RequestInfo = this.getRequestInfo(context);
+    if (context.event.data && !context.event.data[KnownEventDataKeys.RequestInfo]) {
+      const requestInfo: RequestInfo | undefined = this.getRequestInfo(context);
       if (requestInfo) {
         if (isMatch(requestInfo.user_agent, context.client.config.userAgentBotPatterns)) {
           context.log.info("Cancelling event as the request user agent matches a known bot pattern");
@@ -28,11 +28,11 @@ export class NodeRequestInfoPlugin implements IEventPlugin {
     return Promise.resolve();
   }
 
-  private getRequestInfo(context: EventPluginContext): RequestInfo {
+  private getRequestInfo(context: EventPluginContext): RequestInfo | undefined {
     // TODO: Move this into a known keys.
     const REQUEST_KEY: string = "@request";
     if (!context.eventContext[REQUEST_KEY]) {
-      return null;
+      return;
     }
 
     const config = context.client.config;
@@ -60,7 +60,7 @@ export class NodeRequestInfoPlugin implements IEventPlugin {
     }
 
     if (config.includeCookies) {
-      requestInfo.cookies = getCookies(request.headers.cookie, exclusions);
+      requestInfo.cookies = getCookies(request.headers.cookie, exclusions) as Record<string, string>;
     }
 
     if (config.includeQueryString) {

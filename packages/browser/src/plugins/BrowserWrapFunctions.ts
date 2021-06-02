@@ -8,7 +8,7 @@ export class BrowserWrapFunctions implements IEventPlugin {
   public priority: number = 110;
   public name: string = "BrowserWrapFunctions";
 
-  private _client: ExceptionlessClient = null;
+  private _client: ExceptionlessClient | undefined;
 
   public startup(context: PluginContext): Promise<void> {
     if (this._client) {

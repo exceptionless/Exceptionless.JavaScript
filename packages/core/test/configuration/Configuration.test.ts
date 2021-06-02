@@ -58,7 +58,7 @@ describe("Configuration", () => {
       config.removePlugin(config.plugins[0]);
     }
 
-    config.addPlugin(null, null, () => Promise.resolve());
+    config.addPlugin(undefined, NaN, () => Promise.resolve());
     expect(config.plugins.length).toBe(1);
     expect(config.plugins[0].name).not.toBeNull();
     expect(config.plugins[0].priority).toBe(0);

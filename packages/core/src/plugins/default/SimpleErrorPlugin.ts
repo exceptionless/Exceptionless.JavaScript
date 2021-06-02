@@ -33,7 +33,7 @@ export class SimpleErrorPlugin implements IEventPlugin {
     if (exception) {
       context.event.type = "error";
 
-      if (!context.event.data[KnownEventDataKeys.SimpleError]) {
+      if (context.event.data && !context.event.data[KnownEventDataKeys.SimpleError]) {
         const error = <SimpleError>{
           type: exception.name || "Error",
           message: exception.message,
@@ -44,7 +44,7 @@ export class SimpleErrorPlugin implements IEventPlugin {
         const exclusions = context.client.config.dataExclusions.concat(IgnoredErrorProperties);
         const additionalData = JSON.parse(stringify(exception, exclusions));
         if (!isEmpty(additionalData)) {
-          error.data["@ext"] = additionalData;
+          (error.data as Record<string, unknown>)["@ext"] = additionalData;
         }
 
         context.event.data[KnownEventDataKeys.SimpleError] = error;

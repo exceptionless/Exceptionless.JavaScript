@@ -28,16 +28,16 @@
     "example/*"
   ],
   "devDependencies": {
-    "@typescript-eslint/eslint-plugin": "4.25.0",
-    "@typescript-eslint/parser": "4.25.0",
+    "@typescript-eslint/eslint-plugin": "4.26.0",
+    "@typescript-eslint/parser": "4.26.0",
     "eslint": "7.27.0",
     "eslint-plugin-eslint-comments": "3.2.0",
     "eslint-plugin-eslint-plugin": "3.0.3",
-    "eslint-plugin-import": "2.23.3",
+    "eslint-plugin-import": "2.23.4",
     "eslint-plugin-jest": "24.3.6",
-    "eslint-plugin-jsdoc": "35.0.0",
+    "eslint-plugin-jsdoc": "35.1.2",
     "lage": "^0.29.3",
     "rimraf": "3.0.2",
-    "typescript": "4.2.4"
+    "typescript": "4.3.2"
   }
 }

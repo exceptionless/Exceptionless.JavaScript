@@ -1,5 +1,3 @@
-import { IData } from "../Event.js";
-
 export interface EnvironmentInfo {
   processor_count?: number;
   total_physical_memory?: number;
@@ -16,5 +14,5 @@ export interface EnvironmentInfo {
   machine_name?: string;
   install_id?: string;
   runtime_version?: string;
-  data?: IData;
+  data?: Record<string, unknown>;
 }

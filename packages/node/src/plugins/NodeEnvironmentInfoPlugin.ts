@@ -32,11 +32,11 @@ import {
 export class NodeEnvironmentInfoPlugin implements IEventPlugin {
   public priority: number = 80;
   public name: string = "NodeEnvironmentInfoPlugin";
-  private _environmentInfo: EnvironmentInfo = null;
+  private _environmentInfo: EnvironmentInfo | undefined;
 
   public run(context: EventPluginContext): Promise<void> {
-    if (!context.event.data[KnownEventDataKeys.EnvironmentInfo]) {
-      const info: EnvironmentInfo = this.getEnvironmentInfo(context);
+    if (context.event.data && !context.event.data[KnownEventDataKeys.EnvironmentInfo]) {
+      const info: EnvironmentInfo | undefined = this.getEnvironmentInfo(context);
       if (info) {
         context.event.data[KnownEventDataKeys.EnvironmentInfo] = info;
       }
@@ -45,7 +45,7 @@ export class NodeEnvironmentInfoPlugin implements IEventPlugin {
     return Promise.resolve();
   }
 
-  private getEnvironmentInfo(context: EventPluginContext): EnvironmentInfo {
+  private getEnvironmentInfo(context: EventPluginContext): EnvironmentInfo | undefined {
     function getIpAddresses(): string {
       const ips: string[] = [];
 
@@ -64,12 +64,12 @@ export class NodeEnvironmentInfoPlugin implements IEventPlugin {
       ei.process_memory_size = memoryUsage().heapTotal;
       ei.total_physical_memory = totalmem();
       ei.available_physical_memory = freemem();
-      ei.data.loadavg = loadavg();
-      ei.data.uptime = uptime();
+      (ei.data as Record<string, unknown>).loadavg = loadavg();
+      (ei.data as Record<string, unknown>).uptime = uptime();
     }
 
     if (!cpus) {
-      return null;
+      return;
     }
 
     if (this._environmentInfo) {
@@ -105,7 +105,7 @@ export class NodeEnvironmentInfoPlugin implements IEventPlugin {
     }
 
     if (endianness) {
-      info.data.endianness = endianness();
+      (info.data as Record<string, unknown>).endianness = endianness();
     }
 
     populateMemoryAndUptimeInfo(info);

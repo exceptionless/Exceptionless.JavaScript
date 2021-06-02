@@ -22,8 +22,8 @@ export class ConsoleLog implements ILog {
       const msg = `Exceptionless:${new Date().toISOString()} [${level}] ${message}`;
       if (console[level]) {
         console[level](msg);
-      } else if (console.log) {
-        console[`log`](msg);
+      } else if (console["log"]) {
+        console["log"](msg);
       }
     }
   }

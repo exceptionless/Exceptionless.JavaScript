@@ -4,9 +4,9 @@ import { Event } from "../models/Event.js";
 import { EventContext } from "../models/EventContext.js";
 
 export class EventPluginContext {
-  public cancelled = false;
+  public cancelled: boolean = false;
 
-  constructor(public client: ExceptionlessClient, public event: Event, public eventContext: EventContext = null) {
+  constructor(public client: ExceptionlessClient, public event: Event, public eventContext: EventContext) {
     if (!this.eventContext)
       this.eventContext = new EventContext();
   }

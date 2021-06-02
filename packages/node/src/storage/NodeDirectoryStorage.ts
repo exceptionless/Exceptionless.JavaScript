@@ -4,12 +4,15 @@ import { dirname, join, resolve } from "path";
 import { argv } from "process";
 
 export class NodeDirectoryStorage {
-  constructor(private directory: string = null) {
-    if (!this.directory) {
+  private directory: string;
+
+  constructor(directory?: string) {
+    if (!directory) {
       this.directory = argv && argv.length > 1 ? join(dirname(argv[1]), ".exceptionless") : ".exceptionless";
+    } else {
+      this.directory = resolve(directory);
     }
 
-    this.directory = resolve(this.directory);
     mkdirSync(this.directory, { recursive: true });
   }
 
@@ -26,7 +29,7 @@ export class NodeDirectoryStorage {
     return Promise.resolve();
   }
 
-  public async getItem(key: string): Promise<string> {
+  public async getItem(key: string): Promise<string | null> {
     try {
       return await readFile(join(this.directory, key), "utf8");
     } catch (ex) {
@@ -38,7 +41,7 @@ export class NodeDirectoryStorage {
     }
   }
 
-  public async key(index: number): Promise<string> {
+  public async key(index: number): Promise<string | null> {
     const keys = await this.keys();
     return Promise.resolve(index < keys.length ? keys[index] : null);
   }
@@ -55,8 +58,6 @@ export class NodeDirectoryStorage {
         throw ex;
       }
     }
-
-    return null;
   }
 
   public async setItem(key: string, value: string): Promise<void> {

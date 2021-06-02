@@ -8,7 +8,7 @@ export class NodeWrapFunctions implements IEventPlugin {
   public priority: number = 110;
   public name: string = "NodeWrapFunctions";
 
-  private _client: ExceptionlessClient = null;
+  private _client: ExceptionlessClient | undefined;
 
   public startup(context: PluginContext): Promise<void> {
     if (this._client) {

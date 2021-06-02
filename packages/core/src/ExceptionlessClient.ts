@@ -117,7 +117,7 @@ export class ExceptionlessClient {
 
   public createLog(message: string): EventBuilder;
   public createLog(source: string, message: string): EventBuilder;
-  public createLog(source: string, message: string, level: string): EventBuilder;
+  public createLog(source: string | undefined, message: string, level: string): EventBuilder;
   public createLog(sourceOrMessage: string, message?: string, level?: string): EventBuilder {
     let builder = this.createEvent().setType("log");
 
@@ -147,9 +147,9 @@ export class ExceptionlessClient {
 
   public submitLog(message: string): Promise<EventPluginContext>;
   public submitLog(source: string, message: string): Promise<EventPluginContext>;
-  public submitLog(source: string, message: string, level: string): Promise<EventPluginContext>;
+  public submitLog(source: string | undefined, message: string, level: string): Promise<EventPluginContext>;
   public submitLog(sourceOrMessage: string, message?: string, level?: string): Promise<EventPluginContext> {
-    return this.createLog(sourceOrMessage, message, level).submit();
+    return this.createLog(sourceOrMessage, <string>message, <string>level).submit();
   }
 
   public createNotFound(resource: string): EventBuilder {
@@ -203,16 +203,16 @@ export class ExceptionlessClient {
    * @param context Contextual data used by event plugins to enrich the event details
    */
   public async submitEvent(event: Event, context?: EventContext): Promise<EventPluginContext> {
-    const pluginContext = new EventPluginContext(this, event, context);
+    const pluginContext = new EventPluginContext(this, event, context ?? new EventContext());
 
     if (!event) {
-      context.cancelled = true;
+      pluginContext.cancelled = true;
       return pluginContext;
     }
 
     if (!this.config.enabled || !this.config.isValid) {
       this.config.services.log.info("Event submission is currently disabled.");
-      context.cancelled = true;
+      pluginContext.cancelled = true;
       return pluginContext;
     }
 
@@ -225,7 +225,7 @@ export class ExceptionlessClient {
     }
 
     await EventPluginManager.run(pluginContext);
-    if (context.cancelled) {
+    if (pluginContext.cancelled) {
       return pluginContext;
     }
 
@@ -258,19 +258,12 @@ export class ExceptionlessClient {
    * @param callback The submission response.
    */
   public async updateUserEmailAndDescription(referenceId: string, email: string, description: string): Promise<void> {
-    if (
-      !referenceId || !email || !description || !this.config.enabled ||
-      !this.config.isValid
-    ) {
+    if (!referenceId || !email || !description || !this.config.enabled || !this.config.isValid) {
       return;
     }
 
-    const userDescription: UserDescription = {
-      email_address: email,
-      description,
-    };
-    const response = await this.config.services.submissionClient
-      .submitUserDescription(referenceId, userDescription);
+    const userDescription: UserDescription = { email_address: email, description };
+    const response = await this.config.services.submissionClient.submitUserDescription(referenceId, userDescription);
     if (!response.success) {
       this.config.services.log.error(
         `Failed to submit user email and description for event "${referenceId}": ${response.status} ${response.message}`,
