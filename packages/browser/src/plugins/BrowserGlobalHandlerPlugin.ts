@@ -4,7 +4,7 @@ import {
   PluginContext
 } from "@exceptionless/core";
 
-declare let $: (document: Document) => { (): any; new(): any; ajaxError: { (document: (event: Event, xhr: { responseText: string; status: number; }, settings: { data: unknown; url: string; }, error: string) => void): void; new(): any; }; };
+declare let $: (document: Document) => { ajaxError: { (document: (event: Event, xhr: { responseText: string; status: number; }, settings: { data: unknown; url: string; }, error: string) => void): void; }; };
 
 export class BrowserGlobalHandlerPlugin implements IEventPlugin {
   public priority: number = 100;
@@ -28,7 +28,7 @@ export class BrowserGlobalHandlerPlugin implements IEventPlugin {
       let error = event.reason;
       try {
         // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
-        const reason = (<any>event).detail?.reason;
+        const reason = (<{ detail?: { reason: string} }>event).detail?.reason;
         if (reason) {
           error = reason;
         }
@@ -62,7 +62,7 @@ export class BrowserGlobalHandlerPlugin implements IEventPlugin {
   private getError(event: ErrorEvent): Error {
     const { error, message, filename, lineno, colno } = event;
     if (typeof error === "object") {
-      return error;
+      return error as Error;
     }
 
     let name: string = "Error";
@@ -71,7 +71,7 @@ export class BrowserGlobalHandlerPlugin implements IEventPlugin {
       const errorNameRegex: RegExp = /^(?:[Uu]ncaught (?:exception: )?)?(?:((?:Aggregate|Eval|Internal|Range|Reference|Syntax|Type|URI|)Error): )?(.*)$/i;
       const regexResult = errorNameRegex.exec(msg);
       if (regexResult) {
-        const [_, errorName, errorMessage] = regexResult;
+        const [, errorName, errorMessage] = regexResult;
         if (errorName) {
           name = errorName;
         }
@@ -83,7 +83,7 @@ export class BrowserGlobalHandlerPlugin implements IEventPlugin {
 
     const ex = new Error(msg || "Script error.");
     ex.name = name;
-    ex.stack = `at ${filename || ""}:${!isNaN(lineno) ? lineno : 0}${!isNaN(colno) ? ":" + colno : ""}`;
+    ex.stack = `at ${filename || ""}:${!isNaN(lineno) ? lineno : 0}${!isNaN(colno) ? `:${colno}` : ""}`;
     return ex;
   }
 }

@@ -22,7 +22,7 @@ export class NodeGlobalHandlerPlugin implements IEventPlugin {
       void this._client?.submitUnhandledException(error, "uncaughtException");
     });
 
-    process.addListener("unhandledRejection", (reason: unknown | null | undefined, _: Promise<any>) => {
+    process.addListener("unhandledRejection", (reason: unknown | null | undefined) => {
       void this._client?.submitUnhandledException(<Error>reason, "unhandledRejection");
     });
 

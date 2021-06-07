@@ -61,7 +61,7 @@ describe("Utils", () => {
     });
 
     test("circular reference", () => {
-      const aFoo: any = { a: "foo" };
+      const aFoo: { a: string, b?: unknown } = { a: "foo" };
       aFoo.b = aFoo;
 
       expect(stringify(aFoo)).toBe("{\"a\":\"foo\"}");
@@ -69,9 +69,9 @@ describe("Utils", () => {
     });
 
     test.skip("deep circular reference", () => {
-      const a: any = {};
-      const b: any = {};
-      const c: any = { d: "test" };
+      const a: { b?: unknown } = {};
+      const b: { c?: unknown } = {};
+      const c: { a?: unknown, d: string } = { d: "test" };
 
       a.b = b;
       b.c = c;
@@ -84,7 +84,7 @@ describe("Utils", () => {
     });
 
     describe("should behave like JSON.stringify", () => {
-      [new Date(), 1, true, null, undefined, () => { }, user].forEach((value) => {
+      [new Date(), 1, true, null, undefined, () => { return undefined; }, user].forEach((value) => {
         test("for " + typeof (value), () => {
           expect(stringify(value)).toBe(JSON.stringify(value));
         });
