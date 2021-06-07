@@ -24,7 +24,7 @@ export class NodeErrorPlugin implements IEventPlugin {
         const result = await this.parse(exception);
         if (result) {
           const exclusions = context.client.config.dataExclusions.concat(IgnoredErrorProperties);
-          const additionalData = JSON.parse(stringify(exception, exclusions));
+          const additionalData = JSON.parse(stringify(exception, exclusions)) as unknown;
           if (!isEmpty(additionalData)) {
             if (!result.data) {
               result.data = {};

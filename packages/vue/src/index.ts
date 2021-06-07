@@ -8,7 +8,9 @@ export { Exceptionless };
  * @param vm
  * @param info
  */
-export const ExceptionlessErrorHandler = async (err, vm, info) => {
-  console.log({ err, vm, info });
-  await Exceptionless.submitException(err);
+export const ExceptionlessErrorHandler = async (err: Error, vm: unknown, info: unknown): Promise<void> => {
+  await Exceptionless.createException(err)
+    .setProperty("vm", vm)
+    .setProperty("info", info)
+    .submit();
 }

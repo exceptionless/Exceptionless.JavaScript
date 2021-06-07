@@ -4,8 +4,7 @@ import {
   IEventPlugin,
   KnownEventDataKeys,
   ModuleInfo,
-  parseVersion,
-  PluginContext
+  parseVersion
 } from "@exceptionless/core";
 
 export class BrowserModuleInfoPlugin implements IEventPlugin {
@@ -13,7 +12,7 @@ export class BrowserModuleInfoPlugin implements IEventPlugin {
   public name: string = "BrowserModuleInfoPlugin";
   private _modules: ModuleInfo[] | undefined;
 
-  public startup(context: PluginContext): Promise<void> {
+  public startup(): Promise<void> {
     if (!this._modules) {
       this._modules = this.getModules();
     }

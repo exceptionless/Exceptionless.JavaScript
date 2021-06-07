@@ -6,13 +6,12 @@ type ErrorState = {
 };
 
 export default class ExceptionlessErrorBoundary extends Component<{}, ErrorState> {
-  constructor(props) {
+  constructor(props: Readonly<{}> | {}) {
     super(props);
   }
 
-  async componentDidCatch(error, errorInfo) {
-    console.log(errorInfo);
-    Exceptionless.submitException(error);
+  async componentDidCatch(error: Error, errorInfo: unknown) {
+    await Exceptionless.createException(error).setProperty("errorInfo", errorInfo).submit();
   }
 
   render() {

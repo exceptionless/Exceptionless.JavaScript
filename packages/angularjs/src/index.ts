@@ -1,16 +1,22 @@
-import { ExceptionlessClient } from "@exceptionless/core";
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+/* eslint-disable @typescript-eslint/no-unsafe-return */
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-call */
+
+import { BrowserExceptionlessClient } from "@exceptionless/browser";
 
 let angular: ng.IAngularStatic;
 angular.module("exceptionless", [])
-  //.constant("$ExceptionlessClient", ExceptionlessClient.default) // TODO: Resolve this from the browser export.
-  .factory("exceptionlessHttpInterceptor", ["$location", "$q", "$ExceptionlessClient", ($location, $q, $ExceptionlessClient) => {
+  .constant("$ExceptionlessClient", BrowserExceptionlessClient)
+  .factory("exceptionlessHttpInterceptor", ["$location", "$q", "$ExceptionlessClient", ($location: ng.ILocationService, $q: ng.IQService, $ExceptionlessClient: BrowserExceptionlessClient) => {
     return {
-      responseError: function responseError(response) {
+      responseError: function responseError(response: ng.IHttpResponse<{ Message?: string }>) {
         if (response.status === 404) {
-          $ExceptionlessClient.submitNotFound(response.config.url);
+          void $ExceptionlessClient.submitNotFound(response.config.url);
         } else if (response.status !== 401) {
-          const message = `[${response.status}] ${(response.data && response.data.Message ? response.data.Message : response.config.url)}`;
-          $ExceptionlessClient.createUnhandledException(new Error(message), "errorHttpInterceptor")
+          const message = `[${response.status}] ${(response.data?.Message ?? response.config.url)}`;
+          void $ExceptionlessClient.createUnhandledException(new Error(message), "errorHttpInterceptor")
             .setSource(response.config.url)
             .setProperty("response", response)
             .setProperty("referrer", $location.absUrl())
@@ -20,18 +26,18 @@ angular.module("exceptionless", [])
       }
     };
   }])
-  .config(["$httpProvider", "$provide", "$ExceptionlessClient", ($httpProvider, $provide, $ExceptionlessClient) => {
+  .config(["$httpProvider", "$provide", "$ExceptionlessClient", ($httpProvider: ng.IHttpProvider, $provide: ng.IModule, $ExceptionlessClient: BrowserExceptionlessClient) => {
     $httpProvider.interceptors.push("exceptionlessHttpInterceptor");
-    $provide.decorator("$exceptionHandler", ["$delegate", ($delegate) => {
-      return (exception, cause) => {
+    $provide.decorator("$exceptionHandler", ["$delegate", ($delegate: (ex: Error, cause: string) => void) => {
+      return (exception: Error, cause: string) => {
         $delegate(exception, cause);
-        $ExceptionlessClient.createUnhandledException(exception, "$exceptionHandler").setMessage(cause).submit();
+        void $ExceptionlessClient.createUnhandledException(exception, "$exceptionHandler").setMessage(cause).submit();
       };
     }]);
     $provide.decorator("$log", ["$delegate", ($delegate) => {
-      function decorateRegularCall(property, logLevel) {
+      function decorateRegularCall(property: string, logLevel: string) {
         const previousFn = $delegate[property];
-        return $delegate[property] = (...args) => {
+        return $delegate[property] = (...args: string[]) => {
           if ((<any>angular).mock) {
             // Needed to support angular-mocks.
             $delegate[property].logs = [];
@@ -39,7 +45,7 @@ angular.module("exceptionless", [])
           // eslint-disable-next-line prefer-spread
           previousFn.apply(null, args);
           if (args[0] && args[0].length > 0) {
-            $ExceptionlessClient.submitLog(null, args[0], logLevel);
+            void $ExceptionlessClient.submitLog(null, args[0], logLevel);
           }
         };
       }
@@ -52,31 +58,31 @@ angular.module("exceptionless", [])
       return $delegate;
     }]);
   }])
-  .run(["$rootScope", "$ExceptionlessClient", ($rootScope, $ExceptionlessClient) => {
-    $rootScope.$on("$routeChangeSuccess", (event, next, current) => {
+  .run(["$rootScope", "$ExceptionlessClient", ($rootScope: ng.IRootScopeService, $ExceptionlessClient: BrowserExceptionlessClient) => {
+    $rootScope.$on("$routeChangeSuccess", (_event, next, current) => {
       if (!current) {
         return;
       }
 
-      $ExceptionlessClient.createFeatureUsage(current.name)
+      void $ExceptionlessClient.createFeatureUsage(current.name)
         .setProperty("next", next)
         .setProperty("current", current)
         .submit();
     });
 
-    $rootScope.$on("$routeChangeError", (event, current, previous, rejection) => {
-      $ExceptionlessClient.createUnhandledException(new Error(rejection), "$routeChangeError")
+    $rootScope.$on("$routeChangeError", (_event, current, previous, rejection) => {
+      void $ExceptionlessClient.createUnhandledException(new Error(rejection), "$routeChangeError")
         .setProperty("current", current)
         .setProperty("previous", previous)
         .submit();
     });
 
-    $rootScope.$on("$stateChangeSuccess", (event, toState, toParams, fromState, fromParams) => {
+    $rootScope.$on("$stateChangeSuccess", (_event, toState, toParams, fromState, fromParams) => {
       if (!toState || toState.name === "otherwise") {
         return;
       }
 
-      $ExceptionlessClient.createFeatureUsage(toState.controller || toState.name)
+      void $ExceptionlessClient.createFeatureUsage(toState.controller || toState.name)
         .setProperty("toState", toState)
         .setProperty("toParams", toParams)
         .setProperty("fromState", fromState)
@@ -84,12 +90,12 @@ angular.module("exceptionless", [])
         .submit();
     });
 
-    $rootScope.$on("$stateNotFound", (event, unfoundState, fromState, fromParams) => {
+    $rootScope.$on("$stateNotFound", (_event, unfoundState, fromState, fromParams) => {
       if (!unfoundState) {
         return;
       }
 
-      $ExceptionlessClient.createNotFound(unfoundState.to)
+      void $ExceptionlessClient.createNotFound(unfoundState.to)
         .setProperty("unfoundState", unfoundState)
         .setProperty("fromState", fromState)
         .setProperty("fromParams", fromParams)
@@ -97,13 +103,13 @@ angular.module("exceptionless", [])
     });
 
     const stateChangeError = "$stateChangeError";
-    $rootScope.$on(stateChangeError, (event, toState, toParams, fromState, fromParams, error) => {
+    $rootScope.$on(stateChangeError, (_event, toState, toParams, fromState, fromParams, error) => {
       if (!error) {
         return;
       }
 
       const builder = error && error.status === 404 ? $ExceptionlessClient.createNotFound(error.config.url) : $ExceptionlessClient.createUnhandledException(error, stateChangeError);
-      builder.setSource(stateChangeError)
+      void builder.setSource(stateChangeError)
         .setMessage(error && error.statusText)
         .setProperty("toState", toState)
         .setProperty("toParams", toParams)
@@ -113,6 +119,6 @@ angular.module("exceptionless", [])
     });
 
     $rootScope.$on("$destroy", () => {
-      $ExceptionlessClient.config.queue.process();
+      void $ExceptionlessClient.config.services.queue.process();
     });
   }]);

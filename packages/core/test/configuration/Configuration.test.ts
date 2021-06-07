@@ -86,8 +86,9 @@ describe("Configuration", () => {
     const config = new Configuration();
     expect(config.settings.someValue).toBeUndefined();
 
-    config.subscribeServerSettingsChange((configuration: Configuration) => {
-      expect(config.settings.someValue).not.toBeUndefined();
+    config.subscribeServerSettingsChange((c: Configuration) => {
+      expect(c.settings.someValue).toBe("UNIT_TEST_API_KEY");
+      expect(config.settings.someValue).toBe("UNIT_TEST_API_KEY");
       done();
     });
 

@@ -20,8 +20,10 @@ export class ConsoleLog implements ILog {
   private log(level: string, message: string) {
     if (console) {
       const msg = `Exceptionless:${new Date().toISOString()} [${level}] ${message}`;
-      if (console[level]) {
-        console[level](msg);
+      // @ts-expect-error TS7053
+      const logFn = console[level] as (msg: string) => void;
+      if (logFn) {
+        logFn(msg);
       } else if (console["log"]) {
         console["log"](msg);
       }

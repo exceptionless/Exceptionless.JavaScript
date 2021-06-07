@@ -56,7 +56,7 @@ export class SettingsManager {
       await config.services.storage.setItem(SettingsManager.SettingsKey, JSON.stringify(response.data));
       log.trace(`Updated settings: v${response.data.version}`);
     } catch (ex) {
-      log.error(`Error updating settings: ${ex.message}`);
+      log.error(`Error updating settings: ${<string>ex?.message}`);
     } finally {
       this._isUpdatingSettings = false;
     }

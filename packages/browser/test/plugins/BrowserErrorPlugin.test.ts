@@ -11,18 +11,14 @@ import {
 import { CapturedExceptions } from "./../../../core/test/plugins/default/exceptions.js";
 import { BrowserErrorPlugin } from "../../src/plugins/BrowserErrorPlugin.js";
 
-function BaseTestError() {
-  this.name = "NotImplementedError";
-  this.someProperty = "Test";
+class BaseTestError extends Error {
+  public name = "NotImplementedError";
+  public someProperty = "Test";
 }
 
-BaseTestError.prototype = new Error();
-
-function DerivedTestError() {
-  this.someOtherProperty = "Test2";
+class DerivedTestError extends BaseTestError {
+  public someOtherProperty = "Test2";
 }
-
-DerivedTestError.prototype = new BaseTestError();
 
 describe("BrowserErrorPlugin", () => {
   const plugin = new BrowserErrorPlugin();
@@ -55,7 +51,7 @@ describe("BrowserErrorPlugin", () => {
   describe("additional data", () => {
     describeForCapturedExceptions((exception) => {
       test("should ignore default error properties", async () => {
-        context.eventContext.setException(exception);
+        context.eventContext.setException(exception as Error);
         await plugin.run(context);
         const additionalData = getAdditionalData(context.event);
         expect(additionalData).toBeUndefined();
@@ -94,8 +90,16 @@ describe("BrowserErrorPlugin", () => {
     });
 
     test("should ignore functions", async () => {
-      const exception: any = new Error("Error with function");
-      exception.someFunction = () => { };
+      class ErrorWithFunction extends Error {
+        constructor() {
+          super("Error with function")
+        }
+
+        public someFunction(): number {
+          return 5;
+        }
+      }
+      const exception = new ErrorWithFunction();
       context.eventContext.setException(exception);
 
       await plugin.run(context);
@@ -106,10 +110,11 @@ describe("BrowserErrorPlugin", () => {
   });
 });
 
-function describeForCapturedExceptions(specDefinitions: (exception: any) => void) {
+function describeForCapturedExceptions(specDefinitions: (exception: Error | unknown) => void) {
   const keys = Object.getOwnPropertyNames(CapturedExceptions);
   keys.forEach((key) => {
-    const exception = CapturedExceptions[key];
+    // @ts-expect-error TS7053
+    const exception: unknown = CapturedExceptions[key];
     describe(key, () => specDefinitions(exception));
   });
 }
@@ -127,6 +132,6 @@ function throwAndCatch(error: Error | string | unknown): Error {
   try {
     throw error;
   } catch (exception) {
-    return exception;
+    return exception as Error;
   }
 }

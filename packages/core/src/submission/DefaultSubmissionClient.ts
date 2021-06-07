@@ -48,8 +48,7 @@ export class DefaultSubmissionClient implements ISubmissionClient {
   }
 
   public async submitHeartbeat(sessionIdOrUserId: string, closeSession: boolean): Promise<Response<void>> {
-    const url =
-      `${this.config.heartbeatServerUrl}/api/v2/events/session/heartbeat?id=${sessionIdOrUserId}&close=${closeSession}`;
+    const url = `${this.config.heartbeatServerUrl}/api/v2/events/session/heartbeat?id=${sessionIdOrUserId}&close=${closeSession}`;
     return await this.apiFetch<void>(url, {
       method: "GET",
     });

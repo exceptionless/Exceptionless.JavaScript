@@ -169,10 +169,11 @@ export function endsWith(input: string, suffix: string): boolean {
   return input.indexOf(suffix, input.length - suffix.length) !== -1;
 }
 
-export function stringify(data: any, exclusions?: string[], maxDepth?: number): string {
-  function stringifyImpl(obj: any, excludedKeys: string[]): string {
-    const cache: string[] = [];
-    return JSON.stringify(obj, (key: string, value: any) => {
+// @ts-expect-error TS6133
+export function stringify(data: unknown, exclusions?: string[], maxDepth?: number): string {
+  function stringifyImpl(obj: unknown, excludedKeys: string[]): string {
+    const cache: unknown[] = [];
+    return JSON.stringify(obj, (key: string, value: unknown) => {
       if (isMatch(key, excludedKeys)) {
         return;
       }
@@ -191,13 +192,14 @@ export function stringify(data: any, exclusions?: string[], maxDepth?: number): 
   }
 
   if (({}).toString.call(data) === "[object Object]") {
-    const flattened = {};
+    const flattened: { [prop: string]: unknown } = {};
+    // @ts-expect-error TS2407
     for (const prop in data) {
-      const value = data[prop];
-      if (value === data) {
-        continue;
+      // @ts-expect-error TS7053
+      const value = data[prop] as unknown;
+      if (value !== data) {
+        flattened[prop] = value;
       }
-      flattened[prop] = data[prop];
     }
 
     return stringifyImpl(flattened, exclusions || []);
@@ -205,13 +207,14 @@ export function stringify(data: any, exclusions?: string[], maxDepth?: number): 
 
   if (({}).toString.call(data) === "[object Array]") {
     const result: unknown[] = [];
-    for (let index = 0; index < data.length; index++) {
-      result[index] = JSON.parse(stringifyImpl(data[index], exclusions || []));
+    for (let index = 0; index < (<unknown[]>data).length; index++) {
+      result[index] = JSON.parse(stringifyImpl((<unknown[]>data)[index], exclusions || [])) as unknown;
     }
 
     return JSON.stringify(result);
   }
 
+  // TODO: support maxDepth
   return stringifyImpl(data, exclusions || []);
 }
 
@@ -264,7 +267,7 @@ export function stringify2(
   return stringifyImpl(data, exclusions || [], 1, "");
 }
 
-export function toBoolean(input, defaultValue: boolean = false): boolean {
+export function toBoolean(input: unknown, defaultValue: boolean = false): boolean {
   if (typeof input === "boolean") {
     return input;
   }
