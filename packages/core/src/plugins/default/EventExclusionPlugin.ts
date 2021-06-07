@@ -95,8 +95,7 @@ export class EventExclusionPlugin implements IEventPlugin {
     const sortedKeys = Object.keys(configSettings).sort((a, b) =>
       b.length - a.length || a.localeCompare(b)
     );
-    for (const index in sortedKeys) {
-      const key: string = sortedKeys[index];
+    for (const key of sortedKeys) {
       if (!startsWith(key.toLowerCase(), sourcePrefix)) {
         continue;
       }

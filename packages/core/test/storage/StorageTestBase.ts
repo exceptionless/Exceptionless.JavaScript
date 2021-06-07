@@ -5,7 +5,7 @@ export function describeStorage(
   storageFactory: () => IStorage,
   afterEachCallback?: () => void,
   beforeEachCallback?: () => void
-) {
+): void {
   describe(name, () => {
     if (beforeEachCallback) {
       beforeEach(beforeEachCallback);

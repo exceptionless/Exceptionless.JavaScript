@@ -3,8 +3,6 @@ import { IStorage } from "./IStorage.js";
 export class InMemoryStorage implements IStorage {
   private items = new Map<string, string>();
 
-  constructor() { }
-
   public length(): Promise<number> {
     return Promise.resolve(this.items.size);
   }
