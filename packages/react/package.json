@@ -42,13 +42,13 @@
     "access": "public"
   },
   "devDependencies": {
-    "@jest/globals": "27.0.1",
-    "@types/react": "17.0.8",
-    "@types/react-dom": "17.0.5",
-    "esbuild": "0.12.3",
-    "jest": "27.0.1",
+    "@jest/globals": "27.0.3",
+    "@types/react": "17.0.9",
+    "@types/react-dom": "17.0.6",
+    "esbuild": "0.12.6",
+    "jest": "27.0.4",
     "jest-ts-webcompat-resolver": "1.0.0",
-    "ts-jest": "27.0.0"
+    "ts-jest": "27.0.3"
   },
   "dependencies": {
     "@exceptionless/browser": "2.0.0-dev"

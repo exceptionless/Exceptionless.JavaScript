@@ -64,15 +64,11 @@ export class NodeRequestInfoPlugin implements IEventPlugin {
     }
 
     if (config.includeQueryString) {
-      requestInfo.query_string = JSON.parse(
-        stringify(request.params || {}, exclusions),
-      );
+      requestInfo.query_string = JSON.parse(stringify(request.params || {}, exclusions)) as Record<string, string>;
     }
 
     if (config.includePostData) {
-      requestInfo.post_data = JSON.parse(
-        stringify(request.body || {}, exclusions),
-      );
+      requestInfo.post_data = JSON.parse(stringify(request.body || {}, exclusions)) as Record<string, unknown>;
     }
 
     return requestInfo;

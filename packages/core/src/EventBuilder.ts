@@ -185,13 +185,7 @@ export class EventBuilder {
       this.target.data = {};
     }
 
-    const result = JSON.parse(
-      stringify(
-        value,
-        this.client.config.dataExclusions.concat(excludedPropertyNames || []),
-        maxDepth,
-      ),
-    );
+    const result = JSON.parse(stringify(value, this.client.config.dataExclusions.concat(excludedPropertyNames || []), maxDepth)) as unknown;
     if (!isEmpty(result)) {
       this.target.data[name] = result;
     }

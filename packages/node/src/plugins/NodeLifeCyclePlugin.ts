@@ -8,7 +8,7 @@ export class NodeLifeCyclePlugin implements IEventPlugin {
   public priority: number = 105;
   public name: string = "NodeLifeCyclePlugin";
 
-  private _client: ExceptionlessClient | undefined;
+  private _client: ExceptionlessClient | null = null;
 
   public startup(context: PluginContext): Promise<void> {
     if (this._client) {

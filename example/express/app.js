@@ -75,7 +75,6 @@ const server = app.listen(3000, async () => {
   var port = server.address().port;
 
   var message = "Example app listening at http://" + host + port;
-  console.log(message);
   await Exceptionless.submitLog("app", message, "Info");
 });
 

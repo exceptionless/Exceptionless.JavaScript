@@ -8,7 +8,7 @@ export class NodeGlobalHandlerPlugin implements IEventPlugin {
   public priority: number = 100;
   public name: string = "NodeGlobalHandlerPlugin";
 
-  private _client: ExceptionlessClient | undefined;
+  private _client: ExceptionlessClient | null = null;
 
   public startup(context: PluginContext): Promise<void> {
     if (this._client) {
@@ -22,7 +22,7 @@ export class NodeGlobalHandlerPlugin implements IEventPlugin {
       void this._client?.submitUnhandledException(error, "uncaughtException");
     });
 
-    process.addListener("unhandledRejection", (reason: unknown | null | undefined, promise: Promise<any>) => {
+    process.addListener("unhandledRejection", (reason: unknown | null | undefined, _: Promise<any>) => {
       void this._client?.submitUnhandledException(<Error>reason, "unhandledRejection");
     });
 

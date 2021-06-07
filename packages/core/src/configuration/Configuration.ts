@@ -189,7 +189,7 @@ export class Configuration {
    * For example, entering CreditCard will remove any extended data properties, form
    * fields, cookies and query parameters from the report.
    */
-  public addDataExclusions(...exclusions: string[]) {
+  public addDataExclusions(...exclusions: string[]): void {
     this._dataExclusions = [...this._dataExclusions, ...exclusions];
   }
 
@@ -322,7 +322,7 @@ export class Configuration {
    *
    * For example, entering *Bot* will cause any events that contains a user agent of Bot will not be submitted.
    */
-  public addUserAgentBotPatterns(...userAgentBotPatterns: string[]) {
+  public addUserAgentBotPatterns(...userAgentBotPatterns: string[]): void {
     this._userAgentBotPatterns = [
       ...this._userAgentBotPatterns,
       ...userAgentBotPatterns,
@@ -467,9 +467,7 @@ export class Configuration {
       this.defaultData[KnownEventDataKeys.UserInfo] = userInfo;
     }
 
-    this.services.log.info(
-      `user identity: ${shouldRemove ? "null" : userInfo.identity}`,
-    );
+    this.services.log.info(`user identity: ${shouldRemove ? "null" : <string>userInfo.identity}`);
   }
 
   /**
@@ -511,9 +509,9 @@ export class Configuration {
 
   private originalSettings?: Record<string, string>;
 
-  public applyServerSettings(serverSettings: ServerSettings) {
+  public applyServerSettings(serverSettings: ServerSettings): void {
     if (!this.originalSettings)
-      this.originalSettings = JSON.parse(JSON.stringify(this.settings));
+      this.originalSettings = JSON.parse(JSON.stringify(this.settings)) as Record<string, string>;
 
     this.services.log.trace(`Applying saved settings: v${serverSettings.version}`);
     this.settings = Object.assign(this.originalSettings, serverSettings.settings);
@@ -535,7 +533,7 @@ export class Configuration {
       try {
         handler(this);
       } catch (ex) {
-        this.services.log.error(`Error calling subscribe handler: ${ex}`);
+        this.services.log.error(`Error calling subscribe handler: ${<string>ex?.message}`);
       }
     }
   }

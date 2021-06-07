@@ -4,13 +4,13 @@ import {
   PluginContext
 } from "@exceptionless/core";
 
-declare var $: (document: Document) => { (): any; new(): any; ajaxError: { (document: (event: Event, xhr: { responseText: string; status: number; }, settings: { data: unknown; url: string; }, error: string) => void): void; new(): any; }; };
+declare let $: (document: Document) => { (): any; new(): any; ajaxError: { (document: (event: Event, xhr: { responseText: string; status: number; }, settings: { data: unknown; url: string; }, error: string) => void): void; new(): any; }; };
 
 export class BrowserGlobalHandlerPlugin implements IEventPlugin {
   public priority: number = 100;
   public name: string = "BrowserGlobalHandlerPlugin";
 
-  private _client: ExceptionlessClient | undefined;
+  private _client: ExceptionlessClient | null = null;
 
   public startup(context: PluginContext): Promise<void> {
     if (this._client) {
@@ -40,7 +40,7 @@ export class BrowserGlobalHandlerPlugin implements IEventPlugin {
 
 
     if (typeof $ !== "undefined" && $(document)) {
-      $(document).ajaxError((event: Event, xhr: { responseText: string, status: number }, settings: { data: unknown, url: string }, error: string) => {
+      $(document).ajaxError((_: Event, xhr: { responseText: string, status: number }, settings: { data: unknown, url: string }, error: string) => {
         if (xhr.status === 404) {
           // TODO: Handle async
           void this._client?.submitNotFound(settings.url);

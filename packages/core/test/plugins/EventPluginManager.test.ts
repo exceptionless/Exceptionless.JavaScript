@@ -111,7 +111,7 @@ describe("EventPluginManager", () => {
       client.config.removePlugin(client.config.plugins[0]);
     }
 
-    client.config.addPlugin("1", 1, (ctx: EventPluginContext) => {
+    client.config.addPlugin("1", 1, () => {
       return Promise.resolve();
     });
 
