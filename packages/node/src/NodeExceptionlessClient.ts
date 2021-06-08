@@ -22,7 +22,9 @@ export class NodeExceptionlessClient extends ExceptionlessClient {
 
     if (configurationOrApiKey) {
       if (!globalThis?.localStorage) {
-        config.services.storage = new LocalStorage(undefined, new LocalStoragePolyfill(process.cwd() + '/.exceptionless'));
+        const storage = new LocalStorage(undefined, new LocalStoragePolyfill(process.cwd() + '/.exceptionless'));
+        config.useLocalStorage = () => storage;
+        config.services.storage = storage;
       }
 
       if (!globalThis?.fetch) {

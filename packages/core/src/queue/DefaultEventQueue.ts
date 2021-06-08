@@ -76,7 +76,7 @@ export class DefaultEventQueue implements IEventQueue {
     }
 
     const file = await this.enqueueEvent(event);
-    const logText = `type=${<string>event.type} reference_id=${event.reference_id ?? "<null>"} source=${<string>event.source} message=${<string>event.message}`;
+    const logText = `type=${<string>event.type} reference_id=${<string>event.reference_id} source=${<string>event.source} message=${<string>event.message}`;
     log.info(`Enqueued event: ${file} (${logText})`);
   }
 
