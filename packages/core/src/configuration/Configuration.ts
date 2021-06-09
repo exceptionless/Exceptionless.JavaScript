@@ -405,11 +405,6 @@ export class Configuration {
   }
 
   /**
-   * Remove the plugin from this configuration.
-   */
-  public removePlugin(plugin: IEventPlugin): void;
-
-  /**
    * Remove an plugin by key from this configuration.
    */
   public removePlugin(pluginOrName: IEventPlugin | string): void {
