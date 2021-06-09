@@ -38,11 +38,13 @@ export class NodeExceptionlessClient extends ExceptionlessClient {
       config.addPlugin(new NodeLifeCyclePlugin());
       config.addPlugin(new NodeRequestInfoPlugin());
       config.addPlugin(new NodeWrapFunctions());
-
-      config.removePlugin(new SimpleErrorPlugin());
       config.addPlugin(new NodeErrorPlugin());
     }
 
     await super.startup(configurationOrApiKey);
+
+    if (configurationOrApiKey) {
+      config.removePlugin(new SimpleErrorPlugin());
+    }
   }
 }

@@ -20,11 +20,12 @@ export class BrowserExceptionlessClient extends ExceptionlessClient {
       config.addPlugin(new BrowserModuleInfoPlugin());
       config.addPlugin(new BrowserRequestInfoPlugin());
       config.addPlugin(new BrowserWrapFunctions());
-
-      config.removePlugin(new SimpleErrorPlugin());
       config.addPlugin(new BrowserErrorPlugin());
     }
 
     await super.startup(configurationOrApiKey);
+    if (configurationOrApiKey) {
+      config.removePlugin(new SimpleErrorPlugin());
+    }
   }
 }
