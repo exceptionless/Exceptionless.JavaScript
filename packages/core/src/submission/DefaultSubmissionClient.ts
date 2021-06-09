@@ -13,7 +13,7 @@ export class DefaultSubmissionClient implements ISubmissionClient {
   protected readonly ConfigurationVersionHeader: string =
     "x-exceptionless-configversion";
 
-  public constructor(protected config: Configuration, private fetch = globalThis.fetch) { }
+  public constructor(protected config: Configuration, private fetch = globalThis.fetch.bind(globalThis)) { }
 
   public getSettings(version: number): Promise<Response<ServerSettings>> {
     const url = `${this.config.serverUrl}/api/v2/projects/config?v=${version}`;
