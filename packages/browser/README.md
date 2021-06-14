@@ -1,19 +1,19 @@
 ## Exceptionless Browser
 
-This package provides native JavaScript support for applications that are built in vanilla HTML and JS. 
+This package provides native JavaScript support for applications that are built in vanilla HTML and JS.
 
-### Installation  
+### Installation
 
-**Package Managers** 
+**Package Managers**
 
 `npm install @exceptionless/browser`
 
 or
 
-`yarn add @exceptionless/browser`  
+`yarn add @exceptionless/browser`
 
 
-### Configuration 
+### Configuration
 
 ```js
 await Exceptionless.startup(c => {

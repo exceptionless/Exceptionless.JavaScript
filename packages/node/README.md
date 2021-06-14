@@ -1,20 +1,20 @@
 ## Exceptionless NodeJS
 
-Using Exceptionless in the NodeJS environment is similar to using it in other JavaScript environments. 
+Using Exceptionless in the NodeJS environment is similar to using it in other JavaScript environments.
 
-### Installation 
+### Installation
 
-Using npm: 
+Using npm:
 
 `npm i @exceptionless/node`
 
-Using yarn: 
+Using yarn:
 
-`yarn add @exceptionless/node` 
+`yarn add @exceptionless/node`
 
-### Configuration 
+### Configuration
 
-When your NodeJS app starts up, it should tell the Exceptionless client to startup like this: 
+When your NodeJS app starts up, it should tell the Exceptionless client to startup like this:
 
 ```js
 await Exceptionless.startup(c => {
@@ -40,12 +40,12 @@ await Exceptionless.startup(c => {
 });
 ```
 
-Once that's done, you can use the Exceptionless client anywhere in your app by calling `Exceptionless` followed by the method you want to use. For example: 
+Once that's done, you can use the Exceptionless client anywhere in your app by calling `Exceptionless` followed by the method you want to use. For example:
 
 ```js
 Exceptionless.submitLog("Hello, world");
 ```
 
-### Using With Express 
+### Using With Express
 
-When using this package with an Express server, you should call `exceptionless.startup()` when the server starts. There are many ways to do this, but it's important that the client is instantiated before the server is used. 
+When using this package with an Express server, you should call `exceptionless.startup()` when the server starts. There are many ways to do this, but it's important that the client is instantiated before the server is used.
