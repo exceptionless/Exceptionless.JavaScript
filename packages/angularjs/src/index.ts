@@ -39,6 +39,7 @@ angular.module("exceptionless", [])
       function decorateRegularCall(property: string, logLevel: string) {
         const previousFn = $delegate[property];
         return $delegate[property] = (...args: string[]) => {
+          // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
           if ((<any>angular).mock) {
             // Needed to support angular-mocks.
             $delegate[property].logs = [];
