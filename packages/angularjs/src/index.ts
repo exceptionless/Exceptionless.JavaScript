@@ -4,11 +4,12 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable @typescript-eslint/no-unsafe-call */
 
-import { BrowserExceptionlessClient } from "@exceptionless/browser";
+import { BrowserExceptionlessClient, Exceptionless } from "@exceptionless/browser";
 
-let angular: ng.IAngularStatic;
+// eslint-disable-next-line no-var
+declare var angular;
 angular.module("exceptionless", [])
-  .constant("$ExceptionlessClient", BrowserExceptionlessClient)
+  .constant("$ExceptionlessClient", Exceptionless)
   .factory("exceptionlessHttpInterceptor", ["$location", "$q", "$ExceptionlessClient", ($location: ng.ILocationService, $q: ng.IQService, $ExceptionlessClient: BrowserExceptionlessClient) => {
     return {
       responseError: function responseError(response: ng.IHttpResponse<{ Message?: string }>) {
