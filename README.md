@@ -134,7 +134,6 @@ a callback as shown below:
 await Exceptionless.startup((c) => {
   c.apiKey = "API_KEY_HERE";
   c.usePersistedQueueStorage = true;
-  c.useReferenceIds();
 });
 ```
 
@@ -204,7 +203,6 @@ try {
 } catch (error) {
   await Exceptionless.createException(error)
     // Set the reference id of the event so we can search for it later (reference:id).
-    // This will automatically be populated if you call Exceptionless.config.useReferenceIds();
     .setReferenceId("random guid")
     // Add the order object (the ability to exclude specific fields will be coming in a future version).
     .setProperty("Order", order)
