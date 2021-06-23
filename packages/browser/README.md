@@ -54,7 +54,6 @@ await Exceptionless.startup(c => {
   c.apiKey = "API_KEY_HERE";
   c.usePersistedQueueStorage = true;
   c.setUserIdentity("12345678", "Blake");
-  c.useSessions();
 
   // set some default data
   c.defaultData["mydata"] = {

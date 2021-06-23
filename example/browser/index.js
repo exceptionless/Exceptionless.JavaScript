@@ -11,7 +11,6 @@ await Exceptionless.startup((c) => {
   c.updateSettingsWhenIdleInterval = 15000;
   c.usePersistedQueueStorage = true;
   c.setUserIdentity("12345678", "Blake");
-  c.useSessions();
 
   // set some default data
   c.defaultData["SampleUser"] = {
