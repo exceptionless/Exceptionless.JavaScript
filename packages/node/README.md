@@ -1,51 +1,53 @@
-## Exceptionless NodeJS
+# Exceptionless NodeJS
 
-Using Exceptionless in the NodeJS environment is similar to using it in other JavaScript environments.
+Using Exceptionless in the NodeJS environment is similar to using it in other
+JavaScript environments.
 
-### Installation
+## Getting Started
 
-Using npm:
+To use this package, your must be using ES6 and Node 15+.
 
-`npm i @exceptionless/node`
+## Installation
 
-Using yarn:
+`npm install @exceptionless/node --save`
 
-`yarn add @exceptionless/node`
+## Configuration
 
-### Configuration
-
-When your NodeJS app starts up, it should tell the Exceptionless client to startup like this:
+While your app is starting up, you should call `startup` on the Exceptionless
+client. This ensures the client is configured and automatic capturing of
+unhandled errors occurs.
 
 ```js
+import { Exceptionless } from "@exceptionless/node";
+
 await Exceptionless.startup(c => {
-  c.apiKey = "LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw";
-  c.serverUrl = "http://localhost:5000";
-  c.useDebugLogger();
+  c.apiKey = "API_KEY_HERE";
+  c.usePersistedQueueStorage = true;
+  c.setUserIdentity("12345678", "Blake");
+  c.useSessions();
 
-  c.defaultTags.push("Example", "Node");
-
-  // set some default data
-  c.defaultData["SampleUser"] = {
-    id: 1,
-    name: "Blake",
-    password: "123456",
-    passwordResetToken: "a reset token",
-    myPasswordValue: "123456",
-    myPassword: "123456",
-    customValue: "Password",
-    value: {
-      Password: "123456"
-    }
+  c.defaultData["cart"] = {
+    sku: "abc",
+    quantity: 1
   };
+
+  c.defaultTags.push("Example", "JavaScript", "Node");
 });
 ```
 
-Once that's done, you can use the Exceptionless client anywhere in your app by calling `Exceptionless` followed by the method you want to use. For example:
+Once that's done, you can use the Exceptionless client anywhere in your app by
+importing `Exceptionless` followed by the method you want to use. For example:
 
 ```js
-Exceptionless.submitLog("Hello, world");
+await Exceptionless.submitLog("Hello world!");
 ```
 
-### Using With Express
+Please see the [docs](https://exceptionless.com/docs/clients/javascript/) for
+more information on configuring the client.
 
-When using this package with an Express server, you should call `exceptionless.startup()` when the server starts. There are many ways to do this, but it's important that the client is instantiated before the server is used.
+## Support
+
+If you need help, please contact us via in-app support,
+[open an issue](https://github.com/exceptionless/Exceptionless.JavaScript/issues/new)
+or [join our chat on Discord](https://discord.gg/6HxgFCx). We’re always here to
+help if you have any questions!

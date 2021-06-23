@@ -4,26 +4,30 @@ The Exceptionless React package provides a native way to handle errors and event
 
 ## Getting Started
 
-To use this package, your must be using ES6 and Node 15+.
+To use this package, your must be using ES6 and support ESM modules.
 
-### Install
+## Install
 
-NPM:
-
-`npm install @exceptionless/react`
+`npm install @exceptionless/react --save`
 
 ## Configuration
 
-Inside your `index.js` file or your `App.js` file, you can configure and start Exceptionless as follows.
-
-### Class Components
+While your app is starting up, you should call `startup` on the Exceptionless
+client. This ensures the client is configured and automatic capturing of
+unhandled errors occurs.
 
 ```jsx
+import { Exceptionless } from "@exceptionless/react";
+
 class App extends Component {
   async componentDidMount() {
     await Exceptionless.startup((c) => {
-      c.apiKey = "LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw"; //Replace with your API key
-      c.serverUrl = "http://localhost:5000"; //Remove if using the hosted version of Exceptionless
+      c.apiKey = "API_KEY_HERE";
+      c.usePersistedQueueStorage = true;
+      c.setUserIdentity("12345678", "Blake");
+      c.useSessions();
+
+      c.defaultTags.push("Example", "React");
     });
   }
 
@@ -53,7 +57,7 @@ export const myUtilityFunction = async () => {
     //  Handle successful run of code
   } catch(e) {
     //  If there's an error, send it to Exceptionless
-    await  Exceptionless.submitException(e);
+    await Exceptionless.submitException(e);
   }
 }
 ```
@@ -64,3 +68,10 @@ You can also sent events and logs that are not errors by simply calling the buil
 await Exceptionless.submitLog("Hello, world!");
 await Exceptionless.submitFeatureUsage("New Shopping Cart Feature");
 ```
+
+Please see the [docs](https://exceptionless.com/docs/clients/javascript/) for
+more information on configuring the client.
+
+## Support
+
+If you need help, please contact us via in-app support, [open an issue](https://github.com/exceptionless/Exceptionless.JavaScript/issues/new) or [join our chat on Discord](https://discord.gg/6HxgFCx). We’re always here to help if you have any questions!
