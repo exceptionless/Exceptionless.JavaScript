@@ -24,9 +24,8 @@ await Exceptionless.startup((c) => {
   c.useSessions();
 
   // set some default data
-  c.defaultData["cart"] = {
-    sku: "abc",
-    quantity: 1
+   c.defaultData["mydata"] = {
+    myGreeting: "Hello World"
   };
 
   c.defaultTags.push("Example", "JavaScript", "Browser");
@@ -55,9 +54,8 @@ await Exceptionless.startup((c) => {
   c.useSessions();
 
   // set some default data
-  c.defaultData["cart"] = {
-    sku: "abc",
-    quantity: 1
+  c.defaultData["mydata"] = {
+    myGreeting: "Hello World"
   };
 
   c.defaultTags.push("Example", "JavaScript", "Node");

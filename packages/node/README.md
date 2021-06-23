@@ -26,12 +26,12 @@ await Exceptionless.startup(c => {
   c.setUserIdentity("12345678", "Blake");
   c.useSessions();
 
-  c.defaultData["cart"] = {
-    sku: "abc",
-    quantity: 1
+  // set some default data
+  c.defaultData["mydata"] = {
+    myGreeting: "Hello World"
   };
 
-  c.defaultTags.push("Example", "JavaScript", "Node");
+c.defaultTags.push("Example", "JavaScript", "Node");
 });
 ```
 
