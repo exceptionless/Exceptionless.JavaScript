@@ -87,12 +87,12 @@ Use one of the following methods to install Exceptionless into your browser appl
 
   ```html
 <script type="module">
-import { Exceptionless } from "https://unpkg.com/@exceptionless/browser";
+  import { Exceptionless } from "https://unpkg.com/@exceptionless/browser";
 
-await Exceptionless.startup((c) => {
-  c.apiKey = "API_KEY_HERE";
-  c.usePersistedQueueStorage = true;
-});
+  await Exceptionless.startup((c) => {
+    c.apiKey = "API_KEY_HERE";
+    c.usePersistedQueueStorage = true;
+  });
 </script>
   ```
 
@@ -185,6 +185,7 @@ manually send exceptions to the service. You can do so by using code like this:
 
 ```js
 import { Exceptionless } from "@exceptionless/node";
+
 await Exceptionless.startup("API_KEY_HERE");
 
 try {
