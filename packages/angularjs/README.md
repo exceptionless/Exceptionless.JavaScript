@@ -39,7 +39,6 @@ angular
   .config(function ($ExceptionlessClient) {
     await $ExceptionlessClient.startup((c) => {
       c.apiKey = "API_KEY_HERE";
-      c.usePersistedQueueStorage = true;
 
       c.defaultTags.push("Example", "JavaScript", "angularjs");
     });

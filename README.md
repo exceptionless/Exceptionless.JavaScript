@@ -19,7 +19,6 @@ import { Exceptionless } from "https://unpkg.com/@exceptionless/browser";
 
 await Exceptionless.startup((c) => {
   c.apiKey = "API_KEY_HERE";
-  c.usePersistedQueueStorage = true;
   c.setUserIdentity("12345678", "Blake");
 
   // set some default data
@@ -48,7 +47,6 @@ import { Exceptionless } from "@exceptionless/node";
 
 await Exceptionless.startup((c) => {
   c.apiKey = "API_KEY_HERE";
-  c.usePersistedQueueStorage = true;
   c.setUserIdentity("12345678", "Blake");
 
   // set some default data
@@ -87,7 +85,6 @@ Use one of the following methods to install Exceptionless into your browser appl
 
   await Exceptionless.startup((c) => {
     c.apiKey = "API_KEY_HERE";
-    c.usePersistedQueueStorage = true;
   });
 </script>
   ```
@@ -102,7 +99,6 @@ Use one of the following methods to install Exceptionless into your browser appl
 
   await Exceptionless.startup((c) => {
     c.apiKey = "API_KEY_HERE";
-    c.usePersistedQueueStorage = true;
   });
   ```
 
@@ -118,7 +114,6 @@ Use this method to install Exceptionless into your Node application:
 
   await Exceptionless.startup((c) => {
     c.apiKey = "API_KEY_HERE";
-    c.usePersistedQueueStorage = true;
   });
   ```
 
@@ -133,7 +128,6 @@ a callback as shown below:
 ```js
 await Exceptionless.startup((c) => {
   c.apiKey = "API_KEY_HERE";
-  c.usePersistedQueueStorage = true;
 });
 ```
 

@@ -22,7 +22,6 @@ import { Exceptionless } from "https://unpkg.com/@exceptionless/browser";
 
 await Exceptionless.startup((c) => {
   c.apiKey = "API_KEY_HERE";
-  c.usePersistedQueueStorage = true;
 });
 </script>
   ```
@@ -37,7 +36,6 @@ await Exceptionless.startup((c) => {
 
   await Exceptionless.startup((c) => {
     c.apiKey = "API_KEY_HERE";
-    c.usePersistedQueueStorage = true;
   });
   ```
 
@@ -52,7 +50,6 @@ import { Exceptionless } from "@exceptionless/browser";
 
 await Exceptionless.startup(c => {
   c.apiKey = "API_KEY_HERE";
-  c.usePersistedQueueStorage = true;
   c.setUserIdentity("12345678", "Blake");
 
   // set some default data
