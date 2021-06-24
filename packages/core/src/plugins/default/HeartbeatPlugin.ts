@@ -27,6 +27,10 @@ export class HeartbeatPlugin implements IEventPlugin {
   }
 
   public run(context: EventPluginContext): Promise<void> {
+    if (this._interval <= 0) {
+      return Promise.resolve();
+    }
+
     clearInterval(this._intervalId);
     this._intervalId = 0;
 

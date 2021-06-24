@@ -5,7 +5,6 @@ import { ConsoleLog } from "../logging/ConsoleLog.js";
 import { NullLog } from "../logging/NullLog.js";
 import { UserInfo } from "../models/data/UserInfo.js";
 import { HeartbeatPlugin } from "../plugins/default/HeartbeatPlugin.js";
-import { ReferenceIdPlugin } from "../plugins/default/ReferenceIdPlugin.js";
 import { EventPluginContext } from "../plugins/EventPluginContext.js";
 import { IEventPlugin } from "../plugins/IEventPlugin.js";
 import { DefaultEventQueue } from "../queue/DefaultEventQueue.js";
@@ -362,23 +361,14 @@ export class Configuration {
   /**
    * Register an plugin to be used in this configuration.
    */
-  public addPlugin(
-    name: string | undefined,
-    priority: number,
-    pluginAction: (context: EventPluginContext) => Promise<void>,
-  ): void;
-  public addPlugin(
-    pluginOrName: IEventPlugin | string | undefined,
-    priority?: number,
-    pluginAction?: (context: EventPluginContext) => Promise<void>,
-  ): void {
+  public addPlugin(name: string | undefined, priority: number, pluginAction: (context: EventPluginContext) => Promise<void>): void;
+  public addPlugin(pluginOrName: IEventPlugin | string | undefined, priority?: number, pluginAction?: (context: EventPluginContext) => Promise<void>): void {
     const plugin: IEventPlugin = pluginAction
       ? { name: pluginOrName as string, priority, run: pluginAction }
       : pluginOrName as IEventPlugin;
+
     if (!plugin || !(plugin.startup || plugin.run)) {
-      this.services.log.error(
-        "Add plugin failed: startup or run method not defined",
-      );
+      this.services.log.error("Add plugin failed: startup or run method not defined");
       return;
     }
 
@@ -390,17 +380,8 @@ export class Configuration {
       plugin.priority = 0;
     }
 
-    let pluginExists = false;
-    const plugins = this._plugins; // optimization for minifier.
-    for (const p of plugins) {
-      if (p.name === plugin.name) {
-        pluginExists = true;
-        break;
-      }
-    }
-
-    if (!pluginExists) {
-      plugins.push(plugin);
+    if (!this._plugins.find(f => f.name === plugin.name)) {
+      this._plugins.push(plugin);
     }
   }
 
@@ -443,26 +424,33 @@ export class Configuration {
     }
   }
 
-  public setUserIdentity(userInfo: UserInfo): void;
-  public setUserIdentity(identity: string): void;
-  public setUserIdentity(identity: string, name: string): void;
-  public setUserIdentity(
-    userInfoOrIdentity: UserInfo | string,
-    name?: string,
-  ): void {
+  /**
+   * Set the default user identity for all events. If the heartbeat interval is
+   * greater than 0 (default: 30000ms), heartbeats will be sent after the first
+   * event submission.
+   */
+  public setUserIdentity(userInfo: UserInfo, heartbeatInterval?: number): void;
+  public setUserIdentity(identity: string, heartbeatInterval?: number): void;
+  public setUserIdentity(identity: string, name: string, heartbeatInterval?: number): void;
+  public setUserIdentity(userInfoOrIdentity: UserInfo | string, nameOrHeartbeatInterval?: string | number, heartbeatInterval: number = 30000): void {
+    const name: string | undefined = typeof nameOrHeartbeatInterval === "string" ? nameOrHeartbeatInterval : undefined;
     const userInfo: UserInfo = typeof userInfoOrIdentity !== "string"
       ? userInfoOrIdentity
       : { identity: userInfoOrIdentity, name };
 
-    const shouldRemove: boolean = !userInfo ||
-      (!userInfo.identity && !userInfo.name);
+    const interval: number = typeof nameOrHeartbeatInterval === "number" ? nameOrHeartbeatInterval : heartbeatInterval;
+    const plugin = new HeartbeatPlugin(interval);
+
+    const shouldRemove: boolean = !userInfo || (!userInfo.identity && !userInfo.name);
     if (shouldRemove) {
+      this.removePlugin(plugin)
       delete this.defaultData[KnownEventDataKeys.UserInfo];
     } else {
+      this.addPlugin(plugin)
       this.defaultData[KnownEventDataKeys.UserInfo] = userInfo;
     }
 
-    this.services.log.info(`user identity: ${shouldRemove ? "null" : <string>userInfo.identity}`);
+    this.services.log.info(`user identity: ${shouldRemove ? "null" : <string>userInfo.identity} (heartbeat interval: ${interval}ms)`);
   }
 
   /**
@@ -470,15 +458,6 @@ export class Configuration {
    */
   public get userAgent(): string {
     return "exceptionless-js/2.0.0-dev";
-  }
-
-  /**
-   * Automatically send a heartbeat to keep the session alive.
-   */
-  public useSessions(sendHeartbeats = true, heartbeatInterval = 30000): void {
-    if (sendHeartbeats) {
-      this.addPlugin(new HeartbeatPlugin(heartbeatInterval));
-    }
   }
 
   /**
