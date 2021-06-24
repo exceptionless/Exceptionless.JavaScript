@@ -1,6 +1,7 @@
 
 import { ExceptionlessClient } from "../src/ExceptionlessClient.js";
 import { KnownEventDataKeys } from "../src/models/Event.js";
+import { ReferenceIdPlugin } from "../src/plugins/default/ReferenceIdPlugin.js";
 
 describe("ExceptionlessClient", () => {
   test("should use event reference ids", async () => {
@@ -17,7 +18,7 @@ describe("ExceptionlessClient", () => {
     expect(lastReferenceIdManager.getLast()).toBeNull();
 
     const numberOfPlugins = client.config.plugins.length;
-    client.config.useReferenceIds();
+    client.config.addPlugin(new ReferenceIdPlugin());
     expect(client.config.plugins.length).toBe(numberOfPlugins + 1);
 
     context = await client.submitException(error);

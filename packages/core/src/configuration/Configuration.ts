@@ -482,13 +482,6 @@ export class Configuration {
   }
 
   /**
-   * Automatically set a reference id for error events.
-   */
-  public useReferenceIds(): void {
-    this.addPlugin(new ReferenceIdPlugin());
-  }
-
-  /**
    * Use localStorage for persisting things like server configuration cache and persisted queue entries (depends on usePersistedQueueStorage).
    */
   public useLocalStorage(): void {
