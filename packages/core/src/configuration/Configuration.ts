@@ -464,7 +464,9 @@ export class Configuration {
    * Use localStorage for persisting things like server configuration cache and persisted queue entries (depends on usePersistedQueueStorage).
    */
   public useLocalStorage(): void {
-    this.services.storage = new LocalStorage();
+    if (globalThis?.localStorage) {
+      this.services.storage = new LocalStorage();
+    }
   }
 
   /**
