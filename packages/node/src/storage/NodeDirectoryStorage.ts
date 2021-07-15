@@ -1,9 +1,13 @@
+import {
+  IStorage
+} from "@exceptionless/core";
+
 import { mkdirSync } from "fs";
 import { readdir, readFile, unlink, writeFile } from "fs/promises";
 import { dirname, join, resolve } from "path";
 import { argv } from "process";
 
-export class NodeDirectoryStorage {
+export class NodeDirectoryStorage implements IStorage {
   private directory: string;
 
   constructor(directory?: string) {
