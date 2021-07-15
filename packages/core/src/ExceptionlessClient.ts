@@ -11,12 +11,14 @@ import { PluginContext } from "./plugins/PluginContext.js";
 export class ExceptionlessClient {
   private _intervalId = 0;
   private _timeoutId = 0;
+  protected _initialized = false;
 
   public constructor(public config: Configuration = new Configuration()) { }
 
   /** Resume background submission, resume any timers. */
   public async startup(configurationOrApiKey?: (config: Configuration) => void | string): Promise<void> {
-    if (configurationOrApiKey) {
+    if (configurationOrApiKey && !this._initialized) {
+      this._initialized = true;
       EventPluginManager.addDefaultPlugins(this.config);
 
       if (typeof configurationOrApiKey === "string") {
@@ -33,6 +35,7 @@ export class ExceptionlessClient {
 
     this.updateSettingsTimer(!!configurationOrApiKey);
     await EventPluginManager.startup(new PluginContext(this));
+
     const { queue } = this.config.services;
     await queue.startup();
     if (this.config.usePersistedQueueStorage) {

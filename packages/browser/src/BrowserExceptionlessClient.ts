@@ -8,11 +8,9 @@ import { BrowserRequestInfoPlugin } from "./plugins/BrowserRequestInfoPlugin.js"
 import { BrowserWrapFunctions } from "./plugins/BrowserWrapFunctions.js";
 
 export class BrowserExceptionlessClient extends ExceptionlessClient {
-  public async startup(
-    configurationOrApiKey?: (config: Configuration) => void | string,
-  ): Promise<void> {
+  public async startup(configurationOrApiKey?: (config: Configuration) => void | string): Promise<void> {
     const config = this.config;
-    if (configurationOrApiKey) {
+    if (configurationOrApiKey && !this._initialized) {
       config.useLocalStorage();
 
       config.addPlugin(new BrowserGlobalHandlerPlugin());
@@ -24,7 +22,7 @@ export class BrowserExceptionlessClient extends ExceptionlessClient {
     }
 
     await super.startup(configurationOrApiKey);
-    if (configurationOrApiKey) {
+    if (configurationOrApiKey && !this._initialized) {
       config.removePlugin(new SimpleErrorPlugin());
     }
   }

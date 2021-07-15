@@ -20,7 +20,7 @@ export class NodeExceptionlessClient extends ExceptionlessClient {
   public async startup(configurationOrApiKey?: (config: Configuration) => void | string): Promise<void> {
     const config = this.config;
 
-    if (configurationOrApiKey) {
+    if (configurationOrApiKey && !this._initialized) {
       if (!globalThis?.localStorage) {
         const storage = new LocalStorage(undefined, new LocalStoragePolyfill(process.cwd() + '/.exceptionless'));
         config.useLocalStorage = () => storage;
@@ -43,7 +43,7 @@ export class NodeExceptionlessClient extends ExceptionlessClient {
 
     await super.startup(configurationOrApiKey);
 
-    if (configurationOrApiKey) {
+    if (configurationOrApiKey && !this._initialized) {
       config.removePlugin(new SimpleErrorPlugin());
     }
   }
