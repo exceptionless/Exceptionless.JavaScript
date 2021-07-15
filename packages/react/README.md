@@ -17,7 +17,7 @@ client. This ensures the client is configured and automatic capturing of
 unhandled errors occurs.
 
 ```jsx
-import { Exceptionless } from "@exceptionless/react";
+import { Exceptionless, ExceptionlessErrorBoundary } from "@exceptionless/react";
 
 class App extends Component {
   async componentDidMount() {
