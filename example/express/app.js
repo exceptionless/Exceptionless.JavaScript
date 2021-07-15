@@ -1,6 +1,7 @@
 import express from "express";
 const app = express();
 
+import { KnownEventDataKeys } from "@exceptionless/core";
 import { Exceptionless } from "@exceptionless/node";
 
 await Exceptionless.startup((c) => {
@@ -46,7 +47,7 @@ app.get("/trycatch", async (req, res) => {
     throw new Error("Caught in try/catch");
   } catch (error) {
     await Exceptionless.createException(error)
-      .addRequestInfo(req)
+      .setContextProperty(KnownEventDataKeys.RequestInfo, req)
       .submit();
 
     res.status(500).send("Error caught in try/catch");
@@ -59,14 +60,14 @@ app.use(async (err, req, res, next) => {
   }
 
   await Exceptionless.createUnhandledException(err, "express")
-    .addRequestInfo(req)
+    .setContextProperty(KnownEventDataKeys.RequestInfo, req)
     .submit();
 
   res.status(500).send("Something broke!");
 });
 
 app.use(async (req, res) => {
-  await Exceptionless.createNotFound(req.originalUrl).addRequestInfo(req).submit();
+  await Exceptionless.createNotFound(req.originalUrl).setContextProperty(KnownEventDataKeys.RequestInfo, req).submit();
   res.status(404).send("Sorry cant find that!");
 });
 

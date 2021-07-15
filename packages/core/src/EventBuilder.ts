@@ -1,7 +1,6 @@
 import { ExceptionlessClient } from "./ExceptionlessClient.js";
 import { Event, KnownEventDataKeys } from "./models/Event.js";
 import { ManualStackingInfo } from "./models/data/ManualStackingInfo.js";
-import { RequestInfo } from "./models/data/RequestInfo.js";
 import { UserInfo } from "./models/data/UserInfo.js";
 import { EventContext } from "./models/EventContext.js";
 import { isEmpty, stringify } from "./Utils.js";
@@ -193,17 +192,14 @@ export class EventBuilder {
     return this;
   }
 
-  public markAsCritical(critical: boolean): EventBuilder {
-    if (critical) {
-      this.addTags("Critical");
-    }
-
+  public setContextProperty(name: string, value: unknown): EventBuilder {
+    this.context[name] = value;
     return this;
   }
 
-  public addRequestInfo(request: RequestInfo): EventBuilder {
-    if (request) {
-      this.context[KnownEventDataKeys.RequestInfo] = request;
+  public markAsCritical(critical: boolean): EventBuilder {
+    if (critical) {
+      this.addTags("Critical");
     }
 
     return this;
