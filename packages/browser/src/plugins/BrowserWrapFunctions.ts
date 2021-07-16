@@ -18,7 +18,6 @@ export class BrowserWrapFunctions implements IEventPlugin {
     this._client = context.client;
 
     // TODO: TraceKit.extendToAsynchronousCallbacks();
-
     return Promise.resolve();
   }
 }

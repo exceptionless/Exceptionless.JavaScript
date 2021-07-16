@@ -29,7 +29,7 @@ export class BrowserRequestInfoPlugin implements IEventPlugin {
   }
 
   private getRequestInfo(context: EventPluginContext): RequestInfo | undefined {
-    if (!document || !navigator || !location) {
+    if (typeof document !== "object" || typeof navigator !== "object" || typeof location !== "object") {
       return;
     }
 

@@ -30,7 +30,7 @@ export class BrowserModuleInfoPlugin implements IEventPlugin {
   }
 
   private getModules(): ModuleInfo[] | undefined {
-    if (!document || !document.getElementsByTagName) {
+    if (typeof document !== "object" || !document.getElementsByTagName) {
       return;
     }
 

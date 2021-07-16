@@ -11,7 +11,7 @@ export class BrowserLifeCyclePlugin implements IEventPlugin {
   private _client: ExceptionlessClient | null = null;
 
   public startup(context: PluginContext): Promise<void> {
-    if (this._client) {
+    if (this._client || typeof document !== "object") {
       return Promise.resolve();
     }
 
