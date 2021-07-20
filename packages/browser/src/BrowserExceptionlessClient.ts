@@ -5,7 +5,6 @@ import { BrowserGlobalHandlerPlugin } from "./plugins/BrowserGlobalHandlerPlugin
 import { BrowserLifeCyclePlugin } from "./plugins/BrowserLifeCyclePlugin.js";
 import { BrowserModuleInfoPlugin } from "./plugins/BrowserModuleInfoPlugin.js";
 import { BrowserRequestInfoPlugin } from "./plugins/BrowserRequestInfoPlugin.js";
-import { BrowserWrapFunctions } from "./plugins/BrowserWrapFunctions.js";
 
 export class BrowserExceptionlessClient extends ExceptionlessClient {
   public async startup(configurationOrApiKey?: (config: Configuration) => void | string): Promise<void> {
@@ -17,7 +16,6 @@ export class BrowserExceptionlessClient extends ExceptionlessClient {
       config.addPlugin(new BrowserLifeCyclePlugin());
       config.addPlugin(new BrowserModuleInfoPlugin());
       config.addPlugin(new BrowserRequestInfoPlugin());
-      config.addPlugin(new BrowserWrapFunctions());
       config.addPlugin(new BrowserErrorPlugin());
     }
 
