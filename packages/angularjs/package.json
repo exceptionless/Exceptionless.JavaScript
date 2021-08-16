@@ -42,8 +42,8 @@
     "access": "public"
   },
   "devDependencies": {
-    "@types/angular": "1.8.1",
-    "esbuild": "0.12.8"
+    "@types/angular": "1.8.2",
+    "esbuild": "0.12.20"
   },
   "dependencies": {
     "@exceptionless/browser": "2.0.0-dev"

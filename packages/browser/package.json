@@ -54,11 +54,11 @@
     "access": "public"
   },
   "devDependencies": {
-    "@jest/globals": "27.0.3",
-    "esbuild": "0.12.8",
-    "jest": "27.0.4",
+    "@jest/globals": "27.0.6",
+    "esbuild": "0.12.20",
+    "jest": "27.0.6",
     "jest-ts-webcompat-resolver": "1.0.0",
-    "ts-jest": "27.0.3"
+    "ts-jest": "27.0.4"
   },
   "dependencies": {
     "@exceptionless/core": "2.0.0-dev",
