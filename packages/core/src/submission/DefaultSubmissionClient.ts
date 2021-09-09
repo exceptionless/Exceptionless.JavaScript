@@ -71,7 +71,7 @@ export class DefaultSubmissionClient implements ISubmissionClient {
         "Authorization": `Bearer ${this.config.apiKey}`,
         "User-Agent": this.config.userAgent,
       },
-      body: options.body,
+      body: options.body ?? null
     };
 
     // TODO: Can we properly calculate content size?

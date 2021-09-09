@@ -18,7 +18,7 @@ export class EventPluginManager {
       try {
         await plugin.startup(context);
       } catch (ex) {
-        context.log.error(`Error running plugin startup"${<string>plugin.name}": ${<string>ex?.message}`);
+        context.log.error(`Error running plugin startup"${<string>plugin.name}": ${ex instanceof Error ? ex.message : ex + ''}`);
       }
     }
   }
@@ -32,7 +32,7 @@ export class EventPluginManager {
       try {
         await plugin.suspend(context);
       } catch (ex) {
-        context.log.error(`Error running plugin suspend"${<string>plugin.name}": ${<string>ex?.message}`);
+        context.log.error(`Error running plugin suspend"${<string>plugin.name}": ${ex instanceof Error ? ex.message : ex + ''}`);
       }
     }
   }
@@ -51,7 +51,7 @@ export class EventPluginManager {
         await plugin.run(context);
       } catch (ex) {
         context.cancelled = true;
-        context.log.error(`Error running plugin "${<string>plugin.name}": ${<string>ex?.message}. Discarding Event.`);
+        context.log.error(`Error running plugin "${<string>plugin.name}": ${ex instanceof Error ? ex.message : ex + ''}. Discarding Event.`);
       }
     }
   }

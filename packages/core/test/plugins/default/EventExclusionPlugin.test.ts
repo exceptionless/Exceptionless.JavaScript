@@ -13,7 +13,7 @@ describe("EventExclusionPlugin", () => {
         client.config.settings[settingKey] = settingValue as string;
       }
 
-      const ev: Event = { type: "log", source, data: {} };
+      const ev: Event = <Event>{ type: "log", source, data: {} };
       if (ev.data && level) {
         ev.data[KnownEventDataKeys.Level] = level;
       }
@@ -56,7 +56,7 @@ describe("EventExclusionPlugin", () => {
         client.config.settings[settingKey] = settingValue as string;
       }
 
-      const ev: Event = { type: "log", source, data: {} };
+      const ev: Event = <Event>{ type: "log", source, data: {} };
       if (ev.data && level) {
         ev.data[KnownEventDataKeys.Level] = level;
       }
@@ -146,7 +146,7 @@ describe("EventExclusionPlugin", () => {
         client.config.settings[settingKey] = settingValue as string;
       }
 
-      const context = new EventPluginContext(client, { type: <string>type, source, data: {} }, new EventContext());
+      const context = new EventPluginContext(client, <Event>{ type: <string>type, source, data: {} }, new EventContext());
       const plugin = new EventExclusionPlugin();
       await plugin.run(context);
 

@@ -138,10 +138,8 @@ export class ExceptionlessClient {
         builder = builder.setSource(
           caller && caller.caller && caller.caller.name,
         );
-      } catch (e) {
-        this.config.services.log.trace(
-          "Unable to resolve log source: " + e.message,
-        );
+      } catch (ex) {
+        this.config.services.log.trace(`Unable to resolve log source: ${ex instanceof Error ? ex.message : ex + ''}`);
       }
     }
 

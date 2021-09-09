@@ -88,14 +88,16 @@ describe("ExceptionlessClient", () => {
   });
 
 
-  function createException() {
+  function createException(): ReferenceError {
     function throwError() {
       throw new ReferenceError("This is a test");
     }
     try {
       throwError();
     } catch (e) {
-      return e;
+      return e as ReferenceError;
     }
+
+    return new ReferenceError("No Stack Trace")
   }
 });

@@ -123,7 +123,7 @@ export class DefaultEventQueue implements IEventQueue {
       log.trace("Finished processing queue");
       this._processingQueue = false;
     } catch (ex) {
-      log.error(`Error processing queue: ${<string>ex?.message}`);
+      log.error(`Error processing queue: ${ex instanceof Error ? ex.message : ex + ''}`);
       await this.suspendProcessing();
       this._processingQueue = false;
     }
@@ -176,7 +176,7 @@ export class DefaultEventQueue implements IEventQueue {
       try {
         await handler(events, response);
       } catch (ex) {
-        this.config.services.log.error(`Error calling onEventsPosted handler: ${<string>ex?.message}`);
+        this.config.services.log.error(`Error calling onEventsPosted handler: ${ex instanceof Error ? ex.message : ex + ''}`);
       }
     }
   }
@@ -269,7 +269,7 @@ export class DefaultEventQueue implements IEventQueue {
           }
         }
       } catch (ex) {
-        this.config.services.log.error(`Error loading queue items from storage: ${<string>ex?.message}`)
+        this.config.services.log.error(`Error loading queue items from storage: ${ex instanceof Error ? ex.message : ex + ''}`)
       }
     }
   }
@@ -292,7 +292,7 @@ export class DefaultEventQueue implements IEventQueue {
       try {
         await storage.setItem(file, JSON.stringify(event));
       } catch (ex) {
-        log.error(`Error saving queue item to storage: ${<string>ex?.message}`)
+        log.error(`Error saving queue item to storage: ${ex instanceof Error ? ex.message : ex + ''}`)
       }
     }
 
@@ -306,7 +306,7 @@ export class DefaultEventQueue implements IEventQueue {
         try {
           await this.config.services.storage.removeItem(file);
         } catch (ex) {
-          this.config.services.log.error(`Error removing queue item from storage: ${<string>ex?.message}`)
+          this.config.services.log.error(`Error removing queue item from storage: ${ex instanceof Error ? ex.message : ex + ''}`)
         }
       }
     }

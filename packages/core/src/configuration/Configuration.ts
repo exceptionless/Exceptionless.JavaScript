@@ -364,7 +364,7 @@ export class Configuration {
   public addPlugin(name: string | undefined, priority: number, pluginAction: (context: EventPluginContext) => Promise<void>): void;
   public addPlugin(pluginOrName: IEventPlugin | string | undefined, priority?: number, pluginAction?: (context: EventPluginContext) => Promise<void>): void {
     const plugin: IEventPlugin = pluginAction
-      ? { name: pluginOrName as string, priority, run: pluginAction }
+      ? <IEventPlugin>{ name: pluginOrName as string, priority, run: pluginAction }
       : pluginOrName as IEventPlugin;
 
     if (!plugin || !(plugin.startup || plugin.run)) {
@@ -436,7 +436,7 @@ export class Configuration {
     const name: string | undefined = typeof nameOrHeartbeatInterval === "string" ? nameOrHeartbeatInterval : undefined;
     const userInfo: UserInfo = typeof userInfoOrIdentity !== "string"
       ? userInfoOrIdentity
-      : { identity: userInfoOrIdentity, name };
+      : <UserInfo>{ identity: userInfoOrIdentity, name };
 
     const interval: number = typeof nameOrHeartbeatInterval === "number" ? nameOrHeartbeatInterval : heartbeatInterval;
     const plugin = new HeartbeatPlugin(interval);
@@ -502,7 +502,7 @@ export class Configuration {
       try {
         handler(this);
       } catch (ex) {
-        this.services.log.error(`Error calling subscribe handler: ${<string>ex?.message}`);
+        this.services.log.error(`Error calling subscribe handler: ${ex instanceof Error ? ex.message : ex + ''}`);
       }
     }
   }

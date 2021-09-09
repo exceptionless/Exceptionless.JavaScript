@@ -4,7 +4,8 @@
     "noImplicitAny": false,
     "outDir": "dist",
     "rootDir": "src",
-    "strict": false
+    "strict": false,
+    "strictNullChecks": true
   },
   "include": ["src"],
   "types": ["angular", "angular-mock"]

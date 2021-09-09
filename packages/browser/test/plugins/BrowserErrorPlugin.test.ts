@@ -29,8 +29,8 @@ describe("BrowserErrorPlugin", () => {
       return Promise.resolve(<ErrorInfo>{
         type: exception.name,
         message: exception.message,
-        stack_trace: undefined,
-        modules: undefined
+        stack_trace: [],
+        modules: []
       });
     };
 

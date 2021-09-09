@@ -37,7 +37,7 @@ export class NodeDirectoryStorage implements IStorage {
     try {
       return await readFile(join(this.directory, key), "utf8");
     } catch (ex) {
-      if (ex.code === "ENOENT") {
+      if (this.isNodeError(ex) && ex.code === "ENOENT") {
         return null;
       }
 
@@ -58,7 +58,7 @@ export class NodeDirectoryStorage implements IStorage {
     try {
       await unlink(join(this.directory, key));
     } catch (ex) {
-      if (ex.code !== "ENOENT") {
+      if (this.isNodeError(ex) && ex.code !== "ENOENT") {
         throw ex;
       }
     }
@@ -66,5 +66,9 @@ export class NodeDirectoryStorage implements IStorage {
 
   public async setItem(key: string, value: string): Promise<void> {
     await writeFile(join(this.directory, key), value);
+  }
+
+  private isNodeError(error: unknown): error is NodeJS.ErrnoException {
+    return typeof error === "object";
   }
 }
