@@ -45,8 +45,8 @@
     "testEnvironment": "jsdom"
   },
   "scripts": {
-    "build": "tsc -p tsconfig.json && esbuild src/index.ts --bundle --sourcemap --target=es2017 --format=esm --outfile=dist/index.bundle.js && esbuild src/index.ts --bundle --minify --sourcemap --target=es2019 --format=esm --outfile=dist/index.bundle.min.js",
-    "watch": "tsc -p ../core/tsconfig.json -w --preserveWatchOutput & tsc -p tsconfig.json -w --preserveWatchOutput & esbuild src/index.ts --bundle --sourcemap --target=es2017 --format=esm --watch --outfile=dist/index.bundle.js",
+    "build": "esbuild ../../node_modules/stacktrace-js/stacktrace.js --bundle --sourcemap --target=es2019 --format=esm --outfile=src/plugins/stacktracejs/stacktrace.js && tsc -p tsconfig.json && esbuild src/index.ts --bundle --sourcemap --target=es2017 --format=esm --outfile=dist/index.bundle.js && esbuild src/index.ts --bundle --minify --sourcemap --target=es2019 --format=esm --outfile=dist/index.bundle.min.js && copyfiles -f src/plugins/stacktracejs/* dist/plugins/stacktracejs",
+    "watch": "esbuild ../../node_modules/stacktrace-js/stacktrace.js --bundle --sourcemap --target=es2019 --format=esm --outfile=src/plugins/stacktracejs/stacktrace.js && tsc -p ../core/tsconfig.json -w --preserveWatchOutput & tsc -p tsconfig.json -w --preserveWatchOutput & esbuild src/index.ts --bundle --sourcemap --target=es2017 --format=esm --watch --outfile=dist/index.bundle.js && copyfiles -f src/plugins/stacktracejs/* dist/plugins/stacktracejs",
     "test": "jest"
   },
   "sideEffects": false,
@@ -55,13 +55,14 @@
   },
   "devDependencies": {
     "@jest/globals": "27.1.1",
+    "copyfiles": "2.4.1",
     "esbuild": "0.12.25",
     "jest": "27.1.1",
     "jest-ts-webcompat-resolver": "1.0.0",
-    "ts-jest": "27.0.5"
+    "ts-jest": "27.0.5",
+    "stacktrace-js": "2.0.2"
   },
   "dependencies": {
-    "@exceptionless/core": "2.0.0-dev",
-    "stacktrace-js": "2.0.2"
+    "@exceptionless/core": "2.0.0-dev"
   }
 }

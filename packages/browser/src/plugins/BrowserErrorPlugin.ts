@@ -10,10 +10,8 @@ import {
   isEmpty
 } from "@exceptionless/core";
 
-import {
-  fromError,
-  StackFrame
-} from "stacktrace-js";
+// @ts-expect-error TS7016
+import { default as StackTraceJs } from "./stacktracejs/stacktrace.js";
 
 export class BrowserErrorPlugin implements IEventPlugin {
   public priority = 30;
@@ -54,7 +52,7 @@ export class BrowserErrorPlugin implements IEventPlugin {
       return items;
     }
 
-    function getStackFrames(stackFrames: StackFrame[]): StackFrameInfo[] {
+    function getStackFrames(stackFrames: StackTraceJs.StackFrame[]): StackFrameInfo[] {
       const ANONYMOUS: string = "<anonymous>";
       const frames: StackFrameInfo[] = [];
 
@@ -75,7 +73,7 @@ export class BrowserErrorPlugin implements IEventPlugin {
       return frames;
     }
 
-    const result: StackFrame[] = await fromError(exception);
+    const result: StackTraceJs.StackFrame[] = await StackTraceJs.fromError(exception);
     if (!result) {
       throw new Error("Unable to parse the exception stack trace.");
     }
