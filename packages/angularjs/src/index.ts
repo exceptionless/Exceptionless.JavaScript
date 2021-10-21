@@ -47,7 +47,7 @@ angular.module("exceptionless", [])
           // eslint-disable-next-line prefer-spread
           previousFn.apply(null, args);
           if (args[0] && args[0].length > 0) {
-            void $ExceptionlessClient.submitLog(null, args[0], logLevel);
+            void $ExceptionlessClient.submitLog(undefined, args[0], logLevel);
           }
         };
       }
