@@ -5,6 +5,8 @@
   "scripts": {
     "dev": "svelte-kit dev",
     "build": "svelte-kit build",
+    "watch": "",
+    "test": "",
     "preview": "svelte-kit preview"
   },
   "dependencies": {
