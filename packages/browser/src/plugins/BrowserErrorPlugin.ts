@@ -11,7 +11,7 @@ import {
 } from "@exceptionless/core";
 
 // @ts-expect-error TS7016
-import { default as StackTraceJs } from "./stacktracejs/stacktrace.js";
+import { StackTraceJs } from "./stacktracejs/stacktrace.js";
 
 export class BrowserErrorPlugin implements IEventPlugin {
   public priority = 30;
