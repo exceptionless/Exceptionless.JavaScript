@@ -54,13 +54,13 @@
     "access": "public"
   },
   "devDependencies": {
-    "@jest/globals": "27.1.1",
-    "copyfiles": "2.4.1",
-    "esbuild": "0.12.25",
-    "jest": "27.1.1",
-    "jest-ts-webcompat-resolver": "1.0.0",
-    "ts-jest": "27.0.5",
-    "stacktrace-js": "2.0.2"
+    "@jest/globals": "^29.4.2",
+    "copyfiles": "^2.4.1",
+    "esbuild": "^0.17.6",
+    "jest": "^29.4.2",
+    "jest-ts-webcompat-resolver": "^1.0.0",
+    "ts-jest": "^29.0.5",
+    "stacktrace-js": "^2.0.2"
   },
   "dependencies": {
     "@exceptionless/core": "2.0.0-dev"

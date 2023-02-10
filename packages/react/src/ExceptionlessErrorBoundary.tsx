@@ -1,17 +1,22 @@
-import { Component } from 'react';
+import { Component, PropsWithChildren } from "react";
 import { Exceptionless } from "@exceptionless/browser";
 
 type ErrorState = {
   hasError: boolean;
 };
 
-export default class ExceptionlessErrorBoundary extends Component<{}, ErrorState> {
+export default class ExceptionlessErrorBoundary extends Component<
+  PropsWithChildren,
+  ErrorState
+> {
   constructor(props: Readonly<{}> | {}) {
     super(props);
   }
 
   async componentDidCatch(error: Error, errorInfo: unknown) {
-    await Exceptionless.createException(error).setProperty("errorInfo", errorInfo).submit();
+    await Exceptionless.createException(error)
+      .setProperty("errorInfo", errorInfo)
+      .submit();
   }
 
   render() {
