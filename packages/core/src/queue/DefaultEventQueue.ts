@@ -40,10 +40,10 @@ export class DefaultEventQueue implements IEventQueue {
 
   /**
    * Processes the queue every xx seconds.
-   * @type {Timer}
+   * @type {Interval}
    * @private
    */
-  private _queueTimerId = 0;
+  private _queueIntervalId: ReturnType<typeof setInterval> | undefined;
 
   private readonly QUEUE_PREFIX: string = "q:";
   private _lastFileTimestamp = 0;
@@ -130,17 +130,17 @@ export class DefaultEventQueue implements IEventQueue {
   }
 
   public startup(): Promise<void> {
-    if (this._queueTimerId === 0) {
+    if (!this._queueIntervalId) {
       // TODO: Fix awaiting promise.
-      this._queueTimerId = setInterval(() => void this.onProcessQueue(), 10000);
+      this._queueIntervalId = setInterval(() => void this.onProcessQueue(), 10000);
     }
 
     return Promise.resolve();
   }
 
   public suspend(): Promise<void> {
-    clearInterval(this._queueTimerId);
-    this._queueTimerId = 0;
+    clearInterval(this._queueIntervalId);
+    this._queueIntervalId = undefined;
     return Promise.resolve();
   }
 

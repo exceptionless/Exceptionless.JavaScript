@@ -18,9 +18,9 @@ describe("DefaultEventQueue", () => {
     expect(await config.services.storage.length()).toBe(0);
   });
 
-  afterEach(() => {
-    const queue: any = config.services.queue;
-    clearInterval(queue._queueTimer);
+  afterEach(async () => {
+    const queue = config.services.queue;
+    await queue.suspend();
   });
 
   test("should enqueue event", async () => {
