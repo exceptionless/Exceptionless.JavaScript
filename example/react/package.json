@@ -5,9 +5,7 @@
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
-    "test": "",
-    "eject": "react-scripts eject",
-    "watch": ""
+    "eject": "react-scripts eject"
   },
   "eslintConfig": {
     "extends": [

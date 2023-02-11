@@ -8,9 +8,6 @@
   "author": "Exceptionless",
   "license": "Apache-2.0",
   "scripts": {
-    "build": "",
-    "watch": "",
-    "test": "",
     "dev": "nodemon app.js",
     "start": "node app.js"
   },

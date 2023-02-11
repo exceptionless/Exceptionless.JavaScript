@@ -7,11 +7,6 @@
   "type": "module",
   "author": "Exceptionless",
   "license": "Apache-2.0",
-  "scripts": {
-    "build": "",
-    "watch": "",
-    "test": ""
-  },
   "publishConfig": {
     "access": "restricted"
   },

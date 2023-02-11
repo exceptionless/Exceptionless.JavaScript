@@ -16,11 +16,11 @@
   },
   "scripts": {
     "clean": "rimraf packages/*/dist example/*/dist",
-    "build": "npm run build --workspaces",
-    "watch": "npm run watch --workspaces",
+    "build": "npm run build --workspaces --if-present",
+    "watch": "npm run watch --workspaces --if-present",
     "lint": "eslint . --ext .ts",
     "lint:fix": "eslint . --ext .ts --fix",
-    "test": "npm test --workspaces",
+    "test": "npm test --workspaces --if-present",
     "version": "npm --no-git-tag-version --workspaces version"
   },
   "workspaces": [
