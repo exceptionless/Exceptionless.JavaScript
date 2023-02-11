@@ -1,3 +1,6 @@
+import { describe, jest, test } from "@jest/globals";
+import { expect } from "expect";
+
 import { Configuration } from "../../src/configuration/Configuration.js";
 import { ServerSettings } from "../../src/configuration/SettingsManager.js";
 import { Event } from "../../src/models/Event.js";

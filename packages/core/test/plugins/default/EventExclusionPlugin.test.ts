@@ -1,3 +1,6 @@
+import { describe, test } from "@jest/globals";
+import { expect } from "expect";
+
 import { ExceptionlessClient } from "../../../src/ExceptionlessClient.js";
 import { Event, KnownEventDataKeys } from "../../../src/models/Event.js";
 import { InnerErrorInfo } from "../../../src/models/data/ErrorInfo.js";
