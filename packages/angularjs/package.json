@@ -42,7 +42,7 @@
   },
   "devDependencies": {
     "@types/angular": "^1.8.4",
-    "esbuild": "^0.17.6"
+    "esbuild": "^0.17.8"
   },
   "dependencies": {
     "@exceptionless/browser": "2.0.0-dev"
