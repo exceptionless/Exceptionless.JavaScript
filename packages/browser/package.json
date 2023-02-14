@@ -45,8 +45,8 @@
     "testEnvironment": "jsdom"
   },
   "scripts": {
-    "build": "esbuild ../../node_modules/stacktrace-js/stacktrace.js --bundle --sourcemap --target=es2019 --format=esm --outfile=src/plugins/stacktracejs/stacktrace.js && tsc -p tsconfig.json && esbuild src/index.ts --bundle --sourcemap --target=es2017 --format=esm --outfile=dist/index.bundle.js && esbuild src/index.ts --bundle --minify --sourcemap --target=es2019 --format=esm --outfile=dist/index.bundle.min.js && copyfiles -f src/plugins/stacktracejs/* dist/plugins/stacktracejs",
-    "watch": "esbuild ../../node_modules/stacktrace-js/stacktrace.js --bundle --sourcemap --target=es2019 --format=esm --outfile=src/plugins/stacktracejs/stacktrace.js && tsc -p ../core/tsconfig.json -w --preserveWatchOutput & tsc -p tsconfig.json -w --preserveWatchOutput & esbuild src/index.ts --bundle --sourcemap --target=es2017 --format=esm --watch --outfile=dist/index.bundle.js && copyfiles -f src/plugins/stacktracejs/* dist/plugins/stacktracejs",
+    "build": "tsc -p tsconfig.json && esbuild src/index.ts --bundle --sourcemap --target=es2017 --format=esm --outfile=dist/index.bundle.js && esbuild src/index.ts --bundle --minify --sourcemap --target=es2019 --format=esm --outfile=dist/index.bundle.min.js",
+    "watch": "tsc -p ../core/tsconfig.json -w --preserveWatchOutput & tsc -p tsconfig.json -w --preserveWatchOutput & esbuild src/index.ts --bundle --sourcemap --target=es2017 --format=esm --watch --outfile=dist/index.bundle.js",
     "test": "jest"
   },
   "sideEffects": false,
