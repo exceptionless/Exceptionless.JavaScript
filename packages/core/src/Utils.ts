@@ -170,6 +170,7 @@ export function endsWith(input: string, suffix: string): boolean {
 }
 
 // @ts-expect-error TS6133
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export function stringify(data: unknown, exclusions?: string[], maxDepth?: number): string {
   function stringifyImpl(obj: unknown, excludedKeys: string[]): string {
     const cache: unknown[] = [];
@@ -193,11 +194,10 @@ export function stringify(data: unknown, exclusions?: string[], maxDepth?: numbe
 
   if (({}).toString.call(data) === "[object Object]") {
     const flattened: { [prop: string]: unknown } = {};
-    // @ts-expect-error TS2407
-    for (const prop in data) {
-      // @ts-expect-error TS7053
-      const value = data[prop] as unknown;
-      if (value !== data) {
+    const dataObject = data as { [prop: string]: unknown };
+    for (const prop in dataObject) {
+      const value = dataObject[prop];
+      if (value !== dataObject) {
         flattened[prop] = value;
       }
     }

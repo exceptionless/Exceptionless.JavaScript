@@ -39,7 +39,17 @@ export class NodeErrorPlugin implements IEventPlugin {
   }
 
   private parse(exception: Error): Promise<ErrorInfo> {
-    function getStackFrames(stackFrames: any[]): StackFrameInfo[] {
+    type stackFrameShape = {
+      methodName: string;
+      functionName: string;
+      fileName: string;
+      lineNumber: number;
+      columnNumber: number;
+      typeName: string;
+      native: boolean;
+    };
+
+    function getStackFrames(stackFrames: stackFrameShape[]): StackFrameInfo[] {
       const frames: StackFrameInfo[] = [];
 
       for (const frame of stackFrames) {
@@ -67,7 +77,7 @@ export class NodeErrorPlugin implements IEventPlugin {
     return Promise.resolve({
       type: exception.name || "Error",
       message: exception.message,
-      stack_trace: getStackFrames(result || []),
+      stack_trace: getStackFrames(<stackFrameShape[]><unknown>result || []), // TODO: Update type definition.
     });
   }
 }

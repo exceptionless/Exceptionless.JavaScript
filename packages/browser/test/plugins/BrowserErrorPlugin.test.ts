@@ -113,11 +113,10 @@ describe("BrowserErrorPlugin", () => {
 });
 
 function describeForCapturedExceptions(specDefinitions: (exception: Error | unknown) => void) {
-  const keys = Object.getOwnPropertyNames(CapturedExceptions);
+  const exceptions = <Record<string, unknown>>CapturedExceptions;
+  const keys = Object.getOwnPropertyNames(exceptions);
   keys.forEach((key) => {
-    // @ts-expect-error TS7053
-    const exception: unknown = CapturedExceptions[key];
-    describe(key, () => specDefinitions(exception));
+    describe(key, () => specDefinitions(exceptions[key]));
   });
 }
 

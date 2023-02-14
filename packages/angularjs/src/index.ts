@@ -1,13 +1,6 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
-/* eslint-disable @typescript-eslint/no-unsafe-return */
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
-/* eslint-disable @typescript-eslint/no-unsafe-call */
-
 import { BrowserExceptionlessClient, Exceptionless } from "@exceptionless/browser";
 
-// eslint-disable-next-line no-var
-declare var angular;
+declare let angular;
 angular.module("exceptionless", [])
   .constant("$ExceptionlessClient", Exceptionless)
   .factory("exceptionlessHttpInterceptor", ["$location", "$q", "$ExceptionlessClient", ($location: ng.ILocationService, $q: ng.IQService, $ExceptionlessClient: BrowserExceptionlessClient) => {
@@ -39,11 +32,10 @@ angular.module("exceptionless", [])
       function decorateRegularCall(property: string, logLevel: string) {
         const previousFn = $delegate[property];
         return $delegate[property] = (...args: string[]) => {
-          // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
-          if ((<any>angular).mock) {
-            // Needed to support angular-mocks.
+          if ((angular as { mock?: unknown }).mock) {
             $delegate[property].logs = [];
           }
+
           // eslint-disable-next-line prefer-spread
           previousFn.apply(null, args);
           if (args[0] && args[0].length > 0) {
@@ -66,14 +58,14 @@ angular.module("exceptionless", [])
         return;
       }
 
-      void $ExceptionlessClient.createFeatureUsage(current.name)
+      void $ExceptionlessClient.createFeatureUsage(current.name as string)
         .setProperty("next", next)
         .setProperty("current", current)
         .submit();
     });
 
     $rootScope.$on("$routeChangeError", (_event, current, previous, rejection) => {
-      void $ExceptionlessClient.createUnhandledException(new Error(rejection), "$routeChangeError")
+      void $ExceptionlessClient.createUnhandledException(new Error(rejection as string), "$routeChangeError")
         .setProperty("current", current)
         .setProperty("previous", previous)
         .submit();
@@ -84,7 +76,7 @@ angular.module("exceptionless", [])
         return;
       }
 
-      void $ExceptionlessClient.createFeatureUsage(toState.controller || toState.name)
+      void $ExceptionlessClient.createFeatureUsage((toState.controller || toState.name) as string)
         .setProperty("toState", toState)
         .setProperty("toParams", toParams)
         .setProperty("fromState", fromState)
@@ -97,7 +89,7 @@ angular.module("exceptionless", [])
         return;
       }
 
-      void $ExceptionlessClient.createNotFound(unfoundState.to)
+      void $ExceptionlessClient.createNotFound(unfoundState.to as string)
         .setProperty("unfoundState", unfoundState)
         .setProperty("fromState", fromState)
         .setProperty("fromParams", fromParams)
@@ -110,9 +102,9 @@ angular.module("exceptionless", [])
         return;
       }
 
-      const builder = error && error.status === 404 ? $ExceptionlessClient.createNotFound(error.config.url) : $ExceptionlessClient.createUnhandledException(error, stateChangeError);
+      const builder = error && error.status === 404 ? $ExceptionlessClient.createNotFound(error.config.url as string) : $ExceptionlessClient.createUnhandledException(error as Error, stateChangeError);
       void builder.setSource(stateChangeError)
-        .setMessage(error && error.statusText)
+        .setMessage(error?.statusText as string)
         .setProperty("toState", toState)
         .setProperty("toParams", toParams)
         .setProperty("fromState", fromState)
