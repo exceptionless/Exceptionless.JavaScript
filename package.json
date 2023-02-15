@@ -16,28 +16,32 @@
   },
   "scripts": {
     "clean": "rimraf packages/*/dist example/*/dist",
-    "build": "lage build --no-cache --verbose --no-deps",
-    "watch": "npm run watch --workspaces",
+    "build": "npm run build --workspaces --if-present",
+    "watch": "npm run watch --workspaces --if-present",
     "lint": "eslint . --ext .ts",
     "lint:fix": "eslint . --ext .ts --fix",
-    "test": "npm test --workspaces",
+    "test": "npm test --workspaces --if-present",
     "version": "npm --no-git-tag-version --workspaces version"
   },
   "workspaces": [
-    "packages/*",
+    "packages/core",
+    "packages/browser",
+    "packages/angularjs",
+    "packages/node",
+    "packages/react",
+    "packages/vue",
     "example/*"
   ],
   "devDependencies": {
-    "@typescript-eslint/eslint-plugin": "4.31.0",
-    "@typescript-eslint/parser": "4.31.0",
-    "eslint": "7.32.0",
-    "eslint-plugin-eslint-comments": "3.2.0",
-    "eslint-plugin-eslint-plugin": "3.5.3",
-    "eslint-plugin-import": "2.24.2",
-    "eslint-plugin-jest": "24.4.0",
-    "eslint-plugin-jsdoc": "36.1.0",
-    "lage": "^0.32.2",
-    "rimraf": "3.0.2",
-    "typescript": "4.4.2"
+    "@typescript-eslint/eslint-plugin": "^5.52.0",
+    "@typescript-eslint/parser": "^5.52.0",
+    "eslint": "^8.34.0",
+    "eslint-plugin-eslint-comments": "^3.2.0",
+    "eslint-plugin-eslint-plugin": "^5.0.8",
+    "eslint-plugin-import": "^2.27.5",
+    "eslint-plugin-jest": "^27.2.1",
+    "eslint-plugin-jsdoc": "^40.0.0",
+    "rimraf": "^4.1.2",
+    "typescript": "^4.9.5"
   }
 }

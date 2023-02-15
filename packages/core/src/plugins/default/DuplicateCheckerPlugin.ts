@@ -11,7 +11,7 @@ export class DuplicateCheckerPlugin implements IEventPlugin {
   private _mergedEvents: MergedEvent[] = [];
   private _processedHashCodes: TimestampedHash[] = [];
   private _getCurrentTime: () => number;
-  private _intervalId = 0;
+  private _intervalId: ReturnType<typeof setInterval> | undefined;
   private _interval: number;
 
   constructor(
@@ -30,7 +30,7 @@ export class DuplicateCheckerPlugin implements IEventPlugin {
 
   public async suspend(): Promise<void> {
     clearInterval(this._intervalId);
-    this._intervalId = 0;
+    this._intervalId = undefined;
     await this.submitEvents();
   }
 

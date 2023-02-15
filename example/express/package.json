@@ -8,9 +8,6 @@
   "author": "Exceptionless",
   "license": "Apache-2.0",
   "scripts": {
-    "build": "",
-    "watch": "",
-    "test": "",
     "dev": "nodemon app.js",
     "start": "node app.js"
   },
@@ -18,7 +15,7 @@
     "access": "restricted"
   },
   "dependencies": {
-    "express": "4.17.1",
+    "express": "^4.18.2",
     "@exceptionless/node": "2.0.0-dev"
   }
 }

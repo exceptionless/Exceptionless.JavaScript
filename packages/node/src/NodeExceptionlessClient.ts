@@ -28,9 +28,7 @@ export class NodeExceptionlessClient extends ExceptionlessClient {
       }
 
       if (!globalThis?.fetch) {
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        config.services.submissionClient = new DefaultSubmissionClient(config, fetch);
+        config.services.submissionClient = new DefaultSubmissionClient(config, fetch as (input: RequestInfo | URL, init?: RequestInit | undefined) => Promise<Response>);
       }
 
       config.addPlugin(new NodeEnvironmentInfoPlugin());

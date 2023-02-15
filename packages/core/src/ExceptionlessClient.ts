@@ -9,8 +9,8 @@ import { EventPluginManager } from "./plugins/EventPluginManager.js";
 import { PluginContext } from "./plugins/PluginContext.js";
 
 export class ExceptionlessClient {
-  private _intervalId = 0;
-  private _timeoutId = 0;
+  private _intervalId: ReturnType<typeof setInterval> | undefined;
+  private _timeoutId: ReturnType<typeof setTimeout> | undefined;
   protected _initialized = false;
 
   public constructor(public config: Configuration = new Configuration()) { }
@@ -55,9 +55,9 @@ export class ExceptionlessClient {
 
   private suspendSettingsTimer(): void {
     clearTimeout(this._timeoutId);
-    this._timeoutId = 0;
+    this._timeoutId = undefined;
     clearInterval(this._intervalId);
-    this._intervalId = 0;
+    this._intervalId = undefined;
   }
 
   public async processQueue(): Promise<void> {

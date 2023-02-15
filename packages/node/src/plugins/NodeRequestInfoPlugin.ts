@@ -38,7 +38,18 @@ export class NodeRequestInfoPlugin implements IEventPlugin {
     const config = context.client.config;
     const exclusions = config.dataExclusions;
 
-    const request: any = context.eventContext[REQUEST_KEY];
+    type requestShape = {
+      method: string,
+      secure: boolean,
+      ip: string,
+      hostname: string,
+      path: string,
+      headers: Record<string, string>,
+      params: Record<string, unknown>,
+      body?: object
+    };
+
+    const request = context.eventContext[REQUEST_KEY] as requestShape;
     const requestInfo: RequestInfo = {
       user_agent: request.headers["user-agent"],
       http_method: request.method,
@@ -49,8 +60,7 @@ export class NodeRequestInfoPlugin implements IEventPlugin {
     };
 
     const host = request.headers.host;
-    const port: number = host &&
-      parseInt(host.slice(host.indexOf(":") + 1), 10);
+    const port: number = host && parseInt(host.slice(host.indexOf(":") + 1), 10) || 0;
     if (port > 0) {
       requestInfo.port = port;
     }

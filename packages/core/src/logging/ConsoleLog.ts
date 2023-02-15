@@ -17,10 +17,9 @@ export class ConsoleLog implements ILog {
     this.log("error", message);
   }
 
-  private log(level: string, message: string) {
+  private log(level: keyof Console, message: string) {
     if (console) {
       const msg = `Exceptionless:${new Date().toISOString()} [${level}] ${message}`;
-      // @ts-expect-error TS7053
       const logFn = console[level] as (msg: string) => void;
       if (logFn) {
         logFn(msg);

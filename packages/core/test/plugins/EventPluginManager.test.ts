@@ -1,3 +1,6 @@
+import { describe, test } from "@jest/globals";
+import { expect } from "expect";
+
 import { EventContext } from "../../src/models/EventContext.js";
 import { ExceptionlessClient } from "../../src/ExceptionlessClient.js";
 import { EventPluginContext } from "../../src/plugins/EventPluginContext.js";

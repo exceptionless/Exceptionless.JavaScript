@@ -1,3 +1,6 @@
+import { describe, test } from "@jest/globals";
+import { expect } from "expect";
+
 import { DuplicateCheckerPlugin } from "../../../src/plugins/default/DuplicateCheckerPlugin.js";
 import { ExceptionlessClient } from "../../../src/ExceptionlessClient.js";
 import { EventPluginContext } from "../../../src/plugins/EventPluginContext.js";
@@ -77,7 +80,6 @@ describe("DuplicateCheckerPlugin", () => {
     await delay(100);
     setTimeout(() => {
       expect(contextOfSecondRun.event.count).toBe(1);
-
     }, 100);
   });
 

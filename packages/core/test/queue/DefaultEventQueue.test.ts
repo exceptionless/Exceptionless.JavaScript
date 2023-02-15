@@ -1,3 +1,6 @@
+import { describe, test } from "@jest/globals";
+import { expect } from "expect";
+
 import { Configuration } from "../../src/configuration/Configuration.js";
 import { Event } from "../../src/models/Event.js";
 import { DefaultEventQueue } from "../../src/queue/DefaultEventQueue.js";
@@ -15,9 +18,9 @@ describe("DefaultEventQueue", () => {
     expect(await config.services.storage.length()).toBe(0);
   });
 
-  afterEach(() => {
-    const queue: any = config.services.queue;
-    clearInterval(queue._queueTimer);
+  afterEach(async () => {
+    const queue = config.services.queue;
+    await queue.suspend();
   });
 
   test("should enqueue event", async () => {
@@ -33,7 +36,7 @@ describe("DefaultEventQueue", () => {
     await config.services.queue.process();
 
     config.services.queue.onEventsPosted(async () => {
-      expect((config.services.queue as any)._suspendProcessingUntil).toBeUndefined();
+      expect((config.services.queue as { _suspendProcessingUntil?: Date })._suspendProcessingUntil).toBeUndefined();
       expect(await config.services.storage.length()).toBe(0);
     });
   });
@@ -54,7 +57,7 @@ describe("DefaultEventQueue", () => {
     expect(await config.services.storage.length()).toBe(1);
 
     await delay(25);
-    if (!(config.services.queue as any)._suspendProcessingUntil) {
+    if (!(config.services.queue as { _suspendProcessingUntil?: Date })._suspendProcessingUntil) {
       expect(await config.services.storage.length()).toBe(0);
     } else {
       expect(await config.services.storage.length()).toBe(1);

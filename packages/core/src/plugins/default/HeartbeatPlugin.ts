@@ -7,7 +7,7 @@ export class HeartbeatPlugin implements IEventPlugin {
   public name = "HeartbeatPlugin";
 
   private _interval: number;
-  private _intervalId = 0;
+  private _intervalId: ReturnType<typeof setInterval> | undefined;
 
   constructor(heartbeatInterval: number = 30000) {
     this._interval = heartbeatInterval >= 30000 ? heartbeatInterval : 60000;
@@ -15,14 +15,14 @@ export class HeartbeatPlugin implements IEventPlugin {
 
   public startup(): Promise<void> {
     clearInterval(this._intervalId);
-    this._intervalId = 0;
+    this._intervalId = undefined;
     // TODO: Do we want to send a heartbeat for the last user?
     return Promise.resolve();
   }
 
   public suspend(): Promise<void> {
     clearInterval(this._intervalId);
-    this._intervalId = 0;
+    this._intervalId = undefined;
     return Promise.resolve();
   }
 
@@ -32,7 +32,7 @@ export class HeartbeatPlugin implements IEventPlugin {
     }
 
     clearInterval(this._intervalId);
-    this._intervalId = 0;
+    this._intervalId = undefined;
 
     const user = context.event.data?.[KnownEventDataKeys.UserInfo];
     if (user?.identity) {

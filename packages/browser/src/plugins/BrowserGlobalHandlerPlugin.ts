@@ -27,15 +27,13 @@ export class BrowserGlobalHandlerPlugin implements IEventPlugin {
     window.addEventListener("unhandledrejection", event => {
       let error = event.reason;
       try {
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
         const reason = (<{ detail?: { reason: string} }>event).detail?.reason;
         if (reason) {
           error = reason;
         }
-        // eslint-disable-next-line no-empty
-      } catch (ex) { }
+      } catch (ex) { /* empty */ }
 
-      void this._client?.submitUnhandledException(error, "onunhandledrejection");
+      void this._client?.submitUnhandledException(error as Error, "onunhandledrejection");
     });
 
 

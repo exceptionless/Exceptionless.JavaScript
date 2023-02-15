@@ -1,3 +1,6 @@
+import { describe, test } from "@jest/globals";
+import { expect } from "expect";
+
 import {
   stringify,
   parseVersion,
@@ -108,17 +111,13 @@ describe("Utils", () => {
     */
 
     test("should serialize inherited properties", () => {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
       // @ts-expect-error TS2683
       const Foo = function () { this.a = "a"; };
       // @ts-expect-error TS2683
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
       const Bar = function () { this.b = "b"; };
       // @ts-expect-error TS7009
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       Bar.prototype = new Foo();
       // @ts-expect-error TS7009
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       const bar = new Bar();
 
       const expected = {
