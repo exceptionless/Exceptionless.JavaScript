@@ -5,7 +5,8 @@ Exceptionless.startup(c => {
   c.serverUrl = "http://localhost:5000";
 });
 
-/** @type {import('@sveltejs/kit').HandleError} */
-export async function handleError({ error, request }) {
+/** @type {import('@sveltejs/kit').HandleClientError} */
+export async function handleError({ error, event }) {
+  console.log('client error handler');
   await Exceptionless.submitException(error);
 }

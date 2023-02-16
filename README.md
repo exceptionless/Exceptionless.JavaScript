@@ -260,13 +260,13 @@ If you find a bug or want to contribute a feature, feel free to create a pull re
     npm install
     ```
 
-4. Build the project by running the following gulp command.
+4. Build the project by running the following command.
 
     ```sh
     npm run build
     ```
 
-5. Test the project by running the following gulp command.
+5. Test the project by running the following command.
 
     ```sh
     npm run test
