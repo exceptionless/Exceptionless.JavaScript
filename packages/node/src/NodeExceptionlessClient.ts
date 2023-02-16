@@ -37,12 +37,9 @@ export class NodeExceptionlessClient extends ExceptionlessClient {
       config.addPlugin(new NodeRequestInfoPlugin());
       config.addPlugin(new NodeWrapFunctions());
       config.addPlugin(new NodeErrorPlugin());
+      config.removePlugin(new SimpleErrorPlugin());
     }
 
     await super.startup(configurationOrApiKey);
-
-    if (configurationOrApiKey && !this._initialized) {
-      config.removePlugin(new SimpleErrorPlugin());
-    }
   }
 }

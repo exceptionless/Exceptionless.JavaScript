@@ -12,6 +12,11 @@ describe("ExceptionlessClient", () => {
     const client = new ExceptionlessClient();
     client.config.apiKey = "UNIT_TEST_API_KEY";
 
+    expect(client.config.plugins).not.toBeNull();
+    while (client.config.plugins.length > 0) {
+      client.config.removePlugin(client.config.plugins[0]);
+    }
+
     const { lastReferenceIdManager } = client.config.services;
     expect(lastReferenceIdManager.getLast()).toBeNull();
 
@@ -19,9 +24,8 @@ describe("ExceptionlessClient", () => {
     expect(context.event.reference_id).toBeUndefined();
     expect(lastReferenceIdManager.getLast()).toBeNull();
 
-    const numberOfPlugins = client.config.plugins.length;
     client.config.addPlugin(new ReferenceIdPlugin());
-    expect(client.config.plugins.length).toBe(numberOfPlugins + 1);
+    expect(client.config.plugins.length).toBe(1);
 
     context = await client.submitException(error);
     expect(context.event.reference_id).not.toBeUndefined();

@@ -25,7 +25,7 @@ Exceptionless.startup((c) => {
     },
   };
 
-  c.defaultTags.push("Example", "JavaScript");
+  c.defaultTags.push("Example", "JavaScript", "Vue");
 });
 
 const app = createApp(App);

@@ -19,7 +19,6 @@ export class ExceptionlessClient {
   public async startup(configurationOrApiKey?: (config: Configuration) => void | string): Promise<void> {
     if (configurationOrApiKey && !this._initialized) {
       this._initialized = true;
-      EventPluginManager.addDefaultPlugins(this.config);
 
       if (typeof configurationOrApiKey === "string") {
         this.config.apiKey = configurationOrApiKey;

@@ -6,6 +6,7 @@ import { NullLog } from "../logging/NullLog.js";
 import { UserInfo } from "../models/data/UserInfo.js";
 import { HeartbeatPlugin } from "../plugins/default/HeartbeatPlugin.js";
 import { EventPluginContext } from "../plugins/EventPluginContext.js";
+import { EventPluginManager } from "../plugins/EventPluginManager.js";
 import { IEventPlugin } from "../plugins/IEventPlugin.js";
 import { DefaultEventQueue } from "../queue/DefaultEventQueue.js";
 import { IEventQueue } from "../queue/IEventQueue.js";
@@ -27,6 +28,8 @@ export class Configuration {
       queue: new DefaultEventQueue(this),
       submissionClient: new DefaultSubmissionClient(this),
     };
+
+    EventPluginManager.addDefaultPlugins(this);
   }
 
   /**
