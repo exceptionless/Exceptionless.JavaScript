@@ -35,7 +35,7 @@ jobs:
           tag-prefix: v
       - name: Build Version
         run: |
-          npm run version ${{steps.version.outputs.version}} --workspaces
+          npm run version -- ${{steps.version.outputs.version}}
       - name: Build
         run: npm run build
       - name: Lint
