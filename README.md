@@ -269,7 +269,7 @@ If you find a bug or want to contribute a feature, feel free to create a pull re
 5. Test the project by running the following command.
 
     ```sh
-    npm run test
+    npm test
     ```
 
 ## Thanks
