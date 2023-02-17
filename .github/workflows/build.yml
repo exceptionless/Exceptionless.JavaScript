@@ -15,33 +15,27 @@ jobs:
     name: Node ${{ matrix.node_version }} on ${{ matrix.os }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           fetch-depth: 0
       - name: Build Reason
         run: "echo ref: ${{github.ref}} event: ${{github.event_name}}"
       - name: Setup Node.js environment
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node_version }}
           registry-url: 'https://registry.npmjs.org'
       - name: Install latest NPM
         run: npm install -g npm@9
-      - name: NPM install with caching
-        uses: bahmutov/npm-install@v1
       - name: Set Min Version
-        uses: thefringeninja/action-minver@2.0.0-preview1
+        uses: Stelzi79/action-minver@3.0.1
         id: version
         with:
           minimum-major-minor: 2.0
           tag-prefix: v
       - name: Build Version
         run: |
-          npm install --global replace-in-files-cli
-          echo "MINVERVERSIONOVERRIDE=${{steps.version.outputs.version}}" >> $GITHUB_ENV
-          npm run version -- ${{steps.version.outputs.version}}
-          replace-in-files --regex='\/(v?((\d+)\.(\d+)(\.(\d+))?)(?:-([\dA-Za-z-]+(?:\.[\dA-Za-z-]+)*))?(?:\+([\dA-Za-z-]+(?:\.[\dA-Za-z-]+)*))?)' --replacement=/${{steps.version.outputs.version}} packages/core/src/configuration/Configuration.ts
-          replace-in-files --string='2.0.0-dev' --replacement=${{steps.version.outputs.version}} packages/*/package.json
+          npm run version ${{steps.version.outputs.version}} --workspaces
       - name: Build
         run: npm run build
       - name: Lint
