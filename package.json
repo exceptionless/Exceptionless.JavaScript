@@ -21,7 +21,7 @@
     "lint": "eslint . --ext .ts",
     "lint:fix": "eslint . --ext .ts --fix",
     "test": "npm test --workspaces --if-present",
-    "version": "npm --no-git-tag-version --workspaces=packages version"
+    "version": "npm --no-git-tag-version --workspace=packages version"
   },
   "workspaces": [
     "packages/core",
