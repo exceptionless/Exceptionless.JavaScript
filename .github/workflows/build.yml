@@ -11,7 +11,7 @@ jobs:
           - macos-latest
           - windows-latest
         node_version:
-          - 16
+          - 18
     name: Node ${{ matrix.node_version }} on ${{ matrix.os }}
     steps:
       - name: Checkout
@@ -26,7 +26,7 @@ jobs:
           node-version: ${{ matrix.node_version }}
           registry-url: 'https://registry.npmjs.org'
       - name: Install latest NPM
-        run: npm install -g npm@7
+        run: npm install -g npm@9
       - name: NPM install with caching
         uses: bahmutov/npm-install@v1
       - name: Set Min Version
