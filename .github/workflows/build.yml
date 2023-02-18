@@ -35,7 +35,9 @@ jobs:
           tag-prefix: v
       - name: Build Version
         run: |
-          npm run version -- ${{steps.version.outputs.version}}
+          npm install --global replace-in-files-cli
+          replace-in-files --string="2.0.0-dev" --replacement=${{steps.version.outputs.version}} packages/core/src/configuration/Configuration.ts
+          replace-in-files --string="2.0.0-dev" --replacement=${{steps.version.outputs.version}} **/package*.json
       - name: Build
         run: npm run build
       - name: Lint
