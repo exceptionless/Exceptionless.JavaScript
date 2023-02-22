@@ -1,7 +1,8 @@
 import {
   ExceptionlessClient,
   IEventPlugin,
-  PluginContext
+  PluginContext,
+  toError
 } from "@exceptionless/core";
 
 export class NodeGlobalHandlerPlugin implements IEventPlugin {
@@ -23,7 +24,8 @@ export class NodeGlobalHandlerPlugin implements IEventPlugin {
     });
 
     process.addListener("unhandledRejection", (reason: unknown | null | undefined) => {
-      void this._client?.submitUnhandledException(<Error>reason, "unhandledRejection");
+      const error: Error = toError(reason, "Unhandled rejection")
+      void this._client?.submitUnhandledException(error, "unhandledRejection");
     });
 
     return Promise.resolve();

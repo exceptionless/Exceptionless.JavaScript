@@ -1,7 +1,8 @@
 import {
   ExceptionlessClient,
   IEventPlugin,
-  PluginContext
+  PluginContext,
+  toError
 } from "@exceptionless/core";
 
 declare let $: (document: Document) => { ajaxError: { (document: (event: Event, xhr: { responseText: string; status: number; }, settings: { data: unknown; url: string; }, error: string) => void): void; }; };
@@ -25,15 +26,16 @@ export class BrowserGlobalHandlerPlugin implements IEventPlugin {
     });
 
     window.addEventListener("unhandledrejection", event => {
-      let error = event.reason;
+      let reason: unknown = event.reason;
       try {
-        const reason = (<{ detail?: { reason: string} }>event).detail?.reason;
-        if (reason) {
-          error = reason;
+        const detailReason = (<{ detail?: { reason: string } }>event).detail?.reason;
+        if (detailReason) {
+          reason = detailReason;
         }
       } catch (ex) { /* empty */ }
 
-      void this._client?.submitUnhandledException(error as Error, "onunhandledrejection");
+      const error: Error = toError(reason, "Unhandled rejection")
+      void this._client?.submitUnhandledException(error, "onunhandledrejection");
     });
 
 

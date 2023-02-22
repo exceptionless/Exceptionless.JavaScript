@@ -65,4 +65,5 @@ export {
   startsWith,
   stringify,
   toBoolean,
+  toError,
 } from "./Utils.js";
