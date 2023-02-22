@@ -292,3 +292,19 @@ export function toBoolean(input: unknown, defaultValue: boolean = false): boolea
 
   return defaultValue;
 }
+
+export function toError(errorOrMessage: unknown, defaultMessage = "Unknown Error"): Error {
+  if (errorOrMessage === null || errorOrMessage === undefined) {
+    return new Error(defaultMessage);
+  }
+
+  if (errorOrMessage instanceof Error) {
+    return errorOrMessage;
+  }
+
+  if (typeof errorOrMessage === "string") {
+    return new Error(errorOrMessage);
+  }
+
+  return new Error(JSON.stringify(errorOrMessage) || defaultMessage);
+}

@@ -96,6 +96,29 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
   document
+    .querySelector("#throw-promise-unhandled-rejection")
+    .addEventListener("click", () => {
+      const promiseFn = () => new Promise(function (_, reject) {
+        switch (Math.floor(Math.random() * 4)) {
+          case 0:
+            reject(0);
+            break;
+          case 1:
+            reject(new Error("Promise rejected error"));
+            break;
+          case 2:
+            reject("Promise rejected string");
+            break;
+          case 3:
+            reject();
+            break;
+        }
+      });
+
+      promiseFn();
+    });
+
+  document
     .querySelector("#config-settings-log")
     .addEventListener("click", () => {
       Exceptionless.config.services.log.info(
