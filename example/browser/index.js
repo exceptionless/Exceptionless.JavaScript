@@ -1,4 +1,6 @@
 import { Exceptionless } from "../../node_modules/@exceptionless/browser/dist/index.bundle.js";
+import "/node_modules/jquery/dist/jquery.js";
+
 import { divide } from "./math.js";
 import { TextAreaLogger } from "./text-area-logger.js";
 
@@ -77,6 +79,20 @@ document.addEventListener("DOMContentLoaded", () => {
     .querySelector("#throw-ignored-error")
     .addEventListener("click", () => {
       throw new MediaError("An Ignored Exception Type");
+    });
+
+  document
+    .querySelector("#throw-jquery-ajax-error")
+    .addEventListener("click", () => {
+      $.ajax("http://notexistenturlthrowserror", {
+        type: "POST",
+        success: (data, textStatus, jqXHR) => {
+          console.log({ message: "jQuery.ajax.success", data, textStatus, jqXHR });
+        },
+        error: (jqXHR, textStatus, errorThrown) => {
+          console.log({ message: "jQuery.ajax.error", jqXHR, textStatus, errorThrown });
+        }
+      });
     });
 
   document
