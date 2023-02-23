@@ -18,7 +18,9 @@ export class NodeErrorPlugin implements IEventPlugin {
   public async run(context: EventPluginContext): Promise<void> {
     const exception = context.eventContext.getException();
     if (exception) {
-      context.event.type = "error";
+      if (!context.event.type) {
+        context.event.type = "error";
+      }
 
       if (context.event.data && !context.event.data[KnownEventDataKeys.Error]) {
         const result = await this.parse(exception);
