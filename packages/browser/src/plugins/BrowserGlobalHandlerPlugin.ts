@@ -46,7 +46,7 @@ export class BrowserGlobalHandlerPlugin implements IEventPlugin {
           void this._client?.submitNotFound(settings.url);
         } else if (xhr.status !== 401) {
           // TODO: Handle async
-          void this._client?.createUnhandledException(new Error(error), "JQuery.ajaxError")
+          void this._client?.createUnhandledException(toError(error) as Error, "JQuery.ajaxError")
             .setSource(settings.url)
             .setProperty("status", xhr.status)
             .setProperty("request", settings.data)

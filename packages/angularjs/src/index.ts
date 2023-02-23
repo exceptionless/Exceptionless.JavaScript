@@ -1,4 +1,8 @@
-import { BrowserExceptionlessClient, Exceptionless } from "@exceptionless/browser";
+import { toError } from "@exceptionless/core";
+import {
+  BrowserExceptionlessClient,
+  Exceptionless
+} from "@exceptionless/browser";
 
 declare let angular;
 angular.module("exceptionless", [])
@@ -65,7 +69,8 @@ angular.module("exceptionless", [])
     });
 
     $rootScope.$on("$routeChangeError", (_event, current, previous, rejection) => {
-      void $ExceptionlessClient.createUnhandledException(new Error(rejection as string), "$routeChangeError")
+      const error: Error = toError(rejection, "Route Change Error");
+      void $ExceptionlessClient.createUnhandledException(error, "$routeChangeError")
         .setProperty("current", current)
         .setProperty("previous", previous)
         .submit();
