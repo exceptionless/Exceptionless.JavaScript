@@ -54,6 +54,15 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
   document
+    .querySelector("#throw-browser-extension-error")
+    .addEventListener("click", () => {
+      const error = new Error("A Browser Extension Error");
+      error.stack = "at <anonymous>() in chrome-extension://bmagokdooijbeehmkpknfglimnifench/firebug-lite.js:line 9716:col 29"
+
+      throw error;
+    });
+
+  document
     .querySelector("#throw-custom-error")
     .addEventListener("click", () => {
       throw new CustomError("A Custom Error", 500);
