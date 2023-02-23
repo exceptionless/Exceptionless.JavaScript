@@ -32,6 +32,11 @@ export class ExceptionlessClient {
       await SettingsManager.applySavedServerSettings(this.config);
     }
 
+    if (!this.config.isValid) {
+      this.config.services.log.warn("Exceptionless is not configured and will not process events.");
+      return;
+    }
+
     this.updateSettingsTimer(!!configurationOrApiKey);
     await EventPluginManager.startup(new PluginContext(this));
 
@@ -63,8 +68,12 @@ export class ExceptionlessClient {
     await this.config.services.queue.process();
   }
 
-  private updateSettingsTimer(startingUp = false) {
+  private updateSettingsTimer(startingUp: boolean = false) {
     this.suspendSettingsTimer();
+
+    if (!this.config.isValid) {
+      return;
+    }
 
     const interval = this.config.updateSettingsWhenIdleInterval;
     if (interval > 0) {
@@ -73,9 +82,7 @@ export class ExceptionlessClient {
         initialDelay = this.config.settingsVersion > 0 ? 15000 : 5000;
       }
 
-      this.config.services.log.info(
-        `Update settings every ${interval}ms (${initialDelay || 0}ms delay)`,
-      );
+      this.config.services.log.info(`Update settings every ${interval}ms (${initialDelay || 0}ms delay)`);
       // TODO: Look into better async scheduling..
       const updateSettings = () =>
         void SettingsManager.updateSettings(this.config);
