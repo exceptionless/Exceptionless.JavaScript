@@ -46,6 +46,14 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   document
+    .querySelector("#submit-error-log-with-error")
+    .addEventListener("click", async () => {
+      const builder = Exceptionless.createLog("Button Click", "Error Log with Error");
+      builder.context.setException(new Error("test"));
+      await builder.submit();
+    });
+
+  document
     .querySelector("#throw-custom-error")
     .addEventListener("click", () => {
       throw new CustomError("A Custom Error", 500);
