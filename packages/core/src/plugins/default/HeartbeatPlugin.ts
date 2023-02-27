@@ -9,7 +9,7 @@ export class HeartbeatPlugin implements IEventPlugin {
   private _interval: number;
   private _intervalId: ReturnType<typeof setInterval> | undefined;
 
-  constructor(heartbeatInterval: number = 30000) {
+  constructor(heartbeatInterval: number = 60000) {
     this._interval = heartbeatInterval >= 30000 ? heartbeatInterval : 60000;
   }
 
@@ -34,11 +34,20 @@ export class HeartbeatPlugin implements IEventPlugin {
     clearInterval(this._intervalId);
     this._intervalId = undefined;
 
-    const user = context.event.data?.[KnownEventDataKeys.UserInfo];
-    if (user?.identity) {
+    const { config } = context.client;
+    if (!config.currentSessionIdentifier) {
+      const user = context.event.data?.[KnownEventDataKeys.UserInfo];
+      if (!user?.identity) {
+        return Promise.resolve();
+      }
+
+      config.currentSessionIdentifier = user.identity;
+    }
+
+    if (config.currentSessionIdentifier) {
       this._intervalId = setInterval(
-        () => void context.client.submitSessionHeartbeat(<string>user.identity),
-        this._interval,
+        () => void context.client.submitSessionHeartbeat(<string>config.currentSessionIdentifier),
+        this._interval
       );
     }
 

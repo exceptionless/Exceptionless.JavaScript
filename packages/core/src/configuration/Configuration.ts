@@ -5,6 +5,7 @@ import { ConsoleLog } from "../logging/ConsoleLog.js";
 import { NullLog } from "../logging/NullLog.js";
 import { UserInfo } from "../models/data/UserInfo.js";
 import { HeartbeatPlugin } from "../plugins/default/HeartbeatPlugin.js";
+import { SessionIdManagementPlugin } from "../plugins/default/SessionIdManagementPlugin.js";
 import { EventPluginContext } from "../plugins/EventPluginContext.js";
 import { EventPluginManager } from "../plugins/EventPluginManager.js";
 import { IEventPlugin } from "../plugins/IEventPlugin.js";
@@ -428,32 +429,24 @@ export class Configuration {
   }
 
   /**
-   * Set the default user identity for all events. If the heartbeat interval is
-   * greater than 0 (default: 30000ms), heartbeats will be sent after the first
-   * event submission.
+   * Set the default user identity for all events.
    */
-  public setUserIdentity(userInfo: UserInfo, heartbeatInterval?: number): void;
-  public setUserIdentity(identity: string, heartbeatInterval?: number): void;
-  public setUserIdentity(identity: string, name: string, heartbeatInterval?: number): void;
-  public setUserIdentity(userInfoOrIdentity: UserInfo | string, nameOrHeartbeatInterval?: string | number, heartbeatInterval: number = 30000): void {
-    const name: string | undefined = typeof nameOrHeartbeatInterval === "string" ? nameOrHeartbeatInterval : undefined;
+  public setUserIdentity(userInfo: UserInfo): void;
+  public setUserIdentity(identity: string): void;
+  public setUserIdentity(identity: string, name: string): void;
+  public setUserIdentity(userInfoOrIdentity: UserInfo | string, name?: string): void {
     const userInfo: UserInfo = typeof userInfoOrIdentity !== "string"
       ? userInfoOrIdentity
       : <UserInfo>{ identity: userInfoOrIdentity, name };
 
-    const interval: number = typeof nameOrHeartbeatInterval === "number" ? nameOrHeartbeatInterval : heartbeatInterval;
-    const plugin = new HeartbeatPlugin(interval);
-
     const shouldRemove: boolean = !userInfo || (!userInfo.identity && !userInfo.name);
     if (shouldRemove) {
-      this.removePlugin(plugin)
       delete this.defaultData[KnownEventDataKeys.UserInfo];
     } else {
-      this.addPlugin(plugin)
       this.defaultData[KnownEventDataKeys.UserInfo] = userInfo;
     }
 
-    this.services.log.info(`user identity: ${shouldRemove ? "null" : <string>userInfo.identity} (heartbeat interval: ${interval}ms)`);
+    this.services.log.info(`user identity: ${shouldRemove ? "null" : <string>userInfo.identity}`);
   }
 
   /**
@@ -477,7 +470,39 @@ export class Configuration {
    * This setting only works in environments that supports persisted storage.
    * There is also a performance penalty of extra IO/serialization.
    */
-  public usePersistedQueueStorage = false;
+  public usePersistedQueueStorage: boolean = false;
+
+  /**
+   * Gets or sets a value indicating whether to automatically send session start,
+   * session heartbeats and session end events.
+   */
+  public sessionsEnabled = false;
+
+  /**
+   * Internal property used to track the current session identifier.
+   */
+  public currentSessionIdentifier: string | null = null;
+
+  /**
+   *
+   * @param sendHeartbeats Controls whether heartbeat events are sent on an interval.
+   * @param heartbeatInterval The interval at which heartbeats are sent after the last sent event. The default is 1 minutes.
+   * @param useSessionIdManagement Allows you to manually control the session id. This is only recommended for single user desktop environments.
+   */
+  public useSessions(sendHeartbeats: boolean = true, heartbeatInterval: number = 60000, useSessionIdManagement: boolean = false) {
+    this.sessionsEnabled = true;
+
+    if (useSessionIdManagement) {
+      this.addPlugin(new SessionIdManagementPlugin());
+    }
+
+    const plugin = new HeartbeatPlugin(heartbeatInterval);
+    if (sendHeartbeats) {
+      this.addPlugin(plugin);
+    } else {
+      this.removePlugin(plugin);
+    }
+  }
 
   private originalSettings?: Record<string, string>;
 

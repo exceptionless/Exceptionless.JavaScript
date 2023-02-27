@@ -30,6 +30,7 @@ export { DuplicateCheckerPlugin } from "./plugins/default/DuplicateCheckerPlugin
 export { EventExclusionPlugin } from "./plugins/default/EventExclusionPlugin.js";
 export { HeartbeatPlugin } from "./plugins/default/HeartbeatPlugin.js";
 export { ReferenceIdPlugin } from "./plugins/default/ReferenceIdPlugin.js";
+export { SessionIdManagementPlugin } from "./plugins/default/SessionIdManagementPlugin.js";
 export { IgnoredErrorProperties, SimpleErrorPlugin } from "./plugins/default/SimpleErrorPlugin.js"
 export { SubmissionMethodPlugin } from "./plugins/default/SubmissionMethodPlugin.js";
 export { EventContext } from "./models/EventContext.js";

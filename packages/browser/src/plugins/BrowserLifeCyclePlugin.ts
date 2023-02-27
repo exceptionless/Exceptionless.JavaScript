@@ -17,12 +17,19 @@ export class BrowserLifeCyclePlugin implements IEventPlugin {
 
     this._client = context.client;
 
-    globalThis.addEventListener("beforeunload", () => void this._client?.suspend());
+    globalThis.addEventListener("beforeunload", () => {
+      if (this._client?.config.sessionsEnabled) {
+        void this._client?.submitSessionEnd();
+      }
+
+      void this._client?.suspend();
+    });
+
     document.addEventListener("visibilitychange", () => {
       if (document.visibilityState === 'visible') {
-        void this._client?.startup()
+        void this._client?.startup();
       } else {
-        void this._client?.suspend()
+        void this._client?.suspend();
       }
     });
 
