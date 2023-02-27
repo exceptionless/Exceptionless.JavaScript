@@ -1,5 +1,5 @@
 import { ExceptionlessClient } from "./ExceptionlessClient.js";
-import { Event, KnownEventDataKeys } from "./models/Event.js";
+import { Event, EventType, KnownEventDataKeys } from "./models/Event.js";
 import { ManualStackingInfo } from "./models/data/ManualStackingInfo.js";
 import { UserInfo } from "./models/data/UserInfo.js";
 import { EventContext } from "./models/EventContext.js";
@@ -19,7 +19,7 @@ export class EventBuilder {
     this.context = context || new EventContext();
   }
 
-  public setType(type: string): EventBuilder {
+  public setType(type: EventType): EventBuilder {
     if (type) {
       this.target.type = type;
     }

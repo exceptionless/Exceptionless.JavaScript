@@ -5,9 +5,11 @@ import { UserInfo } from "./data/UserInfo.js";
 import { UserDescription } from "./data/UserDescription.js";
 import { ManualStackingInfo } from "./data/ManualStackingInfo.js";
 
+export type EventType = "error" | "usage" | "log" | "404" | "session" | string;
+
 export interface Event {
   /** The event type (ie. error, log message, feature usage). */
-  type?: string;
+  type?: EventType;
   /** The event source (ie. machine name, log name, feature name). */
   source?: string;
   /** The date that the event occurred on. */

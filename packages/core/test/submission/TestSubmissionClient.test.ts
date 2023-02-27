@@ -20,7 +20,7 @@ describe("TestSubmissionClient", () => {
     const apiFetchMock = jest.fn<(url: string, options: FetchOptions) => Promise<Response<undefined>>>()
       .mockReturnValueOnce(Promise.resolve(new Response(202, "", NaN, NaN, undefined)));
 
-    const events = [{ type: "log", message: "From js client", reference_id: "123454321" }];
+    const events: Event[] = [{ type: "log", message: "From js client", reference_id: "123454321" }];
     const client = new TestSubmissionClient(config, apiFetchMock);
     await client.submitEvents(events);
     expect(apiFetchMock).toHaveBeenCalledTimes(1);

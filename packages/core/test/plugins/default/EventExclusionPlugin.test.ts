@@ -2,7 +2,7 @@ import { describe, test } from "@jest/globals";
 import { expect } from "expect";
 
 import { ExceptionlessClient } from "../../../src/ExceptionlessClient.js";
-import { Event, KnownEventDataKeys } from "../../../src/models/Event.js";
+import { Event, EventType, KnownEventDataKeys } from "../../../src/models/Event.js";
 import { InnerErrorInfo } from "../../../src/models/data/ErrorInfo.js";
 import { EventExclusionPlugin } from "../../../src/plugins/default/EventExclusionPlugin.js";
 import { EventPluginContext } from "../../../src/plugins/EventPluginContext.js";
@@ -142,7 +142,7 @@ describe("EventExclusionPlugin", () => {
   });
 
   describe("should exclude source type", () => {
-    const run = async (type: string | null | undefined, source: string | undefined, settingKey: string | null | undefined, settingValue: string | null | undefined): Promise<boolean> => {
+    const run = async (type: EventType | null | undefined, source: string | undefined, settingKey: string | null | undefined, settingValue: string | null | undefined): Promise<boolean> => {
       const client = new ExceptionlessClient();
 
       if (typeof settingKey === "string") {
