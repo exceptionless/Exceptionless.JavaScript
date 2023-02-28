@@ -1,4 +1,5 @@
 import { Exceptionless } from "@exceptionless/browser";
+import { toError } from "@exceptionless/core";
 
 Exceptionless.startup(c => {
   c.apiKey = "LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw";
@@ -11,5 +12,5 @@ Exceptionless.startup(c => {
 /** @type {import('@sveltejs/kit').HandleClientError} */
 export async function handleError({ error, event }) {
   console.log('client error handler');
-  await Exceptionless.submitException(error);
+  await Exceptionless.submitException(toError(error));
 }

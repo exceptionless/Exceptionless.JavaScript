@@ -1,3 +1,4 @@
+import { toError } from "@exceptionless/core";
 import { Exceptionless } from "@exceptionless/node";
 
 Exceptionless.startup(c => {
@@ -11,5 +12,5 @@ Exceptionless.startup(c => {
 /** @type {import('@sveltejs/kit').HandleServerError} */
 export async function handleError({ error, event }) {
   console.log('server error handler');
-  await Exceptionless.submitException(error);
+  await Exceptionless.submitException(toError(error));
 }
