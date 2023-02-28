@@ -1,13 +1,11 @@
 import {
   Configuration,
-  DefaultSubmissionClient,
   ExceptionlessClient,
   LocalStorage,
   SimpleErrorPlugin
 } from "@exceptionless/core";
 
 import { LocalStorage as LocalStoragePolyfill } from "node-localstorage";
-import fetch from "node-fetch";
 
 import { NodeErrorPlugin } from "./plugins/NodeErrorPlugin.js";
 import { NodeEnvironmentInfoPlugin } from "./plugins/NodeEnvironmentInfoPlugin.js";
@@ -21,15 +19,9 @@ export class NodeExceptionlessClient extends ExceptionlessClient {
     const config = this.config;
 
     if (configurationOrApiKey && !this._initialized) {
-      if (!globalThis?.localStorage) {
-        const storage = new LocalStorage(undefined, new LocalStoragePolyfill(process.cwd() + '/.exceptionless'));
-        config.useLocalStorage = () => storage;
-        config.services.storage = storage;
-      }
-
-      if (!globalThis?.fetch) {
-        config.services.submissionClient = new DefaultSubmissionClient(config, fetch as (input: RequestInfo | URL, init?: RequestInit | undefined) => Promise<Response>);
-      }
+      const storage = new LocalStorage(undefined, new LocalStoragePolyfill(process.cwd() + '/.exceptionless'));
+      config.useLocalStorage = () => storage;
+      config.services.storage = storage;
 
       config.addPlugin(new NodeEnvironmentInfoPlugin());
       config.addPlugin(new NodeGlobalHandlerPlugin());
