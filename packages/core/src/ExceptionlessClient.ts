@@ -46,6 +46,10 @@ export class ExceptionlessClient {
       // TODO: Can we schedule this as part of startup?
       await queue.process();
     }
+
+    if (this.config.sessionsEnabled) {
+      await this.submitSessionStart();
+    }
   }
 
   /** Submit events, pause any timers and go into low power mode. */
@@ -175,27 +179,21 @@ export class ExceptionlessClient {
     return this.createSessionStart().submit();
   }
 
-  public async submitSessionEnd(sessionIdOrUserId: string): Promise<void> {
-    if (sessionIdOrUserId && this.config.enabled && this.config.isValid) {
-      this.config.services.log.info(
-        `Submitting session end: ${sessionIdOrUserId}`,
-      );
-      await this.config.services.submissionClient.submitHeartbeat(
-        sessionIdOrUserId,
-        true,
-      );
+  public async submitSessionEnd(sessionIdOrUserId?: string): Promise<void> {
+    const { currentSessionIdentifier, enabled, isValid, services } = this.config;
+    const sessionId = sessionIdOrUserId || currentSessionIdentifier;
+    if (sessionId && enabled && isValid) {
+      services.log.info(`Submitting session end: ${sessionId}`);
+      await services.submissionClient.submitHeartbeat(sessionId, true);
     }
   }
 
-  public async submitSessionHeartbeat(sessionIdOrUserId: string): Promise<void> {
-    if (sessionIdOrUserId && this.config.enabled && this.config.isValid) {
-      this.config.services.log.info(
-        `Submitting session heartbeat: ${sessionIdOrUserId}`,
-      );
-      await this.config.services.submissionClient.submitHeartbeat(
-        sessionIdOrUserId,
-        false,
-      );
+  public async submitSessionHeartbeat(sessionIdOrUserId?: string): Promise<void> {
+    const { currentSessionIdentifier, enabled, isValid, services } = this.config;
+    const sessionId = sessionIdOrUserId || currentSessionIdentifier;
+    if (sessionId && enabled && isValid) {
+      services.log.info(`Submitting session heartbeat: ${sessionId}`);
+      await services.submissionClient.submitHeartbeat(sessionId, false);
     }
   }
 

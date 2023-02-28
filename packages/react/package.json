@@ -33,7 +33,7 @@
     "./package.json": "./package.json"
   },
   "scripts": {
-    "build": "tsc -p tsconfig.json && esbuild src/index.ts --bundle --sourcemap --target=es2017 --format=esm --outfile=dist/index.bundle.js && esbuild src/index.ts --bundle --minify --sourcemap --target=es2019 --format=esm --outfile=dist/index.bundle.min.js",
+    "build": "tsc -p tsconfig.json && esbuild src/index.ts --bundle --sourcemap --target=es2017 --format=esm --outfile=dist/index.bundle.js && esbuild src/index.ts --bundle --minify --sourcemap --target=es2017 --format=esm --outfile=dist/index.bundle.min.js",
     "watch": "tsc -p ../core/tsconfig.json -w --preserveWatchOutput & tsc -p tsconfig.json -w --preserveWatchOutput & esbuild src/index.ts --bundle --sourcemap --target=es2017 --format=esm --watch --outfile=dist/index.bundle.js"
   },
   "sideEffects": false,

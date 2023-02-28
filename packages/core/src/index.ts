@@ -8,7 +8,7 @@ export type { ILog } from "./logging/ILog.js";
 export { ConsoleLog } from "./logging/ConsoleLog.js";
 export { NullLog } from "./logging/NullLog.js";
 
-export type { Event, IEventData } from "./models/Event.js";
+export type { Event, EventType, IEventData } from "./models/Event.js";
 export { KnownEventDataKeys } from "./models/Event.js";
 export type { EnvironmentInfo } from "./models/data/EnvironmentInfo.js";
 export type { ManualStackingInfo } from "./models/data/ManualStackingInfo.js";
@@ -30,6 +30,7 @@ export { DuplicateCheckerPlugin } from "./plugins/default/DuplicateCheckerPlugin
 export { EventExclusionPlugin } from "./plugins/default/EventExclusionPlugin.js";
 export { HeartbeatPlugin } from "./plugins/default/HeartbeatPlugin.js";
 export { ReferenceIdPlugin } from "./plugins/default/ReferenceIdPlugin.js";
+export { SessionIdManagementPlugin } from "./plugins/default/SessionIdManagementPlugin.js";
 export { IgnoredErrorProperties, SimpleErrorPlugin } from "./plugins/default/SimpleErrorPlugin.js"
 export { SubmissionMethodPlugin } from "./plugins/default/SubmissionMethodPlugin.js";
 export { EventContext } from "./models/EventContext.js";

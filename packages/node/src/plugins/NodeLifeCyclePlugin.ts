@@ -23,6 +23,10 @@ export class NodeLifeCyclePlugin implements IEventPlugin {
         void this._client?.submitLog("beforeExit", message, "Error");
       }
 
+      if (this._client?.config.sessionsEnabled) {
+        void this._client?.submitSessionEnd();
+      }
+
       void this._client?.suspend();
       // Application will now exit.
     });
