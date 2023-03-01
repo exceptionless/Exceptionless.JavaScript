@@ -71,7 +71,7 @@ describe("Utils", () => {
       expect(stringify([{ one: aFoo, two: aFoo }])).toBe("[{\"one\":{\"a\":\"foo\"}}]");
     });
 
-    test.skip("deep circular reference", () => {
+    test("deep circular object reference", () => {
       const a: { b?: unknown } = {};
       const b: { c?: unknown } = {};
       const c: { a?: unknown, d: string } = { d: "test" };
@@ -86,6 +86,69 @@ describe("Utils", () => {
       expect(actual).toBe(expected);
     });
 
+    test("deep circular array reference", () => {
+      type Circular = { circularRef?: Circular, list?: Circular[] };
+      const circular: Circular = {};
+      circular.circularRef = circular;
+      circular.list = [circular, circular];
+
+      const expected = "{\"circularRef\":\"[Circular]\",\"list\":[\"[Circular]\",\"[Circular]\"]}";
+
+      const actual = stringify(circular);
+      expect(actual).toBe(expected);
+    });
+
+    test("should serialize all data types", () => {
+      const value = {
+        "undefined": undefined,
+        "null": null,
+        "string": "string",
+        "number": 1,
+        "boolean": true,
+        "array": [1, 2, 3],
+        "object": { "a": 1, "b": 2, "c": 3 },
+        "date": new Date(),
+        "regex": /regex/,
+        "function": () => { return undefined; },
+        "error": new Error("error"),
+        "symbol": Symbol("symbol"),
+        "bigint": BigInt(1),
+        "map": new Map([["a", 1], ["b", 2], ["c", 3]]),
+        "weakMap": new WeakMap([[{}, 1], [{}, 2], [{}, 3]]),
+        "set": new Set([1, 2, 3]),
+        "arrayBuffer": new ArrayBuffer(1),
+        "dataView": new DataView(new ArrayBuffer(1)),
+        "int8Array": new Int8Array(1),
+        "uint8Array": new Uint8Array(1),
+        "uint8ClampedArray": new Uint8ClampedArray(1),
+        "int16Array": new Int16Array(1),
+        "uint16Array": new Uint16Array(1),
+        "int32Array": new Int32Array(1),
+        "uint32Array": new Uint32Array(1),
+        "float32Array": new Float32Array(1),
+        "float64Array": new Float64Array(1),
+        "bigint64Array": new BigInt64Array(1),
+        "bigUint64Array": new BigUint64Array(1),
+        "promise": Promise.resolve(1),
+        "generator": (function* () { yield 1; })(),
+      };
+
+      expect(stringify(value)).toBe(JSON.stringify(value));
+    });
+
+    test("should handle toJSON", () => {
+      const value = {
+        number: 1,
+        toJSON() {
+          return {
+            test: "test"
+          };
+        }
+      };
+
+      expect(stringify(value)).toBe(JSON.stringify(value));
+    });
+
     describe("should behave like JSON.stringify", () => {
       [new Date(), 1, true, null, undefined, () => { return undefined; }, user].forEach((value) => {
         test("for " + typeof (value), () => {
@@ -94,21 +157,30 @@ describe("Utils", () => {
       });
     });
 
-    /*
-    test.skip("should respect maxDepth", () => {
-      const deepObject = {
-        a: {
-          b: {
-            c: {
-              d: {}
+    test("should respect maxDepth", () => {
+      const value = {
+        ao: {
+          bo: {
+            cn: 1,
+            co: {
+              do: {}
             }
-          }
+          },
+          ba: [
+            {
+              cn: 1,
+              co: {
+                do: {}
+              }
+            }
+          ],
+          bn: 1
         }
       };
 
-      expect(deepObject).toBe("TODO");
+      expect(stringify(value, undefined, 1)).toBe(JSON.stringify({ ao: { bn: 1 } }));
+      expect(stringify(value, undefined, 2)).toBe(JSON.stringify({ ao: { bo: { cn: 1 }, bn: 1 } }));
     });
-    */
 
     test("should serialize inherited properties", () => {
       // @ts-expect-error TS2683
