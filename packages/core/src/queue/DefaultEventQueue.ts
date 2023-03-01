@@ -257,8 +257,9 @@ export class DefaultEventQueue implements IEventQueue {
 
   private async loadEvents(): Promise<void> {
     if (this.config.usePersistedQueueStorage) {
+      const { log, storage } = this.config.services;
+
       try {
-        const storage = this.config.services.storage;
         const files: string[] = await storage.keys();
 
         for (const file of files) {
@@ -269,7 +270,7 @@ export class DefaultEventQueue implements IEventQueue {
           }
         }
       } catch (ex) {
-        this.config.services.log.error(`Error loading queue items from storage: ${ex instanceof Error ? ex.message : ex + ''}`)
+        log.error(`Error loading queue items from storage: ${ex instanceof Error ? ex.message : ex + ''}`)
       }
     }
   }
@@ -278,13 +279,17 @@ export class DefaultEventQueue implements IEventQueue {
     this._lastFileTimestamp = Math.max(Date.now(), this._lastFileTimestamp + 1);
     const file = `${this.QUEUE_PREFIX}${this._lastFileTimestamp}.json`;
 
-    const { storage, log } = this.config.services;
+    const { log, storage } = this.config.services;
     const useStorage: boolean = this.config.usePersistedQueueStorage;
     if (this._queue.push({ file, event }) > this.maxItems) {
       log.trace("Removing oldest queue entry: maxItems exceeded");
       const item = this._queue.shift();
       if (useStorage && item) {
-        await storage.removeItem(item.file);
+        try {
+          await storage.removeItem(item.file);
+        } catch (ex) {
+          log.error(`Error removing oldest queue entry from storage: ${ex instanceof Error ? ex.message : ex + ''}`)
+        }
       }
     }
 
@@ -292,7 +297,7 @@ export class DefaultEventQueue implements IEventQueue {
       try {
         await storage.setItem(file, JSON.stringify(event));
       } catch (ex) {
-        log.error(`Error saving queue item to storage: ${ex instanceof Error ? ex.message : ex + ''}`)
+        log.error(`Error saving queue entry to storage: ${ex instanceof Error ? ex.message : ex + ''}`)
       }
     }
 
@@ -302,11 +307,13 @@ export class DefaultEventQueue implements IEventQueue {
   private async removeEvents(items: EventQueueItem[]): Promise<void> {
     const files = items.map(i => i.file);
     if (this.config.usePersistedQueueStorage) {
+      const { log, storage } = this.config.services;
+
       for (const file of files) {
         try {
-          await this.config.services.storage.removeItem(file);
+          await storage.removeItem(file);
         } catch (ex) {
-          this.config.services.log.error(`Error removing queue item from storage: ${ex instanceof Error ? ex.message : ex + ''}`)
+          log.error(`Error removing queue item from storage: ${ex instanceof Error ? ex.message : ex + ''}`)
         }
       }
     }
