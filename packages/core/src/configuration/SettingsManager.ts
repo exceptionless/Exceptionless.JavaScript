@@ -28,9 +28,9 @@ export class SettingsManager {
     }
 
     this._isUpdatingSettings = true;
-    const { log } = config.services;
-    try {
+    const { log, storage, submissionClient } = config.services;
 
+    try {
       const unableToUpdateMessage = "Unable to update settings";
       if (!config.isValid) {
         log.error(`${unableToUpdateMessage}: ApiKey is not set`);
@@ -39,7 +39,7 @@ export class SettingsManager {
 
       const version = config.settingsVersion;
       log.trace(`Checking for updated settings from: v${version}`);
-      const response = await config.services.submissionClient.getSettings(version);
+      const response = await submissionClient.getSettings(version);
 
       if (response.status === 304) {
         log.trace("Settings are up-to-date");
@@ -53,7 +53,7 @@ export class SettingsManager {
 
       config.applyServerSettings(response.data);
 
-      await config.services.storage.setItem(SettingsManager.SettingsKey, JSON.stringify(response.data));
+      await storage.setItem(SettingsManager.SettingsKey, JSON.stringify(response.data));
       log.trace(`Updated settings: v${response.data.version}`);
     } catch (ex) {
       log.error(`Error updating settings: ${ex instanceof Error ? ex.message : ex + ''}`);
@@ -63,10 +63,12 @@ export class SettingsManager {
   }
 
   private static async getSavedServerSettings(config: Configuration): Promise<ServerSettings> {
+    const { log, storage } = config.services;
     try {
-      const settings = await config.services.storage.getItem(SettingsManager.SettingsKey);
+      const settings = await storage.getItem(SettingsManager.SettingsKey);
       return settings && JSON.parse(settings) as ServerSettings || new ServerSettings({}, 0);
-    } catch {
+    } catch (ex) {
+      log.error(`Error getting saved settings: ${ex instanceof Error ? ex.message : ex + ''}`);
       return new ServerSettings({}, 0);
     }
   }
