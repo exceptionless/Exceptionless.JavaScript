@@ -51,6 +51,7 @@ import { Exceptionless } from "@exceptionless/browser";
 await Exceptionless.startup(c => {
   c.apiKey = "API_KEY_HERE";
   c.setUserIdentity("12345678", "Blake");
+  c.useSessions();
 
   // set some default data
   c.defaultData["mydata"] = {

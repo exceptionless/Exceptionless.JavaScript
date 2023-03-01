@@ -5,7 +5,7 @@ JavaScript environments.
 
 ## Getting Started
 
-To use this package, your must be using ES6 and Node 15+.
+To use this package, your must be using ES6 and Node 18+.
 
 ## Installation
 
@@ -22,14 +22,13 @@ import { Exceptionless } from "@exceptionless/node";
 
 await Exceptionless.startup(c => {
   c.apiKey = "API_KEY_HERE";
-  c.setUserIdentity("12345678", "Blake");
 
   // set some default data
   c.defaultData["mydata"] = {
     myGreeting: "Hello World"
   };
 
-c.defaultTags.push("Example", "JavaScript", "Node");
+  c.defaultTags.push("Example", "JavaScript", "Node");
 });
 ```
 
@@ -42,6 +41,15 @@ await Exceptionless.submitLog("Hello world!");
 
 Please see the [docs](https://exceptionless.com/docs/clients/javascript/) for
 more information on configuring the client.
+
+### Source Maps
+
+For improved stack traces launch your Node app with the
+[`--enable-source-maps` command line option](https://nodejs.org/docs/latest-v18.x/api/cli.html#--enable-source-maps).
+
+```sh
+node app.js --enable-source-maps
+```
 
 ## Support
 
