@@ -1,6 +1,6 @@
 import { InnerErrorInfo } from "../../models/data/ErrorInfo.js";
 import { KnownEventDataKeys } from "../../models/Event.js";
-import { getHashCode } from "../../Utils.js";
+import { allowProcessToExitWithoutWaitingForTimerOrInterval, getHashCode } from "../../Utils.js";
 import { EventPluginContext } from "../EventPluginContext.js";
 import { IEventPlugin } from "../IEventPlugin.js";
 
@@ -25,6 +25,7 @@ export class DuplicateCheckerPlugin implements IEventPlugin {
   public startup(): Promise<void> {
     clearInterval(this._intervalId);
     this._intervalId = setInterval(() => void this.submitEvents(), this._interval);
+    allowProcessToExitWithoutWaitingForTimerOrInterval(this._intervalId);
     return Promise.resolve();
   }
 

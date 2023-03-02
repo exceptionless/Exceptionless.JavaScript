@@ -17,7 +17,16 @@ export class NodeLifeCyclePlugin implements IEventPlugin {
 
     this._client = context.client;
 
+    let processingBeforeExit: boolean = false;
     process.on("beforeExit", (code: number) => {
+      // NOTE: We need to check if we are already processing a beforeExit event
+      // as async work will cause the runtime to call this handler again.
+      if (processingBeforeExit) {
+        return;
+      }
+
+      processingBeforeExit = true;
+
       const message = this.getExitCodeReason(code);
       if (message) {
         void this._client?.submitLog("beforeExit", message, "Error");

@@ -3,6 +3,7 @@ import { ILog } from "../logging/ILog.js";
 import { Event } from "../models/Event.js";
 import { IEventQueue } from "../queue/IEventQueue.js";
 import { Response } from "../submission/Response.js";
+import { allowProcessToExitWithoutWaitingForTimerOrInterval } from "../Utils.js";
 
 interface EventQueueItem {
   file: string,
@@ -133,6 +134,7 @@ export class DefaultEventQueue implements IEventQueue {
     if (!this._queueIntervalId) {
       // TODO: Fix awaiting promise.
       this._queueIntervalId = setInterval(() => void this.onProcessQueue(), 10000);
+      allowProcessToExitWithoutWaitingForTimerOrInterval(this._queueIntervalId);
     }
 
     return Promise.resolve();
