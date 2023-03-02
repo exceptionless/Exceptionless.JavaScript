@@ -7,6 +7,7 @@ import { EventContext } from "./models/EventContext.js";
 import { EventPluginContext } from "./plugins/EventPluginContext.js";
 import { EventPluginManager } from "./plugins/EventPluginManager.js";
 import { PluginContext } from "./plugins/PluginContext.js";
+import { allowProcessToExitWithoutWaitingForTimerOrInterval } from "./Utils.js";
 
 export class ExceptionlessClient {
   private _intervalId: ReturnType<typeof setInterval> | undefined;
@@ -92,9 +93,11 @@ export class ExceptionlessClient {
         void SettingsManager.updateSettings(this.config);
       if (initialDelay < interval) {
         this._timeoutId = setTimeout(updateSettings, initialDelay);
+        allowProcessToExitWithoutWaitingForTimerOrInterval(this._timeoutId);
       }
 
       this._intervalId = setInterval(updateSettings, interval);
+      allowProcessToExitWithoutWaitingForTimerOrInterval(this._intervalId);
     }
   }
 

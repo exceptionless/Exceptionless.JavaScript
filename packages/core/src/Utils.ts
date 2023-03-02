@@ -308,3 +308,13 @@ export function toError(errorOrMessage: unknown, defaultMessage = "Unknown Error
 
   return new Error(JSON.stringify(errorOrMessage) || defaultMessage);
 }
+
+
+/**
+ * Unrefs a timeout or interval. When called, the active Timeout object will not require the Node.js event loop to remain active
+ */
+export function allowProcessToExitWithoutWaitingForTimerOrInterval(timeoutOrIntervalId: ReturnType<typeof setTimeout> | ReturnType<typeof setInterval> | undefined): void {
+  if (typeof timeoutOrIntervalId === "object" && "unref" in timeoutOrIntervalId) {
+    (timeoutOrIntervalId as { unref: () => ReturnType<typeof setTimeout> | ReturnType<typeof setInterval> }).unref();
+  }
+}

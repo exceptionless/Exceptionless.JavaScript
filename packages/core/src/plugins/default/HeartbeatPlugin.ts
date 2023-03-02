@@ -1,4 +1,5 @@
 import { KnownEventDataKeys } from "../../models/Event.js";
+import { allowProcessToExitWithoutWaitingForTimerOrInterval } from "../../Utils.js";
 import { EventPluginContext } from "../EventPluginContext.js";
 import { IEventPlugin } from "../IEventPlugin.js";
 
@@ -49,6 +50,8 @@ export class HeartbeatPlugin implements IEventPlugin {
         () => void context.client.submitSessionHeartbeat(<string>config.currentSessionIdentifier),
         this._interval
       );
+
+      allowProcessToExitWithoutWaitingForTimerOrInterval(this._intervalId);
     }
 
     return Promise.resolve();
