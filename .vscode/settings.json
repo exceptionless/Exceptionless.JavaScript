@@ -39,5 +39,6 @@
     "javascript",
     "typescript"
   ],
-  "deno.enable": false
+  "deno.enable": false,
+  "jest.jestCommandLine": "npm test --"
 }
