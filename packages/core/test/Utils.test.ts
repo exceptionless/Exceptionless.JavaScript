@@ -67,8 +67,8 @@ describe("Utils", () => {
       const aFoo: { a: string, b?: unknown } = { a: "foo" };
       aFoo.b = aFoo;
 
-      expect(stringify(aFoo)).toBe("{\"a\":\"foo\"}");
-      expect(stringify([{ one: aFoo, two: aFoo }])).toBe("[{\"one\":{\"a\":\"foo\"}}]");
+      expect(stringify(aFoo)).toBe("{\"a\":\"foo\",\"b\":\"{Circular Reference}\"}");
+      expect(stringify([{ one: aFoo, two: aFoo }])).toBe("[{\"one\":{\"a\":\"foo\",\"b\":\"{Circular Reference}\"},\"two\":{\"a\":\"foo\",\"b\":\"{Circular Reference}\"}]");
     });
 
     test("deep circular object reference", () => {
@@ -80,10 +80,8 @@ describe("Utils", () => {
       b.c = c;
       c.a = a;
 
-      const expected = "{\"b\":{\"c\":{\"d\":\"test\"}}}";
-
       const actual = stringify(a);
-      expect(actual).toBe(expected);
+      expect(actual).toBe("{\"b\":{\"c\":{\"d\":\"test\",\"a\":\"{Circular Reference}\"}}}");
     });
 
     test("deep circular array reference", () => {
@@ -92,13 +90,13 @@ describe("Utils", () => {
       circular.circularRef = circular;
       circular.list = [circular, circular];
 
-      const expected = "{\"circularRef\":\"[Circular]\",\"list\":[\"[Circular]\",\"[Circular]\"]}";
+      const expected = "{\"circularRef\":\"{Circular Reference}\",\"list\":[\"{Circular Reference}\",\"{Circular Reference}\"]}";
 
       const actual = stringify(circular);
       expect(actual).toBe(expected);
     });
 
-    test("should serialize all data types", () => {
+    describe("should serialize all data types", () => {
       const value = {
         "undefined": undefined,
         "null": null,
@@ -108,11 +106,8 @@ describe("Utils", () => {
         "array": [1, 2, 3],
         "object": { "a": 1, "b": 2, "c": 3 },
         "date": new Date(),
-        "regex": /regex/,
         "function": () => { return undefined; },
         "error": new Error("error"),
-        "symbol": Symbol("symbol"),
-        "bigint": BigInt(1),
         "map": new Map([["a", 1], ["b", 2], ["c", 3]]),
         "weakMap": new WeakMap([[{}, 1], [{}, 2], [{}, 3]]),
         "set": new Set([1, 2, 3]),
@@ -127,13 +122,36 @@ describe("Utils", () => {
         "uint32Array": new Uint32Array(1),
         "float32Array": new Float32Array(1),
         "float64Array": new Float64Array(1),
-        "bigint64Array": new BigInt64Array(1),
-        "bigUint64Array": new BigUint64Array(1),
         "promise": Promise.resolve(1),
         "generator": (function* () { yield 1; })(),
       };
 
-      expect(stringify(value)).toBe(JSON.stringify(value));
+      Object.entries(value).forEach(([key, value]) => {
+        test(`for ${key}`, () => {
+          const stringifyValue = stringify(value);
+          const jsonStringifyValue = JSON.stringify(value);
+
+          expect(stringifyValue).toBe(jsonStringifyValue);
+        });
+      });
+
+      test(`for bigint`, () => {
+        expect(1).toBe(stringify(BigInt(1)));
+        expect(1).toBe(stringify(new BigInt64Array(1)));
+        expect(1).toBe(stringify(new BigInt64Array(1)));
+      });
+
+      test(`for buffer`, () => {
+        expect("{\"type\":\"Buffer\",\"data\":[98,117,102,102,101,114]}").toBe(stringify(Buffer.from("buffer")));
+      });
+
+      test(`for regex`, () => {
+        expect("\"symbol\"").toBe(stringify(Symbol("symbol")));
+      });
+
+      test(`for symbol`, () => {
+        expect("\"/regex/\"").toBe(stringify(/regex/));
+      });
     });
 
     test("should handle toJSON", () => {
@@ -147,14 +165,6 @@ describe("Utils", () => {
       };
 
       expect(stringify(value)).toBe(JSON.stringify(value));
-    });
-
-    describe("should behave like JSON.stringify", () => {
-      [new Date(), 1, true, null, undefined, () => { return undefined; }, user].forEach((value) => {
-        test("for " + typeof (value), () => {
-          expect(stringify(value)).toBe(JSON.stringify(value));
-        });
-      });
     });
 
     test("should respect maxDepth", () => {
@@ -178,8 +188,11 @@ describe("Utils", () => {
         }
       };
 
-      expect(stringify(value, undefined, 1)).toBe(JSON.stringify({ ao: { bn: 1 } }));
-      expect(stringify(value, undefined, 2)).toBe(JSON.stringify({ ao: { bo: { cn: 1 }, bn: 1 } }));
+      expect(stringify(value, undefined, 1)).toBe("{\"ao\":{}}");
+      expect(stringify(value, undefined, 2)).toBe("{\"ao\":{\"bo\":{},\"ba\":[],\"bn\":1}}");
+      expect(stringify(value, undefined, 3)).toBe("{\"ao\":{\"bo\":{\"cn\":1,\"co\":{}},\"ba\":[{}],\"bn\":1}}");
+      expect(stringify(value, undefined, 4)).toBe("{\"ao\":{\"bo\":{\"cn\":1,\"co\":{\"do\":{}}},\"ba\":[{\"cn\":1,\"co\":{}}],\"bn\":1}}");
+      expect(stringify(value, undefined, 5)).toBe("{\"ao\":{\"bo\":{\"cn\":1,\"co\":{\"do\":{}}},\"ba\":[{\"cn\":1,\"co\":{\"do\":{}}}],\"bn\":1}}");
     });
 
     test("should serialize inherited properties", () => {
@@ -197,7 +210,7 @@ describe("Utils", () => {
         b: "b"
       };
 
-      const result = JSON.parse(stringify(bar)) as unknown;
+      const result = JSON.parse(stringify(bar) as string) as unknown;
       expect(result).toEqual(expected);
     });
 
