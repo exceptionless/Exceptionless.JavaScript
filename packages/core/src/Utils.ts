@@ -169,103 +169,173 @@ export function endsWith(input: string, suffix: string): boolean {
   return input.indexOf(suffix, input.length - suffix.length) !== -1;
 }
 
-// @ts-expect-error TS6133
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-export function stringify(data: unknown, exclusions?: string[], maxDepth?: number): string {
+export function prune(value: unknown, depth: number = 10): unknown {
+  function pruneImpl(value: unknown, maxDepth: number, currentDepth: number = 10, seen: WeakSet<object> = new WeakSet()): unknown {
+    if (Array.isArray(value)) {
+      return currentDepth < maxDepth
+        ? value.map(e => pruneImpl(e, maxDepth, currentDepth + 1, seen))
+        : [];
+    }
+
+    if (value instanceof Map) {
+      // NOTE: We don't prune the keys here, but we could.
+      return currentDepth < maxDepth
+        ? Array.from(value.entries()).reduce((map, kvp) => map.set(kvp[0], pruneImpl(kvp[1], maxDepth, currentDepth + 1, seen)), new Map())
+        : new Map();
+    }
+
+    if (value instanceof Set) {
+      return currentDepth < maxDepth
+        ? new Set(Array.from(value).map(e => pruneImpl(e, maxDepth, currentDepth + 1, seen)))
+        : new Set();
+    }
+
+    if (value instanceof WeakMap || value instanceof WeakSet) {
+      // WeakMap and WeakSet can't be enumerated or cloned.
+      return value;
+    }
+
+    if (value && typeof value === "object") {
+      // Check for circular references
+      if (seen.has(value)) {
+        return "{Circular Reference}";
+      }
+
+      seen.add(value);
+
+      return currentDepth < maxDepth
+        ? Object.entries(value).reduce((obj, kvp) => ({ ...obj, [kvp[0]]: pruneImpl(kvp[1], maxDepth, currentDepth + 1, seen) }), {})
+        : {};
+
+      /*
+      if (typeof obj === "object") {
+        const result: Record<string, unknown> = {};
+        for (const key in obj) {
+          if (Object.prototype.hasOwnProperty.call(obj, key)) {
+            const value = (obj as { [index: string]: unknown })[key];
+            if (value !== undefined) {
+              result[key] = pruneImpl(value, depth + 1);
+            }
+          }
+        }
+
+        return result;
+      }
+      */
+    }
+
+    return value;
+  }
+
+  // NOTE: structuredClone is not supported in workers
+  const clonedValue = typeof structuredClone !== "undefined" ? structuredClone(value) : value;
+  return pruneImpl(clonedValue, depth, 0);
+}
+
+export function stringify(data: unknown, exclusions?: string[], maxDepth: number = 10): string | undefined {
   function stringifyImpl(obj: unknown, excludedKeys: string[]): string {
-    const cache: unknown[] = [];
     return JSON.stringify(obj, (key: string, value: unknown) => {
       if (isMatch(key, excludedKeys)) {
         return;
-      }
-
-      if (typeof value === "object" && value) {
-        if (cache.indexOf(value) !== -1) {
-          // Circular reference found, discard key
-          return;
-        }
-
-        cache.push(value);
       }
 
       return value;
     });
   }
 
-  if (({}).toString.call(data) === "[object Object]") {
-    const flattened: { [prop: string]: unknown } = {};
-    const dataObject = data as { [prop: string]: unknown };
-    for (const prop in dataObject) {
-      const value = dataObject[prop];
-      if (value !== dataObject) {
-        flattened[prop] = value;
-      }
-    }
-
-    return stringifyImpl(flattened, exclusions || []);
+  const prunedData = prune(data, maxDepth);
+  if (!prunedData) {
+    return;
   }
 
-  if (({}).toString.call(data) === "[object Array]") {
-    const result: unknown[] = [];
-    for (let index = 0; index < (<unknown[]>data).length; index++) {
-      result[index] = JSON.parse(stringifyImpl((<unknown[]>data)[index], exclusions || [])) as unknown;
-    }
-
-    return JSON.stringify(result);
-  }
-
-  // TODO: support maxDepth
-  return stringifyImpl(data, exclusions || []);
+  return stringifyImpl(prunedData, exclusions || []);
 }
 
-/**
- * Stringifies an object with optional exclusions and max depth.
- * @param data The data object to add.
- * @param exclusions Any property names that should be excluded.
- * @param maxDepth The max depth of the object to include.
- */
-export function stringify2(
-  data: unknown,
-  exclusions?: string[],
-  maxDepth = -1,
-): string {
-  const seen = new WeakSet();
-
-  function stringifyImpl(
-    obj: unknown,
-    excludedKeys: string[],
-    currentDepth: number,
-    currentScope: string,
-  ): string {
-    return JSON.stringify(obj, (key: string, value: unknown) => {
-      if (isMatch(key, excludedKeys)) {
-        return;
-      }
-
-      if (typeof value === "object" && value !== null) {
-        if (seen.has(value)) {
-          return;
-        }
-
-        seen.add(value);
-
-        if (currentDepth >= maxDepth)
-          return;
-
-        return stringifyImpl(
-          value,
-          excludedKeys,
-          currentDepth + 1,
-          key.length > 0 ? currentScope + "." + key : currentScope,
-        );
-      }
-
-      return value;
-    });
-  }
-
-  return stringifyImpl(data, exclusions || [], 1, "");
-}
+// export function stringify(data: unknown, exclusions?: string[], maxDepth?: number = Infinity): string | undefined {
+//   function stringifyImpl(obj: unknown, excludedKeys: string[], maxDepth?: number = Infinity, currentDepth: number, cache: WeakSet): string | undefined {
+//     if (currentDepth > maxDepth) {
+//       return;
+//     }
+//
+//     if (typeof obj === "function" || obj === undefined) {
+//       return undefined;
+//     }
+//
+//     if (obj === null) {
+//       return "null";
+//     }
+//
+//     if (typeof obj === "string") {
+//       return `"${obj}"`;
+//     }
+//
+//     if (typeof obj === "number" || typeof obj === "boolean") {
+//       return obj.toString();
+//     }
+//
+//     if (obj instanceof Date) {
+//       return `"${obj.toISOString()}"`;
+//     }
+//
+//     if (obj instanceof RegExp) {
+//       return obj.toString();
+//     }
+//
+//     if (typeof obj === "symbol") {
+//       return obj.toString();
+//     }
+//
+//     if (typeof obj === "bigint") {
+//       return obj.toString() + "n";
+//     }
+//
+//     if (typeof obj === "object") {
+//       if (Array.isArray(obj)) {
+//         const items = obj.map(item => stringify(item, maxDepth, currentDepth + 1));
+//         return `[${items.join(",")}]`;
+//       } else {
+//         const keys = Object.keys(obj).sort(); // sort keys alphabetically
+//         const items = keys.map(key => `"${key}":${stringify(obj[key], maxDepth, currentDepth + 1) || "null"}`);
+//         return `{${items.join(",")}}`;
+//       }
+//     }
+//
+//     // handle circular references
+//     if (cache.indexOf(obj)) {
+//       return "[Circular Reference]";
+//     }
+//     cache.push(obj);
+//
+//     // handle objects that define their own toJSON method
+//     const toJSON = obj.toJSON;
+//     if (typeof toJSON === "function") {
+//       return stringify(toJSON.call(obj), maxDepth, currentDepth + 1);
+//     }
+//
+//     // handle objects that implement the iterator protocol (Maps, Sets, etc.)
+//     const iterator = obj[Symbol.iterator];
+//     if (typeof iterator === "function") {
+//       const items = [];
+//       for (let item of obj) {
+//         items.push(stringify(item, maxDepth, currentDepth + 1));
+//       }
+//       return `[${items.join(",")}]`;
+//     }
+//
+//     // handle objects that implement the async iterator protocol (Streams, etc.)
+//     const asyncIterator = obj[Symbol.asyncIterator];
+//     if (typeof asyncIterator === "function") {
+//       return stringify(asyncIterator.call(obj).next().then(result => {
+//         if (result.done) {
+//           return null;
+//         }
+//         return stringify(result.value, maxDepth, currentDepth + 1);
+//       }), maxDepth, currentDepth + 1);
+//     }
+//
+//     return undefined;
+//   }
+// }
 
 export function toBoolean(input: unknown, defaultValue: boolean = false): boolean {
   if (typeof input === "boolean") {
