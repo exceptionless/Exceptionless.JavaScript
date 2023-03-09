@@ -50,89 +50,89 @@ describe("Utils", () => {
 
     describe("should prune data types", () => {
       test("for Object", () => {
-        const expected = { a: {} };
-        const actual = prune({ a: { b: 2 } }, 1);
+        const expected = { a: {}, b: 1 };
+        const actual = prune({ a: { b: 2 }, b: 1 }, 1);
         expect(actual).toStrictEqual(expected);
       });
 
       test("for Array", () => {
-        const expected = [{ a: {} }];
-        const actual = prune([{ a: { b: 2 } }], 1);
+        const expected = [{}, 1];
+        const actual = prune([{ a: { b: 2 } }, 1], 1);
         expect(actual).toStrictEqual(expected);
       });
 
       test("for Map", () => {
-        const expected = new Map([[{}, { a: {} }]]);
-        const actual = prune(new Map([[{}, { a: { b: 2 } }]]), 1);
+        const expected = new Map([[{}, { a: {}, b: 1 }]]);
+        const actual = prune(new Map([[{}, { a: { b: 2 }, b: 1 }]]), 2);
         expect(actual).toStrictEqual(expected);
       });
 
       test("for WeakMap", () => {
         const expected = new WeakMap([[{}, { a: { b: 2 } }]]);
-        const actual = prune(new WeakMap([[{}, { a: { b: 2 } }]]), 1);
+        const actual = prune(new WeakMap([[{}, { a: { b: 2 } }]]), 2);
         expect(actual).toStrictEqual(expected);
       });
 
       test("for Set", () => {
-        const expected = new Set([{ a: {} }]);
-        const actual = prune(new Set([{ a: { b: 2 } }]), 1);
+        const expected = new Set([{ a: {}, b: 1 }]);
+        const actual = prune(new Set([{ a: { b: 2 }, b: 1 }]), 2);
         expect(actual).toStrictEqual(expected);
       });
 
       test("for WeakSet", () => {
         const expected = new WeakSet([{ a: { b: 2 } }]);
-        const actual = prune(new WeakSet([{ a: { b: 2 } }]), 1);
+        const actual = prune(new WeakSet([{ a: { b: 2 } }]), 2);
         expect(actual).toStrictEqual(expected);
       });
     });
 
-    //
-    //     test("should respect maxDepth", () => {
-    //       const value = {
-    //         ao: {
-    //           bo: {
-    //             cn: 1,
-    //             co: {
-    //               do: {}
-    //             }
-    //           },
-    //           ba: [
-    //             {
-    //               cn: 1,
-    //               co: {
-    //                 do: {}
-    //               }
-    //             }
-    //           ],
-    //           bn: 1
-    //         }
-    //       };
-    //
-    //       expect(prune(value, 1)).toBe("{\"ao\":{}}");
-    //       expect(prune(value, 2)).toBe("{\"ao\":{\"bo\":{},\"ba\":[],\"bn\":1}}");
-    //       expect(prune(value, 3)).toBe("{\"ao\":{\"bo\":{\"cn\":1,\"co\":{}},\"ba\":[{}],\"bn\":1}}");
-    //       expect(prune(value, 4)).toBe("{\"ao\":{\"bo\":{\"cn\":1,\"co\":{\"do\":{}}},\"ba\":[{\"cn\":1,\"co\":{}}],\"bn\":1}}");
-    //       expect(prune(value, 5)).toBe("{\"ao\":{\"bo\":{\"cn\":1,\"co\":{\"do\":{}}},\"ba\":[{\"cn\":1,\"co\":{\"do\":{}}}],\"bn\":1}}");
-    //     });
-    //
-    //     test("should prune inherited properties", () => {
-    //       // @ts-expect-error TS2683
-    //       const Foo = function () { this.a = "a"; };
-    //       // @ts-expect-error TS2683
-    //       const Bar = function () { this.b = "b"; };
-    //       // @ts-expect-error TS7009
-    //       Bar.prototype = new Foo();
-    //       // @ts-expect-error TS7009
-    //       const bar = new Bar();
-    //
-    //       const expected = {
-    //         a: "a",
-    //         b: "b"
-    //       };
-    //
-    //       const actual = prune(bar);
-    //       expect(actual).toEqual(expected);
-    //     });
+
+    test("should respect maxDepth", () => {
+      const value = {
+        ao: {
+          bo: {
+            cn: 1,
+            co: {
+              do: {}
+            }
+          },
+          ba: [
+            {
+              cn: 1,
+              co: {
+                do: {}
+              }
+            }
+          ],
+          bn: 1
+        }
+      };
+
+      expect(prune(value, 1)).toStrictEqual({ "ao": {} });
+      expect(prune(value, 2)).toStrictEqual({ "ao": { "bo": {}, "ba": [], "bn": 1 } });
+      expect(prune(value, 3)).toStrictEqual({ "ao": { "bo": { "cn": 1, "co": {} }, "ba": [{}], "bn": 1 } });
+      expect(prune(value, 4)).toStrictEqual({ "ao": { "bo": { "cn": 1, "co": { "do": {} } }, "ba": [{ "cn": 1, "co": {} }], "bn": 1 } });
+      expect(prune(value, 5)).toStrictEqual({ "ao": { "bo": { "cn": 1, "co": { "do": {} } }, "ba": [{ "cn": 1, "co": { "do": {} } }], "bn": 1 } });
+    });
+
+    test("should prune inherited properties", () => {
+      // @ts-expect-error TS2683
+      const Foo = function () { this.a = "a"; };
+      // @ts-expect-error TS2683
+      const Bar = function () { this.b = "b"; };
+      // @ts-expect-error TS7009
+      Bar.prototype = new Foo();
+      // @ts-expect-error TS7009
+      const bar = new Bar();
+
+      const expected = {
+        a: "a",
+        b: "b"
+      };
+
+      const actual = prune(bar);
+      expect(actual).toEqual(expected);
+    });
 
     // TODO: Assert input didn't change.
   });
