@@ -50,7 +50,8 @@
   "scripts": {
     "build": "tsc -p tsconfig.json && esbuild src/index.ts --bundle --sourcemap --platform=node --format=esm --outfile=dist/index.bundle.js",
     "watch": "tsc -p ../core/tsconfig.json -w --preserveWatchOutput & tsc -p tsconfig.json -w --preserveWatchOutput & esbuild src/index.ts --bundle --platform=node --sourcemap --format=esm --watch --outfile=dist/index.bundle.js",
-    "test": "jest"
+    "test": "jest",
+    "test:watch": "jest --watch"
   },
   "sideEffects": false,
   "publishConfig": {
