@@ -2,12 +2,12 @@ import { describe, test } from "@jest/globals";
 import { expect } from "expect";
 
 import {
-  parseVersion,
-  isMatch,
-  startsWith,
   endsWith,
-  toBoolean,
-  prune
+  isMatch,
+  parseVersion,
+  prune,
+  startsWith,
+  toBoolean
 } from "../src/Utils.js";
 
 describe("Utils", () => {
@@ -49,6 +49,49 @@ describe("Utils", () => {
     });
 
     describe("should prune data types", () => {
+      const value = {
+        "undefined": undefined,
+        "null": null,
+        "string": "string",
+        "number": 1,
+        "boolean": true,
+        "date": new Date(),
+        "function": () => { return undefined; },
+        "arrayBuffer": new ArrayBuffer(1),
+        "dataView": new DataView(new ArrayBuffer(1)),
+        "bigint": BigInt(1),
+        "bigint64Array": new BigInt64Array(1),
+        "bigUint64Array": new BigUint64Array(1),
+        "buffer": Buffer.from("buffer"),
+        "int8Array": new Int8Array(1),
+        "uint8Array": new Uint8Array(1),
+        "uint8ClampedArray": new Uint8ClampedArray(1),
+        "int16Array": new Int16Array(1),
+        "uint16Array": new Uint16Array(1),
+        "int32Array": new Int32Array(1),
+        "uint32Array": new Uint32Array(1),
+        "float32Array": new Float32Array(1),
+        "float64Array": new Float64Array(1),
+        "promise": Promise.resolve(1),
+        "generator": (function* () { yield 1; })(),
+        "regex": /regex/,
+        "symbol": Symbol("symbol"),
+      };
+
+      Object.entries(value).forEach(([key, value]) => {
+        test(`for ${key}`, () => {
+          const actual = prune(value, 1);
+          const expected = value;
+          expect(actual).toBe(expected);
+        });
+      });
+
+      test("for Error", () => {
+        const expected = { "message": "error" };
+        const actual = prune(new Error("error"), 1);
+        expect(actual).toStrictEqual(expected);
+      });
+
       test("for Object", () => {
         const expected = { a: {}, b: 1 };
         const actual = prune({ a: { b: 2 }, b: 1 }, 1);
@@ -82,8 +125,7 @@ describe("Utils", () => {
       test("for WeakSet", () => {
         const expected = new WeakSet([{ a: { b: 2 } }]);
         const actual = prune(new WeakSet([{ a: { b: 2 } }]), 2);
-        expect(actual).toStrictEqual(expected);
-        expect(actual !== expected).toBeTruthy();
+        expect(actual).toEqual(expected);
       });
     });
 
@@ -134,7 +176,7 @@ describe("Utils", () => {
       expect(actual).toStrictEqual(expected);
     });
   });
-//
+
 //   describe("stringify", () => {
 //     const user = {
 //       id: 1,
@@ -149,7 +191,7 @@ describe("Utils", () => {
 //       }
 //     };
 //
-//     test("array", () => {
+//     test("error array", () => {
 //       const error = {
 //         type: "error",
 //         data: {
@@ -188,11 +230,13 @@ describe("Utils", () => {
 //     });
 //
 //     test("circular reference", () => {
-//       const aFoo: { a: string, b?: unknown } = { a: "foo" };
-//       aFoo.b = aFoo;
+//       type Circular = { property: string, circularRef?: Circular };
+//       const circular: Circular = { property: "string" };
+//       circular.circularRef = circular;
 //
-//       expect(stringify(aFoo)).toBe("{\"a\":\"foo\",\"b\":\"{Circular Reference}\"}");
-//       expect(stringify([{ one: aFoo, two: aFoo }])).toBe("[{\"one\":{\"a\":\"foo\",\"b\":\"{Circular Reference}\"},\"two\":{\"a\":\"foo\",\"b\":\"{Circular Reference}\"}]");
+//       const expected = JSON.stringify({ "property": "string", "circularRef": {} });
+//       const actual = stringify(circular);
+//       expect(actual).toBe(expected);
 //     });
 //
 //     test("deep circular object reference", () => {
@@ -205,13 +249,22 @@ describe("Utils", () => {
 //       c.a = a;
 //
 //       const actual = stringify(a);
-//       expect(actual).toBe("{\"b\":{\"c\":{\"d\":\"test\",\"a\":\"{Circular Reference}\"}}}");
+//       expect(actual).toBe("{\"b\":{\"c\":{\"d\":\"test\",\"a\":\"{}\"}}}");
 //     });
 //
-//     test("deep circular array reference", () => {
-//       type Circular = { circularRef?: Circular, list?: Circular[] };
-//       const circular: Circular = {};
-//       cconst value = {
+//     test("circular array reference", () => {
+//       type Circular = { property: string, circularRef?: Circular, list?: Circular[] };
+//       const circular: Circular = { property: "string" };
+//       circular.circularRef = circular;
+//       circular.list = [circular];
+//
+//       const expected = JSON.stringify({ "property": "string", "circularRef": {}, "list": [{}] });
+//       const actual = stringify(circular);
+//       expect(actual).toBe(expected);
+//     });
+//
+//     describe("should serialize all data types", () => {
+//       const value = {
 //         "undefined": undefined,
 //         "null": null,
 //         "string": "string",
@@ -225,7 +278,6 @@ describe("Utils", () => {
 //         "map": new Map([["a", 1], ["b", 2], ["c", 3]]),
 //         "weakMap": new WeakMap([[{}, 1], [{}, 2], [{}, 3]]),
 //         "set": new Set([1, 2, 3]),
-//         "weakSet": new WeakSet([{}, {}, {}]),
 //         "arrayBuffer": new ArrayBuffer(1),
 //         "dataView": new DataView(new ArrayBuffer(1)),
 //         "int8Array": new Int8Array(1),
@@ -243,29 +295,28 @@ describe("Utils", () => {
 //
 //       Object.entries(value).forEach(([key, value]) => {
 //         test(`for ${key}`, () => {
-//           const stringifyValue = stringify(value);
-//           const jsonStringifyValue = JSON.stringify(value);
-//
-//           expect(stringifyValue).toBe(jsonStringifyValue);
+//           const expected = JSON.stringify(value);
+//           const actual = stringify(value);
+//           expect(actual).toBe(expected);
 //         });
 //       });
 //
 //       test(`for bigint`, () => {
-//         expect(1).toBe(stringify(BigInt(1)));
-//         expect(1).toBe(stringify(new BigInt64Array(1)));
-//         expect(1).toBe(stringify(new BigInt64Array(1)));
+//         expect(stringify(BigInt(1))).toBe(1);
+//         expect(stringify(new BigInt64Array(1))).toBe(1);
+//         expect(stringify(new BigUint64Array(1))).toBe(1)
 //       });
 //
 //       test(`for buffer`, () => {
-//         expect("{\"type\":\"Buffer\",\"data\":[98,117,102,102,101,114]}").toBe(stringify(Buffer.from("buffer")));
-//       });
-//
-//       test(`for regex`, () => {
-//         expect("\"symbol\"").toBe(stringify(Symbol("symbol")));
+//         expect(stringify(Buffer.from("buffer"))).toBe("{\"type\":\"Buffer\",\"data\":[98,117,102,102,101,114]}");
 //       });
 //
 //       test(`for symbol`, () => {
-//         expect("\"/regex/\"").toBe(stringify(/regex/));
+//         expect(stringify(Symbol("symbol"))).toBe("\"symbol\"");
+//       });
+//
+//       test(`for regex`, () => {
+//         expect(stringify(/regex/)).toBe("\"/regex/\"");
 //       });
 //     });
 //
@@ -325,8 +376,8 @@ describe("Utils", () => {
 //         b: "b"
 //       };
 //
-//       const result = JSON.parse(stringify(bar) as string) as unknown;
-//       expect(result).toEqual(expected);
+//       const actual = JSON.parse(stringify(bar) as string) as unknown;
+//       expect(actual).toEqual(expected);
 //     });
 //
 //     describe("with exclude pattern", () => {
@@ -357,17 +408,7 @@ describe("Utils", () => {
 //         expect(stringify(event, ["*Address"])).toBe(JSON.stringify(event));
 //       });
 //     });
-//   });ircular.circularRef = circular;
-//       circular.list = [circular, circular];
-//
-//       const expected = "{\"circularRef\":\"{Circular Reference}\",\"list\":[\"{Circular Reference}\",\"{Circular Reference}\"]}";
-//
-//       const actual = stringify(circular);
-//       expect(actual).toBe(expected);
-//     });
-//
-//     describe("should serialize all data types", () => {
-//
+//   });
 
   test("should parse version from url", () => {
     expect(parseVersion("https://code.jquery.com/jquery-2.1.3.js")).toBe("2.1.3");

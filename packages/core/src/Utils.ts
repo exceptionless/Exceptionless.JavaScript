@@ -175,31 +175,53 @@ export function prune(value: unknown, depth: number = 10): unknown {
       return value;
     }
 
-    if (Array.isArray(value)) {
-      return currentDepth < maxDepth
-        ? value.map(e => pruneImpl(e, maxDepth, currentDepth + 1, seen))
-        : [];
-    }
-
-    if (value instanceof Map) {
-      // NOTE: We don't prune the keys here, but we could.
-      return currentDepth < maxDepth
-        ? Array.from(value.entries()).reduce((map, kvp) => map.set(kvp[0], pruneImpl(kvp[1], maxDepth, currentDepth + 1, seen)), new Map())
-        : new Map();
-    }
-
-    if (value instanceof Set) {
-      return currentDepth < maxDepth
-        ? new Set(Array.from(value).map(e => pruneImpl(e, maxDepth, currentDepth + 1, seen)))
-        : new Set();
-    }
-
-    if (value instanceof WeakMap || value instanceof WeakSet) {
-      // WeakMap and WeakSet can't be enumerated or cloned.
+    if (typeof value === "function") {
       return value;
     }
 
-    if (value && typeof value === "object") {
+    if (typeof value === "object") {
+      if (Array.isArray(value)) {
+        return currentDepth < maxDepth
+          ? value.map(e => pruneImpl(e, maxDepth, currentDepth + 1, seen))
+          : [];
+      }
+
+      switch (Object.prototype.toString.call(value)) {
+        case "[object AsyncGenerator]":
+        case "[object Generator]":
+        case "[object ArrayBuffer]":
+        case "[object Buffer]":
+        case "[object DataView]":
+        case "[object Promise]":
+        case "[object RegExp]":
+        case "[object Date]":
+        case "[object Symbol]":
+        case "[object WeakMap]":
+        case "[object WeakSet]":
+          return value;
+      }
+
+      if (value instanceof Map) {
+        // NOTE: We don't prune the keys here, but we could.
+        return currentDepth < maxDepth
+          ? Array.from(value.entries()).reduce((map, kvp) => map.set(kvp[0], pruneImpl(kvp[1], maxDepth, currentDepth + 1, seen)), new Map())
+          : new Map();
+      }
+
+      if (value instanceof Set) {
+        return currentDepth < maxDepth
+          ? new Set(Array.from(value).map(e => pruneImpl(e, maxDepth, currentDepth + 1, seen)))
+          : new Set();
+      }
+
+      // Check for typed arrays
+      const TypedArray = Object.getPrototypeOf(Uint8Array);
+      if (value instanceof TypedArray) {
+        return currentDepth < maxDepth
+          ? value // not cloned
+          : [];
+      }
+
       // Check for circular references
       if (currentDepth >= maxDepth || seen.has(value)) {
         return {};
@@ -207,9 +229,9 @@ export function prune(value: unknown, depth: number = 10): unknown {
 
       seen.add(value);
 
-      const result: Record<string, unknown> = {};
-      for (const key in value) {
-        const val = (value as { [index: string]: unknown })[key];
+      const result: Record<PropertyKey, unknown> = {};
+      for (const key of getAllKeysConditionally(value, true, true, false, true, true, false, true)) {
+        const val = (value as { [index: PropertyKey]: unknown })[key];
         result[key] = pruneImpl(val, maxDepth, currentDepth + 1, seen);
       }
 
@@ -229,16 +251,60 @@ export function stringify(data: unknown, exclusions?: string[], maxDepth: number
         return;
       }
 
+      if (value && typeof value === "object") {
+        if (value instanceof RegExp) {
+          return value.toString();
+        }
+      }
+
+//     if (typeof obj === "symbol") {
+//       return obj.toString();
+//     }
+//
+//     if (typeof obj === "bigint") {
+//       return obj.toString() + "n";
+//     }
+
       return value;
     });
   }
 
   const prunedData = prune(data, maxDepth);
-  if (!prunedData) {
-    return;
-  }
-
   return stringifyImpl(prunedData, exclusions || []);
+}
+
+// https://stackoverflow.com/questions/8024149/is-it-possible-to-get-the-non-enumerable-inherited-property-names-of-an-object
+function getAllKeysConditionally(obj: object, includeSelf = true, includePrototypeChain = true, includeTop = false, includeEnumerables = true, includeNonenumerables = true, includeStrings = true, includeSymbols = true) {
+
+  // Boolean (mini-)functions to determine unknown given key's eligibility:
+  const isEnumerable = (obj: object, key: PropertyKey) => Object.propertyIsEnumerable.call(obj, key);
+  const isString = (key: PropertyKey) => typeof key === 'string';
+  const isSymbol = (key: PropertyKey) => typeof key === 'symbol';
+  const includeBasedOnEnumerability = (obj: object, key: PropertyKey) => (includeEnumerables && isEnumerable(obj, key)) || (includeNonenumerables && !isEnumerable(obj, key));
+  const includeBasedOnKeyType = (key: PropertyKey) => (includeStrings && isString(key)) || (includeSymbols && isSymbol(key));
+  const include = (obj: object, key: PropertyKey) => includeBasedOnEnumerability(obj, key) && includeBasedOnKeyType(key);
+  const notYetRetrieved = (keys: PropertyKey[], key: PropertyKey) => !keys.includes(key);
+
+  // filter function putting all the above together:
+  const filterFn = (key: PropertyKey) => notYetRetrieved(keys, key) && include(obj, key);
+
+  // conditional chooses one of two functions to determine whether to exclude the top level or not:
+  const stopFn = includeTop ? ((obj: unknown) => obj === null) : ((obj: unknown) => Object.getPrototypeOf(obj) === null);
+
+  // and now the loop to collect and filter everything:
+  let keys: PropertyKey[] = [];
+  while (!stopFn(obj)) {
+    if (includeSelf) {
+      const ownKeys = Reflect.ownKeys(obj).filter(filterFn);
+      keys = keys.concat(ownKeys);
+    }
+    if (!includePrototypeChain) { break; }
+    else {
+      includeSelf = true;
+      obj = Object.getPrototypeOf(obj);
+    }
+  }
+  return keys;
 }
 
 // export function stringify(data: unknown, exclusions?: string[], maxDepth?: number = Infinity): string | undefined {
