@@ -169,6 +169,24 @@ export function endsWith(input: string, suffix: string): boolean {
   return input.indexOf(suffix, input.length - suffix.length) !== -1;
 }
 
+/**
+ * This function will prune an object to a certain depth and return a new object.
+ * The following rules will be applied:
+ * 1. If the value is null or undefined, it will be returned as is.
+ * 2. If the value is a function or unsupported type it will be return undefined.
+ * 3. If the value is an array, it will be pruned to the specified depth and truncated.
+ * 4. If the value is an object, it will be pruned to the specified depth and
+ *    a. If the object is a Circular Reference it will return undefined.
+ *    b. If the object is a Map, it will be converted to an object.
+ *    c. If the object is a Set, it will be converted to an array.
+ *    d. If the object contains prototype properties, they will be picked up.
+ *    e. If the object is is uniterable and not clonable (e.g., WeakMap, WeakSet, etc.), it will return undefined.
+ * 5. If the value is an Error, we will treat it as an object.
+ * 6. If the value is a primitive, it will be returned as is unless it is a string could be truncated.
+ * 7. If the value is a Regexp, Symbol we will convert it to the string representation.
+ * 8. BigInt and other typed arrays will be converted to a string unless number type works.
+ * 9. All other values will be returned as undedfined (E.g., Buffer, DataView, Promises, Generators etc..)
+ */
 export function prune(value: unknown, depth: number = 10): unknown {
   function pruneImpl(value: unknown, maxDepth: number, currentDepth: number = 10, seen: WeakSet<object> = new WeakSet()): unknown {
     if (value === null || value === undefined) {
