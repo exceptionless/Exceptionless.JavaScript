@@ -171,6 +171,10 @@ export function endsWith(input: string, suffix: string): boolean {
 
 export function prune(value: unknown, depth: number = 10): unknown {
   function pruneImpl(value: unknown, maxDepth: number, currentDepth: number = 10, seen: WeakSet<object> = new WeakSet()): unknown {
+    if (value === null || value === undefined) {
+      return value;
+    }
+
     if (Array.isArray(value)) {
       return currentDepth < maxDepth
         ? value.map(e => pruneImpl(e, maxDepth, currentDepth + 1, seen))
@@ -197,39 +201,25 @@ export function prune(value: unknown, depth: number = 10): unknown {
 
     if (value && typeof value === "object") {
       // Check for circular references
-      if (seen.has(value)) {
-        return "{Circular Reference}";
+      if (currentDepth >= maxDepth || seen.has(value)) {
+        return {};
       }
 
       seen.add(value);
 
-      return currentDepth < maxDepth
-        ? Object.entries(value).reduce((obj, kvp) => ({ ...obj, [kvp[0]]: pruneImpl(kvp[1], maxDepth, currentDepth + 1, seen) }), {})
-        : {};
-
-      /*
-      if (typeof obj === "object") {
-        const result: Record<string, unknown> = {};
-        for (const key in obj) {
-          if (Object.prototype.hasOwnProperty.call(obj, key)) {
-            const value = (obj as { [index: string]: unknown })[key];
-            if (value !== undefined) {
-              result[key] = pruneImpl(value, depth + 1);
-            }
-          }
-        }
-
-        return result;
+      const result: Record<string, unknown> = {};
+      for (const key in value) {
+        const val = (value as { [index: string]: unknown })[key];
+        result[key] = pruneImpl(val, maxDepth, currentDepth + 1, seen);
       }
-      */
+
+      return result;
     }
 
     return value;
   }
 
-  // NOTE: structuredClone is not supported in workers
-  const clonedValue = typeof structuredClone !== "undefined" ? structuredClone(value) : value;
-  return pruneImpl(clonedValue, depth, 0);
+  return pruneImpl(value, depth, 0);
 }
 
 export function stringify(data: unknown, exclusions?: string[], maxDepth: number = 10): string | undefined {

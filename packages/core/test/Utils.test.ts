@@ -17,7 +17,7 @@ describe("Utils", () => {
       const circular: Circular = { property: "string" };
       circular.circularRef = circular;
 
-      const expected = { "property": "string", "circularRef": "{Circular Reference}" };
+      const expected = { "property": "string", "circularRef": {} };
       const actual = prune(circular);
       expect(actual).toStrictEqual(expected);
     });
@@ -28,7 +28,7 @@ describe("Utils", () => {
       circular.circularRef = circular;
       circular.list = [circular];
 
-      const expected = { "property": "string", "circularRef": "{Circular Reference}", "list": ["{Circular Reference}"] };
+      const expected = { "property": "string", "circularRef": {}, "list": [{}] };
       const actual = prune(circular);
       expect(actual).toStrictEqual(expected);
     });
@@ -37,7 +37,7 @@ describe("Utils", () => {
       type PropertyObject = { property: string };
       const propObject: PropertyObject = { property: "string" };
 
-      const expected = [{ "property": "string" }, "{Circular Reference}"];
+      const expected = [{ "property": "string" }, {}];
       const actual = prune([propObject, propObject]);
       expect(actual).toStrictEqual(expected);
     });
@@ -83,9 +83,9 @@ describe("Utils", () => {
         const expected = new WeakSet([{ a: { b: 2 } }]);
         const actual = prune(new WeakSet([{ a: { b: 2 } }]), 2);
         expect(actual).toStrictEqual(expected);
+        expect(actual !== expected).toBeTruthy();
       });
     });
-
 
     test("should respect maxDepth", () => {
       const value = {
@@ -130,11 +130,9 @@ describe("Utils", () => {
         b: "b"
       };
 
-      const actual = prune(bar);
-      expect(actual).toEqual(expected);
+      const actual = prune(bar, 1);
+      expect(actual).toStrictEqual(expected);
     });
-
-    // TODO: Assert input didn't change.
   });
 //
 //   describe("stringify", () => {
