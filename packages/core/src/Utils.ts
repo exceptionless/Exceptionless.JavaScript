@@ -188,61 +188,87 @@ export function endsWith(input: string, suffix: string): boolean {
  * 9. All other values will be returned as undedfined (E.g., Buffer, DataView, Promises, Generators etc..)
  */
 export function prune(value: unknown, depth: number = 10): unknown {
-  function pruneImpl(value: unknown, maxDepth: number, currentDepth: number = 10, seen: WeakSet<object> = new WeakSet()): unknown {
-    if (value === null || value === undefined) {
-      return value;
+  function isUnsupportedType(value: unknown): boolean {
+    switch (typeof value) {
+      case "function":
+        return true;
+      case "object":
+        switch (Object.prototype.toString.call(value)) {
+          case "[object AsyncGenerator]":
+          case "[object Generator]":
+          case "[object ArrayBuffer]":
+          case "[object Buffer]":
+          case "[object DataView]":
+          case "[object Promise]":
+          case "[object WeakMap]":
+          case "[object WeakSet]":
+            return true;
+        }
+
+        break;
     }
 
-    if (typeof value === "function") {
-      return value;
+    return false;
+  }
+
+  function normalizeValue(value: unknown): unknown {
+    if (typeof value === "bigint") {
+      return `${value.toString()}n`;
     }
 
     if (typeof value === "object") {
       if (Array.isArray(value)) {
-        return currentDepth < maxDepth
-          ? value.map(e => pruneImpl(e, maxDepth, currentDepth + 1, seen))
-          : [];
+        return value;
       }
 
-      switch (Object.prototype.toString.call(value)) {
-        case "[object AsyncGenerator]":
-        case "[object Generator]":
-        case "[object ArrayBuffer]":
-        case "[object Buffer]":
-        case "[object DataView]":
-        case "[object Promise]":
-        case "[object RegExp]":
-        case "[object Date]":
-        case "[object Symbol]":
-        case "[object WeakMap]":
-        case "[object WeakSet]":
-          return value;
+      if (value instanceof RegExp) {
+        return value.toString();
       }
 
       if (value instanceof Map) {
-        // NOTE: We don't prune the keys here, but we could.
-        return currentDepth < maxDepth
-          ? Array.from(value.entries()).reduce((map, kvp) => map.set(kvp[0], pruneImpl(kvp[1], maxDepth, currentDepth + 1, seen)), new Map())
-          : new Map();
+        return Object.fromEntries(value.entries());
       }
 
       if (value instanceof Set) {
-        return currentDepth < maxDepth
-          ? new Set(Array.from(value).map(e => pruneImpl(e, maxDepth, currentDepth + 1, seen)))
-          : new Set();
+        return Array.from(value);
       }
 
       // Check for typed arrays
       const TypedArray = Object.getPrototypeOf(Uint8Array);
       if (value instanceof TypedArray) {
+        return Array.from(value as Iterable<unknown>);
+      }
+
+      return value;
+    }
+
+    if (typeof value === "symbol") {
+      return value.description;
+    }
+
+    return value;
+  }
+
+  function pruneImpl(value: unknown, maxDepth: number, currentDepth: number = 10, seen: WeakSet<object> = new WeakSet()): unknown {
+    if (value === null || value === undefined) {
+      return value;
+    }
+
+    if (isUnsupportedType(value)) {
+      return undefined;
+    }
+
+    if (typeof value === "object") {
+      const normalizedValue = normalizeValue(value);
+      if (Array.isArray(normalizedValue)) {
         return currentDepth < maxDepth
-          ? value // not cloned
+          ? normalizedValue.map(e => pruneImpl(e, maxDepth, currentDepth + 1, seen))
           : [];
       }
 
       // Check for circular references
       if (currentDepth >= maxDepth || seen.has(value)) {
-        return {};
+        return undefined;
       }
 
       seen.add(value);
@@ -268,20 +294,6 @@ export function stringify(data: unknown, exclusions?: string[], maxDepth: number
       if (isMatch(key, excludedKeys)) {
         return;
       }
-
-      if (value && typeof value === "object") {
-        if (value instanceof RegExp) {
-          return value.toString();
-        }
-      }
-
-//     if (typeof obj === "symbol") {
-//       return obj.toString();
-//     }
-//
-//     if (typeof obj === "bigint") {
-//       return obj.toString() + "n";
-//     }
 
       return value;
     });
