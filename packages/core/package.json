@@ -55,10 +55,10 @@
     "access": "public"
   },
   "devDependencies": {
-    "@jest/globals": "^29.4.3",
-    "esbuild": "^0.17.10",
-    "jest": "^29.4.3",
-    "jest-environment-jsdom": "^29.4.3",
+    "@jest/globals": "^29.5.0",
+    "esbuild": "^0.17.11",
+    "jest": "^29.5.0",
+    "jest-environment-jsdom": "^29.5.0",
     "jest-ts-webcompat-resolver": "^1.0.0",
     "ts-jest": "^29.0.5"
   }

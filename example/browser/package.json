@@ -12,6 +12,6 @@
   },
   "dependencies": {
     "@exceptionless/browser": "2.0.0-dev",
-    "jquery": "^3.6.3"
+    "jquery": "^3.6.4"
   }
 }
