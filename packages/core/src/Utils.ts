@@ -177,10 +177,12 @@ export function endsWith(input: string, suffix: string): boolean {
  * 3. If the value is an array, it will be pruned to the specified depth and truncated.
  * 4. If the value is an object, it will be pruned to the specified depth and
  *    a. If the object is a Circular Reference it will return undefined.
- *    b. If the object is a Map, it will be converted to an object.
+ *    b. If the object is a Map, it will be converted to an object. Some data loss might occur if map keys are object types as last in wins.
  *    c. If the object is a Set, it will be converted to an array.
  *    d. If the object contains prototype properties, they will be picked up.
- *    e. If the object is is uniterable and not clonable (e.g., WeakMap, WeakSet, etc.), it will return undefined.
+ *    e. If the object contains a toJSON function, it will be called and it's value will be normalized.
+ *    f. If the object is is uniterable and not clonable (e.g., WeakMap, WeakSet, etc.), it will return undefined.
+ *    g. If a symbol property is encountered, it will be converted to a string representation and could overwrite existing object keys.
  * 5. If the value is an Error, we will treat it as an object.
  * 6. If the value is a primitive, it will be returned as is unless it is a string could be truncated.
  * 7. If the value is a Regexp, Symbol we will convert it to the string representation.
@@ -221,6 +223,10 @@ export function prune(value: unknown, depth: number = 10): unknown {
   }
 
   function normalizeValue(value: unknown): unknown {
+    function hasToJSONFunction(value: unknown): value is { toJSON: () => unknown } {
+      return value !== null && typeof value === "object" && typeof (value as { toJSON?: unknown }).toJSON === "function";
+    }
+
     if (typeof value === "bigint") {
       return `${value.toString()}n`;
     }
@@ -248,6 +254,11 @@ export function prune(value: unknown, depth: number = 10): unknown {
         return Array.from(value as Iterable<unknown>);
       }
 
+      if (hasToJSONFunction(value)) {
+        // NOTE: We are not checking for circular references or overflow
+        return normalizeValue(value.toJSON());
+      }
+
       return value;
     }
 
@@ -258,7 +269,7 @@ export function prune(value: unknown, depth: number = 10): unknown {
     return value;
   }
 
-  function pruneImpl(value: unknown, maxDepth: number, currentDepth: number = 10, seen: WeakSet<object> = new WeakSet()): unknown {
+  function pruneImpl(value: unknown, maxDepth: number, currentDepth: number = 10, seen: WeakSet<object> = new WeakSet(), parentIsArray: boolean = false): unknown {
     if (value === null || value === undefined) {
       return value;
     }
@@ -277,8 +288,14 @@ export function prune(value: unknown, depth: number = 10): unknown {
         return normalizedValue;
       }
 
+      if (currentDepth == maxDepth) {
+        return undefined;
+      }
+
       if (Array.isArray(normalizedValue)) {
-        return normalizedValue.map(e => pruneImpl(e, maxDepth, currentDepth + 1, seen));
+        // Treat an object inside of an array as a single level
+        const depth: number = parentIsArray ? currentDepth + 1 : currentDepth;
+        return normalizedValue.map(e => pruneImpl(e, maxDepth, depth, seen, true));
       }
 
       // Check for circular references
@@ -291,9 +308,17 @@ export function prune(value: unknown, depth: number = 10): unknown {
       }
 
       const result: Record<PropertyKey, unknown> = {};
-      for (const key in value) {
-        const val = (value as { [index: PropertyKey]: unknown })[key];
-        result[key] = pruneImpl(val, maxDepth, currentDepth + 1, seen);
+      for (const key in normalizedValue) {
+        const objectValue = (normalizedValue as { [index: PropertyKey]: unknown })[key];
+        result[key] = pruneImpl(objectValue, maxDepth, currentDepth + 1, seen);
+      }
+
+      for (const symbolKey of Object.getOwnPropertySymbols(normalizedValue)) {
+        // Normalize the key so Symbols are converted to strings.
+        const normalizedKey = normalizeValue(symbolKey) as PropertyKey;
+
+        const objectValue = (normalizedValue as { [index: PropertyKey]: unknown })[symbolKey];
+        result[normalizedKey] = pruneImpl(objectValue, maxDepth, currentDepth + 1, seen);
       }
 
       return result;
