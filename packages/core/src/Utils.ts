@@ -189,6 +189,10 @@ export function endsWith(input: string, suffix: string): boolean {
  */
 export function prune(value: unknown, depth: number = 10): unknown {
   function isUnsupportedType(value: unknown): boolean {
+    if (value === null || value === undefined) {
+      return false;
+    }
+
     switch (typeof value) {
       case "function":
         return true;
@@ -203,6 +207,11 @@ export function prune(value: unknown, depth: number = 10): unknown {
           case "[object WeakMap]":
           case "[object WeakSet]":
             return true;
+        }
+
+        // Check for buffer;
+        if ("writeBigInt64LE" in value) {
+          return true;
         }
 
         break;
@@ -254,27 +263,35 @@ export function prune(value: unknown, depth: number = 10): unknown {
       return value;
     }
 
+    if (currentDepth > maxDepth) {
+      return undefined;
+    }
+
     if (isUnsupportedType(value)) {
       return undefined;
     }
 
-    if (typeof value === "object") {
-      const normalizedValue = normalizeValue(value);
+    const normalizedValue = normalizeValue(value);
+    if (typeof normalizedValue === "object") {
+      if (normalizedValue instanceof Date) {
+        return normalizedValue;
+      }
+
       if (Array.isArray(normalizedValue)) {
-        return currentDepth < maxDepth
-          ? normalizedValue.map(e => pruneImpl(e, maxDepth, currentDepth + 1, seen))
-          : [];
+        return normalizedValue.map(e => pruneImpl(e, maxDepth, currentDepth + 1, seen));
       }
 
       // Check for circular references
-      if (currentDepth >= maxDepth || seen.has(value)) {
-        return undefined;
+      if (Object.prototype.toString.call(normalizedValue) === "[object Object]") {
+        if (seen.has(normalizedValue as object)) {
+          return undefined;
+        }
+
+        seen.add(normalizedValue as object);
       }
 
-      seen.add(value);
-
       const result: Record<PropertyKey, unknown> = {};
-      for (const key of getAllKeysConditionally(value, true, true, false, true, true, false, true)) {
+      for (const key in value) {
         const val = (value as { [index: PropertyKey]: unknown })[key];
         result[key] = pruneImpl(val, maxDepth, currentDepth + 1, seen);
       }
@@ -282,7 +299,11 @@ export function prune(value: unknown, depth: number = 10): unknown {
       return result;
     }
 
-    return value;
+    return normalizedValue;
+  }
+
+  if (depth < 0) {
+    return undefined;
   }
 
   return pruneImpl(value, depth, 0);
@@ -304,38 +325,38 @@ export function stringify(data: unknown, exclusions?: string[], maxDepth: number
 }
 
 // https://stackoverflow.com/questions/8024149/is-it-possible-to-get-the-non-enumerable-inherited-property-names-of-an-object
-function getAllKeysConditionally(obj: object, includeSelf = true, includePrototypeChain = true, includeTop = false, includeEnumerables = true, includeNonenumerables = true, includeStrings = true, includeSymbols = true) {
-
-  // Boolean (mini-)functions to determine unknown given key's eligibility:
-  const isEnumerable = (obj: object, key: PropertyKey) => Object.propertyIsEnumerable.call(obj, key);
-  const isString = (key: PropertyKey) => typeof key === 'string';
-  const isSymbol = (key: PropertyKey) => typeof key === 'symbol';
-  const includeBasedOnEnumerability = (obj: object, key: PropertyKey) => (includeEnumerables && isEnumerable(obj, key)) || (includeNonenumerables && !isEnumerable(obj, key));
-  const includeBasedOnKeyType = (key: PropertyKey) => (includeStrings && isString(key)) || (includeSymbols && isSymbol(key));
-  const include = (obj: object, key: PropertyKey) => includeBasedOnEnumerability(obj, key) && includeBasedOnKeyType(key);
-  const notYetRetrieved = (keys: PropertyKey[], key: PropertyKey) => !keys.includes(key);
-
-  // filter function putting all the above together:
-  const filterFn = (key: PropertyKey) => notYetRetrieved(keys, key) && include(obj, key);
-
-  // conditional chooses one of two functions to determine whether to exclude the top level or not:
-  const stopFn = includeTop ? ((obj: unknown) => obj === null) : ((obj: unknown) => Object.getPrototypeOf(obj) === null);
-
-  // and now the loop to collect and filter everything:
-  let keys: PropertyKey[] = [];
-  while (!stopFn(obj)) {
-    if (includeSelf) {
-      const ownKeys = Reflect.ownKeys(obj).filter(filterFn);
-      keys = keys.concat(ownKeys);
-    }
-    if (!includePrototypeChain) { break; }
-    else {
-      includeSelf = true;
-      obj = Object.getPrototypeOf(obj);
-    }
-  }
-  return keys;
-}
+// function getAllKeysConditionally(obj: object, includeSelf = true, includePrototypeChain = true, includeTop = false, includeEnumerables = true, includeNonenumerables = true, includeStrings = true, includeSymbols = true) {
+//
+//   // Boolean (mini-)functions to determine unknown given key's eligibility:
+//   const isEnumerable = (obj: object, key: PropertyKey) => Object.propertyIsEnumerable.call(obj, key);
+//   const isString = (key: PropertyKey) => typeof key === 'string';
+//   const isSymbol = (key: PropertyKey) => typeof key === 'symbol';
+//   const includeBasedOnEnumerability = (obj: object, key: PropertyKey) => (includeEnumerables && isEnumerable(obj, key)) || (includeNonenumerables && !isEnumerable(obj, key));
+//   const includeBasedOnKeyType = (key: PropertyKey) => (includeStrings && isString(key)) || (includeSymbols && isSymbol(key));
+//   const include = (obj: object, key: PropertyKey) => includeBasedOnEnumerability(obj, key) && includeBasedOnKeyType(key);
+//   const notYetRetrieved = (keys: PropertyKey[], key: PropertyKey) => !keys.includes(key);
+//
+//   // filter function putting all the above together:
+//   const filterFn = (key: PropertyKey) => notYetRetrieved(keys, key) && include(obj, key);
+//
+//   // conditional chooses one of two functions to determine whether to exclude the top level or not:
+//   const stopFn = includeTop ? ((obj: unknown) => obj === null) : ((obj: unknown) => Object.getPrototypeOf(obj) === null);
+//
+//   // and now the loop to collect and filter everything:
+//   let keys: PropertyKey[] = [];
+//   while (!stopFn(obj)) {
+//     if (includeSelf) {
+//       const ownKeys = Reflect.ownKeys(obj).filter(filterFn);
+//       keys = keys.concat(ownKeys);
+//     }
+//     if (!includePrototypeChain) { break; }
+//     else {
+//       includeSelf = true;
+//       obj = Object.getPrototypeOf(obj);
+//     }
+//   }
+//   return keys;
+// }
 
 // export function stringify(data: unknown, exclusions?: string[], maxDepth?: number = Infinity): string | undefined {
 //   function stringifyImpl(obj: unknown, excludedKeys: string[], maxDepth?: number = Infinity, currentDepth: number, cache: WeakSet): string | undefined {
