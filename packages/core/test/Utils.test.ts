@@ -3,6 +3,7 @@ import { expect } from "expect";
 
 import {
   endsWith,
+  isEmpty,
   isMatch,
   parseVersion,
   prune,
@@ -607,6 +608,39 @@ describe("Utils", () => {
     expect(parseVersion("https://cdnjs.cloudflare.com/ajax/libs/angular-google-maps/2.1.0-X.10/angular-google-maps.min.js")).toBe("2.1.0-X.10");
     expect(parseVersion("https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/2.1.8-M1/swagger-ui.min.js")).toBe("2.1.8-M1");
     expect(parseVersion("https://cdnjs.cloudflare.com/BLAH/BLAH.min.js")).toBeNull();
+  });
+
+  describe("isEmpty", () => {
+    const emptyValues = {
+      "undefined": undefined,
+      "null": null,
+      "empty string": "",
+      "whitespace string": "   ",
+      "{} string": "{}",
+      "[] string": "[]",
+      "empty object": {},
+      "empty array": []
+    };
+
+    Object.entries(emptyValues).forEach(([key, value]) => {
+      test(`for ${key}`, () => {
+        expect(isEmpty(value)).toBe(true);
+      });
+    });
+
+    const values = {
+      "Date": new Date(),
+      "number": 1,
+      "string": "string",
+      "object": { a: 1 },
+      "array": [1]
+    };
+
+    Object.entries(values).forEach(([key, value]) => {
+      test(`for ${key}`, () => {
+        expect(isEmpty(value)).toBe(false);
+      });
+    });
   });
 
   describe("isMatch", () => {

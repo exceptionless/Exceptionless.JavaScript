@@ -149,13 +149,33 @@ export function isMatch(
   });
 }
 
+/**
+ * Very simple implementation to check primitive types for emptiness.
+ * - If the input is null or undefined, it will return true.
+ * - If the input is an array, it will return true if the array is empty.
+ * - If the input is an object, it will return true if the object has no properties.
+ * - If the input is a string, it will return true if the string is empty or "{}" or "[]".
+ * @param input The input to check.
+ */
 export function isEmpty(input: Record<string, unknown> | null | undefined | unknown): input is null | undefined | Record<string, never> {
   if (input === null || input === undefined) {
     return true;
   }
 
   if (typeof input === "object") {
+    if (Array.isArray(input)) {
+      return input.length === 0;
+    }
+
+    if (input instanceof Date) {
+      return false;
+    }
+
     return Object.getOwnPropertyNames(input).length === 0;
+  }
+
+  if (typeof input === "string") {
+    return input.trim().length === 0 || input === "{}" || input === "[]";
   }
 
   return false;
