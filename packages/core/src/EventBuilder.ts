@@ -187,7 +187,7 @@ export class EventBuilder {
     const exclusions = this.client.config.dataExclusions.concat(excludedPropertyNames || []);
     const json = stringify(value, exclusions, maxDepth);
     if (!isEmpty(json)) {
-      this.target.data[name] = JSON.parse(json as string);
+      this.target.data[name] = JSON.parse(json);
     }
 
     return this;
