@@ -2,6 +2,7 @@ import {
   EventPluginContext,
   getCookies,
   IEventPlugin,
+  isEmpty,
   isMatch,
   KnownEventDataKeys,
   RequestInfo,
@@ -74,11 +75,17 @@ export class NodeRequestInfoPlugin implements IEventPlugin {
     }
 
     if (config.includeQueryString) {
-      requestInfo.query_string = JSON.parse(stringify(request.params || {}, exclusions)) as Record<string, string>;
+      const json = stringify(request.params, exclusions);
+      if (!isEmpty(json)) {
+        requestInfo.query_string = JSON.parse(json) as Record<string, string>;
+      }
     }
 
     if (config.includePostData) {
-      requestInfo.post_data = JSON.parse(stringify(request.body || {}, exclusions)) as Record<string, unknown>;
+      const json = stringify(request.body, exclusions);
+      if (!isEmpty(json)) {
+        requestInfo.post_data = JSON.parse(json) as Record<string, unknown>;
+      }
     }
 
     return requestInfo;

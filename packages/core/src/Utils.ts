@@ -149,7 +149,7 @@ export function isMatch(
   });
 }
 
-export function isEmpty(input: Record<string, unknown> | null | undefined | unknown): boolean {
+export function isEmpty(input: Record<string, unknown> | null | undefined | unknown): input is null | undefined | Record<string, never> {
   if (input === null || input === undefined) {
     return true;
   }
@@ -354,6 +354,10 @@ export function stringify(data: unknown, exclusions?: string[], maxDepth: number
 
       return value;
     });
+  }
+
+  if (data === undefined) {
+    return data;
   }
 
   const prunedData = prune(data, maxDepth);

@@ -184,9 +184,10 @@ export class EventBuilder {
       this.target.data = {};
     }
 
-    const result = JSON.parse(stringify(value, this.client.config.dataExclusions.concat(excludedPropertyNames || []), maxDepth)) as unknown;
-    if (!isEmpty(result)) {
-      this.target.data[name] = result;
+    const exclusions = this.client.config.dataExclusions.concat(excludedPropertyNames || []);
+    const json = stringify(value, exclusions, maxDepth);
+    if (!isEmpty(json)) {
+      this.target.data[name] = JSON.parse(json as string);
     }
 
     return this;
