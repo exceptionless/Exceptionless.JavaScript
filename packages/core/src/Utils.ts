@@ -154,8 +154,8 @@ export function isEmpty(input: Record<string, unknown> | null | undefined | unkn
     return true;
   }
 
-  if (typeof input == "object") {
-    return Object.keys(<Record<string, unknown>>input).length === 0;
+  if (typeof input === "object") {
+    return Object.getOwnPropertyNames(input).length === 0;
   }
 
   return false;
@@ -399,7 +399,7 @@ export function toError(errorOrMessage: unknown, defaultMessage = "Unknown Error
     return new Error(errorOrMessage);
   }
 
-  return new Error(JSON.stringify(errorOrMessage) || defaultMessage);
+  return new Error(stringify(errorOrMessage) || defaultMessage);
 }
 
 
