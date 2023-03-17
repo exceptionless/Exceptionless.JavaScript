@@ -61,13 +61,17 @@ describe("Utils", () => {
     });
 
     describe("should prune data types", () => {
+      // NOTE: we do not have coverage for globalThis.
+
       const primitiveValues = {
         "undefined": undefined,
         "null": null,
         "string": "string",
         "number": 1,
-        "boolean": true,
-        "date": new Date()
+        "Infinity": Infinity,
+        "-Infinity": -Infinity,
+        "NaN": NaN,
+        "boolean": true
       };
 
       Object.entries(primitiveValues).forEach(([key, value]) => {
@@ -79,15 +83,15 @@ describe("Utils", () => {
       });
 
       const typedArrayValues = {
-        "int8Array": new Int8Array([1]),
-        "uint8Array": new Uint8Array([1]),
-        "uint8ClampedArray": new Uint8ClampedArray([1]),
-        "int16Array": new Int16Array([1]),
-        "uint16Array": new Uint16Array([1]),
-        "int32Array": new Int32Array([1]),
-        "uint32Array": new Uint32Array([1]),
-        "float32Array": new Float32Array([1]),
-        "float64Array": new Float64Array([1])
+        "Int8Array": new Int8Array([1]),
+        "Uint8Array": new Uint8Array([1]),
+        "Uint8ClampedArray": new Uint8ClampedArray([1]),
+        "Int16Array": new Int16Array([1]),
+        "Uint16Array": new Uint16Array([1]),
+        "Int32Array": new Int32Array([1]),
+        "Uint32Array": new Uint32Array([1]),
+        "Float32Array": new Float32Array([1]),
+        "Float64Array": new Float64Array([1])
       };
 
       Object.entries(typedArrayValues).forEach(([key, value]) => {
@@ -104,8 +108,8 @@ describe("Utils", () => {
       });
 
       const bigIntTypedArrayValues = {
-        "bigint64Array": new BigInt64Array([1n]),
-        "bigUint64Array": new BigUint64Array([1n])
+        "BigInt64Array": new BigInt64Array([1n]),
+        "BigUint64Array": new BigUint64Array([1n])
       };
 
       Object.entries(bigIntTypedArrayValues).forEach(([key, value]) => {
@@ -123,13 +127,13 @@ describe("Utils", () => {
 
       // NOTE: Buffer could be supported as it specifies a toJSON method
       const unsupportedValues = {
-        "asyncGenerator": (async function* () { await Promise.resolve(1); yield 1; })(),
-        "arrayBuffer": new ArrayBuffer(1),
-        "buffer": Buffer.from("buffer"),
-        "dataView": new DataView(new ArrayBuffer(1)),
+        "Async Generator": (async function* () { await Promise.resolve(1); yield 1; })(),
+        "ArrayBuffer": new ArrayBuffer(1),
+        "Buffer": Buffer.from("buffer"),
+        "DataView": new DataView(new ArrayBuffer(1)),
         "function": () => { return undefined; },
-        "generator": (function* () { yield 1; })(),
-        "promise": Promise.resolve(1)
+        "Generator": (function* () { yield 1; })(),
+        "Promise": Promise.resolve(1)
       };
 
       Object.entries(unsupportedValues).forEach(([key, value]) => {
@@ -139,40 +143,34 @@ describe("Utils", () => {
         });
       });
 
+      test("for Array", () => {
+        const expected = [{ a: undefined }, [undefined], 1];
+        const actual = prune([{ a: { b: 2 } }, [[]], 1], 1);
+        expect(actual).toStrictEqual(expected);
+      });
+
       test("for BigInt", () => {
         const expected = "1n";
         const actual = prune(BigInt(1), 1);
         expect(actual).toStrictEqual(expected);
       });
 
-      test("for RegExp", () => {
-        const expected = "/regex/";
-        const actual = prune(/regex/, 1);
-        expect(actual).toStrictEqual(expected);
-      });
-
-      test("for Symbol", () => {
-        const expected = "symbol";
-        const actual = prune(Symbol("symbol"), 1);
-        expect(actual).toStrictEqual(expected);
+      test("for Date", () => {
+        const date = new Date();
+        const actual = prune(date, 1);
+        expect(actual).toStrictEqual(date);
       });
 
       test("for Error", () => {
-        const expected = { "message": "error" };
-        const actual = prune(new Error("error"), 1);
-        expect(actual).toStrictEqual(expected);
-      });
-
-      test("for Object", () => {
-        const expected = { a: undefined, b: 1 };
-        const actual = prune({ a: { b: 2 }, b: 1 }, 1);
-        expect(actual).toStrictEqual(expected);
-      });
-
-      test("for Array", () => {
-        const expected = [{ a: undefined }, [undefined], 1];
-        const actual = prune([{ a: { b: 2 } }, [[]], 1], 1);
-        expect(actual).toStrictEqual(expected);
+        try {
+          throw new Error("error");
+        } catch (error) {
+          if (error instanceof Error) {
+            const expected = { "message": error.message, "stack": error.stack };
+            const actual = prune(error, 1);
+            expect(actual).toStrictEqual(expected);
+          }
+        }
       });
 
       test("for Map", () => {
@@ -198,15 +196,33 @@ describe("Utils", () => {
         expect(actual).toStrictEqual(expected);
       });
 
-      test("for WeakMap", () => {
-        const actual = prune(new WeakMap([[{}, { a: { b: 2 } }]]), 2);
-        expect(actual).toBeUndefined();
+      test("for Object", () => {
+        const expected = { a: undefined, b: 1 };
+        const actual = prune({ a: { b: 2 }, b: 1 }, 1);
+        expect(actual).toStrictEqual(expected);
+      });
+
+      test("for RegExp", () => {
+        const expected = "/regex/";
+        const actual = prune(/regex/, 1);
+        expect(actual).toStrictEqual(expected);
       });
 
       test("for Set", () => {
         const expected = [{ "a": undefined, "b": 1 }, 1];
         const actual = prune(new Set([{ a: { b: 2 }, b: 1 }, 1]), 1);
         expect(actual).toStrictEqual(expected);
+      });
+
+      test("for Symbol", () => {
+        const expected = "symbol";
+        const actual = prune(Symbol("symbol"), 1);
+        expect(actual).toStrictEqual(expected);
+      });
+
+      test("for WeakMap", () => {
+        const actual = prune(new WeakMap([[{}, { a: { b: 2 } }]]), 2);
+        expect(actual).toBeUndefined();
       });
 
       test("for WeakSet", () => {
@@ -333,8 +349,10 @@ describe("Utils", () => {
         "null": null,
         "string": "string",
         "number": 1,
-        "boolean": true,
-        "date": new Date()
+        "Infinity": Infinity,
+        "-Infinity": -Infinity,
+        "NaN": NaN,
+        "boolean": true
       };
 
       Object.entries(primitiveValues).forEach(([key, value]) => {
@@ -346,15 +364,15 @@ describe("Utils", () => {
       });
 
       const typedArrayValues = {
-        "int8Array": new Int8Array([1]),
-        "uint8Array": new Uint8Array([1]),
-        "uint8ClampedArray": new Uint8ClampedArray([1]),
-        "int16Array": new Int16Array([1]),
-        "uint16Array": new Uint16Array([1]),
-        "int32Array": new Int32Array([1]),
-        "uint32Array": new Uint32Array([1]),
-        "float32Array": new Float32Array([1]),
-        "float64Array": new Float64Array([1])
+        "Int8Array": new Int8Array([1]),
+        "Uint8Array": new Uint8Array([1]),
+        "Uint8ClampedArray": new Uint8ClampedArray([1]),
+        "Int16Array": new Int16Array([1]),
+        "Uint16Array": new Uint16Array([1]),
+        "Int32Array": new Int32Array([1]),
+        "Uint32Array": new Uint32Array([1]),
+        "Float32Array": new Float32Array([1]),
+        "Float64Array": new Float64Array([1])
       };
 
       Object.entries(typedArrayValues).forEach(([key, value]) => {
@@ -366,8 +384,8 @@ describe("Utils", () => {
       });
 
       const bigIntTypedArrayValues = {
-        "bigint64Array": new BigInt64Array([1n]),
-        "bigUint64Array": new BigUint64Array([1n])
+        "BigInt64Array": new BigInt64Array([1n]),
+        "BigUint64Array": new BigUint64Array([1n])
       };
 
       Object.entries(bigIntTypedArrayValues).forEach(([key, value]) => {
@@ -380,13 +398,13 @@ describe("Utils", () => {
 
       // NOTE: Buffer could be supported as it specifies a toJSON method
       const unsupportedValues = {
-        "asyncGenerator": (async function* () { await Promise.resolve(1); yield 1; })(),
-        "arrayBuffer": new ArrayBuffer(1),
-        "buffer": Buffer.from("buffer"),
-        "dataView": new DataView(new ArrayBuffer(1)),
+        "Async Generator": (async function* () { await Promise.resolve(1); yield 1; })(),
+        "ArrayBuffer": new ArrayBuffer(1),
+        "Buffer": Buffer.from("buffer"),
+        "DataView": new DataView(new ArrayBuffer(1)),
         "function": () => { return undefined; },
-        "generator": (function* () { yield 1; })(),
-        "promise": Promise.resolve(1)
+        "Generator": (function* () { yield 1; })(),
+        "Promise": Promise.resolve(1)
       };
 
       Object.entries(unsupportedValues).forEach(([key, value]) => {
@@ -396,40 +414,35 @@ describe("Utils", () => {
         });
       });
 
+      test("for Array", () => {
+        const expected = JSON.stringify([{ a: undefined }, [undefined], 1]);
+        const actual = stringify([{ a: { b: 2 } }, [[]], 1], [], 1);
+        expect(actual).toStrictEqual(expected);
+      });
+
       test("for BigInt", () => {
         const expected = JSON.stringify("1n");
         const actual = stringify(BigInt(1), [], 1);
         expect(actual).toStrictEqual(expected);
       });
 
-      test("for RegExp", () => {
-        const expected = JSON.stringify("/regex/");
-        const actual = stringify(/regex/, [], 1);
-        expect(actual).toStrictEqual(expected);
-      });
-
-      test("for Symbol", () => {
-        const expected = JSON.stringify("symbol");
-        const actual = stringify(Symbol("symbol"), [], 1);
+      test("for Date", () => {
+        const date = new Date();
+        const expected = JSON.stringify(date);
+        const actual = stringify(date, [], 1);
         expect(actual).toStrictEqual(expected);
       });
 
       test("for Error", () => {
-        const expected = JSON.stringify({ "message": "error" });
-        const actual = stringify(new Error("error"), [], 1);
-        expect(actual).toStrictEqual(expected);
-      });
-
-      test("for Object", () => {
-        const expected = JSON.stringify({ a: undefined, b: 1 });
-        const actual = stringify({ a: { b: 2 }, b: 1 }, [], 1);
-        expect(actual).toStrictEqual(expected);
-      });
-
-      test("for Array", () => {
-        const expected = JSON.stringify([{ a: undefined }, [undefined], 1]);
-        const actual = stringify([{ a: { b: 2 } }, [[]], 1], [], 1);
-        expect(actual).toStrictEqual(expected);
+        try {
+          throw new Error("error");
+        } catch (error) {
+          if (error instanceof Error) {
+            const expected = JSON.stringify({ "stack": error.stack, "message": error.message });
+            const actual = stringify(error, [], 1);
+            expect(actual).toStrictEqual(expected);
+          }
+        }
       });
 
       test("for Map", () => {
@@ -455,15 +468,33 @@ describe("Utils", () => {
         expect(actual).toStrictEqual(expected);
       });
 
-      test("for WeakMap", () => {
-        const actual = stringify(new WeakMap([[{}, { a: { b: 2 } }]]), [], 2);
-        expect(actual).toBeUndefined();
+      test("for Object", () => {
+        const expected = JSON.stringify({ a: undefined, b: 1 });
+        const actual = stringify({ a: { b: 2 }, b: 1 }, [], 1);
+        expect(actual).toStrictEqual(expected);
+      });
+
+      test("for RegExp", () => {
+        const expected = JSON.stringify("/regex/");
+        const actual = stringify(/regex/, [], 1);
+        expect(actual).toStrictEqual(expected);
       });
 
       test("for Set", () => {
         const expected = JSON.stringify([{ "a": undefined, "b": 1 }, 1]);
         const actual = stringify(new Set([{ a: { b: 2 }, b: 1 }, 1]), [], 1);
         expect(actual).toStrictEqual(expected);
+      });
+
+      test("for Symbol", () => {
+        const expected = JSON.stringify("symbol");
+        const actual = stringify(Symbol("symbol"), [], 1);
+        expect(actual).toStrictEqual(expected);
+      });
+
+      test("for WeakMap", () => {
+        const actual = stringify(new WeakMap([[{}, { a: { b: 2 } }]]), [], 2);
+        expect(actual).toBeUndefined();
       });
 
       test("for WeakSet", () => {

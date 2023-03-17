@@ -174,20 +174,20 @@ export function endsWith(input: string, suffix: string): boolean {
  * The following rules will be applied:
  * 1. If the value is null or undefined, it will be returned as is.
  * 2. If the value is a function or unsupported type it will be return undefined.
- * 3. If the value is an array, it will be pruned to the specified depth and truncated.
+ * 3. If the value is an array, it will be pruned to the specified depth.
  * 4. If the value is an object, it will be pruned to the specified depth and
  *    a. If the object is a Circular Reference it will return undefined.
  *    b. If the object is a Map, it will be converted to an object. Some data loss might occur if map keys are object types as last in wins.
  *    c. If the object is a Set, it will be converted to an array.
  *    d. If the object contains prototype properties, they will be picked up.
  *    e. If the object contains a toJSON function, it will be called and it's value will be normalized.
- *    f. If the object is is uniterable and not clonable (e.g., WeakMap, WeakSet, etc.), it will return undefined.
+ *    f. If the object is is uniterable and not cloneable (e.g., WeakMap, WeakSet, etc.), it will return undefined.
  *    g. If a symbol property is encountered, it will be converted to a string representation and could overwrite existing object keys.
  * 5. If the value is an Error, we will treat it as an object.
- * 6. If the value is a primitive, it will be returned as is unless it is a string could be truncated.
+ * 6. If the value is a primitive, it will be returned as is.
  * 7. If the value is a Regexp, Symbol we will convert it to the string representation.
  * 8. BigInt and other typed arrays will be converted to a string unless number type works.
- * 9. All other values will be returned as undedfined (E.g., Buffer, DataView, Promises, Generators etc..)
+ * 9. All other values will be returned as undefined (E.g., Buffer, DataView, Promises, Generators etc..)
  */
 export function prune(value: unknown, depth: number = 10): unknown {
   function isUnsupportedType(value: unknown): boolean {
@@ -236,12 +236,21 @@ export function prune(value: unknown, depth: number = 10): unknown {
         return value;
       }
 
-      if (value instanceof RegExp) {
-        return value.toString();
+      if (value instanceof Date) {
+        return value;
       }
 
       if (value instanceof Map) {
-        return Object.fromEntries(value.entries());
+        const result: Record<PropertyKey, unknown> = {};
+        for (const [key, val] of value) {
+          result[key] = val;
+        }
+
+        return result;
+      }
+
+      if (value instanceof RegExp) {
+        return value.toString();
       }
 
       if (value instanceof Set) {
@@ -284,10 +293,6 @@ export function prune(value: unknown, depth: number = 10): unknown {
 
     const normalizedValue = normalizeValue(value);
     if (typeof normalizedValue === "object") {
-      if (normalizedValue instanceof Date) {
-        return normalizedValue;
-      }
-
       if (currentDepth == maxDepth) {
         return undefined;
       }
@@ -296,6 +301,10 @@ export function prune(value: unknown, depth: number = 10): unknown {
         // Treat an object inside of an array as a single level
         const depth: number = parentIsArray ? currentDepth + 1 : currentDepth;
         return normalizedValue.map(e => pruneImpl(e, maxDepth, depth, seen, true));
+      }
+
+      if (normalizedValue instanceof Date) {
+        return normalizedValue;
       }
 
       // Check for circular references
@@ -307,17 +316,19 @@ export function prune(value: unknown, depth: number = 10): unknown {
         seen.add(normalizedValue as object);
       }
 
-      const result: Record<PropertyKey, unknown> = {};
+      const keys = new Set<PropertyKey>([...Object.getOwnPropertyNames(normalizedValue), ...Object.getOwnPropertySymbols(normalizedValue)]);
+      // Loop over and add any inherited prototype properties
       for (const key in normalizedValue) {
-        const objectValue = (normalizedValue as { [index: PropertyKey]: unknown })[key];
-        result[key] = pruneImpl(objectValue, maxDepth, currentDepth + 1, seen);
+        keys.add(key);
       }
 
-      for (const symbolKey of Object.getOwnPropertySymbols(normalizedValue)) {
+      type NonSymbolPropertyKey = Exclude<PropertyKey, symbol>;
+      const result: Record<NonSymbolPropertyKey, unknown> = {};
+      for (const key of keys) {
         // Normalize the key so Symbols are converted to strings.
-        const normalizedKey = normalizeValue(symbolKey) as PropertyKey;
+        const normalizedKey = normalizeValue(key) as NonSymbolPropertyKey;
 
-        const objectValue = (normalizedValue as { [index: PropertyKey]: unknown })[symbolKey];
+        const objectValue = (normalizedValue as { [index: PropertyKey]: unknown })[key];
         result[normalizedKey] = pruneImpl(objectValue, maxDepth, currentDepth + 1, seen);
       }
 
@@ -348,126 +359,6 @@ export function stringify(data: unknown, exclusions?: string[], maxDepth: number
   const prunedData = prune(data, maxDepth);
   return stringifyImpl(prunedData, exclusions || []);
 }
-
-// https://stackoverflow.com/questions/8024149/is-it-possible-to-get-the-non-enumerable-inherited-property-names-of-an-object
-// function getAllKeysConditionally(obj: object, includeSelf = true, includePrototypeChain = true, includeTop = false, includeEnumerables = true, includeNonenumerables = true, includeStrings = true, includeSymbols = true) {
-//
-//   // Boolean (mini-)functions to determine unknown given key's eligibility:
-//   const isEnumerable = (obj: object, key: PropertyKey) => Object.propertyIsEnumerable.call(obj, key);
-//   const isString = (key: PropertyKey) => typeof key === 'string';
-//   const isSymbol = (key: PropertyKey) => typeof key === 'symbol';
-//   const includeBasedOnEnumerability = (obj: object, key: PropertyKey) => (includeEnumerables && isEnumerable(obj, key)) || (includeNonenumerables && !isEnumerable(obj, key));
-//   const includeBasedOnKeyType = (key: PropertyKey) => (includeStrings && isString(key)) || (includeSymbols && isSymbol(key));
-//   const include = (obj: object, key: PropertyKey) => includeBasedOnEnumerability(obj, key) && includeBasedOnKeyType(key);
-//   const notYetRetrieved = (keys: PropertyKey[], key: PropertyKey) => !keys.includes(key);
-//
-//   // filter function putting all the above together:
-//   const filterFn = (key: PropertyKey) => notYetRetrieved(keys, key) && include(obj, key);
-//
-//   // conditional chooses one of two functions to determine whether to exclude the top level or not:
-//   const stopFn = includeTop ? ((obj: unknown) => obj === null) : ((obj: unknown) => Object.getPrototypeOf(obj) === null);
-//
-//   // and now the loop to collect and filter everything:
-//   let keys: PropertyKey[] = [];
-//   while (!stopFn(obj)) {
-//     if (includeSelf) {
-//       const ownKeys = Reflect.ownKeys(obj).filter(filterFn);
-//       keys = keys.concat(ownKeys);
-//     }
-//     if (!includePrototypeChain) { break; }
-//     else {
-//       includeSelf = true;
-//       obj = Object.getPrototypeOf(obj);
-//     }
-//   }
-//   return keys;
-// }
-
-// export function stringify(data: unknown, exclusions?: string[], maxDepth?: number = Infinity): string | undefined {
-//   function stringifyImpl(obj: unknown, excludedKeys: string[], maxDepth?: number = Infinity, currentDepth: number, cache: WeakSet): string | undefined {
-//     if (currentDepth > maxDepth) {
-//       return;
-//     }
-//
-//     if (typeof obj === "function" || obj === undefined) {
-//       return undefined;
-//     }
-//
-//     if (obj === null) {
-//       return "null";
-//     }
-//
-//     if (typeof obj === "string") {
-//       return `"${obj}"`;
-//     }
-//
-//     if (typeof obj === "number" || typeof obj === "boolean") {
-//       return obj.toString();
-//     }
-//
-//     if (obj instanceof Date) {
-//       return `"${obj.toISOString()}"`;
-//     }
-//
-//     if (obj instanceof RegExp) {
-//       return obj.toString();
-//     }
-//
-//     if (typeof obj === "symbol") {
-//       return obj.toString();
-//     }
-//
-//     if (typeof obj === "bigint") {
-//       return obj.toString() + "n";
-//     }
-//
-//     if (typeof obj === "object") {
-//       if (Array.isArray(obj)) {
-//         const items = obj.map(item => stringify(item, maxDepth, currentDepth + 1));
-//         return `[${items.join(",")}]`;
-//       } else {
-//         const keys = Object.keys(obj).sort(); // sort keys alphabetically
-//         const items = keys.map(key => `"${key}":${stringify(obj[key], maxDepth, currentDepth + 1) || "null"}`);
-//         return `{${items.join(",")}}`;
-//       }
-//     }
-//
-//     // handle circular references
-//     if (cache.indexOf(obj)) {
-//       return "[Circular Reference]";
-//     }
-//     cache.push(obj);
-//
-//     // handle objects that define their own toJSON method
-//     const toJSON = obj.toJSON;
-//     if (typeof toJSON === "function") {
-//       return stringify(toJSON.call(obj), maxDepth, currentDepth + 1);
-//     }
-//
-//     // handle objects that implement the iterator protocol (Maps, Sets, etc.)
-//     const iterator = obj[Symbol.iterator];
-//     if (typeof iterator === "function") {
-//       const items = [];
-//       for (let item of obj) {
-//         items.push(stringify(item, maxDepth, currentDepth + 1));
-//       }
-//       return `[${items.join(",")}]`;
-//     }
-//
-//     // handle objects that implement the async iterator protocol (Streams, etc.)
-//     const asyncIterator = obj[Symbol.asyncIterator];
-//     if (typeof asyncIterator === "function") {
-//       return stringify(asyncIterator.call(obj).next().then(result => {
-//         if (result.done) {
-//           return null;
-//         }
-//         return stringify(result.value, maxDepth, currentDepth + 1);
-//       }), maxDepth, currentDepth + 1);
-//     }
-//
-//     return undefined;
-//   }
-// }
 
 export function toBoolean(input: unknown, defaultValue: boolean = false): boolean {
   if (typeof input === "boolean") {
