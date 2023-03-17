@@ -181,7 +181,7 @@ export function endsWith(input: string, suffix: string): boolean {
  *    c. If the object is a Set, it will be converted to an array.
  *    d. If the object contains prototype properties, they will be picked up.
  *    e. If the object contains a toJSON function, it will be called and it's value will be normalized.
- *    f. If the object is is uniterable and not cloneable (e.g., WeakMap, WeakSet, etc.), it will return undefined.
+ *    f. If the object is is not iterable or cloneable (e.g., WeakMap, WeakSet, etc.), it will return undefined.
  *    g. If a symbol property is encountered, it will be converted to a string representation and could overwrite existing object keys.
  * 5. If the value is an Error, we will treat it as an object.
  * 6. If the value is a primitive, it will be returned as is.
