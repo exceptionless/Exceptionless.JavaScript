@@ -2,30 +2,291 @@ import { describe, test } from "@jest/globals";
 import { expect } from "expect";
 
 import {
-  stringify,
-  parseVersion,
-  isMatch,
-  startsWith,
   endsWith,
+  isEmpty,
+  isMatch,
+  parseVersion,
+  prune,
+  startsWith,
+  stringify,
   toBoolean
 } from "../src/Utils.js";
 
 describe("Utils", () => {
-  describe("stringify", () => {
-    const user = {
-      id: 1,
-      name: "Blake",
-      password: "123456",
-      passwordResetToken: "a reset token",
-      myPassword: "123456",
-      myPasswordValue: "123456",
-      customValue: "Password",
-      value: {
-        Password: "123456"
-      }
-    };
+  function getObjectWithInheritedProperties(): unknown {
+    // @ts-expect-error TS2683
+    const Foo = function () { this.a = "a"; };
+    // @ts-expect-error TS2683
+    const Bar = function () { this.b = "b"; };
+    // @ts-expect-error TS7009
+    Bar.prototype = new Foo();
+    // @ts-expect-error TS7009
+    return new Bar();
+  }
 
-    test("array", () => {
+  describe("prune", () => {
+    test("circular reference", () => {
+      type Circular = { property: string, circularRef?: Circular };
+      const circular: Circular = { property: "string" };
+      circular.circularRef = circular;
+
+      const expected = { "property": "string", "circularRef": undefined };
+      const actual = prune(circular);
+      expect(actual).toStrictEqual(expected);
+    });
+
+    test("circular array reference", () => {
+      type Circular = { property: string, circularRef?: Circular, list?: Circular[] };
+      const circular: Circular = { property: "string" };
+      circular.circularRef = circular;
+      circular.list = [circular];
+
+      const expected = { "property": "string", "circularRef": undefined, "list": [undefined] };
+      const actual = prune(circular);
+      expect(actual).toStrictEqual(expected);
+    });
+
+    test("array reference removes duplicated object references", () => {
+      type PropertyObject = { property: string };
+      const propObject: PropertyObject = { property: "string" };
+
+      const expected = [{ "property": "string" }, undefined];
+      const actual = prune([propObject, propObject]);
+      expect(actual).toStrictEqual(expected);
+    });
+
+    test("array cloned no object references", () => {
+      const expected = [{ "property": "string" }, { "property": "string" }];
+      const actual = prune([{ "property": "string" }, { "property": "string" }]);
+      expect(actual).toStrictEqual(expected);
+    });
+
+    describe("should prune data types", () => {
+      // NOTE: we do not have coverage for globalThis.
+
+      const primitiveValues = {
+        "undefined": undefined,
+        "null": null,
+        "string": "string",
+        "number": 1,
+        "Infinity": Infinity,
+        "-Infinity": -Infinity,
+        "NaN": NaN,
+        "boolean": true
+      };
+
+      Object.entries(primitiveValues).forEach(([key, value]) => {
+        test(`for ${key}`, () => {
+          const actual = prune(value, 1);
+          const expected = value;
+          expect(actual).toBe(expected);
+        });
+      });
+
+      const typedArrayValues = {
+        "Int8Array": new Int8Array([1]),
+        "Uint8Array": new Uint8Array([1]),
+        "Uint8ClampedArray": new Uint8ClampedArray([1]),
+        "Int16Array": new Int16Array([1]),
+        "Uint16Array": new Uint16Array([1]),
+        "Int32Array": new Int32Array([1]),
+        "Uint32Array": new Uint32Array([1]),
+        "Float32Array": new Float32Array([1]),
+        "Float64Array": new Float64Array([1])
+      };
+
+      Object.entries(typedArrayValues).forEach(([key, value]) => {
+        test(`for ${key}`, () => {
+          const actual = prune(value, 1);
+
+          if (Array.isArray(actual)) {
+            expect(actual.length).toBe(1);
+            expect(actual).toContain(1);
+          } else {
+            throw new Error("actual is not an array");
+          }
+        });
+      });
+
+      const bigIntTypedArrayValues = {
+        "BigInt64Array": new BigInt64Array([1n]),
+        "BigUint64Array": new BigUint64Array([1n])
+      };
+
+      Object.entries(bigIntTypedArrayValues).forEach(([key, value]) => {
+        test(`for ${key}`, () => {
+          const actual = prune(value, 1);
+
+          if (Array.isArray(actual)) {
+            expect(actual.length).toBe(1);
+            expect(actual).toContain("1n");
+          } else {
+            throw new Error("actual is not an array");
+          }
+        });
+      });
+
+      // NOTE: Buffer could be supported as it specifies a toJSON method
+      const unsupportedValues = {
+        "Async Generator": (async function* () { await Promise.resolve(1); yield 1; })(),
+        "ArrayBuffer": new ArrayBuffer(1),
+        "Buffer": Buffer.from("buffer"),
+        "DataView": new DataView(new ArrayBuffer(1)),
+        "function": () => { return undefined; },
+        "Generator": (function* () { yield 1; })(),
+        "Promise": Promise.resolve(1)
+      };
+
+      Object.entries(unsupportedValues).forEach(([key, value]) => {
+        test(`for ${key}`, () => {
+          const actual = prune(value, 1);
+          expect(actual).toBeUndefined();
+        });
+      });
+
+      test("for Array", () => {
+        const expected = [{ a: undefined }, [undefined], 1];
+        const actual = prune([{ a: { b: 2 } }, [[]], 1], 1);
+        expect(actual).toStrictEqual(expected);
+      });
+
+      test("for BigInt", () => {
+        const expected = "1n";
+        const actual = prune(BigInt(1), 1);
+        expect(actual).toStrictEqual(expected);
+      });
+
+      test("for Date", () => {
+        const date = new Date();
+        const actual = prune(date, 1);
+        expect(actual).toStrictEqual(date);
+      });
+
+      test("for Error", () => {
+        try {
+          throw new Error("error");
+        } catch (error) {
+          if (error instanceof Error) {
+            const expected = { "message": error.message, "stack": error.stack };
+            const actual = prune(error, 1);
+            expect(actual).toStrictEqual(expected);
+          }
+        }
+      });
+
+      test("for Map", () => {
+        const expected = {
+          "123": 123,
+          "[object Object]": {
+            "a2": undefined,
+            "b2": 1
+          },
+          "string key": "string key",
+          "symbol": ["symbol key"]
+        };
+
+        const actual = prune(new Map<unknown, unknown>([
+          // NOTE: this value is lost due to being converted to ["[object Object]", { a: { b: 2 }, b: 1 }]
+          [{ id: 1 }, { a: { b: 2 }, b: 1 }],
+          [{ id: 2 }, { a2: { b2: 2 }, b2: 1 }],
+          ["string key", "string key"],
+          [123, 123],
+          [Symbol("symbol"), ["symbol key"]]
+        ]), 2);
+
+        expect(actual).toStrictEqual(expected);
+      });
+
+      test("for Object", () => {
+        const expected = { a: undefined, b: 1 };
+        const actual = prune({ a: { b: 2 }, b: 1 }, 1);
+        expect(actual).toStrictEqual(expected);
+      });
+
+      test("for RegExp", () => {
+        const expected = "/regex/";
+        const actual = prune(/regex/, 1);
+        expect(actual).toStrictEqual(expected);
+      });
+
+      test("for Set", () => {
+        const expected = [{ "a": undefined, "b": 1 }, 1];
+        const actual = prune(new Set([{ a: { b: 2 }, b: 1 }, 1]), 1);
+        expect(actual).toStrictEqual(expected);
+      });
+
+      test("for Symbol", () => {
+        const expected = "symbol";
+        const actual = prune(Symbol("symbol"), 1);
+        expect(actual).toStrictEqual(expected);
+      });
+
+      test("for WeakMap", () => {
+        const actual = prune(new WeakMap([[{}, { a: { b: 2 } }]]), 2);
+        expect(actual).toBeUndefined();
+      });
+
+      test("for WeakSet", () => {
+        const actual = prune(new WeakSet([{ a: { b: 2 } }]), 2);
+        expect(actual).toBeUndefined();
+      });
+
+      test("should handle toJSON", () => {
+        const expected = { test: "test" };
+        const actual = prune({
+          number: 1,
+          toJSON() {
+            return {
+              test: "test"
+            };
+          }
+        });
+
+        expect(actual).toStrictEqual(expected);
+      });
+    });
+
+    test("should respect maxDepth", () => {
+      const value = {
+        ao: {
+          bo: {
+            cn: 1,
+            co: {
+              do: {}
+            }
+          },
+          ba: [
+            {
+              cn: 1,
+              co: {
+                do: {}
+              }
+            }
+          ],
+          bn: 1
+        }
+      };
+
+      expect(prune(value, 1)).toStrictEqual({ "ao": undefined });
+      expect(prune(value, 2)).toStrictEqual({ "ao": { "bo": undefined, "ba": undefined, "bn": 1 } });
+      expect(prune(value, 3)).toStrictEqual({ "ao": { "bo": { "cn": 1, "co": undefined }, "ba": [{ "cn": 1, "co": undefined }], "bn": 1 } });
+      expect(prune(value, 4)).toStrictEqual({ "ao": { "bo": { "cn": 1, "co": { "do": undefined } }, "ba": [{ "cn": 1, "co": { "do": undefined } }], "bn": 1 } });
+      expect(prune(value, 5)).toStrictEqual({ "ao": { "bo": { "cn": 1, "co": { "do": {} } }, "ba": [{ "cn": 1, "co": { "do": {} } }], "bn": 1 } });
+    });
+
+    test("should prune inherited properties", () => {
+      const expected = {
+        a: "a",
+        b: "b"
+      };
+
+      const actual = prune(getObjectWithInheritedProperties(), 1);
+      expect(actual).toStrictEqual(expected);
+    });
+  });
+
+  describe("stringify", () => {
+    test("event error", () => {
       const error = {
         type: "error",
         data: {
@@ -60,76 +321,256 @@ describe("Utils", () => {
       };
 
       expect(stringify(error)).toBe(JSON.stringify(error));
-      expect(stringify([error, error])).toBe(JSON.stringify([error, error]));
     });
 
     test("circular reference", () => {
-      const aFoo: { a: string, b?: unknown } = { a: "foo" };
-      aFoo.b = aFoo;
+      type Circular = { property: string, circularRef?: Circular };
+      const circular: Circular = { property: "string" };
+      circular.circularRef = circular;
 
-      expect(stringify(aFoo)).toBe("{\"a\":\"foo\"}");
-      expect(stringify([{ one: aFoo, two: aFoo }])).toBe("[{\"one\":{\"a\":\"foo\"}}]");
+      const expected = JSON.stringify({ "property": "string", "circularRef": undefined });
+      const actual = stringify(circular);
+      expect(actual).toStrictEqual(expected);
     });
 
-    test.skip("deep circular reference", () => {
-      const a: { b?: unknown } = {};
-      const b: { c?: unknown } = {};
-      const c: { a?: unknown, d: string } = { d: "test" };
+    test("circular array reference", () => {
+      type Circular = { property: string, circularRef?: Circular, list?: Circular[] };
+      const circular: Circular = { property: "string" };
+      circular.circularRef = circular;
+      circular.list = [circular];
 
-      a.b = b;
-      b.c = c;
-      c.a = a;
-
-      const expected = "{\"b\":{\"c\":{\"d\":\"test\"}}}";
-
-      const actual = stringify(a);
-      expect(actual).toBe(expected);
+      const expected = JSON.stringify({ "property": "string", "circularRef": undefined, "list": [undefined] });
+      const actual = stringify(circular);
+      expect(actual).toStrictEqual(expected);
     });
 
-    describe("should behave like JSON.stringify", () => {
-      [new Date(), 1, true, null, undefined, () => { return undefined; }, user].forEach((value) => {
-        test("for " + typeof (value), () => {
-          expect(stringify(value)).toBe(JSON.stringify(value));
+    describe("should serialize data types", () => {
+      const primitiveValues = {
+        "undefined": undefined,
+        "null": null,
+        "string": "string",
+        "number": 1,
+        "Infinity": Infinity,
+        "-Infinity": -Infinity,
+        "NaN": NaN,
+        "boolean": true
+      };
+
+      Object.entries(primitiveValues).forEach(([key, value]) => {
+        test(`for ${key}`, () => {
+          const actual = stringify(value, [], 1);
+          const expected = JSON.stringify(value);
+          expect(actual).toStrictEqual(expected);
         });
+      });
+
+      const typedArrayValues = {
+        "Int8Array": new Int8Array([1]),
+        "Uint8Array": new Uint8Array([1]),
+        "Uint8ClampedArray": new Uint8ClampedArray([1]),
+        "Int16Array": new Int16Array([1]),
+        "Uint16Array": new Uint16Array([1]),
+        "Int32Array": new Int32Array([1]),
+        "Uint32Array": new Uint32Array([1]),
+        "Float32Array": new Float32Array([1]),
+        "Float64Array": new Float64Array([1])
+      };
+
+      Object.entries(typedArrayValues).forEach(([key, value]) => {
+        test(`for ${key}`, () => {
+          const actual = stringify(value, [], 1);
+          const expected = JSON.stringify([1]);
+          expect(actual).toStrictEqual(expected);
+        });
+      });
+
+      const bigIntTypedArrayValues = {
+        "BigInt64Array": new BigInt64Array([1n]),
+        "BigUint64Array": new BigUint64Array([1n])
+      };
+
+      Object.entries(bigIntTypedArrayValues).forEach(([key, value]) => {
+        test(`for ${key}`, () => {
+          const actual = stringify(value, [], 1);
+          const expected = JSON.stringify(["1n"]);
+          expect(actual).toStrictEqual(expected);
+        });
+      });
+
+      // NOTE: Buffer could be supported as it specifies a toJSON method
+      const unsupportedValues = {
+        "Async Generator": (async function* () { await Promise.resolve(1); yield 1; })(),
+        "ArrayBuffer": new ArrayBuffer(1),
+        "Buffer": Buffer.from("buffer"),
+        "DataView": new DataView(new ArrayBuffer(1)),
+        "function": () => { return undefined; },
+        "Generator": (function* () { yield 1; })(),
+        "Promise": Promise.resolve(1)
+      };
+
+      Object.entries(unsupportedValues).forEach(([key, value]) => {
+        test(`for ${key}`, () => {
+          const actual = stringify(value, [], 1);
+          expect(actual).toBeUndefined();
+        });
+      });
+
+      test("for Array", () => {
+        const expected = JSON.stringify([{ a: undefined }, [undefined], 1]);
+        const actual = stringify([{ a: { b: 2 } }, [[]], 1], [], 1);
+        expect(actual).toStrictEqual(expected);
+      });
+
+      test("for BigInt", () => {
+        const expected = JSON.stringify("1n");
+        const actual = stringify(BigInt(1), [], 1);
+        expect(actual).toStrictEqual(expected);
+      });
+
+      test("for Date", () => {
+        const date = new Date();
+        const expected = JSON.stringify(date);
+        const actual = stringify(date, [], 1);
+        expect(actual).toStrictEqual(expected);
+      });
+
+      test("for Error", () => {
+        try {
+          throw new Error("error");
+        } catch (error) {
+          if (error instanceof Error) {
+            const expected = JSON.stringify({ "stack": error.stack, "message": error.message });
+            const actual = stringify(error, [], 1);
+            expect(actual).toStrictEqual(expected);
+          }
+        }
+      });
+
+      test("for Map", () => {
+        const expected = JSON.stringify({
+          "123": 123,
+          "[object Object]": {
+            "a2": undefined,
+            "b2": 1
+          },
+          "string key": "string key",
+          "symbol": ["symbol key"]
+        });
+
+        const actual = stringify(new Map<unknown, unknown>([
+          // NOTE: this value is lost due to being converted to ["[object Object]", { a: { b: 2 }, b: 1 }]
+          [{ id: 1 }, { a: { b: 2 }, b: 1 }],
+          [{ id: 2 }, { a2: { b2: 2 }, b2: 1 }],
+          ["string key", "string key"],
+          [123, 123],
+          [Symbol("symbol"), ["symbol key"]]
+        ]), [], 2);
+
+        expect(actual).toStrictEqual(expected);
+      });
+
+      test("for Object", () => {
+        const expected = JSON.stringify({ a: undefined, b: 1 });
+        const actual = stringify({ a: { b: 2 }, b: 1 }, [], 1);
+        expect(actual).toStrictEqual(expected);
+      });
+
+      test("for RegExp", () => {
+        const expected = JSON.stringify("/regex/");
+        const actual = stringify(/regex/, [], 1);
+        expect(actual).toStrictEqual(expected);
+      });
+
+      test("for Set", () => {
+        const expected = JSON.stringify([{ "a": undefined, "b": 1 }, 1]);
+        const actual = stringify(new Set([{ a: { b: 2 }, b: 1 }, 1]), [], 1);
+        expect(actual).toStrictEqual(expected);
+      });
+
+      test("for Symbol", () => {
+        const expected = JSON.stringify("symbol");
+        const actual = stringify(Symbol("symbol"), [], 1);
+        expect(actual).toStrictEqual(expected);
+      });
+
+      test("for WeakMap", () => {
+        const actual = stringify(new WeakMap([[{}, { a: { b: 2 } }]]), [], 2);
+        expect(actual).toBeUndefined();
+      });
+
+      test("for WeakSet", () => {
+        const actual = stringify(new WeakSet([{ a: { b: 2 } }]), [], 2);
+        expect(actual).toBeUndefined();
       });
     });
 
-    /*
-    test.skip("should respect maxDepth", () => {
-      const deepObject = {
-        a: {
-          b: {
-            c: {
-              d: {}
-            }
-          }
+    test("should handle toJSON", () => {
+      const value = {
+        number: 1,
+        toJSON() {
+          return {
+            test: "test"
+          };
         }
       };
 
-      expect(deepObject).toBe("TODO");
+      const expected = JSON.stringify(value);
+      const actual = stringify(value);
+      expect(actual).toStrictEqual(expected);
     });
-    */
+
+    test("should respect maxDepth", () => {
+      const value = {
+        ao: {
+          bo: {
+            cn: 1,
+            co: {
+              do: {}
+            }
+          },
+          ba: [
+            {
+              cn: 1,
+              co: {
+                do: {}
+              }
+            }
+          ],
+          bn: 1
+        }
+      };
+
+      expect(stringify(value, [], 1)).toStrictEqual(JSON.stringify({ "ao": undefined }));
+      expect(stringify(value, [], 2)).toStrictEqual(JSON.stringify({ "ao": { "bo": undefined, "ba": undefined, "bn": 1 } }));
+      expect(stringify(value, [], 3)).toStrictEqual(JSON.stringify({ "ao": { "bo": { "cn": 1, "co": undefined }, "ba": [{ "cn": 1, "co": undefined }], "bn": 1 } }));
+      expect(stringify(value, [], 4)).toStrictEqual(JSON.stringify({ "ao": { "bo": { "cn": 1, "co": { "do": undefined } }, "ba": [{ "cn": 1, "co": { "do": undefined } }], "bn": 1 } }));
+      expect(stringify(value, [], 5)).toStrictEqual(JSON.stringify({ "ao": { "bo": { "cn": 1, "co": { "do": {} } }, "ba": [{ "cn": 1, "co": { "do": {} } }], "bn": 1 } }));
+    });
 
     test("should serialize inherited properties", () => {
-      // @ts-expect-error TS2683
-      const Foo = function () { this.a = "a"; };
-      // @ts-expect-error TS2683
-      const Bar = function () { this.b = "b"; };
-      // @ts-expect-error TS7009
-      Bar.prototype = new Foo();
-      // @ts-expect-error TS7009
-      const bar = new Bar();
-
       const expected = {
         a: "a",
         b: "b"
       };
 
-      const result = JSON.parse(stringify(bar)) as unknown;
-      expect(result).toEqual(expected);
+      const actual = JSON.parse(stringify(getObjectWithInheritedProperties()) as string) as unknown;
+      expect(actual).toEqual(expected);
     });
 
     describe("with exclude pattern", () => {
+      const user = {
+        id: 1,
+        name: "Blake",
+        password: "123456",
+        passwordResetToken: "a reset token",
+        myPassword: "123456",
+        myPasswordValue: "123456",
+        customValue: "Password",
+        value: {
+          Password: "123456"
+        }
+      };
+
       test("pAssword", () => {
         expect(stringify(user, ["pAssword"])).toBe(
           JSON.stringify({ "id": 1, "name": "Blake", "passwordResetToken": "a reset token", "myPassword": "123456", "myPasswordValue": "123456", "customValue": "Password", "value": {} })
@@ -167,6 +608,39 @@ describe("Utils", () => {
     expect(parseVersion("https://cdnjs.cloudflare.com/ajax/libs/angular-google-maps/2.1.0-X.10/angular-google-maps.min.js")).toBe("2.1.0-X.10");
     expect(parseVersion("https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/2.1.8-M1/swagger-ui.min.js")).toBe("2.1.8-M1");
     expect(parseVersion("https://cdnjs.cloudflare.com/BLAH/BLAH.min.js")).toBeNull();
+  });
+
+  describe("isEmpty", () => {
+    const emptyValues = {
+      "undefined": undefined,
+      "null": null,
+      "empty string": "",
+      "whitespace string": "   ",
+      "{} string": "{}",
+      "[] string": "[]",
+      "empty object": {},
+      "empty array": []
+    };
+
+    Object.entries(emptyValues).forEach(([key, value]) => {
+      test(`for ${key}`, () => {
+        expect(isEmpty(value)).toBe(true);
+      });
+    });
+
+    const values = {
+      "Date": new Date(),
+      "number": 1,
+      "string": "string",
+      "object": { a: 1 },
+      "array": [1]
+    };
+
+    Object.entries(values).forEach(([key, value]) => {
+      test(`for ${key}`, () => {
+        expect(isEmpty(value)).toBe(false);
+      });
+    });
   });
 
   describe("isMatch", () => {

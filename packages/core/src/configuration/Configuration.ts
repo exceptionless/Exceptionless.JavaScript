@@ -507,8 +507,9 @@ export class Configuration {
   private originalSettings?: Record<string, string>;
 
   public applyServerSettings(serverSettings: ServerSettings): void {
-    if (!this.originalSettings)
+    if (!this.originalSettings) {
       this.originalSettings = JSON.parse(JSON.stringify(this.settings)) as Record<string, string>;
+    }
 
     this.services.log.trace(`Applying saved settings: v${serverSettings.version}`);
     this.settings = Object.assign(this.originalSettings, serverSettings.settings);

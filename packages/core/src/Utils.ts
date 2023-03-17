@@ -149,13 +149,33 @@ export function isMatch(
   });
 }
 
-export function isEmpty(input: Record<string, unknown> | null | undefined | unknown): boolean {
+/**
+ * Very simple implementation to check primitive types for emptiness.
+ * - If the input is null or undefined, it will return true.
+ * - If the input is an array, it will return true if the array is empty.
+ * - If the input is an object, it will return true if the object has no properties.
+ * - If the input is a string, it will return true if the string is empty or "{}" or "[]".
+ * @param input The input to check.
+ */
+export function isEmpty(input: Record<string, unknown> | null | undefined | unknown): input is null | undefined | Record<string, never> {
   if (input === null || input === undefined) {
     return true;
   }
 
-  if (typeof input == "object") {
-    return Object.keys(<Record<string, unknown>>input).length === 0;
+  if (typeof input === "object") {
+    if (Array.isArray(input)) {
+      return input.length === 0;
+    }
+
+    if (input instanceof Date) {
+      return false;
+    }
+
+    return Object.getOwnPropertyNames(input).length === 0;
+  }
+
+  if (typeof input === "string") {
+    return input.trim().length === 0 || input === "{}" || input === "[]";
   }
 
   return false;
@@ -169,102 +189,199 @@ export function endsWith(input: string, suffix: string): boolean {
   return input.indexOf(suffix, input.length - suffix.length) !== -1;
 }
 
-// @ts-expect-error TS6133
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-export function stringify(data: unknown, exclusions?: string[], maxDepth?: number): string {
-  function stringifyImpl(obj: unknown, excludedKeys: string[]): string {
-    const cache: unknown[] = [];
-    return JSON.stringify(obj, (key: string, value: unknown) => {
-      if (isMatch(key, excludedKeys)) {
-        return;
-      }
+/**
+ * This function will prune an object to a certain depth and return a new object.
+ * The following rules will be applied:
+ * 1. If the value is null or undefined, it will be returned as is.
+ * 2. If the value is a function or unsupported type it will be return undefined.
+ * 3. If the value is an array, it will be pruned to the specified depth.
+ * 4. If the value is an object, it will be pruned to the specified depth and
+ *    a. If the object is a Circular Reference it will return undefined.
+ *    b. If the object is a Map, it will be converted to an object. Some data loss might occur if map keys are object types as last in wins.
+ *    c. If the object is a Set, it will be converted to an array.
+ *    d. If the object contains prototype properties, they will be picked up.
+ *    e. If the object contains a toJSON function, it will be called and it's value will be normalized.
+ *    f. If the object is is not iterable or cloneable (e.g., WeakMap, WeakSet, etc.), it will return undefined.
+ *    g. If a symbol property is encountered, it will be converted to a string representation and could overwrite existing object keys.
+ * 5. If the value is an Error, we will treat it as an object.
+ * 6. If the value is a primitive, it will be returned as is.
+ * 7. If the value is a Regexp, Symbol we will convert it to the string representation.
+ * 8. BigInt and other typed arrays will be converted to a string unless number type works.
+ * 9. All other values will be returned as undefined (E.g., Buffer, DataView, Promises, Generators etc..)
+ */
+export function prune(value: unknown, depth: number = 10): unknown {
+  function isUnsupportedType(value: unknown): boolean {
+    if (value === null || value === undefined) {
+      return false;
+    }
 
-      if (typeof value === "object" && value) {
-        if (cache.indexOf(value) !== -1) {
-          // Circular reference found, discard key
-          return;
+    switch (typeof value) {
+      case "function":
+        return true;
+      case "object":
+        switch (Object.prototype.toString.call(value)) {
+          case "[object AsyncGenerator]":
+          case "[object Generator]":
+          case "[object ArrayBuffer]":
+          case "[object Buffer]":
+          case "[object DataView]":
+          case "[object Promise]":
+          case "[object WeakMap]":
+          case "[object WeakSet]":
+            return true;
         }
 
-        cache.push(value);
+        // Check for buffer;
+        if ("writeBigInt64LE" in value) {
+          return true;
+        }
+
+        break;
+    }
+
+    return false;
+  }
+
+  function normalizeValue(value: unknown): unknown {
+    function hasToJSONFunction(value: unknown): value is { toJSON: () => unknown } {
+      return value !== null && typeof value === "object" && typeof (value as { toJSON?: unknown }).toJSON === "function";
+    }
+
+    if (typeof value === "bigint") {
+      return `${value.toString()}n`;
+    }
+
+    if (typeof value === "object") {
+      if (Array.isArray(value)) {
+        return value;
+      }
+
+      if (value instanceof Date) {
+        return value;
+      }
+
+      if (value instanceof Map) {
+        const result: Record<PropertyKey, unknown> = {};
+        for (const [key, val] of value) {
+          result[key] = val;
+        }
+
+        return result;
+      }
+
+      if (value instanceof RegExp) {
+        return value.toString();
+      }
+
+      if (value instanceof Set) {
+        return Array.from(value);
+      }
+
+      // Check for typed arrays
+      const TypedArray = Object.getPrototypeOf(Uint8Array);
+      if (value instanceof TypedArray) {
+        return Array.from(value as Iterable<unknown>);
+      }
+
+      if (hasToJSONFunction(value)) {
+        // NOTE: We are not checking for circular references or overflow
+        return normalizeValue(value.toJSON());
       }
 
       return value;
-    });
+    }
+
+    if (typeof value === "symbol") {
+      return value.description;
+    }
+
+    return value;
   }
 
-  if (({}).toString.call(data) === "[object Object]") {
-    const flattened: { [prop: string]: unknown } = {};
-    const dataObject = data as { [prop: string]: unknown };
-    for (const prop in dataObject) {
-      const value = dataObject[prop];
-      if (value !== dataObject) {
-        flattened[prop] = value;
+  function pruneImpl(value: unknown, maxDepth: number, currentDepth: number = 10, seen: WeakSet<object> = new WeakSet(), parentIsArray: boolean = false): unknown {
+    if (value === null || value === undefined) {
+      return value;
+    }
+
+    if (currentDepth > maxDepth) {
+      return undefined;
+    }
+
+    if (isUnsupportedType(value)) {
+      return undefined;
+    }
+
+    const normalizedValue = normalizeValue(value);
+    if (typeof normalizedValue === "object") {
+      if (currentDepth == maxDepth) {
+        return undefined;
       }
+
+      if (Array.isArray(normalizedValue)) {
+        // Treat an object inside of an array as a single level
+        const depth: number = parentIsArray ? currentDepth + 1 : currentDepth;
+        return normalizedValue.map(e => pruneImpl(e, maxDepth, depth, seen, true));
+      }
+
+      if (normalizedValue instanceof Date) {
+        return normalizedValue;
+      }
+
+      // Check for circular references
+      if (Object.prototype.toString.call(normalizedValue) === "[object Object]") {
+        if (seen.has(normalizedValue as object)) {
+          return undefined;
+        }
+
+        seen.add(normalizedValue as object);
+      }
+
+      const keys = new Set<PropertyKey>([...Object.getOwnPropertyNames(normalizedValue), ...Object.getOwnPropertySymbols(normalizedValue)]);
+      // Loop over and add any inherited prototype properties
+      for (const key in normalizedValue) {
+        keys.add(key);
+      }
+
+      type NonSymbolPropertyKey = Exclude<PropertyKey, symbol>;
+      const result: Record<NonSymbolPropertyKey, unknown> = {};
+      for (const key of keys) {
+        // Normalize the key so Symbols are converted to strings.
+        const normalizedKey = normalizeValue(key) as NonSymbolPropertyKey;
+
+        const objectValue = (normalizedValue as { [index: PropertyKey]: unknown })[key];
+        result[normalizedKey] = pruneImpl(objectValue, maxDepth, currentDepth + 1, seen);
+      }
+
+      return result;
     }
 
-    return stringifyImpl(flattened, exclusions || []);
+    return normalizedValue;
   }
 
-  if (({}).toString.call(data) === "[object Array]") {
-    const result: unknown[] = [];
-    for (let index = 0; index < (<unknown[]>data).length; index++) {
-      result[index] = JSON.parse(stringifyImpl((<unknown[]>data)[index], exclusions || [])) as unknown;
-    }
-
-    return JSON.stringify(result);
+  if (depth < 0) {
+    return undefined;
   }
 
-  // TODO: support maxDepth
-  return stringifyImpl(data, exclusions || []);
+  return pruneImpl(value, depth, 0);
 }
 
-/**
- * Stringifies an object with optional exclusions and max depth.
- * @param data The data object to add.
- * @param exclusions Any property names that should be excluded.
- * @param maxDepth The max depth of the object to include.
- */
-export function stringify2(
-  data: unknown,
-  exclusions?: string[],
-  maxDepth = -1,
-): string {
-  const seen = new WeakSet();
-
-  function stringifyImpl(
-    obj: unknown,
-    excludedKeys: string[],
-    currentDepth: number,
-    currentScope: string,
-  ): string {
+export function stringify(data: unknown, exclusions?: string[], maxDepth: number = 10): string | undefined {
+  function stringifyImpl(obj: unknown, excludedKeys: string[]): string {
     return JSON.stringify(obj, (key: string, value: unknown) => {
       if (isMatch(key, excludedKeys)) {
         return;
-      }
-
-      if (typeof value === "object" && value !== null) {
-        if (seen.has(value)) {
-          return;
-        }
-
-        seen.add(value);
-
-        if (currentDepth >= maxDepth)
-          return;
-
-        return stringifyImpl(
-          value,
-          excludedKeys,
-          currentDepth + 1,
-          key.length > 0 ? currentScope + "." + key : currentScope,
-        );
       }
 
       return value;
     });
   }
 
-  return stringifyImpl(data, exclusions || [], 1, "");
+  if (data === undefined) {
+    return data;
+  }
+
+  const prunedData = prune(data, maxDepth);
+  return stringifyImpl(prunedData, exclusions || []);
 }
 
 export function toBoolean(input: unknown, defaultValue: boolean = false): boolean {
@@ -306,7 +423,7 @@ export function toError(errorOrMessage: unknown, defaultMessage = "Unknown Error
     return new Error(errorOrMessage);
   }
 
-  return new Error(JSON.stringify(errorOrMessage) || defaultMessage);
+  return new Error(stringify(errorOrMessage) || defaultMessage);
 }
 
 

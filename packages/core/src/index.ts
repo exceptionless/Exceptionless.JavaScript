@@ -62,6 +62,7 @@ export {
   isMatch,
   parseQueryString,
   parseVersion,
+  prune,
   randomNumber,
   startsWith,
   stringify,

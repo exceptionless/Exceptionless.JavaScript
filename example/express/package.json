@@ -8,7 +8,7 @@
   "author": "Exceptionless",
   "license": "Apache-2.0",
   "scripts": {
-    "dev": "nodemon app.js --enable-source-maps",
+    "dev": "node app.js --enable-source-maps --watch",
     "start": "node app.js --enable-source-maps"
   },
   "publishConfig": {
