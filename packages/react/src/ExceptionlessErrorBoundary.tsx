@@ -5,7 +5,7 @@ type ErrorState = {
   hasError: boolean;
 };
 
-export default class ExceptionlessErrorBoundary extends Component<
+export class ExceptionlessErrorBoundary extends Component<
   PropsWithChildren,
   ErrorState
 > {

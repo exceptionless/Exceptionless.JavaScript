@@ -1,8 +1,7 @@
 import express from "express";
 const app = express();
 
-import { KnownEventDataKeys } from "@exceptionless/core";
-import { Exceptionless } from "@exceptionless/node";
+import { Exceptionless, KnownEventDataKeys } from "@exceptionless/node";
 
 await Exceptionless.startup((c) => {
   c.apiKey = "LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw";

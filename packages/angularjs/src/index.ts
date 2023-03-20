@@ -1,7 +1,7 @@
-import { toError } from "@exceptionless/core";
 import {
   BrowserExceptionlessClient,
-  Exceptionless
+  Exceptionless,
+  toError
 } from "@exceptionless/browser";
 
 declare let angular;

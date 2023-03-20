@@ -1,5 +1,5 @@
+export * from "@exceptionless/browser";
 import { Exceptionless } from "@exceptionless/browser";
-export { Exceptionless };
 
 /**
  * https://vuejs.org/v2/api/#errorHandler
