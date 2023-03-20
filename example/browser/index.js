@@ -1,4 +1,4 @@
-import { Exceptionless } from "../../node_modules/@exceptionless/browser/dist/index.bundle.js";
+import { Exceptionless, prune } from "../../node_modules/@exceptionless/browser/dist/index.bundle.js";
 import "/node_modules/jquery/dist/jquery.js";
 
 import { divide } from "./math.js";
@@ -142,6 +142,90 @@ document.addEventListener("DOMContentLoaded", () => {
       Exceptionless.config.services.log.info(
         JSON.stringify(Exceptionless.config.settings)
       );
+    });
+
+  document
+    .querySelector("#prune-large-object-benchmark")
+    .addEventListener("click", () => {
+      const data = {
+        str: "hello",
+        num: 123,
+        bool: true,
+        nullVal: null,
+        undefinedVal: undefined,
+        arr: [
+          "foo",
+          42,
+          {
+            prop1: "bar",
+            prop2: true,
+            prop3: [
+              1,
+              2,
+              {
+                nestedProp1: "baz",
+                nestedProp2: false,
+                nestedObj: {}
+              }
+            ]
+          }
+        ],
+        person: {
+          name: "John",
+          age: 30,
+          address: {
+            street: "123 Main St",
+            city: "Anytown",
+            state: "TX",
+            country: {
+              name: "United States",
+              region: {
+                north: {
+                  name: "North Region",
+                  states: ["New York", "Vermont", "New Hampshire", "Maine"]
+                },
+                south: {
+                  name: "South Region",
+                  states: ["Texas", "Florida", "Georgia", "North Carolina"]
+                },
+                east: {
+                  name: "East Region",
+                  states: ["New York", "Massachusetts", "Connecticut", "New Jersey"]
+                },
+                west: {
+                  name: "West Region",
+                  states: ["California", "Oregon", "Washington", "Arizona"]
+                }
+              }
+            }
+          }
+        },
+        func: function (x) {
+          return x * 2;
+        },
+        date: new Date(),
+        regex: /foo(bar)?/i,
+        symbol: Symbol("my symbol"),
+        bigint: 9007199254740991n,
+        map: new Map([
+          [{ id: 1 }, "value associated with an object key"],
+          ["string key", "value associated with a string key"],
+          [123, "value associated with a number key"],
+          [Symbol("symbol key"), "value associated with a symbol key"]
+        ]),
+        set: new Set(["foo", 42, { prop: "value" }])
+      };
+
+      const { log } = Exceptionless.config.services;
+      log.info("Starting pruning of large object");
+
+      const start = performance.now();
+      for (let i = 0; i < 1000; i++) {
+        prune(data, 3);
+      }
+      const end = performance.now();
+
+      log.info(`Pruning large object took ${end - start} milliseconds`);
     });
 });
 
