@@ -175,7 +175,8 @@ export function isEmpty(input: Record<string, unknown> | null | undefined | unkn
   }
 
   if (typeof input === "string") {
-    return input.trim().length === 0 || input === "{}" || input === "[]";
+    const trimmedInput = input.trim();
+    return trimmedInput.length === 0 || trimmedInput === "{}" || trimmedInput === "[]";
   }
 
   return false;

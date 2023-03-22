@@ -593,6 +593,10 @@ describe("Utils", () => {
         JSON.stringify(expect(stringify(user, ["*password*"])).toBe(JSON.stringify({ "id": 1, "name": "Blake", "customValue": "Password", "value": {} })));
       });
 
+      test("*Password*", () => {
+        JSON.stringify(expect(stringify(user, ["*Password*"])).toBe(JSON.stringify({ "id": 1, "name": "Blake", "customValue": "Password", "value": {} })));
+      });
+
       test("*Address", () => {
         const event = { type: "usage", source: "about" };
         expect(stringify(event, ["*Address"])).toBe(JSON.stringify(event));

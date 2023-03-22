@@ -23,7 +23,7 @@ await Exceptionless.startup((c) => {
     customValue: "Password",
     value: {
       Password: "123456",
-    },
+    }
   };
 });
 
