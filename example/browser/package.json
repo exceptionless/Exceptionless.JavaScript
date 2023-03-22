@@ -1,7 +1,7 @@
 {
   "name": "browser-sample",
   "private": true,
-  "version": "2.0.0-dev",
+  "version": "3.0.0-dev",
   "description": "Exceptionless Sample Browser App",
   "main": "index.js",
   "type": "module",
@@ -11,7 +11,7 @@
     "access": "restricted"
   },
   "dependencies": {
-    "@exceptionless/browser": "2.0.0-dev",
+    "@exceptionless/browser": "3.0.0-dev",
     "jquery": "^3.6.4"
   }
 }

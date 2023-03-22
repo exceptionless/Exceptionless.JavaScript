@@ -1,6 +1,6 @@
 {
   "name": "@exceptionless/react",
-  "version": "2.0.0-dev",
+  "version": "3.0.0-dev",
   "description": "JavaScript client for Exceptionless",
   "author": {
     "name": "exceptionless",
@@ -50,6 +50,6 @@
     "ts-jest": "^29.0.5"
   },
   "dependencies": {
-    "@exceptionless/browser": "2.0.0-dev"
+    "@exceptionless/browser": "3.0.0-dev"
   }
 }

@@ -1,7 +1,7 @@
 {
   "name": "express-sample",
   "private": true,
-  "version": "2.0.0-dev",
+  "version": "3.0.0-dev",
   "description": "Exceptionless Sample Node App",
   "main": "app.js",
   "type": "module",
@@ -16,6 +16,6 @@
   },
   "dependencies": {
     "express": "^4.18.2",
-    "@exceptionless/node": "2.0.0-dev"
+    "@exceptionless/node": "3.0.0-dev"
   }
 }

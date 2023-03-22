@@ -1,7 +1,7 @@
 {
   "name": "@exceptionless/monorepo",
   "private": true,
-  "version": "2.0.0-dev",
+  "version": "3.0.0-dev",
   "license": "Apache-2.0",
   "jest": {
     "moduleFileExtensions": [

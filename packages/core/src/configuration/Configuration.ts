@@ -453,7 +453,7 @@ export class Configuration {
    * Used to identify the client that sent the events to the server.
    */
   public get userAgent(): string {
-    return "exceptionless-js/2.0.0-dev";
+    return "exceptionless-js/3.0.0-dev";
   }
 
   /**
