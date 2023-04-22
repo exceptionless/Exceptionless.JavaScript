@@ -42,8 +42,7 @@ export class BrowserRequestInfoPlugin implements IEventPlugin {
       port: location.port && location.port !== ""
         ? parseInt(location.port, 10)
         : 80,
-      path: location.pathname,
-      // client_ip_address: "TODO"
+      path: location.pathname
     };
 
     if (config.includeCookies) {
@@ -53,7 +52,7 @@ export class BrowserRequestInfoPlugin implements IEventPlugin {
     if (config.includeQueryString) {
       requestInfo.query_string = parseQueryString(
         location.search.substring(1),
-        exclusions,
+        exclusions
       );
     }
 

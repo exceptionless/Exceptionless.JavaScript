@@ -74,6 +74,30 @@ export class NodeRequestInfoPlugin implements IEventPlugin {
       requestInfo.cookies = getCookies(request.headers.cookie, exclusions) as Record<string, string>;
     }
 
+    if (config.includeHeaders) {
+      const ignoredHeaders = [
+        "Authorization",
+        "Cookie",
+        "Host",
+        "Method",
+        "Path",
+        "Proxy-Authorization",
+        "Referer",
+        "User-Agent"
+      ];
+
+      const json = stringify(request.headers, [...ignoredHeaders, ...exclusions]);
+      if (!isEmpty(json)) {
+        const headers: Record<string, string[]> = {};
+        const parsedHeaders = JSON.parse(json) as Record<string, string>;
+        for (const key in parsedHeaders) {
+          headers[key] = parsedHeaders[key].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(value => value.trim());
+        }
+
+        requestInfo.headers = headers;
+      }
+    }
+
     if (config.includeQueryString) {
       const json = stringify(request.params, exclusions);
       if (!isEmpty(json)) {
