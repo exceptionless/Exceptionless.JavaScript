@@ -102,6 +102,7 @@ export class Configuration {
   private _includeUserName = true;
   private _includeMachineName = true;
   private _includeIpAddress = true;
+  private _includeHeaders = true;
   private _includeCookies = true;
   private _includePostData = true;
   private _includeQueryString = true;
@@ -212,6 +213,7 @@ export class Configuration {
     this._includeUserName = val;
     this._includeMachineName = val;
     this._includeIpAddress = val;
+    this._includeHeaders = val;
     this._includeCookies = val;
     this._includePostData = val;
     this._includeQueryString = val;
@@ -257,6 +259,22 @@ export class Configuration {
    */
   public set includeIpAddress(value: boolean) {
     this._includeIpAddress = value === true;
+  }
+
+  /**
+   * Gets a value indicating whether to include Headers.
+   * NOTE: DataExclusions are applied to all Header keys when enabled.
+   */
+  public get includeHeaders(): boolean {
+    return this._includeHeaders;
+  }
+
+  /**
+   * Sets a value indicating whether to include Headers.
+   * NOTE: DataExclusions are applied to all Headers keys when enabled.
+   */
+  public set includeHeaders(value: boolean) {
+    this._includeHeaders = value === true;
   }
 
   /**
