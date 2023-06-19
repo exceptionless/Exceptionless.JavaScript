@@ -14,7 +14,7 @@
   "devDependencies": {
     "@vitejs/plugin-vue": "^4.2.1",
     "@vue/compiler-sfc": "^3.2.47",
-    "vite": "^4.3.4"
+    "vite": "^4.3.9"
   },
   "publishConfig": {
     "access": "restricted"
