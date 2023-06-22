@@ -13,11 +13,11 @@
     "@exceptionless/browser": "3.0.0-dev"
   },
   "devDependencies": {
-    "@sveltejs/adapter-auto": "^2.0.1",
-    "@sveltejs/kit": "^1.15.10",
-    "svelte": "^3.58.0",
-    "svelte-check": "^3.2.0",
-    "typescript": "^5.0.4",
+    "@sveltejs/adapter-auto": "^2.1.0",
+    "@sveltejs/kit": "^1.20.4",
+    "svelte": "^4.0.0",
+    "svelte-check": "^3.4.4",
+    "typescript": "^5.1.3",
     "vite": "^4.3.9"
   },
   "type": "module",
