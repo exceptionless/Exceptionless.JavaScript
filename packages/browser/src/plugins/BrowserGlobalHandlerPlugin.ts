@@ -27,12 +27,24 @@ export class BrowserGlobalHandlerPlugin implements IEventPlugin {
 
     window.addEventListener("unhandledrejection", event => {
       let reason: unknown = event.reason;
-      try {
-        const detailReason = (<{ detail?: { reason: string } }>event).detail?.reason;
-        if (detailReason) {
-          reason = detailReason;
-        }
-      } catch (ex) { /* empty */ }
+      if (!(reason instanceof Error)) {
+        try {
+          // Check for reason in legacy CustomEvents (https://developer.mozilla.org/en-US/docs/Web/API/CustomEvent)
+          const detailReason = (<{ detail?: { reason: string } }>event).detail?.reason;
+          if (detailReason) {
+            reason = detailReason;
+          }
+        } catch (ex) { /* empty */ }
+      }
+
+      if (!(reason instanceof Error)) {
+        try {
+          const error = event.reason.error;
+          if (error) {
+            reason = error;
+          }
+        } catch (ex) { /* empty */ }
+      }
 
       const error: Error = toError(reason, "Unhandled rejection")
       void this._client?.submitUnhandledException(error, "onunhandledrejection");

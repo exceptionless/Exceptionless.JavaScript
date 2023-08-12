@@ -117,7 +117,7 @@ const registerEventHandlers = () => {
     .querySelector("#throw-promise-unhandled-rejection")
     .addEventListener("click", () => {
       const promiseFn = () => new Promise(function (_, reject) {
-        switch (Math.floor(Math.random() * 4)) {
+        switch (Math.floor(Math.random() * 5)) {
           case 0:
             reject(0);
             break;
@@ -130,6 +130,8 @@ const registerEventHandlers = () => {
           case 3:
             reject();
             break;
+          case 4:
+            throw new Error("Error thrown from promise");
         }
       });
 
