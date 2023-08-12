@@ -33,7 +33,7 @@ await Exceptionless.startup((c) => {
   c.settings["@@error:MediaError"] = "Off";
 });
 
-document.addEventListener("DOMContentLoaded", () => {
+const registerEventHandlers = () => {
   const elements = document.querySelectorAll(".submit-log");
   for (const element of elements) {
     element.addEventListener("click", (event) => {
@@ -227,7 +227,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       log.info(`Pruning large object took ${end - start} milliseconds`);
     });
-});
+};
 
 async function throwIndexOutOfRange(indexer, withCustomStacking) {
   try {
@@ -285,4 +285,10 @@ class CustomError extends Error {
   get getThrowsError() {
     throw new Error("Not Implemented");
   }
+}
+
+if (document.readyState === "loading") {
+  document.addEventListener('DOMContentLoaded', registerEventHandlers);
+} else {
+  registerEventHandlers();
 }
