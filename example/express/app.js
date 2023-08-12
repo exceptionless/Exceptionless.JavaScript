@@ -4,8 +4,8 @@ const app = express();
 import { Exceptionless, KnownEventDataKeys } from "@exceptionless/node";
 
 await Exceptionless.startup((c) => {
-  c.apiKey = "LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw";
-  c.serverUrl = "http://localhost:5000";
+  c.apiKey = "LhhP1C9gijpSKCslHHCvwdSIz298twx271nTest";
+  c.serverUrl = "https://localhost:5100";
   c.useDebugLogger();
   c.useLocalStorage();
   c.usePersistedQueueStorage = true;

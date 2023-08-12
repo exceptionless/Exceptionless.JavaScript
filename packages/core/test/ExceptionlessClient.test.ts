@@ -73,10 +73,10 @@ describe("ExceptionlessClient", () => {
   test("should allow construction via a configuration object", () => {
     const client = new ExceptionlessClient();
     client.config.apiKey = "UNIT_TEST_API_KEY";
-    client.config.serverUrl = "http://localhost:5000";
+    client.config.serverUrl = "https://localhost:5100";
 
     expect(client.config.apiKey).toBe("UNIT_TEST_API_KEY");
-    expect(client.config.serverUrl).toBe("http://localhost:5000");
+    expect(client.config.serverUrl).toBe("https://localhost:5100");
   });
 
   test("should allow construction via a constructor", async () => {
@@ -84,13 +84,13 @@ describe("ExceptionlessClient", () => {
 
     await client.startup(c => {
       c.apiKey = "UNIT_TEST_API_KEY";
-      c.serverUrl = "http://localhost:5000";
+      c.serverUrl = "https://localhost:5100";
       c.updateSettingsWhenIdleInterval = -1;
     });
 
     await client.suspend();
     expect(client.config.apiKey).toBe("UNIT_TEST_API_KEY");
-    expect(client.config.serverUrl).toBe("http://localhost:5000");
+    expect(client.config.serverUrl).toBe("https://localhost:5100");
   });
 
 

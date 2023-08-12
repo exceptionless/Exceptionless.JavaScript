@@ -8,8 +8,8 @@ await Exceptionless.startup((c) => {
   c.useDebugLogger();
   c.services.log = new TextAreaLogger("logs", c.services.log);
 
-  c.apiKey = "LhhP1C9gijpSKCslHHCvwdSIz298twx271n1l6xw";
-  c.serverUrl = "http://localhost:5000";
+  c.apiKey = "LhhP1C9gijpSKCslHHCvwdSIz298twx271nTest";
+  c.serverUrl = "https://localhost:5100";
   c.updateSettingsWhenIdleInterval = 15000;
   c.usePersistedQueueStorage = true;
   c.setUserIdentity("12345678", "Blake");
