@@ -413,7 +413,9 @@ export function toBoolean(input: unknown, defaultValue: boolean = false): boolea
 
 export function toError(errorOrMessage: unknown, defaultMessage = "Unknown Error"): Error {
   if (errorOrMessage === null || errorOrMessage === undefined) {
-    return new Error(defaultMessage);
+    const error = new Error(defaultMessage);
+    error.stack = undefined!;
+    return error;
   }
 
   if (errorOrMessage instanceof Error) {
@@ -421,12 +423,15 @@ export function toError(errorOrMessage: unknown, defaultMessage = "Unknown Error
   }
 
   if (typeof errorOrMessage === "string") {
-    return new Error(errorOrMessage);
+    const error = new Error(errorOrMessage);
+    error.stack = undefined!;
+    return error;
   }
 
-  return new Error(stringify(errorOrMessage) || defaultMessage);
+  const error = new Error(stringify(errorOrMessage) || defaultMessage);
+  error.stack = undefined!;
+  return error;
 }
-
 
 /**
  * Unrefs a timeout or interval. When called, the active Timeout object will not require the Node.js event loop to remain active
