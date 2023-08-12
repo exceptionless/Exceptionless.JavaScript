@@ -78,9 +78,9 @@ export class BrowserErrorPlugin implements IEventPlugin {
       return frames;
     }
 
-    const result: StackFrame[] = await fromError(exception);
+    const result: StackFrame[] = exception.stack ? await fromError(exception) : [];
     if (!result) {
-      throw new Error("Unable to parse the exception stack trace.");
+      throw new Error("Unable to parse the exception stack trace");
     }
 
     // TODO: Test with reference error.

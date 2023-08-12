@@ -72,9 +72,9 @@ export class NodeErrorPlugin implements IEventPlugin {
       return frames;
     }
 
-    const result = fromError(exception);
+    const result = exception.stack ? fromError(exception) : [];
     if (!result) {
-      throw new Error("Unable to parse the exception stack trace.");
+      throw new Error("Unable to parse the exception stack trace");
     }
 
     return Promise.resolve({
