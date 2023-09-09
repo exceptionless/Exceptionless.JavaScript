@@ -8,7 +8,7 @@ export type { ILog } from "./logging/ILog.js";
 export { ConsoleLog } from "./logging/ConsoleLog.js";
 export { NullLog } from "./logging/NullLog.js";
 
-export type { Event, EventType, IEventData } from "./models/Event.js";
+export type { Event, EventType, IEventData, LogLevel } from "./models/Event.js";
 export { KnownEventDataKeys } from "./models/Event.js";
 export type { EnvironmentInfo } from "./models/data/EnvironmentInfo.js";
 export type { ManualStackingInfo } from "./models/data/ManualStackingInfo.js";

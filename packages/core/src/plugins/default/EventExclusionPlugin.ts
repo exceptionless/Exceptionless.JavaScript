@@ -1,4 +1,4 @@
-import { KnownEventDataKeys } from "../../models/Event.js";
+import { KnownEventDataKeys, LogLevel } from "../../models/Event.js";
 import { isMatch, startsWith, toBoolean } from "../../Utils.js";
 import { EventPluginContext } from "../EventPluginContext.js";
 import { IEventPlugin } from "../IEventPlugin.js";
@@ -38,7 +38,7 @@ export class EventExclusionPlugin implements IEventPlugin {
     return Promise.resolve();
   }
 
-  public getLogLevel(level: string | undefined): number {
+  public getLogLevel(level: LogLevel | undefined): number {
     switch ((level || "").toLowerCase().trim()) {
       case "trace":
       case "true":

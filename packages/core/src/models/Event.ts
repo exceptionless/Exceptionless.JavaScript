@@ -44,6 +44,8 @@ export enum KnownEventDataKeys {
   ManualStackingInfo = "@stack",
 }
 
+export type LogLevel = "trace" | "debug" | "info" | "warn" | "error" | "fatal" | string;
+
 export interface IEventData extends Record<string, unknown> {
   "@error"?: ErrorInfo;
   "@simple_error"?: SimpleError;
@@ -52,7 +54,7 @@ export interface IEventData extends Record<string, unknown> {
   "@user"?: UserInfo;
   "@user_description"?: UserDescription;
   "@version"?: string;
-  "@level"?: string;
+  "@level"?: LogLevel;
   "@submission_method"?: string;
   "@stack"?: ManualStackingInfo;
 }

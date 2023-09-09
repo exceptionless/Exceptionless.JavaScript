@@ -2,7 +2,7 @@ import { describe, test } from "@jest/globals";
 import { expect } from "expect";
 
 import { ExceptionlessClient } from "../../../src/ExceptionlessClient.js";
-import { Event, EventType, KnownEventDataKeys } from "../../../src/models/Event.js";
+import { Event, EventType, KnownEventDataKeys, LogLevel } from "../../../src/models/Event.js";
 import { InnerErrorInfo } from "../../../src/models/data/ErrorInfo.js";
 import { EventExclusionPlugin } from "../../../src/plugins/default/EventExclusionPlugin.js";
 import { EventPluginContext } from "../../../src/plugins/EventPluginContext.js";
@@ -10,7 +10,7 @@ import { EventContext } from "../../../src/models/EventContext.js";
 
 describe("EventExclusionPlugin", () => {
   describe("should exclude log levels", () => {
-    const run = async (source: string | undefined, level: string | null | undefined, settingKey: string | null | undefined, settingValue: string | null | undefined): Promise<boolean> => {
+    const run = async (source: string | undefined, level: LogLevel | null | undefined, settingKey: string | null | undefined, settingValue: string | null | undefined): Promise<boolean> => {
       const client = new ExceptionlessClient();
       if (typeof settingKey == "string") {
         client.config.settings[settingKey] = settingValue as string;
@@ -30,31 +30,31 @@ describe("EventExclusionPlugin", () => {
 
     test("<null>", async () => expect(await run(undefined, null, null, null)).toBe(false));
     test("Test", async () => expect(await run("Test", null, null, null)).toBe(false));
-    test("[Trace] Test", async () => expect(await run("Test", "Trace", null, null)).toBe(false));
+    test("[trace] Test", async () => expect(await run("Test", "trace", null, null)).toBe(false));
     test("[Off] Test", async () => expect(await run("Test", "Off", null, null)).toBe(true));
     test("[Abc] Test", async () => expect(await run("Test", "Abc", null, null)).toBe(false));
-    test("[Trace] <null> (source min level: Off", async () => expect(await run(undefined, "Trace", "@@log:", "Off")).toBe(true));
-    test("[Trace] <null> (global min level: Off", async () => expect(await run(undefined, "Trace", "@@log:*", "Off")).toBe(true));
-    test("[Trace] <undefined> (source min level: Off", async () => expect(await run(undefined, "Trace", "@@log:", "Off")).toBe(true));
-    test("[Trace] <undefined> (global min level: Off", async () => expect(await run(undefined, "Trace", "@@log:*", "Off")).toBe(true));
-    test("[Trace] <empty> (source min level: Off", async () => expect(await run("", "Trace", "@@log:", "Off")).toBe(true)); // Becomes Global Log Level
-    test("[Trace] <empty> (global min level: Off", async () => expect(await run("", "Trace", "@@log:*", "Off")).toBe(true));
-    test("[Trace] Test (source min level: false)", async () => expect(await run("Test", "Trace", "@@log:Test", "false")).toBe(true));
-    test("[Trace] Test (source min level: no)", async () => expect(await run("Test", "Trace", "@@log:Test", "no")).toBe(true));
-    test("[Trace] Test (source min level: 0)", async () => expect(await run("Test", "Trace", "@@log:Test", "0")).toBe(true));
-    test("[Trace] Test (source min level: true)", async () => expect(await run("Test", "Trace", "@@log:Test", "true")).toBe(false));
-    test("[Trace] Test (source min level: yes)", async () => expect(await run("Test", "Trace", "@@log:Test", "yes")).toBe(false));
-    test("[Trace] Test (source min level: 1)", async () => expect(await run("Test", "Trace", "@@log:Test", "1")).toBe(false));
-    test("[Trace] Test (source min level: Debug)", async () => expect(await run("Test", "Trace", "@@log:Test", "Debug")).toBe(true));
-    test("[Info] Test (source min level: Debug)", async () => expect(await run("Test", "Info", "@@log:Test", "Debug")).toBe(false));
-    test("[Trace] Test (global min level: Debug)", async () => expect(await run("Test", "Trace", "@@log:*", "Debug")).toBe(true));
-    test("[Warn] Test (global min level: Debug)", async () => expect(await run("Test", "Warn", "@@log:*", "Debug")).toBe(false));
+    test("[trace] <null> (source min level: Off", async () => expect(await run(undefined, "trace", "@@log:", "Off")).toBe(true));
+    test("[trace] <null> (global min level: Off", async () => expect(await run(undefined, "trace", "@@log:*", "Off")).toBe(true));
+    test("[trace] <undefined> (source min level: Off", async () => expect(await run(undefined, "trace", "@@log:", "Off")).toBe(true));
+    test("[trace] <undefined> (global min level: Off", async () => expect(await run(undefined, "trace", "@@log:*", "Off")).toBe(true));
+    test("[trace] <empty> (source min level: Off", async () => expect(await run("", "trace", "@@log:", "Off")).toBe(true)); // Becomes Global Log Level
+    test("[trace] <empty> (global min level: Off", async () => expect(await run("", "trace", "@@log:*", "Off")).toBe(true));
+    test("[trace] Test (source min level: false)", async () => expect(await run("Test", "trace", "@@log:Test", "false")).toBe(true));
+    test("[trace] Test (source min level: no)", async () => expect(await run("Test", "trace", "@@log:Test", "no")).toBe(true));
+    test("[trace] Test (source min level: 0)", async () => expect(await run("Test", "trace", "@@log:Test", "0")).toBe(true));
+    test("[trace] Test (source min level: true)", async () => expect(await run("Test", "trace", "@@log:Test", "true")).toBe(false));
+    test("[trace] Test (source min level: yes)", async () => expect(await run("Test", "trace", "@@log:Test", "yes")).toBe(false));
+    test("[trace] Test (source min level: 1)", async () => expect(await run("Test", "trace", "@@log:Test", "1")).toBe(false));
+    test("[trace] Test (source min level: debug)", async () => expect(await run("Test", "trace", "@@log:Test", "debug")).toBe(true));
+    test("[info] Test (source min level: debug)", async () => expect(await run("Test", "info", "@@log:Test", "debug")).toBe(false));
+    test("[trace] Test (global min level: debug)", async () => expect(await run("Test", "trace", "@@log:*", "debug")).toBe(true));
+    test("[warn] Test (global min level: debug)", async () => expect(await run("Test", "warn", "@@log:*", "debug")).toBe(false));
   });
 
   describe("should exclude log levels with info default", () => {
-    const run = async (source: string | undefined, level: string | null | undefined, settingKey: string | null | undefined, settingValue: string | null | undefined): Promise<boolean> => {
+    const run = async (source: string | undefined, level: LogLevel | null | undefined, settingKey: string | null | undefined, settingValue: string | null | undefined): Promise<boolean> => {
       const client = new ExceptionlessClient();
-      client.config.settings["@@log:*"] = "Info";
+      client.config.settings["@@log:*"] = "info";
       if (typeof settingKey === "string") {
         client.config.settings[settingKey] = settingValue as string;
       }
@@ -73,15 +73,15 @@ describe("EventExclusionPlugin", () => {
 
     test("<null>", async () => expect(await run(undefined, null, null, null)).toBe(false));
     test("Test", async () => expect(await run("Test", null, null, null)).toBe(false));
-    test("[Trace] Test", async () => expect(await run("Test", "Trace", null, null)).toBe(true));
-    test("[Warn] Test", async () => expect(await run("Test", "Warn", null, null)).toBe(false));
-    test("[Error] Test (source min level: Debug)", async () => expect(await run("Test", "Error", "@@log:Test", "Debug")).toBe(false));
-    test("[Debug] Test (source min level: Debug)", async () => expect(await run("Test", "Debug", "@@log:Test", "Debug")).toBe(false));
+    test("[trace] Test", async () => expect(await run("Test", "trace", null, null)).toBe(true));
+    test("[warn] Test", async () => expect(await run("Test", "warn", null, null)).toBe(false));
+    test("[error] Test (source min level: debug)", async () => expect(await run("Test", "error", "@@log:Test", "debug")).toBe(false));
+    test("[debug] Test (source min level: debug)", async () => expect(await run("Test", "debug", "@@log:Test", "debug")).toBe(false));
   });
 
   describe("should resolve null and undefined log source levels in reverse settings order", () => {
     const plugin = new EventExclusionPlugin();
-    const settings: Record<string, string> = { "@@log:": "Info", "@@log:*": "Debug" };
+    const settings: Record<string, string> = { "@@log:": "info", "@@log:*": "debug" };
 
     test("<undefined> (global min level: info)", () => expect(plugin.getMinLogLevel(settings, undefined)).toBe(2));
     test("<empty> (source min level: info)", () => expect(plugin.getMinLogLevel(settings, "")).toBe(2));
@@ -90,7 +90,7 @@ describe("EventExclusionPlugin", () => {
 
   describe("should resolve log source levels and respect settings order", () => {
     const plugin = new EventExclusionPlugin();
-    const settings = { "@@log:*": "Debug", "@@log:": "Info" };
+    const settings = { "@@log:*": "debug", "@@log:": "info" };
 
     test("<empty> (source min level: info)", () => expect(plugin.getMinLogLevel(settings, "")).toBe(2));
     test("* (global min level: debug)", () => expect(plugin.getMinLogLevel(settings, "*")).toBe(1));
@@ -112,11 +112,11 @@ describe("EventExclusionPlugin", () => {
     const plugin = new EventExclusionPlugin();
     const settings = {
       "@@log:*": "Fatal",
-      "@@log:": "Debug",
+      "@@log:": "debug",
       "@@log:abc*": "Off",
-      "@@log:abc.de*": "Debug",
-      "@@log:abc.def*": "Info",
-      "@@log:abc.def.ghi": "Trace"
+      "@@log:abc.de*": "debug",
+      "@@log:abc.def*": "info",
+      "@@log:abc.def.ghi": "trace"
     };
 
     test("<undefined> (source min level: debug)", () => expect(plugin.getMinLogLevel(settings, undefined)).toBe(1));
@@ -131,8 +131,8 @@ describe("EventExclusionPlugin", () => {
   describe("should respect min log levels settings order", () => {
     const plugin = new EventExclusionPlugin();
     const settings = {
-      "@@log:abc.def.ghi": "Trace",
-      "@@log:abc.def*": "Info",
+      "@@log:abc.def.ghi": "trace",
+      "@@log:abc.def*": "info",
       "@@log:abc*": "Off"
     };
 

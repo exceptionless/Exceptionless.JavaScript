@@ -1,7 +1,7 @@
 import { Configuration } from "./configuration/Configuration.js";
 import { SettingsManager } from "./configuration/SettingsManager.js";
 import { EventBuilder } from "./EventBuilder.js";
-import { Event, KnownEventDataKeys } from "./models/Event.js";
+import { Event, KnownEventDataKeys, LogLevel } from "./models/Event.js";
 import { UserDescription } from "./models/data/UserDescription.js";
 import { EventContext } from "./models/EventContext.js";
 import { EventPluginContext } from "./plugins/EventPluginContext.js";
@@ -133,8 +133,8 @@ export class ExceptionlessClient {
 
   public createLog(message: string): EventBuilder;
   public createLog(source: string, message: string): EventBuilder;
-  public createLog(source: string | undefined, message: string, level: string): EventBuilder;
-  public createLog(sourceOrMessage: string, message?: string, level?: string): EventBuilder {
+  public createLog(source: string | undefined, message: string, level: LogLevel): EventBuilder;
+  public createLog(sourceOrMessage: string, message?: string, level?: LogLevel): EventBuilder {
     let builder = this.createEvent().setType("log");
 
     if (level) {
@@ -161,9 +161,9 @@ export class ExceptionlessClient {
 
   public submitLog(message: string): Promise<EventPluginContext>;
   public submitLog(source: string, message: string): Promise<EventPluginContext>;
-  public submitLog(source: string | undefined, message: string, level: string): Promise<EventPluginContext>;
-  public submitLog(sourceOrMessage: string, message?: string, level?: string): Promise<EventPluginContext> {
-    return this.createLog(sourceOrMessage, <string>message, <string>level).submit();
+  public submitLog(source: string | undefined, message: string, level: LogLevel): Promise<EventPluginContext>;
+  public submitLog(sourceOrMessage: string, message?: string, level?: LogLevel): Promise<EventPluginContext> {
+    return this.createLog(sourceOrMessage, <string>message, <LogLevel>level).submit();
   }
 
   public createNotFound(resource: string): EventBuilder {
