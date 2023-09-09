@@ -41,7 +41,7 @@
     "access": "public"
   },
   "devDependencies": {
-    "esbuild": "^0.19.1"
+    "esbuild": "^0.19.2"
   },
   "dependencies": {
     "@exceptionless/browser": "3.0.0-dev"
