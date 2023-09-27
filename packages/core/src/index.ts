@@ -18,6 +18,7 @@ export type { UserInfo } from "./models/data/UserInfo.js";
 export type { ModuleInfo } from "./models/data/ModuleInfo.js";
 
 export type {
+  SimpleError,
   ErrorInfo,
   InnerErrorInfo,
   MethodInfo,
