@@ -19,9 +19,13 @@ export class NodeExceptionlessClient extends ExceptionlessClient {
     const config = this.config;
 
     if (configurationOrApiKey && !this._initialized) {
-      const storage = new LocalStorage(undefined, new LocalStoragePolyfill(process.cwd() + '/.exceptionless'));
-      config.useLocalStorage = () => storage;
-      config.services.storage = storage;
+      try {
+        const storage = new LocalStorage(undefined, new LocalStoragePolyfill(process.cwd() + '/.exceptionless'));
+        config.useLocalStorage = () => storage;
+        config.services.storage = storage;
+      } catch (ex) {
+        this.config.services.log.info(`Error configuring localStorage polyfill: ${ex instanceof Error ? ex.message : ex + ''}`);
+      }
 
       config.addPlugin(new NodeEnvironmentInfoPlugin());
       config.addPlugin(new NodeGlobalHandlerPlugin());
