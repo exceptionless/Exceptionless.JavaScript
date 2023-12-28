@@ -21,7 +21,9 @@
     "lint": "eslint . --ext .ts",
     "lint:fix": "eslint . --ext .ts --fix",
     "test": "npm test --workspaces --if-present",
-    "version": "npm --no-git-tag-version --workspaces=true version"
+    "version": "npm --no-git-tag-version --workspaces=true version",
+    "upgrade": "ncu -i",
+    "upgrade:workspaces": "ncu -i --workspaces"
   },
   "workspaces": [
     "packages/core",
