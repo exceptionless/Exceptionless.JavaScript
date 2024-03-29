@@ -1,9 +1,6 @@
 import React, { useEffect, useState } from "react";
 import "./App.css";
-import {
-  Exceptionless,
-  ExceptionlessErrorBoundary,
-} from "@exceptionless/react";
+import { Exceptionless, ExceptionlessErrorBoundary } from "@exceptionless/react";
 
 const HooksExampleApp = () => {
   const [error, setError] = useState(false);
@@ -46,16 +43,9 @@ const HooksExampleApp = () => {
           <header className="App-header">
             <div className="container">
               <h1 className="App-title">Exceptionless React Sample</h1>
-              <p>
-                By pressing the button below, an uncaught error will be thrown
-                inside your component. This will automatically be sent to
-                Exceptionless.
-              </p>
+              <p>By pressing the button below, an uncaught error will be thrown inside your component. This will automatically be sent to Exceptionless.</p>
               <button onClick={throwErrorInComponent}>Simulate Error</button>
-              <p>
-                The following buttons simulated handled events outside the
-                component.
-              </p>
+              <p>The following buttons simulated handled events outside the component.</p>
               <button onClick={submitMessage}>Submit Message</button>
               <button onClick={tryCatchExample}>Try/Catch Example</button>
             </div>
@@ -65,9 +55,7 @@ const HooksExampleApp = () => {
     }
   };
 
-  return (
-    <ExceptionlessErrorBoundary>{renderExample()}</ExceptionlessErrorBoundary>
-  );
+  return <ExceptionlessErrorBoundary>{renderExample()}</ExceptionlessErrorBoundary>;
 };
 
 export default HooksExampleApp;

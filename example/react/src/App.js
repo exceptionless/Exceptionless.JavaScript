@@ -1,9 +1,6 @@
 import React, { Component } from "react";
 import "./App.css";
-import {
-  Exceptionless,
-  ExceptionlessErrorBoundary,
-} from "@exceptionless/react";
+import { Exceptionless, ExceptionlessErrorBoundary } from "@exceptionless/react";
 
 class App extends Component {
   constructor(props) {
@@ -11,7 +8,7 @@ class App extends Component {
     this.state = {
       error: false,
       message: "",
-      errorInfo: "",
+      errorInfo: ""
     };
   }
   async componentDidMount() {
@@ -58,38 +55,23 @@ class App extends Component {
           <header className="App-header">
             <div className="container">
               <h1 className="App-title">Exceptionless React Sample</h1>
-              <p>
-                By pressing the button below, an uncaught error will be thrown
-                inside your component. This will automatically be sent to
-                Exceptionless.
-              </p>
-              <button onClick={this.throwErrorInComponent}>
-                Simulate Error
-              </button>
+              <p>By pressing the button below, an uncaught error will be thrown inside your component. This will automatically be sent to Exceptionless.</p>
+              <button onClick={this.throwErrorInComponent}>Simulate Error</button>
               <div>
-                <p>
-                  Throw an uncaught error and make sure Exceptionless tracks it.
-                </p>
-                <button onClick={this.unhandledExceptionExample}>
-                  Throw unhandled error
-                </button>
+                <p>Throw an uncaught error and make sure Exceptionless tracks it.</p>
+                <button onClick={this.unhandledExceptionExample}>Throw unhandled error</button>
               </div>
-              <p>
-                The following buttons simulated handled events outside the
-                component.
-              </p>
+              <p>The following buttons simulated handled events outside the component.</p>
               <button onClick={this.submitMessage}>Submit Message</button>
               {this.state.message && (
                 <p>
-                  Message sent to Exceptionless:{" "}
-                  <code>{this.state.message}</code>
+                  Message sent to Exceptionless: <code>{this.state.message}</code>
                 </p>
               )}
               <button onClick={this.tryCatchExample}>Try/Catch Example</button>
               {this.state.errorInfo && (
                 <p>
-                  Error message sent to Exceptionless:{" "}
-                  <code>{this.state.errorInfo}</code>
+                  Error message sent to Exceptionless: <code>{this.state.errorInfo}</code>
                 </p>
               )}
             </div>
@@ -100,11 +82,7 @@ class App extends Component {
   };
 
   render() {
-    return (
-      <ExceptionlessErrorBoundary>
-        {this.renderExample()}
-      </ExceptionlessErrorBoundary>
-    );
+    return <ExceptionlessErrorBoundary>{this.renderExample()}</ExceptionlessErrorBoundary>;
   }
 }
 

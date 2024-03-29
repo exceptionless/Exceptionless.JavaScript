@@ -39,7 +39,7 @@ export class TextAreaLogger {
     if (this.element) {
       this.element.innerHTML += `\n${formattedMessage}`;
     } else {
-      this.messageBuffer.push(formattedMessage)
+      this.messageBuffer.push(formattedMessage);
     }
   }
 }

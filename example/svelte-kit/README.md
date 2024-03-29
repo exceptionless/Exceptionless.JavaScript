@@ -1,4 +1,4 @@
-##  Exceptionless Svelte Kit Example
+## Exceptionless Svelte Kit Example
 
 This example shows how to use the `@exceptionless/browser` package for client side Svelte Kit and `@exceptionless/node` for server side Svelte Kit. These is both
 a client side error hook `hooks.client.js` and a server side error hook `hooks.server.js`.

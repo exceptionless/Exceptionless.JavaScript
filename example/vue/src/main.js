@@ -21,8 +21,8 @@ Exceptionless.startup((c) => {
     myPassword: "123456",
     customValue: "Password",
     value: {
-      Password: "123456",
-    },
+      Password: "123456"
+    }
   };
 
   c.defaultTags.push("Example", "JavaScript", "Vue");

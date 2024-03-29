@@ -22,7 +22,7 @@ await Exceptionless.startup((c) => {
     myPassword: "123456",
     customValue: "Password",
     value: {
-      Password: "123456",
+      Password: "123456"
     }
   };
 });
@@ -45,9 +45,7 @@ app.get("/trycatch", async (req, res) => {
   try {
     throw new Error("Caught in try/catch");
   } catch (error) {
-    await Exceptionless.createException(error)
-      .setContextProperty(KnownEventDataKeys.RequestInfo, req)
-      .submit();
+    await Exceptionless.createException(error).setContextProperty(KnownEventDataKeys.RequestInfo, req).submit();
 
     res.status(500).send("Error caught in try/catch");
   }
@@ -55,12 +53,10 @@ app.get("/trycatch", async (req, res) => {
 
 app.use(async (err, req, res, next) => {
   if (res.headersSent) {
-    return next(err)
+    return next(err);
   }
 
-  await Exceptionless.createUnhandledException(err, "express")
-    .setContextProperty(KnownEventDataKeys.RequestInfo, req)
-    .submit();
+  await Exceptionless.createUnhandledException(err, "express").setContextProperty(KnownEventDataKeys.RequestInfo, req).submit();
 
   res.status(500).send("Something broke!");
 });

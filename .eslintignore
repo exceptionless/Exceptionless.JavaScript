@@ -1,6 +1,5 @@
 .DS_Store
 node_modules
-example
 example/svelte-kit/.svelte-kit
 
 # Ignore files for PNPM, NPM and YARN
