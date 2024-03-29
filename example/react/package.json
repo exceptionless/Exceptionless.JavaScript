@@ -3,9 +3,9 @@
   "private": true,
   "version": "3.0.0-dev",
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "eject": "react-scripts eject"
+    "start": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
   },
   "eslintConfig": {
     "extends": [
@@ -29,14 +29,15 @@
     "@testing-library/jest-dom": "^6.4.2",
     "@testing-library/react": "^14.2.2",
     "@testing-library/user-event": "^14.5.2",
-    "react-scripts": "^5.0.1"
+    "@vitejs/plugin-react": "^4.2.1",
+    "vite": "^5.2.6"
   },
   "dependencies": {
     "@exceptionless/react": "3.0.0-dev",
     "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "web-vitals": "^3.5.2"
+    "react-dom": "^18.2.0"
   },
+  "type": "module",
   "publishConfig": {
     "access": "restricted"
   }
