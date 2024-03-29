@@ -8,7 +8,7 @@
     "serve": "vite preview"
   },
   "dependencies": {
-    "vue": "^3.3.13",
+    "vue": "^3.4.21",
     "@exceptionless/vue": "3.0.0-dev"
   },
   "devDependencies": {

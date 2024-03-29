@@ -26,16 +26,16 @@
     ]
   },
   "devDependencies": {
-    "@testing-library/jest-dom": "^6.1.6",
-    "@testing-library/react": "^14.1.2",
-    "@testing-library/user-event": "^14.5.1",
+    "@testing-library/jest-dom": "^6.4.2",
+    "@testing-library/react": "^14.2.2",
+    "@testing-library/user-event": "^14.5.2",
     "react-scripts": "^5.0.1"
   },
   "dependencies": {
     "@exceptionless/react": "3.0.0-dev",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "web-vitals": "^3.5.1"
+    "web-vitals": "^3.5.2"
   },
   "publishConfig": {
     "access": "restricted"
