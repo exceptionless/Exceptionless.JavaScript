@@ -1,6 +1,6 @@
 export * from "@exceptionless/core";
 
-export { BrowserErrorPlugin } from "./plugins/BrowserErrorPlugin.js"
+export { BrowserErrorPlugin } from "./plugins/BrowserErrorPlugin.js";
 export { BrowserGlobalHandlerPlugin } from "./plugins/BrowserGlobalHandlerPlugin.js";
 export { BrowserIgnoreExtensionErrorsPlugin } from "./plugins/BrowserIgnoreExtensionErrorsPlugin.js";
 export { BrowserLifeCyclePlugin } from "./plugins/BrowserLifeCyclePlugin.js";

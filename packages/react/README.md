@@ -32,9 +32,7 @@ class App extends Component {
   render() {
     return (
       <ExceptionlessErrorBoundary>
-        <div>
-          // YOUR APP COMPONENTS HERE
-        </div>
+        <div>// YOUR APP COMPONENTS HERE</div>
       </ExceptionlessErrorBoundary>
     );
   }
@@ -53,11 +51,11 @@ Because the Exceptionless client is a singleton, it is available anywhere in you
 export const myUtilityFunction = async () => {
   try {
     //  Handle successful run of code
-  } catch(e) {
+  } catch (e) {
     //  If there's an error, send it to Exceptionless
     await Exceptionless.submitException(e);
   }
-}
+};
 ```
 
 You can also sent events and logs that are not errors by simply calling the built-in methods on the Exceptionless class:

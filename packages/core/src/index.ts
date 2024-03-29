@@ -17,14 +17,7 @@ export type { UserDescription } from "./models/data/UserDescription.js";
 export type { UserInfo } from "./models/data/UserInfo.js";
 export type { ModuleInfo } from "./models/data/ModuleInfo.js";
 
-export type {
-  SimpleError,
-  ErrorInfo,
-  InnerErrorInfo,
-  MethodInfo,
-  ParameterInfo,
-  StackFrameInfo,
-} from "./models/data/ErrorInfo.js";
+export type { SimpleError, ErrorInfo, InnerErrorInfo, MethodInfo, ParameterInfo, StackFrameInfo } from "./models/data/ErrorInfo.js";
 
 export { ConfigurationDefaultsPlugin } from "./plugins/default/ConfigurationDefaultsPlugin.js";
 export { DuplicateCheckerPlugin } from "./plugins/default/DuplicateCheckerPlugin.js";
@@ -32,7 +25,7 @@ export { EventExclusionPlugin } from "./plugins/default/EventExclusionPlugin.js"
 export { HeartbeatPlugin } from "./plugins/default/HeartbeatPlugin.js";
 export { ReferenceIdPlugin } from "./plugins/default/ReferenceIdPlugin.js";
 export { SessionIdManagementPlugin } from "./plugins/default/SessionIdManagementPlugin.js";
-export { IgnoredErrorProperties, SimpleErrorPlugin } from "./plugins/default/SimpleErrorPlugin.js"
+export { IgnoredErrorProperties, SimpleErrorPlugin } from "./plugins/default/SimpleErrorPlugin.js";
 export { SubmissionMethodPlugin } from "./plugins/default/SubmissionMethodPlugin.js";
 export { EventContext } from "./models/EventContext.js";
 export { PluginContext } from "./plugins/PluginContext.js";
@@ -68,5 +61,5 @@ export {
   startsWith,
   stringify,
   toBoolean,
-  toError,
+  toError
 } from "./Utils.js";

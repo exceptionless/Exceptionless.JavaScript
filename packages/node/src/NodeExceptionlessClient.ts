@@ -1,9 +1,4 @@
-import {
-  Configuration,
-  ExceptionlessClient,
-  LocalStorage,
-  SimpleErrorPlugin
-} from "@exceptionless/core";
+import { Configuration, ExceptionlessClient, LocalStorage, SimpleErrorPlugin } from "@exceptionless/core";
 
 import { LocalStorage as LocalStoragePolyfill } from "node-localstorage";
 
@@ -20,11 +15,11 @@ export class NodeExceptionlessClient extends ExceptionlessClient {
 
     if (configurationOrApiKey && !this._initialized) {
       try {
-        const storage = new LocalStorage(undefined, new LocalStoragePolyfill(process.cwd() + '/.exceptionless'));
+        const storage = new LocalStorage(undefined, new LocalStoragePolyfill(process.cwd() + "/.exceptionless"));
         config.useLocalStorage = () => storage;
         config.services.storage = storage;
       } catch (ex) {
-        this.config.services.log.info(`Error configuring localStorage polyfill: ${ex instanceof Error ? ex.message : ex + ''}`);
+        this.config.services.log.info(`Error configuring localStorage polyfill: ${ex instanceof Error ? ex.message : ex + ""}`);
       }
 
       config.addPlugin(new NodeEnvironmentInfoPlugin());

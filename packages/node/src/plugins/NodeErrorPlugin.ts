@@ -64,8 +64,8 @@ export class NodeErrorPlugin implements IEventPlugin {
           column: frame.columnNumber || 0,
           declaring_type: frame.typeName,
           data: {
-            is_native: frame.native || (frame.fileName && frame.fileName[0] !== "/" && frame.fileName[0] !== "."),
-          },
+            is_native: frame.native || (frame.fileName && frame.fileName[0] !== "/" && frame.fileName[0] !== ".")
+          }
         });
       }
 
@@ -80,7 +80,7 @@ export class NodeErrorPlugin implements IEventPlugin {
     return Promise.resolve({
       type: exception.name || "Error",
       message: exception.message,
-      stack_trace: getStackFrames(<stackFrameShape[]><unknown>result || []), // TODO: Update type definition.
+      stack_trace: getStackFrames(<stackFrameShape[]>(<unknown>result) || []) // TODO: Update type definition.
     });
   }
 }

@@ -6,17 +6,14 @@ export function getHashCode(source: string): number {
   let hash = 0;
   for (let index = 0; index < source.length; index++) {
     const character = source.charCodeAt(index);
-    hash = ((hash << 5) - hash) + character;
+    hash = (hash << 5) - hash + character;
     hash |= 0;
   }
 
   return hash;
 }
 
-export function getCookies(
-  cookies: string,
-  exclusions?: string[],
-): Record<string, string> | null {
+export function getCookies(cookies: string, exclusions?: string[]): Record<string, string> | null {
   const result: Record<string, string> = {};
 
   const parts: string[] = (cookies || "").split("; ");
@@ -32,11 +29,12 @@ export function getCookies(
 
 export function guid(): string {
   function s4() {
-    return Math.floor((1 + Math.random()) * 0x10000).toString(16).substring(1);
+    return Math.floor((1 + Math.random()) * 0x10000)
+      .toString(16)
+      .substring(1);
   }
 
-  return s4() + s4() + "-" + s4() + "-" + s4() + "-" + s4() + "-" + s4() +
-    s4() + s4();
+  return s4() + s4() + "-" + s4() + "-" + s4() + "-" + s4() + "-" + s4() + s4() + s4();
 }
 
 export function parseVersion(source: string): string | null {
@@ -44,8 +42,7 @@ export function parseVersion(source: string): string | null {
     return null;
   }
 
-  const versionRegex =
-    /(v?((\d+)\.(\d+)(\.(\d+))?)(?:-([\dA-Za-z-]+(?:\.[\dA-Za-z-]+)*))?(?:\+([\dA-Za-z-]+(?:\.[\dA-Za-z-]+)*))?)/;
+  const versionRegex = /(v?((\d+)\.(\d+)(\.(\d+))?)(?:-([\dA-Za-z-]+(?:\.[\dA-Za-z-]+)*))?(?:\+([\dA-Za-z-]+(?:\.[\dA-Za-z-]+)*))?)/;
   const matches = versionRegex.exec(source);
   if (matches && matches.length > 0) {
     return matches[0];
@@ -54,10 +51,7 @@ export function parseVersion(source: string): string | null {
   return null;
 }
 
-export function parseQueryString(
-  query: string,
-  exclusions?: string[],
-): Record<string, string> {
+export function parseQueryString(query: string, exclusions?: string[]): Record<string, string> {
   if (!query || query.length === 0) {
     return {};
   }
@@ -87,11 +81,7 @@ export function randomNumber(): number {
  * @param input the value to check against the @pattern.
  * @param pattern The pattern to check, supports wild cards (*).
  */
-export function isMatch(
-  input: string | undefined,
-  patterns: string[],
-  ignoreCase = true,
-): boolean {
+export function isMatch(input: string | undefined, patterns: string[], ignoreCase = true): boolean {
   if (typeof input !== "string") {
     return false;
   }
@@ -105,10 +95,7 @@ export function isMatch(
     }
 
     if (pattern) {
-      pattern = (ignoreCase ? pattern.toLowerCase() : pattern).replace(
-        trim,
-        "",
-      );
+      pattern = (ignoreCase ? pattern.toLowerCase() : pattern).replace(trim, "");
     }
 
     if (!pattern) {
@@ -299,7 +286,13 @@ export function prune(value: unknown, depth: number = 10): unknown {
     return value;
   }
 
-  function pruneImpl(value: unknown, maxDepth: number, currentDepth: number = 10, seen: WeakSet<object> = new WeakSet(), parentIsArray: boolean = false): unknown {
+  function pruneImpl(
+    value: unknown,
+    maxDepth: number,
+    currentDepth: number = 10,
+    seen: WeakSet<object> = new WeakSet(),
+    parentIsArray: boolean = false
+  ): unknown {
     if (value === null || value === undefined) {
       return value;
     }
@@ -321,7 +314,7 @@ export function prune(value: unknown, depth: number = 10): unknown {
       if (Array.isArray(normalizedValue)) {
         // Treat an object inside of an array as a single level
         const depth: number = parentIsArray ? currentDepth + 1 : currentDepth;
-        return normalizedValue.map(e => pruneImpl(e, maxDepth, depth, seen, true));
+        return normalizedValue.map((e) => pruneImpl(e, maxDepth, depth, seen, true));
       }
 
       if (normalizedValue instanceof Date) {
@@ -390,9 +383,7 @@ export function toBoolean(input: unknown, defaultValue: boolean = false): boolea
     return input;
   }
 
-  if (
-    input === null || typeof input !== "number" && typeof input !== "string"
-  ) {
+  if (input === null || (typeof input !== "number" && typeof input !== "string")) {
     return defaultValue;
   }
 

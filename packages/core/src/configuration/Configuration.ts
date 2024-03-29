@@ -27,7 +27,7 @@ export class Configuration {
       log: new NullLog(),
       storage: new InMemoryStorage(),
       queue: new DefaultEventQueue(this),
-      submissionClient: new DefaultSubmissionClient(this),
+      submissionClient: new DefaultSubmissionClient(this)
     };
 
     EventPluginManager.addDefaultPlugins(this);
@@ -181,9 +181,7 @@ export class Configuration {
   public get dataExclusions(): string[] {
     // TODO: Known settings keys.
     const exclusions: string = this.settings["@@DataExclusions"];
-    return this._dataExclusions.concat(
-      exclusions && exclusions.split(",") || [],
-    );
+    return this._dataExclusions.concat((exclusions && exclusions.split(",")) || []);
   }
 
   /**
@@ -333,9 +331,7 @@ export class Configuration {
   public get userAgentBotPatterns(): string[] {
     // TODO: Known settings keys.
     const patterns: string = this.settings["@@UserAgentBotPatterns"];
-    return this._userAgentBotPatterns.concat(
-      patterns && patterns.split(",") || [],
-    );
+    return this._userAgentBotPatterns.concat((patterns && patterns.split(",")) || []);
   }
 
   /**
@@ -344,10 +340,7 @@ export class Configuration {
    * For example, entering *Bot* will cause any events that contains a user agent of Bot will not be submitted.
    */
   public addUserAgentBotPatterns(...userAgentBotPatterns: string[]): void {
-    this._userAgentBotPatterns = [
-      ...this._userAgentBotPatterns,
-      ...userAgentBotPatterns,
-    ];
+    this._userAgentBotPatterns = [...this._userAgentBotPatterns, ...userAgentBotPatterns];
   }
 
   /**
@@ -385,9 +378,7 @@ export class Configuration {
    */
   public addPlugin(name: string | undefined, priority: number, pluginAction: (context: EventPluginContext) => Promise<void>): void;
   public addPlugin(pluginOrName: IEventPlugin | string | undefined, priority?: number, pluginAction?: (context: EventPluginContext) => Promise<void>): void {
-    const plugin: IEventPlugin = pluginAction
-      ? <IEventPlugin>{ name: pluginOrName as string, priority, run: pluginAction }
-      : pluginOrName as IEventPlugin;
+    const plugin: IEventPlugin = pluginAction ? <IEventPlugin>{ name: pluginOrName as string, priority, run: pluginAction } : (pluginOrName as IEventPlugin);
 
     if (!plugin || !(plugin.startup || plugin.run)) {
       this.services.log.error("Add plugin failed: startup or run method not defined");
@@ -402,7 +393,7 @@ export class Configuration {
       plugin.priority = 0;
     }
 
-    if (!this._plugins.find(f => f.name === plugin.name)) {
+    if (!this._plugins.find((f) => f.name === plugin.name)) {
       this._plugins.push(plugin);
     }
   }
@@ -411,9 +402,7 @@ export class Configuration {
    * Remove an plugin by key from this configuration.
    */
   public removePlugin(pluginOrName: IEventPlugin | string): void {
-    const name: string = typeof pluginOrName === "string"
-      ? pluginOrName
-      : pluginOrName.name || "";
+    const name: string = typeof pluginOrName === "string" ? pluginOrName : pluginOrName.name || "";
     if (!name) {
       this.services.log.error("Remove plugin failed: Plugin name not defined");
       return;
@@ -453,9 +442,7 @@ export class Configuration {
   public setUserIdentity(identity: string): void;
   public setUserIdentity(identity: string, name: string): void;
   public setUserIdentity(userInfoOrIdentity: UserInfo | string, name?: string): void {
-    const userInfo: UserInfo = typeof userInfoOrIdentity !== "string"
-      ? userInfoOrIdentity
-      : <UserInfo>{ identity: userInfoOrIdentity, name };
+    const userInfo: UserInfo = typeof userInfoOrIdentity !== "string" ? userInfoOrIdentity : <UserInfo>{ identity: userInfoOrIdentity, name };
 
     const shouldRemove: boolean = !userInfo || (!userInfo.identity && !userInfo.name);
     if (shouldRemove) {
@@ -549,7 +536,7 @@ export class Configuration {
       try {
         handler(this);
       } catch (ex) {
-        this.services.log.error(`Error calling subscribe handler: ${ex instanceof Error ? ex.message : ex + ''}`);
+        this.services.log.error(`Error calling subscribe handler: ${ex instanceof Error ? ex.message : ex + ""}`);
       }
     }
   }

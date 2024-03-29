@@ -1,6 +1,7 @@
 export const CapturedExceptions = {
   OPERA_854: {
-    "message": "Statement on line 44: Type mismatch (usually a non-object value used where an object is required)\n" +
+    message:
+      "Statement on line 44: Type mismatch (usually a non-object value used where an object is required)\n" +
       "Backtrace:\n" +
       "  Line 44 of linked script http://path/to/file.js\n" +
       "    this.undef();\n" +
@@ -20,7 +21,8 @@ export const CapturedExceptions = {
     "opera#sourceloc": 44
   },
   OPERA_902: {
-    "message": "Statement on line 44: Type mismatch (usually a non-object value used where an object is required)\n" +
+    message:
+      "Statement on line 44: Type mismatch (usually a non-object value used where an object is required)\n" +
       "Backtrace:\n" +
       "  Line 44 of linked script http://path/to/file.js\n" +
       "    this.undef();\n" +
@@ -40,7 +42,8 @@ export const CapturedExceptions = {
     "opera#sourceloc": 44
   },
   OPERA_927: {
-    "message": "Statement on line 43: Type mismatch (usually a non-object value used where an object is required)\n" +
+    message:
+      "Statement on line 43: Type mismatch (usually a non-object value used where an object is required)\n" +
       "Backtrace:\n" +
       "  Line 43 of linked script http://path/to/file.js\n" +
       "    bar(n - 1);\n" +
@@ -52,7 +55,8 @@ export const CapturedExceptions = {
     "opera#sourceloc": 43
   },
   OPERA_964: {
-    "message": "Statement on line 42: Type mismatch (usually non-object value supplied where object required)\n" +
+    message:
+      "Statement on line 42: Type mismatch (usually non-object value supplied where object required)\n" +
       "Backtrace:\n" +
       "  Line 42 of linked script http://path/to/file.js\n" +
       "                this.undef();\n" +
@@ -70,7 +74,8 @@ export const CapturedExceptions = {
       "         foo();\n" +
       "",
     "opera#sourceloc": 42,
-    "stacktrace": "  ...  Line 27 of linked script http://path/to/file.js\n" +
+    stacktrace:
+      "  ...  Line 27 of linked script http://path/to/file.js\n" +
       "            ex = ex || this.createException();\n" +
       "  Line 18 of linked script http://path/to/file.js: In function printStackTrace\n" +
       "        CapturedExceptions.p = new printStackTrace.implementation(), result = p.run(ex);\n" +
@@ -85,9 +90,10 @@ export const CapturedExceptions = {
       ""
   },
   OPERA_10: {
-    "message": "Statement on line 42: Type mismatch (usually non-object value supplied where object required)",
+    message: "Statement on line 42: Type mismatch (usually non-object value supplied where object required)",
     "opera#sourceloc": 42,
-    "stacktrace": "  Line 42 of linked script http://path/to/file.js\n" +
+    stacktrace:
+      "  Line 42 of linked script http://path/to/file.js\n" +
       "                this.undef();\n" +
       "  Line 27 of linked script http://path/to/file.js\n" +
       "            ex = ex || this.createException();\n" +
@@ -104,13 +110,15 @@ export const CapturedExceptions = {
       ""
   },
   OPERA_11: {
-    message: "\"this.undef\" is not a function",
-    stack: "<anonymous function: run>([arguments not available])@http://path/to/file.js:27\n" +
+    message: '"this.undef" is not a function',
+    stack:
+      "<anonymous function: run>([arguments not available])@http://path/to/file.js:27\n" +
       "bar([arguments not available])@http://domain.com:1234/path/to/file.js:18\n" +
       "foo([arguments not available])@http://domain.com:1234/path/to/file.js:11\n" +
       "<anonymous function>@http://path/to/file.js:15\n" +
       "Error created at <anonymous function>@http://path/to/file.js:15",
-    stacktrace: "Error thrown at line 42, column 12 in <anonymous function: createException>() in http://path/to/file.js:\n" +
+    stacktrace:
+      "Error thrown at line 42, column 12 in <anonymous function: createException>() in http://path/to/file.js:\n" +
       "    this.undef();\n" +
       "called from line 27, column 8 in <anonymous function: run>(ex) in http://path/to/file.js:\n" +
       "    ex = ex || this.createException();\n" +
@@ -126,11 +134,13 @@ export const CapturedExceptions = {
       "    foo();"
   },
   OPERA_12: {
-    message: "Cannot convert \"x\" to object",
-    stack: "<anonymous function>([arguments not available])@http://localhost:8000/ExceptionLab.html:48\n" +
+    message: 'Cannot convert "x" to object',
+    stack:
+      "<anonymous function>([arguments not available])@http://localhost:8000/ExceptionLab.html:48\n" +
       "dumpException3([arguments not available])@http://localhost:8000/ExceptionLab.html:46\n" +
       "<anonymous function>([arguments not available])@http://localhost:8000/ExceptionLab.html:1",
-    stacktrace: "Error thrown at line 48, column 12 in <anonymous function>(x) in http://localhost:8000/ExceptionLab.html:\n" +
+    stacktrace:
+      "Error thrown at line 48, column 12 in <anonymous function>(x) in http://localhost:8000/ExceptionLab.html:\n" +
       "    x.undef();\n" +
       "called from line 46, column 8 in dumpException3() in http://localhost:8000/ExceptionLab.html:\n" +
       "    dumpException((function(x) {\n" +
@@ -138,17 +148,19 @@ export const CapturedExceptions = {
       "    dumpException3();"
   },
   OPERA_25: {
-    message: "Cannot read property \"undef\" of null",
+    message: 'Cannot read property "undef" of null',
     name: "TypeError",
-    stack: "TypeError: Cannot read property \"undef\" of null\n" +
+    stack:
+      'TypeError: Cannot read property "undef" of null\n' +
       "    at http://path/to/file.js:47:22\n" +
       "    at foo (http://path/to/file.js:52:15)\n" +
       "    at bar (http://path/to/file.js:108:168)"
   },
   CHROME_15: {
     arguments: ["undef"],
-    message: "Object #<Object> has no method \"undef\"",
-    stack: "TypeError: Object #<Object> has no method \"undef\"\n" +
+    message: 'Object #<Object> has no method "undef"',
+    stack:
+      'TypeError: Object #<Object> has no method "undef"\n' +
       "    at bar (http://path/to/file.js:13:17)\n" +
       "    at bar (http://path/to/file.js:16:5)\n" +
       "    at foo (http://path/to/file.js:20:5)\n" +
@@ -157,7 +169,8 @@ export const CapturedExceptions = {
   CHROME_36: {
     message: "Default error",
     name: "Error",
-    stack: "Error: Default error\n" +
+    stack:
+      "Error: Default error\n" +
       "    at dumpExceptionError (http://localhost:8080/file.js:41:27)\n" +
       "    at HTMLButtonElement.onclick (http://localhost:8080/file.js:107:146)"
   },
@@ -166,7 +179,8 @@ export const CapturedExceptions = {
     lineNumber: 44,
     message: "this.undef is not a function",
     name: "TypeError",
-    stack: "()@http://127.0.0.1:8000/js/stacktrace.js:44\n" +
+    stack:
+      "()@http://127.0.0.1:8000/js/stacktrace.js:44\n" +
       "(null)@http://127.0.0.1:8000/js/stacktrace.js:31\n" +
       "printStackTrace()@http://127.0.0.1:8000/js/stacktrace.js:18\n" +
       "bar(1)@http://127.0.0.1:8000/js/file.js:13\n" +
@@ -178,7 +192,8 @@ export const CapturedExceptions = {
   FIREFOX_7: {
     fileName: "file:///G:/js/stacktrace.js",
     lineNumber: 44,
-    stack: "()@file:///G:/js/stacktrace.js:44\n" +
+    stack:
+      "()@file:///G:/js/stacktrace.js:44\n" +
       "(null)@file:///G:/js/stacktrace.js:31\n" +
       "printStackTrace()@file:///G:/js/stacktrace.js:18\n" +
       "bar(1)@file:///G:/js/file.js:13\n" +
@@ -189,92 +204,80 @@ export const CapturedExceptions = {
   },
   FIREFOX_14: {
     message: "x is null",
-    stack: "@http://path/to/file.js:48\n" +
-      "dumpException3@http://path/to/file.js:52\n" +
-      "onclick@http://path/to/file.js:1\n" +
-      "",
+    stack: "@http://path/to/file.js:48\n" + "dumpException3@http://path/to/file.js:52\n" + "onclick@http://path/to/file.js:1\n" + "",
     fileName: "http://path/to/file.js",
     lineNumber: 48
   },
   FIREFOX_31: {
     message: "Default error",
     name: "Error",
-    stack: "foo@http://path/to/file.js:41:13\n" +
-      "bar@http://path/to/file.js:1:1\n" +
-      "",
+    stack: "foo@http://path/to/file.js:41:13\n" + "bar@http://path/to/file.js:1:1\n" + "",
     fileName: "http://path/to/file.js",
     lineNumber: 41,
     columnNumber: 12
   },
   SAFARI_6: {
-    message: "\"null\" is not an object (evaluating \"x.undef\")",
-    stack: "@http://path/to/file.js:48\n" +
-      "dumpException3@http://path/to/file.js:52\n" +
-      "onclick@http://path/to/file.js:82\n" +
-      "[native code]",
+    message: '"null" is not an object (evaluating "x.undef")',
+    stack: "@http://path/to/file.js:48\n" + "dumpException3@http://path/to/file.js:52\n" + "onclick@http://path/to/file.js:82\n" + "[native code]",
     line: 48,
     sourceURL: "http://path/to/file.js"
   },
   SAFARI_7: {
-    message: "\"null\" is not an object (evaluating \"x.undef\")",
+    message: '"null" is not an object (evaluating "x.undef")',
     name: "TypeError",
-    stack: "http://path/to/file.js:48:22\n" +
-      "foo@http://path/to/file.js:52:15\n" +
-      "bar@http://path/to/file.js:108:107",
+    stack: "http://path/to/file.js:48:22\n" + "foo@http://path/to/file.js:52:15\n" + "bar@http://path/to/file.js:108:107",
     line: 47,
     sourceURL: "http://path/to/file.js"
   },
   SAFARI_8: {
-    message: "null is not an object (evaluating \"x.undef\")",
+    message: 'null is not an object (evaluating "x.undef")',
     name: "TypeError",
-    stack: "http://path/to/file.js:47:22\n" +
-      "foo@http://path/to/file.js:52:15\n" +
-      "bar@http://path/to/file.js:108:23",
+    stack: "http://path/to/file.js:47:22\n" + "foo@http://path/to/file.js:52:15\n" + "bar@http://path/to/file.js:108:23",
     line: 47,
     column: 22,
     sourceURL: "http://path/to/file.js"
   },
   SAFARI_8_EVAL: {
-    message: "Can\"t find variable: getExceptionProps",
+    message: 'Can"t find variable: getExceptionProps',
     name: "ReferenceError",
-    stack: "eval code\n" +
-      "eval@[native code]\n" +
-      "foo@http://path/to/file.js:58:21\n" +
-      "bar@http://path/to/file.js:109:91",
+    stack: "eval code\n" + "eval@[native code]\n" + "foo@http://path/to/file.js:58:21\n" + "bar@http://path/to/file.js:109:91",
     line: 1,
     column: 18
   },
   IE_9: {
-    message: "Unable to get property \"undef\" of undefined or null reference",
-    description: "Unable to get property \"undef\" of undefined or null reference"
+    message: 'Unable to get property "undef" of undefined or null reference',
+    description: 'Unable to get property "undef" of undefined or null reference'
   },
   IE_10: {
-    message: "Unable to get property \"undef\" of undefined or null reference",
-    stack: "TypeError: Unable to get property \"undef\" of undefined or null reference\n" +
+    message: 'Unable to get property "undef" of undefined or null reference',
+    stack:
+      'TypeError: Unable to get property "undef" of undefined or null reference\n' +
       "   at Anonymous function (http://path/to/file.js:48:13)\n" +
       "   at foo (http://path/to/file.js:46:9)\n" +
       "   at bar (http://path/to/file.js:82:1)",
-    description: "Unable to get property \"undef\" of undefined or null reference",
+    description: 'Unable to get property "undef" of undefined or null reference',
     number: -2146823281
   },
   IE_11: {
-    message: "Unable to get property \"undef\" of undefined or null reference",
+    message: 'Unable to get property "undef" of undefined or null reference',
     name: "TypeError",
-    stack: "TypeError: Unable to get property \"undef\" of undefined or null reference\n" +
+    stack:
+      'TypeError: Unable to get property "undef" of undefined or null reference\n' +
       "   at Anonymous function (http://path/to/file.js:47:21)\n" +
       "   at foo (http://path/to/file.js:45:13)\n" +
       "   at bar (http://path/to/file.js:108:1)",
-    description: "Unable to get property \"undef\" of undefined or null reference",
+    description: 'Unable to get property "undef" of undefined or null reference',
     number: -2146823281
   },
   IE_11_EVAL: {
-    message: "\"getExceptionProps\" is undefined",
+    message: '"getExceptionProps" is undefined',
     name: "ReferenceError",
-    stack: "ReferenceError: \"getExceptionProps\" is undefined\n" +
+    stack:
+      'ReferenceError: "getExceptionProps" is undefined\n' +
       "   at eval code (eval code:1:1)\n" +
       "   at foo (http://path/to/file.js:58:17)\n" +
       "   at bar (http://path/to/file.js:109:1)",
-    description: "\"getExceptionProps\" is undefined",
+    description: '"getExceptionProps" is undefined',
     number: -2146823279
   }
-}
+};

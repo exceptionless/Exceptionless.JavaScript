@@ -1,6 +1,6 @@
 export * from "@exceptionless/core";
 
-export { NodeErrorPlugin } from "./plugins/NodeErrorPlugin.js"
+export { NodeErrorPlugin } from "./plugins/NodeErrorPlugin.js";
 export { NodeEnvironmentInfoPlugin } from "./plugins/NodeEnvironmentInfoPlugin.js";
 export { NodeGlobalHandlerPlugin } from "./plugins/NodeGlobalHandlerPlugin.js";
 export { NodeLifeCyclePlugin } from "./plugins/NodeLifeCyclePlugin.js";

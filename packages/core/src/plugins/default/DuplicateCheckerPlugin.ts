@@ -14,10 +14,7 @@ export class DuplicateCheckerPlugin implements IEventPlugin {
   private _intervalId: ReturnType<typeof setInterval> | undefined;
   private _interval: number;
 
-  constructor(
-    getCurrentTime: () => number = () => Date.now(),
-    interval: number = 30000
-  ) {
+  constructor(getCurrentTime: () => number = () => Date.now(), interval: number = 30000) {
     this._getCurrentTime = getCurrentTime;
     this._interval = interval;
   }
@@ -65,12 +62,7 @@ export class DuplicateCheckerPlugin implements IEventPlugin {
         context.cancelled = true;
       }
 
-      if (
-        !context.cancelled &&
-        this._processedHashCodes.some((h) =>
-          h.hash === hashCode && h.timestamp >= (now - this._interval)
-        )
-      ) {
+      if (!context.cancelled && this._processedHashCodes.some((h) => h.hash === hashCode && h.timestamp >= now - this._interval)) {
         context.log.trace("Adding event with hash: " + hashCode);
         this._mergedEvents.push(new MergedEvent(hashCode, context, count));
         context.cancelled = true;

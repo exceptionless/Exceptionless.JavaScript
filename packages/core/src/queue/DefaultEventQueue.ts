@@ -6,8 +6,8 @@ import { Response } from "../submission/Response.js";
 import { allowProcessToExitWithoutWaitingForTimerOrInterval } from "../Utils.js";
 
 interface EventQueueItem {
-  file: string,
-  event: Event
+  file: string;
+  event: Event;
 }
 
 export class DefaultEventQueue implements IEventQueue {
@@ -54,7 +54,7 @@ export class DefaultEventQueue implements IEventQueue {
   constructor(
     private config: Configuration,
     private maxItems: number = 250
-  ) { }
+  ) {}
 
   public async enqueue(event: Event): Promise<void> {
     const eventWillNotBeQueued = "The event will not be queued.";
@@ -117,14 +117,14 @@ export class DefaultEventQueue implements IEventQueue {
       }
 
       log.info(`Sending ${items.length} events to ${this.config.serverUrl}`);
-      const events = items.map(i => i.event);
+      const events = items.map((i) => i.event);
       const response = await this.config.services.submissionClient.submitEvents(events);
       await this.processSubmissionResponse(response, items);
       await this.eventsPosted(events, response);
       log.trace("Finished processing queue");
       this._processingQueue = false;
     } catch (ex) {
-      log.error(`Error processing queue: ${ex instanceof Error ? ex.message : ex + ''}`);
+      log.error(`Error processing queue: ${ex instanceof Error ? ex.message : ex + ""}`);
       await this.suspendProcessing();
       this._processingQueue = false;
     }
@@ -155,7 +155,7 @@ export class DefaultEventQueue implements IEventQueue {
     }
 
     config.services.log.info(`Suspending processing for ${durationInMinutes} minutes.`);
-    this._suspendProcessingUntil = new Date(currentDate.getTime() + (durationInMinutes * 60000));
+    this._suspendProcessingUntil = new Date(currentDate.getTime() + durationInMinutes * 60000);
 
     if (discardFutureQueuedItems) {
       this._discardQueuedItemsUntil = this._suspendProcessingUntil;
@@ -178,19 +178,17 @@ export class DefaultEventQueue implements IEventQueue {
       try {
         await handler(events, response);
       } catch (ex) {
-        this.config.services.log.error(`Error calling onEventsPosted handler: ${ex instanceof Error ? ex.message : ex + ''}`);
+        this.config.services.log.error(`Error calling onEventsPosted handler: ${ex instanceof Error ? ex.message : ex + ""}`);
       }
     }
   }
 
   private areQueuedItemsDiscarded(): boolean {
-    return this._discardQueuedItemsUntil &&
-      this._discardQueuedItemsUntil > new Date() || false;
+    return (this._discardQueuedItemsUntil && this._discardQueuedItemsUntil > new Date()) || false;
   }
 
   private isQueueProcessingSuspended(): boolean {
-    return this._suspendProcessingUntil &&
-      this._suspendProcessingUntil > new Date() || false;
+    return (this._suspendProcessingUntil && this._suspendProcessingUntil > new Date()) || false;
   }
 
   private async onProcessQueue(): Promise<void> {
@@ -267,12 +265,11 @@ export class DefaultEventQueue implements IEventQueue {
         for (const file of files) {
           if (file?.startsWith(this.QUEUE_PREFIX)) {
             const json = await storage.getItem(file);
-            if (json)
-              this._queue.push({ file, event: JSON.parse(json) as Event });
+            if (json) this._queue.push({ file, event: JSON.parse(json) as Event });
           }
         }
       } catch (ex) {
-        log.error(`Error loading queue items from storage: ${ex instanceof Error ? ex.message : ex + ''}`)
+        log.error(`Error loading queue items from storage: ${ex instanceof Error ? ex.message : ex + ""}`);
       }
     }
   }
@@ -290,7 +287,7 @@ export class DefaultEventQueue implements IEventQueue {
         try {
           await storage.removeItem(item.file);
         } catch (ex) {
-          log.error(`Error removing oldest queue entry from storage: ${ex instanceof Error ? ex.message : ex + ''}`)
+          log.error(`Error removing oldest queue entry from storage: ${ex instanceof Error ? ex.message : ex + ""}`);
         }
       }
     }
@@ -299,7 +296,7 @@ export class DefaultEventQueue implements IEventQueue {
       try {
         await storage.setItem(file, JSON.stringify(event));
       } catch (ex) {
-        log.error(`Error saving queue entry to storage: ${ex instanceof Error ? ex.message : ex + ''}`)
+        log.error(`Error saving queue entry to storage: ${ex instanceof Error ? ex.message : ex + ""}`);
       }
     }
 
@@ -307,7 +304,7 @@ export class DefaultEventQueue implements IEventQueue {
   }
 
   private async removeEvents(items: EventQueueItem[]): Promise<void> {
-    const files = items.map(i => i.file);
+    const files = items.map((i) => i.file);
     if (this.config.usePersistedQueueStorage) {
       const { log, storage } = this.config.services;
 
@@ -315,11 +312,11 @@ export class DefaultEventQueue implements IEventQueue {
         try {
           await storage.removeItem(file);
         } catch (ex) {
-          log.error(`Error removing queue item from storage: ${ex instanceof Error ? ex.message : ex + ''}`)
+          log.error(`Error removing queue item from storage: ${ex instanceof Error ? ex.message : ex + ""}`);
         }
       }
     }
 
-    this._queue = this._queue.filter(i => !files.includes(i.file));
+    this._queue = this._queue.filter((i) => !files.includes(i.file));
   }
 }

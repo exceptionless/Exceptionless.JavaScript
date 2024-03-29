@@ -14,30 +14,30 @@ tag, or you can use the Node Package Manager (npm) to install the package.
 
 ### CDN
 
-  Add the following script tag at the very beginning of your page:
+Add the following script tag at the very beginning of your page:
 
-  ```html
+```html
 <script type="module">
-import { Exceptionless } from "https://unpkg.com/@exceptionless/browser";
-
-await Exceptionless.startup((c) => {
-  c.apiKey = "API_KEY_HERE";
-});
-</script>
-  ```
-
-### npm
-
-  1. Install the package by running `npm install @exceptionless/browser --save`.
-  2. Import Exceptionless and call startup during app startup.
-
-  ```js
-  import { Exceptionless } from "@exceptionless/browser";
+  import { Exceptionless } from "https://unpkg.com/@exceptionless/browser";
 
   await Exceptionless.startup((c) => {
     c.apiKey = "API_KEY_HERE";
   });
-  ```
+</script>
+```
+
+### npm
+
+1. Install the package by running `npm install @exceptionless/browser --save`.
+2. Import Exceptionless and call startup during app startup.
+
+```js
+import { Exceptionless } from "@exceptionless/browser";
+
+await Exceptionless.startup((c) => {
+  c.apiKey = "API_KEY_HERE";
+});
+```
 
 ## Configuration
 
@@ -48,7 +48,7 @@ unhandled errors occurs.
 ```js
 import { Exceptionless } from "@exceptionless/browser";
 
-await Exceptionless.startup(c => {
+await Exceptionless.startup((c) => {
   c.apiKey = "API_KEY_HERE";
   c.setUserIdentity("12345678", "Blake");
   c.useSessions();

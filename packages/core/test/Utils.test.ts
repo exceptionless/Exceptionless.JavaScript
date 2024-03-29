@@ -1,23 +1,18 @@
 import { describe, test } from "@jest/globals";
 import { expect } from "expect";
 
-import {
-  endsWith,
-  isEmpty,
-  isMatch,
-  parseVersion,
-  prune,
-  startsWith,
-  stringify,
-  toBoolean
-} from "../src/Utils.js";
+import { endsWith, isEmpty, isMatch, parseVersion, prune, startsWith, stringify, toBoolean } from "../src/Utils.js";
 
 describe("Utils", () => {
   function getObjectWithInheritedProperties(): unknown {
     // @ts-expect-error TS2683
-    const Foo = function () { this.a = "a"; };
+    const Foo = function () {
+      this.a = "a";
+    };
     // @ts-expect-error TS2683
-    const Bar = function () { this.b = "b"; };
+    const Bar = function () {
+      this.b = "b";
+    };
     // @ts-expect-error TS7009
     Bar.prototype = new Foo();
     // @ts-expect-error TS7009
@@ -26,22 +21,22 @@ describe("Utils", () => {
 
   describe("prune", () => {
     test("circular reference", () => {
-      type Circular = { property: string, circularRef?: Circular };
+      type Circular = { property: string; circularRef?: Circular };
       const circular: Circular = { property: "string" };
       circular.circularRef = circular;
 
-      const expected = { "property": "string", "circularRef": undefined };
+      const expected = { property: "string", circularRef: undefined };
       const actual = prune(circular);
       expect(actual).toStrictEqual(expected);
     });
 
     test("circular array reference", () => {
-      type Circular = { property: string, circularRef?: Circular, list?: Circular[] };
+      type Circular = { property: string; circularRef?: Circular; list?: Circular[] };
       const circular: Circular = { property: "string" };
       circular.circularRef = circular;
       circular.list = [circular];
 
-      const expected = { "property": "string", "circularRef": undefined, "list": [undefined] };
+      const expected = { property: "string", circularRef: undefined, list: [undefined] };
       const actual = prune(circular);
       expect(actual).toStrictEqual(expected);
     });
@@ -50,14 +45,14 @@ describe("Utils", () => {
       type PropertyObject = { property: string };
       const propObject: PropertyObject = { property: "string" };
 
-      const expected = [{ "property": "string" }, undefined];
+      const expected = [{ property: "string" }, undefined];
       const actual = prune([propObject, propObject]);
       expect(actual).toStrictEqual(expected);
     });
 
     test("array cloned no object references", () => {
-      const expected = [{ "property": "string" }, { "property": "string" }];
-      const actual = prune([{ "property": "string" }, { "property": "string" }]);
+      const expected = [{ property: "string" }, { property: "string" }];
+      const actual = prune([{ property: "string" }, { property: "string" }]);
       expect(actual).toStrictEqual(expected);
     });
 
@@ -65,14 +60,14 @@ describe("Utils", () => {
       // NOTE: we do not have coverage for globalThis.
 
       const primitiveValues = {
-        "undefined": undefined,
-        "null": null,
-        "string": "string",
-        "number": 1,
-        "Infinity": Infinity,
+        undefined: undefined,
+        null: null,
+        string: "string",
+        number: 1,
+        Infinity: Infinity,
         "-Infinity": -Infinity,
-        "NaN": NaN,
-        "boolean": true
+        NaN: NaN,
+        boolean: true
       };
 
       Object.entries(primitiveValues).forEach(([key, value]) => {
@@ -84,15 +79,15 @@ describe("Utils", () => {
       });
 
       const typedArrayValues = {
-        "Int8Array": new Int8Array([1]),
-        "Uint8Array": new Uint8Array([1]),
-        "Uint8ClampedArray": new Uint8ClampedArray([1]),
-        "Int16Array": new Int16Array([1]),
-        "Uint16Array": new Uint16Array([1]),
-        "Int32Array": new Int32Array([1]),
-        "Uint32Array": new Uint32Array([1]),
-        "Float32Array": new Float32Array([1]),
-        "Float64Array": new Float64Array([1])
+        Int8Array: new Int8Array([1]),
+        Uint8Array: new Uint8Array([1]),
+        Uint8ClampedArray: new Uint8ClampedArray([1]),
+        Int16Array: new Int16Array([1]),
+        Uint16Array: new Uint16Array([1]),
+        Int32Array: new Int32Array([1]),
+        Uint32Array: new Uint32Array([1]),
+        Float32Array: new Float32Array([1]),
+        Float64Array: new Float64Array([1])
       };
 
       Object.entries(typedArrayValues).forEach(([key, value]) => {
@@ -109,8 +104,8 @@ describe("Utils", () => {
       });
 
       const bigIntTypedArrayValues = {
-        "BigInt64Array": new BigInt64Array([1n]),
-        "BigUint64Array": new BigUint64Array([1n])
+        BigInt64Array: new BigInt64Array([1n]),
+        BigUint64Array: new BigUint64Array([1n])
       };
 
       Object.entries(bigIntTypedArrayValues).forEach(([key, value]) => {
@@ -128,13 +123,20 @@ describe("Utils", () => {
 
       // NOTE: Buffer could be supported as it specifies a toJSON method
       const unsupportedValues = {
-        "Async Generator": (async function* () { await Promise.resolve(1); yield 1; })(),
-        "ArrayBuffer": new ArrayBuffer(1),
-        "Buffer": Buffer.from("buffer"),
-        "DataView": new DataView(new ArrayBuffer(1)),
-        "function": () => { return undefined; },
-        "Generator": (function* () { yield 1; })(),
-        "Promise": Promise.resolve(1)
+        "Async Generator": (async function* () {
+          await Promise.resolve(1);
+          yield 1;
+        })(),
+        ArrayBuffer: new ArrayBuffer(1),
+        Buffer: Buffer.from("buffer"),
+        DataView: new DataView(new ArrayBuffer(1)),
+        function: () => {
+          return undefined;
+        },
+        Generator: (function* () {
+          yield 1;
+        })(),
+        Promise: Promise.resolve(1)
       };
 
       Object.entries(unsupportedValues).forEach(([key, value]) => {
@@ -167,7 +169,7 @@ describe("Utils", () => {
           throw new Error("error");
         } catch (error) {
           if (error instanceof Error) {
-            const expected = { "message": error.message, "stack": error.stack };
+            const expected = { message: error.message, stack: error.stack };
             const actual = prune(error, 1);
             expect(actual).toStrictEqual(expected);
           }
@@ -178,21 +180,24 @@ describe("Utils", () => {
         const expected = {
           "123": 123,
           "[object Object]": {
-            "a2": undefined,
-            "b2": 1
+            a2: undefined,
+            b2: 1
           },
           "string key": "string key",
-          "symbol": ["symbol key"]
+          symbol: ["symbol key"]
         };
 
-        const actual = prune(new Map<unknown, unknown>([
-          // NOTE: this value is lost due to being converted to ["[object Object]", { a: { b: 2 }, b: 1 }]
-          [{ id: 1 }, { a: { b: 2 }, b: 1 }],
-          [{ id: 2 }, { a2: { b2: 2 }, b2: 1 }],
-          ["string key", "string key"],
-          [123, 123],
-          [Symbol("symbol"), ["symbol key"]]
-        ]), 2);
+        const actual = prune(
+          new Map<unknown, unknown>([
+            // NOTE: this value is lost due to being converted to ["[object Object]", { a: { b: 2 }, b: 1 }]
+            [{ id: 1 }, { a: { b: 2 }, b: 1 }],
+            [{ id: 2 }, { a2: { b2: 2 }, b2: 1 }],
+            ["string key", "string key"],
+            [123, 123],
+            [Symbol("symbol"), ["symbol key"]]
+          ]),
+          2
+        );
 
         expect(actual).toStrictEqual(expected);
       });
@@ -210,7 +215,7 @@ describe("Utils", () => {
       });
 
       test("for Set", () => {
-        const expected = [{ "a": undefined, "b": 1 }, 1];
+        const expected = [{ a: undefined, b: 1 }, 1];
         const actual = prune(new Set([{ a: { b: 2 }, b: 1 }, 1]), 1);
         expect(actual).toStrictEqual(expected);
       });
@@ -267,11 +272,11 @@ describe("Utils", () => {
         }
       };
 
-      expect(prune(value, 1)).toStrictEqual({ "ao": undefined });
-      expect(prune(value, 2)).toStrictEqual({ "ao": { "bo": undefined, "ba": undefined, "bn": 1 } });
-      expect(prune(value, 3)).toStrictEqual({ "ao": { "bo": { "cn": 1, "co": undefined }, "ba": [{ "cn": 1, "co": undefined }], "bn": 1 } });
-      expect(prune(value, 4)).toStrictEqual({ "ao": { "bo": { "cn": 1, "co": { "do": undefined } }, "ba": [{ "cn": 1, "co": { "do": undefined } }], "bn": 1 } });
-      expect(prune(value, 5)).toStrictEqual({ "ao": { "bo": { "cn": 1, "co": { "do": {} } }, "ba": [{ "cn": 1, "co": { "do": {} } }], "bn": 1 } });
+      expect(prune(value, 1)).toStrictEqual({ ao: undefined });
+      expect(prune(value, 2)).toStrictEqual({ ao: { bo: undefined, ba: undefined, bn: 1 } });
+      expect(prune(value, 3)).toStrictEqual({ ao: { bo: { cn: 1, co: undefined }, ba: [{ cn: 1, co: undefined }], bn: 1 } });
+      expect(prune(value, 4)).toStrictEqual({ ao: { bo: { cn: 1, co: { do: undefined } }, ba: [{ cn: 1, co: { do: undefined } }], bn: 1 } });
+      expect(prune(value, 5)).toStrictEqual({ ao: { bo: { cn: 1, co: { do: {} } }, ba: [{ cn: 1, co: { do: {} } }], bn: 1 } });
     });
 
     test("should prune inherited properties", () => {
@@ -307,13 +312,15 @@ describe("Utils", () => {
                 file_name: "http://localhost/index.js",
                 line_number: 10,
                 column: 10
-              }, {
+              },
+              {
                 name: "HTMLButtonElement.onclick",
                 parameters: [],
                 file_name: "http://localhost/",
                 line_number: 22,
                 column: 10
-              }]
+              }
+            ]
           },
           "@submission_method": "onerror"
         },
@@ -324,36 +331,36 @@ describe("Utils", () => {
     });
 
     test("circular reference", () => {
-      type Circular = { property: string, circularRef?: Circular };
+      type Circular = { property: string; circularRef?: Circular };
       const circular: Circular = { property: "string" };
       circular.circularRef = circular;
 
-      const expected = JSON.stringify({ "property": "string", "circularRef": undefined });
+      const expected = JSON.stringify({ property: "string", circularRef: undefined });
       const actual = stringify(circular);
       expect(actual).toStrictEqual(expected);
     });
 
     test("circular array reference", () => {
-      type Circular = { property: string, circularRef?: Circular, list?: Circular[] };
+      type Circular = { property: string; circularRef?: Circular; list?: Circular[] };
       const circular: Circular = { property: "string" };
       circular.circularRef = circular;
       circular.list = [circular];
 
-      const expected = JSON.stringify({ "property": "string", "circularRef": undefined, "list": [undefined] });
+      const expected = JSON.stringify({ property: "string", circularRef: undefined, list: [undefined] });
       const actual = stringify(circular);
       expect(actual).toStrictEqual(expected);
     });
 
     describe("should serialize data types", () => {
       const primitiveValues = {
-        "undefined": undefined,
-        "null": null,
-        "string": "string",
-        "number": 1,
-        "Infinity": Infinity,
+        undefined: undefined,
+        null: null,
+        string: "string",
+        number: 1,
+        Infinity: Infinity,
         "-Infinity": -Infinity,
-        "NaN": NaN,
-        "boolean": true
+        NaN: NaN,
+        boolean: true
       };
 
       Object.entries(primitiveValues).forEach(([key, value]) => {
@@ -365,15 +372,15 @@ describe("Utils", () => {
       });
 
       const typedArrayValues = {
-        "Int8Array": new Int8Array([1]),
-        "Uint8Array": new Uint8Array([1]),
-        "Uint8ClampedArray": new Uint8ClampedArray([1]),
-        "Int16Array": new Int16Array([1]),
-        "Uint16Array": new Uint16Array([1]),
-        "Int32Array": new Int32Array([1]),
-        "Uint32Array": new Uint32Array([1]),
-        "Float32Array": new Float32Array([1]),
-        "Float64Array": new Float64Array([1])
+        Int8Array: new Int8Array([1]),
+        Uint8Array: new Uint8Array([1]),
+        Uint8ClampedArray: new Uint8ClampedArray([1]),
+        Int16Array: new Int16Array([1]),
+        Uint16Array: new Uint16Array([1]),
+        Int32Array: new Int32Array([1]),
+        Uint32Array: new Uint32Array([1]),
+        Float32Array: new Float32Array([1]),
+        Float64Array: new Float64Array([1])
       };
 
       Object.entries(typedArrayValues).forEach(([key, value]) => {
@@ -385,8 +392,8 @@ describe("Utils", () => {
       });
 
       const bigIntTypedArrayValues = {
-        "BigInt64Array": new BigInt64Array([1n]),
-        "BigUint64Array": new BigUint64Array([1n])
+        BigInt64Array: new BigInt64Array([1n]),
+        BigUint64Array: new BigUint64Array([1n])
       };
 
       Object.entries(bigIntTypedArrayValues).forEach(([key, value]) => {
@@ -399,13 +406,20 @@ describe("Utils", () => {
 
       // NOTE: Buffer could be supported as it specifies a toJSON method
       const unsupportedValues = {
-        "Async Generator": (async function* () { await Promise.resolve(1); yield 1; })(),
-        "ArrayBuffer": new ArrayBuffer(1),
-        "Buffer": Buffer.from("buffer"),
-        "DataView": new DataView(new ArrayBuffer(1)),
-        "function": () => { return undefined; },
-        "Generator": (function* () { yield 1; })(),
-        "Promise": Promise.resolve(1)
+        "Async Generator": (async function* () {
+          await Promise.resolve(1);
+          yield 1;
+        })(),
+        ArrayBuffer: new ArrayBuffer(1),
+        Buffer: Buffer.from("buffer"),
+        DataView: new DataView(new ArrayBuffer(1)),
+        function: () => {
+          return undefined;
+        },
+        Generator: (function* () {
+          yield 1;
+        })(),
+        Promise: Promise.resolve(1)
       };
 
       Object.entries(unsupportedValues).forEach(([key, value]) => {
@@ -439,7 +453,7 @@ describe("Utils", () => {
           throw new Error("error");
         } catch (error) {
           if (error instanceof Error) {
-            const expected = JSON.stringify({ "stack": error.stack, "message": error.message });
+            const expected = JSON.stringify({ stack: error.stack, message: error.message });
             const actual = stringify(error, [], 1);
             expect(actual).toStrictEqual(expected);
           }
@@ -450,21 +464,25 @@ describe("Utils", () => {
         const expected = JSON.stringify({
           "123": 123,
           "[object Object]": {
-            "a2": undefined,
-            "b2": 1
+            a2: undefined,
+            b2: 1
           },
           "string key": "string key",
-          "symbol": ["symbol key"]
+          symbol: ["symbol key"]
         });
 
-        const actual = stringify(new Map<unknown, unknown>([
-          // NOTE: this value is lost due to being converted to ["[object Object]", { a: { b: 2 }, b: 1 }]
-          [{ id: 1 }, { a: { b: 2 }, b: 1 }],
-          [{ id: 2 }, { a2: { b2: 2 }, b2: 1 }],
-          ["string key", "string key"],
-          [123, 123],
-          [Symbol("symbol"), ["symbol key"]]
-        ]), [], 2);
+        const actual = stringify(
+          new Map<unknown, unknown>([
+            // NOTE: this value is lost due to being converted to ["[object Object]", { a: { b: 2 }, b: 1 }]
+            [{ id: 1 }, { a: { b: 2 }, b: 1 }],
+            [{ id: 2 }, { a2: { b2: 2 }, b2: 1 }],
+            ["string key", "string key"],
+            [123, 123],
+            [Symbol("symbol"), ["symbol key"]]
+          ]),
+          [],
+          2
+        );
 
         expect(actual).toStrictEqual(expected);
       });
@@ -482,7 +500,7 @@ describe("Utils", () => {
       });
 
       test("for Set", () => {
-        const expected = JSON.stringify([{ "a": undefined, "b": 1 }, 1]);
+        const expected = JSON.stringify([{ a: undefined, b: 1 }, 1]);
         const actual = stringify(new Set([{ a: { b: 2 }, b: 1 }, 1]), [], 1);
         expect(actual).toStrictEqual(expected);
       });
@@ -540,11 +558,13 @@ describe("Utils", () => {
         }
       };
 
-      expect(stringify(value, [], 1)).toStrictEqual(JSON.stringify({ "ao": undefined }));
-      expect(stringify(value, [], 2)).toStrictEqual(JSON.stringify({ "ao": { "bo": undefined, "ba": undefined, "bn": 1 } }));
-      expect(stringify(value, [], 3)).toStrictEqual(JSON.stringify({ "ao": { "bo": { "cn": 1, "co": undefined }, "ba": [{ "cn": 1, "co": undefined }], "bn": 1 } }));
-      expect(stringify(value, [], 4)).toStrictEqual(JSON.stringify({ "ao": { "bo": { "cn": 1, "co": { "do": undefined } }, "ba": [{ "cn": 1, "co": { "do": undefined } }], "bn": 1 } }));
-      expect(stringify(value, [], 5)).toStrictEqual(JSON.stringify({ "ao": { "bo": { "cn": 1, "co": { "do": {} } }, "ba": [{ "cn": 1, "co": { "do": {} } }], "bn": 1 } }));
+      expect(stringify(value, [], 1)).toStrictEqual(JSON.stringify({ ao: undefined }));
+      expect(stringify(value, [], 2)).toStrictEqual(JSON.stringify({ ao: { bo: undefined, ba: undefined, bn: 1 } }));
+      expect(stringify(value, [], 3)).toStrictEqual(JSON.stringify({ ao: { bo: { cn: 1, co: undefined }, ba: [{ cn: 1, co: undefined }], bn: 1 } }));
+      expect(stringify(value, [], 4)).toStrictEqual(
+        JSON.stringify({ ao: { bo: { cn: 1, co: { do: undefined } }, ba: [{ cn: 1, co: { do: undefined } }], bn: 1 } })
+      );
+      expect(stringify(value, [], 5)).toStrictEqual(JSON.stringify({ ao: { bo: { cn: 1, co: { do: {} } }, ba: [{ cn: 1, co: { do: {} } }], bn: 1 } }));
     });
 
     test("should serialize inherited properties", () => {
@@ -573,28 +593,36 @@ describe("Utils", () => {
 
       test("pAssword", () => {
         expect(stringify(user, ["pAssword"])).toBe(
-          JSON.stringify({ "id": 1, "name": "Blake", "passwordResetToken": "a reset token", "myPassword": "123456", "myPasswordValue": "123456", "customValue": "Password", "value": {} })
+          JSON.stringify({
+            id: 1,
+            name: "Blake",
+            passwordResetToken: "a reset token",
+            myPassword: "123456",
+            myPasswordValue: "123456",
+            customValue: "Password",
+            value: {}
+          })
         );
       });
 
       test("*password", () => {
         expect(stringify(user, ["*password"])).toBe(
-          JSON.stringify({ "id": 1, "name": "Blake", "passwordResetToken": "a reset token", "myPasswordValue": "123456", "customValue": "Password", "value": {} })
+          JSON.stringify({ id: 1, name: "Blake", passwordResetToken: "a reset token", myPasswordValue: "123456", customValue: "Password", value: {} })
         );
       });
 
       test("password*", () => {
         expect(stringify(user, ["password*"])).toBe(
-          JSON.stringify({ "id": 1, "name": "Blake", "myPassword": "123456", "myPasswordValue": "123456", "customValue": "Password", "value": {} })
+          JSON.stringify({ id: 1, name: "Blake", myPassword: "123456", myPasswordValue: "123456", customValue: "Password", value: {} })
         );
       });
 
       test("*password*", () => {
-        JSON.stringify(expect(stringify(user, ["*password*"])).toBe(JSON.stringify({ "id": 1, "name": "Blake", "customValue": "Password", "value": {} })));
+        JSON.stringify(expect(stringify(user, ["*password*"])).toBe(JSON.stringify({ id: 1, name: "Blake", customValue: "Password", value: {} })));
       });
 
       test("*Password*", () => {
-        JSON.stringify(expect(stringify(user, ["*Password*"])).toBe(JSON.stringify({ "id": 1, "name": "Blake", "customValue": "Password", "value": {} })));
+        JSON.stringify(expect(stringify(user, ["*Password*"])).toBe(JSON.stringify({ id: 1, name: "Blake", customValue: "Password", value: {} })));
       });
 
       test("*Address", () => {
@@ -616,8 +644,8 @@ describe("Utils", () => {
 
   describe("isEmpty", () => {
     const emptyValues = {
-      "undefined": undefined,
-      "null": null,
+      undefined: undefined,
+      null: null,
       "empty string": "",
       "whitespace string": "   ",
       "{} string": "{}",
@@ -633,11 +661,11 @@ describe("Utils", () => {
     });
 
     const values = {
-      "Date": new Date(),
-      "number": 1,
-      "string": "string",
-      "object": { a: 1 },
-      "array": [1]
+      Date: new Date(),
+      number: 1,
+      string: "string",
+      object: { a: 1 },
+      array: [1]
     };
 
     Object.entries(values).forEach(([key, value]) => {
@@ -648,67 +676,67 @@ describe("Utils", () => {
   });
 
   describe("isMatch", () => {
-    test("input: blake patterns [\"pAssword\"]", () => {
+    test('input: blake patterns ["pAssword"]', () => {
       expect(isMatch("blake", ["pAssword"])).toBe(false);
     });
 
-    test("input: pAssword patterns [\"pAssword\"]", () => {
+    test('input: pAssword patterns ["pAssword"]', () => {
       expect(isMatch("pAssword", ["pAssword"])).toBe(true);
     });
 
-    test("input: passwordResetToken patterns [\"pAssword\"]", () => {
+    test('input: passwordResetToken patterns ["pAssword"]', () => {
       expect(isMatch("passwordResetToken", ["pAssword"])).toBe(false);
     });
 
-    test("input: myPassword patterns [\"pAssword\"]", () => {
+    test('input: myPassword patterns ["pAssword"]', () => {
       expect(isMatch("myPassword", ["pAssword"])).toBe(false);
     });
 
-    test("input: blake patterns [\" * pAssword\"]", () => {
+    test('input: blake patterns [" * pAssword"]', () => {
       expect(isMatch("blake", ["*pAssword"])).toBe(false);
     });
 
-    test("input: pAssword patterns [\" * pAssword\"]", () => {
+    test('input: pAssword patterns [" * pAssword"]', () => {
       expect(isMatch("pAssword", ["*pAssword"])).toBe(true);
     });
 
-    test("input: passwordResetToken patterns [\" * pAssword\"]", () => {
+    test('input: passwordResetToken patterns [" * pAssword"]', () => {
       expect(isMatch("passwordResetToken", ["*pAssword"])).toBe(false);
     });
 
-    test("input: myPassword patterns [\" * pAssword\"]", () => {
+    test('input: myPassword patterns [" * pAssword"]', () => {
       expect(isMatch("myPassword", ["*pAssword"])).toBe(true);
     });
 
-    test("input: blake patterns [\"pAssword * \"]", () => {
+    test('input: blake patterns ["pAssword * "]', () => {
       expect(isMatch("blake", ["pAssword*"])).toBe(false);
     });
 
-    test("input: pAssword patterns [\"pAssword * \"]", () => {
+    test('input: pAssword patterns ["pAssword * "]', () => {
       expect(isMatch("pAssword", ["pAssword*"])).toBe(true);
     });
 
-    test("input: passwordResetToken patterns [\"pAssword * \"]", () => {
+    test('input: passwordResetToken patterns ["pAssword * "]', () => {
       expect(isMatch("passwordResetToken", ["pAssword*"])).toBe(true);
     });
 
-    test("input: myPassword patterns [\"pAssword * \"]", () => {
+    test('input: myPassword patterns ["pAssword * "]', () => {
       expect(isMatch("myPassword", ["pAssword*"])).toBe(false);
     });
 
-    test("input: blake patterns [\" * pAssword * \"]", () => {
+    test('input: blake patterns [" * pAssword * "]', () => {
       expect(isMatch("blake", ["*pAssword*"])).toBe(false);
     });
 
-    test("input: pAssword patterns [\" * pAssword * \"]", () => {
+    test('input: pAssword patterns [" * pAssword * "]', () => {
       expect(isMatch("pAssword", ["*pAssword*"])).toBe(true);
     });
 
-    test("input: passwordResetToken patterns [\" * pAssword * \"]", () => {
+    test('input: passwordResetToken patterns [" * pAssword * "]', () => {
       expect(isMatch("passwordResetToken", ["*pAssword*"])).toBe(true);
     });
 
-    test("input: myPassword patterns [\" * pAssword * \"]", () => {
+    test('input: myPassword patterns [" * pAssword * "]', () => {
       expect(isMatch("myPassword", ["*pAssword*"])).toBe(true);
     });
   });

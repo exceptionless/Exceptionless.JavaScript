@@ -14,5 +14,5 @@
     "streetsidesoftware.code-spell-checker"
   ],
   "forwardPorts": [3000],
-  "postCreateCommand": "npm install",
+  "postCreateCommand": "npm install"
 }

@@ -10,7 +10,12 @@ import { EventContext } from "../../../src/models/EventContext.js";
 
 describe("EventExclusionPlugin", () => {
   describe("should exclude log levels", () => {
-    const run = async (source: string | undefined, level: LogLevel | null | undefined, settingKey: string | null | undefined, settingValue: string | null | undefined): Promise<boolean> => {
+    const run = async (
+      source: string | undefined,
+      level: LogLevel | null | undefined,
+      settingKey: string | null | undefined,
+      settingValue: string | null | undefined
+    ): Promise<boolean> => {
       const client = new ExceptionlessClient();
       if (typeof settingKey == "string") {
         client.config.settings[settingKey] = settingValue as string;
@@ -26,7 +31,7 @@ describe("EventExclusionPlugin", () => {
       await plugin.run(context);
 
       return context.cancelled;
-    }
+    };
 
     test("<null>", async () => expect(await run(undefined, null, null, null)).toBe(false));
     test("Test", async () => expect(await run("Test", null, null, null)).toBe(false));
@@ -52,7 +57,12 @@ describe("EventExclusionPlugin", () => {
   });
 
   describe("should exclude log levels with info default", () => {
-    const run = async (source: string | undefined, level: LogLevel | null | undefined, settingKey: string | null | undefined, settingValue: string | null | undefined): Promise<boolean> => {
+    const run = async (
+      source: string | undefined,
+      level: LogLevel | null | undefined,
+      settingKey: string | null | undefined,
+      settingValue: string | null | undefined
+    ): Promise<boolean> => {
       const client = new ExceptionlessClient();
       client.config.settings["@@log:*"] = "info";
       if (typeof settingKey === "string") {
@@ -69,7 +79,7 @@ describe("EventExclusionPlugin", () => {
       await plugin.run(context);
 
       return context.cancelled;
-    }
+    };
 
     test("<null>", async () => expect(await run(undefined, null, null, null)).toBe(false));
     test("Test", async () => expect(await run("Test", null, null, null)).toBe(false));
@@ -99,7 +109,7 @@ describe("EventExclusionPlugin", () => {
   describe("should fallback to global log level setting", () => {
     const plugin = new EventExclusionPlugin();
     const settings = {
-      "@@log:*": "Fatal",
+      "@@log:*": "Fatal"
     };
 
     test("<undefined> (source min level: off)", () => expect(plugin.getMinLogLevel(settings, undefined)).toBe(5));
@@ -142,7 +152,12 @@ describe("EventExclusionPlugin", () => {
   });
 
   describe("should exclude source type", () => {
-    const run = async (type: EventType | null | undefined, source: string | undefined, settingKey: string | null | undefined, settingValue: string | null | undefined): Promise<boolean> => {
+    const run = async (
+      type: EventType | null | undefined,
+      source: string | undefined,
+      settingKey: string | null | undefined,
+      settingValue: string | null | undefined
+    ): Promise<boolean> => {
       const client = new ExceptionlessClient();
 
       if (typeof settingKey === "string") {
@@ -154,7 +169,7 @@ describe("EventExclusionPlugin", () => {
       await plugin.run(context);
 
       return context.cancelled;
-    }
+    };
 
     test("<null>", async () => expect(await run(null, undefined, null, null)).toBe(false));
     test("usage=<null>", async () => expect(await run("usage", undefined, null, null)).toBe(false));
@@ -180,21 +195,25 @@ describe("EventExclusionPlugin", () => {
         client.config.settings[settingKey] = "false";
       }
 
-      const context = new EventPluginContext(client, {
-        type: "error",
-        data: {
-          "@error": <InnerErrorInfo>{
-            type: "ReferenceError",
-            message: "This is a test",
-            stack_trace: []
+      const context = new EventPluginContext(
+        client,
+        {
+          type: "error",
+          data: {
+            "@error": <InnerErrorInfo>{
+              type: "ReferenceError",
+              message: "This is a test",
+              stack_trace: []
+            }
           }
-        }
-      }, new EventContext());
+        },
+        new EventContext()
+      );
 
       const plugin = new EventExclusionPlugin();
       await plugin.run(context);
       return context.cancelled;
-    }
+    };
 
     test("<null>", async () => expect(await run(null)).toBe(false));
     test("@@error:Error", async () => expect(await run("@@error:Error")).toBe(false));

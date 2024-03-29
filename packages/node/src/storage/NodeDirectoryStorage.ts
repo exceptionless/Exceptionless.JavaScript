@@ -1,6 +1,4 @@
-import {
-  IStorage
-} from "@exceptionless/core";
+import { IStorage } from "@exceptionless/core";
 
 import { mkdirSync } from "fs";
 import { readdir, readFile, unlink, writeFile } from "fs/promises";

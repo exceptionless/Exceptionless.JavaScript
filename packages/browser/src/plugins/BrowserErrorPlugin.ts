@@ -10,10 +10,7 @@ import {
   isEmpty
 } from "@exceptionless/core";
 
-import {
-  fromError,
-  StackFrame
-} from "stacktrace-js";
+import { fromError, StackFrame } from "stacktrace-js";
 
 export class BrowserErrorPlugin implements IEventPlugin {
   public priority = 30;

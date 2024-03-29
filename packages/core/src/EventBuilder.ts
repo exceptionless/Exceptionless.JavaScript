@@ -76,9 +76,7 @@ export class EventBuilder {
     }
 
     if (longitude < -180.0 || longitude > 180.0) {
-      throw new Error(
-        "Must be a valid longitude value between -180.0 and 180.0.",
-      );
+      throw new Error("Must be a valid longitude value between -180.0 and 180.0.");
     }
 
     this.target.geo = `${latitude},${longitude}`;
@@ -89,9 +87,7 @@ export class EventBuilder {
   public setUserIdentity(identity: string): EventBuilder;
   public setUserIdentity(identity: string, name: string): EventBuilder;
   public setUserIdentity(userInfoOrIdentity: UserInfo | string, name?: string): EventBuilder {
-    const userInfo = typeof userInfoOrIdentity !== "string"
-      ? userInfoOrIdentity
-      : { identity: userInfoOrIdentity, name };
+    const userInfo = typeof userInfoOrIdentity !== "string" ? userInfoOrIdentity : { identity: userInfoOrIdentity, name };
     if (!userInfo || (!userInfo.identity && !userInfo.name)) {
       return this;
     }
@@ -110,7 +106,7 @@ export class EventBuilder {
     if (emailAddress && description) {
       this.setProperty(KnownEventDataKeys.UserDescription, {
         email_address: emailAddress,
-        description,
+        description
       });
     }
 
@@ -163,7 +159,7 @@ export class EventBuilder {
   }
 
   public addTags(...tags: string[]): EventBuilder {
-    this.target.tags = [...this.target.tags || [], ...tags];
+    this.target.tags = [...(this.target.tags || []), ...tags];
     return this;
   }
 
@@ -176,7 +172,7 @@ export class EventBuilder {
    * @param excludedPropertyNames Any property names that should be excluded.
    */
   public setProperty(name: string, value: unknown, maxDepth?: number, excludedPropertyNames?: string[]): EventBuilder {
-    if (!name || (value === undefined || value == null)) {
+    if (!name || value === undefined || value == null) {
       return this;
     }
 
@@ -221,9 +217,8 @@ export class EventBuilder {
 
     for (let index = 0; index < value.length; index++) {
       const code = value.charCodeAt(index);
-      const isDigit = (code >= 48) && (code <= 57);
-      const isLetter = ((code >= 65) && (code <= 90)) ||
-        ((code >= 97) && (code <= 122));
+      const isDigit = code >= 48 && code <= 57;
+      const isLetter = (code >= 65 && code <= 90) || (code >= 97 && code <= 122);
       const isMinus = code === 45;
 
       if (!(isDigit || isLetter) && !isMinus) {

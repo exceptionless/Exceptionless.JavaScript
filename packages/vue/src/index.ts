@@ -9,8 +9,5 @@ import { Exceptionless } from "@exceptionless/browser";
  * @param info
  */
 export const ExceptionlessErrorHandler = async (err: Error, vm: unknown, info: unknown): Promise<void> => {
-  await Exceptionless.createException(err)
-    .setProperty("vm", vm)
-    .setProperty("info", info)
-    .submit();
-}
+  await Exceptionless.createException(err).setProperty("vm", vm).setProperty("info", info).submit();
+};

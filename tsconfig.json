@@ -6,10 +6,7 @@
     "exactOptionalPropertyTypes": true,
     "forceConsistentCasingInFileNames": true,
     "isolatedModules": true,
-    "lib": [
-      "ES2021",
-      "DOM"
-    ],
+    "lib": ["ES2021", "DOM"],
     "module": "ESNext",
     "moduleResolution": "Node",
     "noImplicitAny": true,

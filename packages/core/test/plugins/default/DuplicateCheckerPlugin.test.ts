@@ -4,10 +4,7 @@ import { expect } from "expect";
 import { DuplicateCheckerPlugin } from "../../../src/plugins/default/DuplicateCheckerPlugin.js";
 import { ExceptionlessClient } from "../../../src/ExceptionlessClient.js";
 import { EventPluginContext } from "../../../src/plugins/EventPluginContext.js";
-import {
-  InnerErrorInfo,
-  StackFrameInfo
-} from "../../../src/models/data/ErrorInfo.js";
+import { InnerErrorInfo, StackFrameInfo } from "../../../src/models/data/ErrorInfo.js";
 import { delay } from "../../helpers.js";
 import { EventContext } from "../../../src/models/EventContext.js";
 
@@ -17,14 +14,14 @@ const Exception1StackTrace = [
     line_number: 0,
     column: 50,
     is_signature_target: true,
-    name: "createException",
+    name: "createException"
   },
   {
     file_name: "index.js",
     line_number: 5,
     column: 25,
     is_signature_target: false,
-    name: "throwError",
+    name: "throwError"
   }
 ];
 
@@ -34,14 +31,14 @@ const Exception2StackTrace = [
     line_number: 0,
     column: 50,
     is_signature_target: true,
-    name: "createException2",
+    name: "createException2"
   },
   {
     file_name: "index.js",
     line_number: 5,
     column: 25,
     is_signature_target: false,
-    name: "throwError2",
+    name: "throwError2"
   }
 ];
 
@@ -55,22 +52,26 @@ describe("DuplicateCheckerPlugin", () => {
     plugin = new DuplicateCheckerPlugin(() => now, 50);
   });
 
-  const run = async(stackTrace?: StackFrameInfo[]): Promise<EventPluginContext> => {
+  const run = async (stackTrace?: StackFrameInfo[]): Promise<EventPluginContext> => {
     // TODO: Generate unique stack traces based on test data.
-    const context = new EventPluginContext(client, {
-      type: "error",
-      data: {
-        "@error": <InnerErrorInfo>{
-          type: "ReferenceError",
-          message: "This is a test",
-          stack_trace: stackTrace
+    const context = new EventPluginContext(
+      client,
+      {
+        type: "error",
+        data: {
+          "@error": <InnerErrorInfo>{
+            type: "ReferenceError",
+            message: "This is a test",
+            stack_trace: stackTrace
+          }
         }
-      }
-    }, new EventContext());
+      },
+      new EventContext()
+    );
 
     await plugin.run(context);
     return context;
-  }
+  };
 
   test("should ignore duplicate within window", async () => {
     await run(Exception1StackTrace);

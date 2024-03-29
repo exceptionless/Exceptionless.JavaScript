@@ -1,4 +1,3 @@
-
 import { EventPluginContext } from "../EventPluginContext.js";
 import { IEventPlugin } from "../IEventPlugin.js";
 import { isEmpty, stringify } from "../../Utils.js";
@@ -41,7 +40,7 @@ export class SimpleErrorPlugin implements IEventPlugin {
           message: exception.message,
           stack_trace: exception.stack,
           data: {}
-        }
+        };
 
         const exclusions = context.client.config.dataExclusions.concat(IgnoredErrorProperties);
         const additionalData = stringify(exception, exclusions);

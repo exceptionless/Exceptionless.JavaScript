@@ -1,12 +1,4 @@
-import {
-  EventPluginContext,
-  getCookies,
-  IEventPlugin,
-  isMatch,
-  KnownEventDataKeys,
-  parseQueryString,
-  RequestInfo,
-} from "@exceptionless/core";
+import { EventPluginContext, getCookies, IEventPlugin, isMatch, KnownEventDataKeys, parseQueryString, RequestInfo } from "@exceptionless/core";
 
 export class BrowserRequestInfoPlugin implements IEventPlugin {
   public priority: number = 70;
@@ -39,9 +31,7 @@ export class BrowserRequestInfoPlugin implements IEventPlugin {
       user_agent: navigator.userAgent,
       is_secure: location.protocol === "https:",
       host: location.hostname,
-      port: location.port && location.port !== ""
-        ? parseInt(location.port, 10)
-        : 80,
+      port: location.port && location.port !== "" ? parseInt(location.port, 10) : 80,
       path: location.pathname
     };
 
@@ -50,10 +40,7 @@ export class BrowserRequestInfoPlugin implements IEventPlugin {
     }
 
     if (config.includeQueryString) {
-      requestInfo.query_string = parseQueryString(
-        location.search.substring(1),
-        exclusions
-      );
+      requestInfo.query_string = parseQueryString(location.search.substring(1), exclusions);
     }
 
     if (document.referrer && document.referrer !== "") {

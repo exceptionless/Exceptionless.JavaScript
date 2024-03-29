@@ -82,7 +82,7 @@ describe("ExceptionlessClient", () => {
   test("should allow construction via a constructor", async () => {
     const client = new ExceptionlessClient();
 
-    await client.startup(c => {
+    await client.startup((c) => {
       c.apiKey = "UNIT_TEST_API_KEY";
       c.serverUrl = "https://localhost:5100";
       c.updateSettingsWhenIdleInterval = -1;
@@ -92,7 +92,6 @@ describe("ExceptionlessClient", () => {
     expect(client.config.apiKey).toBe("UNIT_TEST_API_KEY");
     expect(client.config.serverUrl).toBe("https://localhost:5100");
   });
-
 
   function createException(): ReferenceError {
     function throwError() {
@@ -104,6 +103,6 @@ describe("ExceptionlessClient", () => {
       return e as ReferenceError;
     }
 
-    return new ReferenceError("No Stack Trace")
+    return new ReferenceError("No Stack Trace");
   }
 });

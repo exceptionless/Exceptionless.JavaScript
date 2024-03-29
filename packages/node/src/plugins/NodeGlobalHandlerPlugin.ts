@@ -1,9 +1,4 @@
-import {
-  ExceptionlessClient,
-  IEventPlugin,
-  PluginContext,
-  toError
-} from "@exceptionless/core";
+import { ExceptionlessClient, IEventPlugin, PluginContext, toError } from "@exceptionless/core";
 
 export class NodeGlobalHandlerPlugin implements IEventPlugin {
   public priority: number = 100;
@@ -24,7 +19,7 @@ export class NodeGlobalHandlerPlugin implements IEventPlugin {
     });
 
     process.addListener("unhandledRejection", (reason: unknown) => {
-      const error: Error = toError(reason, "Unhandled rejection")
+      const error: Error = toError(reason, "Unhandled rejection");
       void this._client?.submitUnhandledException(error, "unhandledRejection");
     });
 

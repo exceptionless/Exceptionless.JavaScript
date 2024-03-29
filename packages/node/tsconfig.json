@@ -1,17 +1,10 @@
 {
   "extends": "../../tsconfig.json",
   "compilerOptions": {
-    "lib": [
-      "ES2021"
-    ],
+    "lib": ["ES2021"],
     "outDir": "dist",
     "rootDir": "src",
-    "types": [
-      "node",
-      "jest"
-    ]
+    "types": ["node", "jest"]
   },
-  "include": [
-    "src"
-  ]
+  "include": ["src"]
 }

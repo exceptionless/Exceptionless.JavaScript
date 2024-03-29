@@ -1,7 +1,10 @@
 import { IStorage } from "./IStorage.js";
 
 export class LocalStorage implements IStorage {
-  constructor(private prefix: string = "exceptionless-", private storage: Storage = globalThis.localStorage) { }
+  constructor(
+    private prefix: string = "exceptionless-",
+    private storage: Storage = globalThis.localStorage
+  ) {}
 
   public length(): Promise<number> {
     return Promise.resolve(this.getKeys().length);
@@ -40,8 +43,8 @@ export class LocalStorage implements IStorage {
 
   private getKeys(): string[] {
     return Object.keys(this.storage)
-      .filter(key => key.startsWith(this.prefix))
-      .map(key => key?.substr(this.prefix.length));
+      .filter((key) => key.startsWith(this.prefix))
+      .map((key) => key?.substr(this.prefix.length));
   }
 
   private getKey(key: string): string {

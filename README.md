@@ -21,7 +21,7 @@ await Exceptionless.startup((c) => {
   c.setUserIdentity("12345678", "Blake");
 
   // set some default data
-   c.defaultData["mydata"] = {
+  c.defaultData["mydata"] = {
     myGreeting: "Hello World"
   };
 
@@ -76,9 +76,9 @@ Use one of the following methods to install Exceptionless into your browser appl
 
 ##### CDN
 
-  Add the following script tag at the very beginning of your page:
+Add the following script tag at the very beginning of your page:
 
-  ```html
+```html
 <script type="module">
   import { Exceptionless } from "https://unpkg.com/@exceptionless/browser";
 
@@ -86,20 +86,20 @@ Use one of the following methods to install Exceptionless into your browser appl
     c.apiKey = "API_KEY_HERE";
   });
 </script>
-  ```
+```
 
 ##### npm
 
-  1. Install the package by running `npm install @exceptionless/browser --save`.
-  2. Import Exceptionless and call startup during app startup.
+1. Install the package by running `npm install @exceptionless/browser --save`.
+2. Import Exceptionless and call startup during app startup.
 
-  ```js
-  import { Exceptionless } from "@exceptionless/browser";
+```js
+import { Exceptionless } from "@exceptionless/browser";
 
-  await Exceptionless.startup((c) => {
-    c.apiKey = "API_KEY_HERE";
-  });
-  ```
+await Exceptionless.startup((c) => {
+  c.apiKey = "API_KEY_HERE";
+});
+```
 
 #### Node.js
 
@@ -108,13 +108,13 @@ Use this method to install Exceptionless into your Node application:
 1. Install the package by running `npm install @exceptionless/node --save`.
 2. Import the Exceptionless module in your application:
 
-  ```js
-  import { Exceptionless } from "@exceptionless/node";
+```js
+import { Exceptionless } from "@exceptionless/node";
 
-  await Exceptionless.startup((c) => {
-    c.apiKey = "API_KEY_HERE";
-  });
-  ```
+await Exceptionless.startup((c) => {
+  c.apiKey = "API_KEY_HERE";
+});
+```
 
 ### Configuring the client
 
@@ -248,28 +248,28 @@ If you find a bug or want to contribute a feature, feel free to create a pull re
 
 1. Clone this repository:
 
-    ```sh
-    git clone https://github.com/exceptionless/Exceptionless.JavaScript.git
-    ```
+   ```sh
+   git clone https://github.com/exceptionless/Exceptionless.JavaScript.git
+   ```
 
 2. Install [Node.js](https://nodejs.org). Node is used for building and testing purposes.
 3. Install the development dependencies using [npm](https://www.npmjs.com).
 
-    ```sh
-    npm install
-    ```
+   ```sh
+   npm install
+   ```
 
 4. Build the project by running the following command.
 
-    ```sh
-    npm run build
-    ```
+   ```sh
+   npm run build
+   ```
 
 5. Test the project by running the following command.
 
-    ```sh
-    npm test
-    ```
+   ```sh
+   npm test
+   ```
 
 ## Thanks
 

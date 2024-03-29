@@ -7,9 +7,7 @@
       "request": "launch",
       "preLaunchTask": "npm: build",
       "cwd": "${workspaceRoot}/example/express",
-      "skipFiles": [
-        "<node_internals>/**"
-      ],
+      "skipFiles": ["<node_internals>/**"],
       "type": "pwa-node"
     },
     {
@@ -17,14 +15,12 @@
       "request": "launch",
       "type": "node",
       "program": "${workspaceFolder}/node_modules/.bin/jest",
-      "args": [
-        "--runInBand"
-      ],
+      "args": ["--runInBand"],
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen",
       "disableOptimisticBPs": true,
       "windows": {
-        "program": "${workspaceFolder}/node_modules/jest/bin/jest",
+        "program": "${workspaceFolder}/node_modules/jest/bin/jest"
       },
       "cwd": "${workspaceRoot}"
     },
@@ -33,14 +29,12 @@
       "request": "launch",
       "type": "node",
       "program": "${workspaceFolder}/node_modules/.bin/jest",
-      "args": [
-        "${fileBasenameNoExtension}",
-      ],
+      "args": ["${fileBasenameNoExtension}"],
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen",
       "disableOptimisticBPs": true,
       "windows": {
-        "program": "${workspaceFolder}/node_modules/jest/bin/jest",
+        "program": "${workspaceFolder}/node_modules/jest/bin/jest"
       },
       "cwd": "${workspaceRoot}"
     }

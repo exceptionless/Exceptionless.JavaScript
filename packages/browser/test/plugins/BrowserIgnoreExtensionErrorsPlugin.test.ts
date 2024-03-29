@@ -1,11 +1,7 @@
 import { describe, test } from "@jest/globals";
 import { expect } from "expect";
 
-import {
-  EventContext,
-  EventPluginContext,
-  ExceptionlessClient
-} from "@exceptionless/core";
+import { EventContext, EventPluginContext, ExceptionlessClient } from "@exceptionless/core";
 
 import { BrowserIgnoreExtensionErrorsPlugin } from "../../src/plugins/BrowserIgnoreExtensionErrorsPlugin.js";
 
@@ -31,7 +27,7 @@ describe("BrowserIgnoreExtensionErrorsPlugin", () => {
 
     await plugin.run(context);
     return context;
-  }
+  };
 
   test("should not cancel empty stack trace", async () => {
     const context = await run();

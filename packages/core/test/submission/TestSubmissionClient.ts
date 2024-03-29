@@ -5,7 +5,10 @@ import { Response } from "../../src/submission/Response.js";
 export type ApiFetchMock = (url: string, options: FetchOptions) => Promise<Response<unknown>>;
 
 export class TestSubmissionClient extends DefaultSubmissionClient {
-  public constructor(protected config: Configuration, protected apiFetchMock: ApiFetchMock) {
+  public constructor(
+    protected config: Configuration,
+    protected apiFetchMock: ApiFetchMock
+  ) {
     super(config);
   }
 

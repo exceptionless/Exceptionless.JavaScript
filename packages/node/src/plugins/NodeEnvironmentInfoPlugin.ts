@@ -1,33 +1,8 @@
-import {
-  argv,
-  memoryUsage,
-  pid,
-  title,
-  version
-} from "process";
+import { argv, memoryUsage, pid, title, version } from "process";
 
-import {
-  arch,
-  cpus,
-  endianness,
-  freemem,
-  hostname,
-  loadavg,
-  networkInterfaces,
-  platform,
-  release,
-  tmpdir,
-  totalmem,
-  type,
-  uptime,
-} from "os";
+import { arch, cpus, endianness, freemem, hostname, loadavg, networkInterfaces, platform, release, tmpdir, totalmem, type, uptime } from "os";
 
-import {
-  EnvironmentInfo,
-  EventPluginContext,
-  IEventPlugin,
-  KnownEventDataKeys
-} from "@exceptionless/core";
+import { EnvironmentInfo, EventPluginContext, IEventPlugin, KnownEventDataKeys } from "@exceptionless/core";
 
 export class NodeEnvironmentInfoPlugin implements IEventPlugin {
   public priority: number = 80;
@@ -92,7 +67,7 @@ export class NodeEnvironmentInfoPlugin implements IEventPlugin {
       data: {
         platform: platform(),
         tmpdir: tmpdir()
-      },
+      }
     };
 
     const config = context.client.config;

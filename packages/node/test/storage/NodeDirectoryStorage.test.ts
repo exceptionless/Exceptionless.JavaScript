@@ -10,9 +10,4 @@ function resetStorageDirectory() {
   mkdirSync(directory);
 }
 
-describeStorage(
-  "NodeDirectoryStorage",
-  (): IStorage => new NodeDirectoryStorage(directory),
-  resetStorageDirectory,
-  resetStorageDirectory
-);
+describeStorage("NodeDirectoryStorage", (): IStorage => new NodeDirectoryStorage(directory), resetStorageDirectory, resetStorageDirectory);

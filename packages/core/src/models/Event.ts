@@ -41,7 +41,7 @@ export enum KnownEventDataKeys {
   Version = "@version",
   Level = "@level",
   SubmissionMethod = "@submission_method",
-  ManualStackingInfo = "@stack",
+  ManualStackingInfo = "@stack"
 }
 
 export type LogLevel = "trace" | "debug" | "info" | "warn" | "error" | "fatal" | string;

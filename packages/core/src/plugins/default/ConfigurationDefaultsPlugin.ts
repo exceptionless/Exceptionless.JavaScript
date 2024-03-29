@@ -11,7 +11,7 @@ export class ConfigurationDefaultsPlugin implements IEventPlugin {
     const ev = context.event;
 
     if (defaultTags) {
-      ev.tags = [...ev.tags || [], ...defaultTags];
+      ev.tags = [...(ev.tags || []), ...defaultTags];
     }
 
     if (defaultData) {

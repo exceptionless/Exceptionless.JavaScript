@@ -14,7 +14,7 @@ export class ExceptionlessClient {
   private _timeoutId: ReturnType<typeof setTimeout> | undefined;
   protected _initialized = false;
 
-  public constructor(public config: Configuration = new Configuration()) { }
+  public constructor(public config: Configuration = new Configuration()) {}
 
   /** Resume background submission, resume any timers. */
   public async startup(configurationOrApiKey?: (config: Configuration) => void | string): Promise<void> {
@@ -27,9 +27,7 @@ export class ExceptionlessClient {
         configurationOrApiKey(this.config);
       }
 
-      this.config.services.queue.onEventsPosted(() =>
-        Promise.resolve(this.updateSettingsTimer())
-      );
+      this.config.services.queue.onEventsPosted(() => Promise.resolve(this.updateSettingsTimer()));
       await SettingsManager.applySavedServerSettings(this.config);
     }
 
@@ -89,8 +87,7 @@ export class ExceptionlessClient {
 
       this.config.services.log.info(`Update settings every ${interval}ms (${initialDelay || 0}ms delay)`);
       // TODO: Look into better async scheduling..
-      const updateSettings = () =>
-        void SettingsManager.updateSettings(this.config);
+      const updateSettings = () => void SettingsManager.updateSettings(this.config);
       if (initialDelay < interval) {
         this._timeoutId = setTimeout(updateSettings, initialDelay);
         allowProcessToExitWithoutWaitingForTimerOrInterval(this._timeoutId);
@@ -138,8 +135,7 @@ export class ExceptionlessClient {
     let builder = this.createEvent().setType("log");
 
     if (level) {
-      builder = builder.setSource(sourceOrMessage).setMessage(message)
-        .setProperty(KnownEventDataKeys.Level, level);
+      builder = builder.setSource(sourceOrMessage).setMessage(message).setProperty(KnownEventDataKeys.Level, level);
     } else if (message) {
       builder = builder.setSource(sourceOrMessage).setMessage(message);
     } else {
@@ -148,11 +144,9 @@ export class ExceptionlessClient {
       try {
         // TODO: Look into using https://www.stevefenton.co.uk/Content/Blog/Date/201304/Blog/Obtaining-A-Class-Name-At-Runtime-In-TypeScript/
         const caller = this.createLog.caller;
-        builder = builder.setSource(
-          caller && caller.caller && caller.caller.name,
-        );
+        builder = builder.setSource(caller && caller.caller && caller.caller.name);
       } catch (ex) {
-        this.config.services.log.trace(`Unable to resolve log source: ${ex instanceof Error ? ex.message : ex + ''}`);
+        this.config.services.log.trace(`Unable to resolve log source: ${ex instanceof Error ? ex.message : ex + ""}`);
       }
     }
 
@@ -273,9 +267,7 @@ export class ExceptionlessClient {
     const userDescription: UserDescription = { email_address: email, description };
     const response = await this.config.services.submissionClient.submitUserDescription(referenceId, userDescription);
     if (!response.success) {
-      this.config.services.log.error(
-        `Failed to submit user email and description for event "${referenceId}": ${response.status} ${response.message}`,
-      );
+      this.config.services.log.error(`Failed to submit user email and description for event "${referenceId}": ${response.status} ${response.message}`);
     }
   }
 

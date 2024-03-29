@@ -1,17 +1,10 @@
 {
   "extends": "../../tsconfig.json",
   "compilerOptions": {
-    "lib": [
-      "DOM",
-      "ES2021"
-    ],
+    "lib": ["DOM", "ES2021"],
     "outDir": "dist",
     "rootDir": "src",
-    "types": [
-      "jest"
-    ]
+    "types": ["jest"]
   },
-  "include": [
-    "src"
-  ]
+  "include": ["src"]
 }

@@ -28,7 +28,7 @@ unhandled errors occurs.
 ```js
 import { Exceptionless } from "@exceptionless/core";
 
-await Exceptionless.startup(c => {
+await Exceptionless.startup((c) => {
   c.apiKey = "API_KEY_HERE";
   c.setUserIdentity("12345678", "Blake");
 

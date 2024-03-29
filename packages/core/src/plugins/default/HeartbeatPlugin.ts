@@ -46,10 +46,7 @@ export class HeartbeatPlugin implements IEventPlugin {
     }
 
     if (config.currentSessionIdentifier) {
-      this._intervalId = setInterval(
-        () => void context.client.submitSessionHeartbeat(<string>config.currentSessionIdentifier),
-        this._interval
-      );
+      this._intervalId = setInterval(() => void context.client.submitSessionHeartbeat(<string>config.currentSessionIdentifier), this._interval);
 
       allowProcessToExitWithoutWaitingForTimerOrInterval(this._intervalId);
     }

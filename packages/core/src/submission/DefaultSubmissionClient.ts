@@ -1,8 +1,5 @@
 import { Configuration } from "../configuration/Configuration.js";
-import {
-  ServerSettings,
-  SettingsManager,
-} from "../configuration/SettingsManager.js";
+import { ServerSettings, SettingsManager } from "../configuration/SettingsManager.js";
 import { Event } from "../models/Event.js";
 import { UserDescription } from "../models/data/UserDescription.js";
 import { ISubmissionClient } from "./ISubmissionClient.js";
@@ -10,15 +7,17 @@ import { Response } from "./Response.js";
 
 export class DefaultSubmissionClient implements ISubmissionClient {
   protected readonly RateLimitRemainingHeader: string = "x-ratelimit-remaining";
-  protected readonly ConfigurationVersionHeader: string =
-    "x-exceptionless-configversion";
+  protected readonly ConfigurationVersionHeader: string = "x-exceptionless-configversion";
 
-  public constructor(protected config: Configuration, private fetch = globalThis.fetch?.bind(globalThis)) { }
+  public constructor(
+    protected config: Configuration,
+    private fetch = globalThis.fetch?.bind(globalThis)
+  ) {}
 
   public getSettings(version: number): Promise<Response<ServerSettings>> {
     const url = `${this.config.serverUrl}/api/v2/projects/config?v=${version}`;
     return this.apiFetch<ServerSettings>(url, {
-      method: "GET",
+      method: "GET"
     });
   }
 
@@ -26,7 +25,7 @@ export class DefaultSubmissionClient implements ISubmissionClient {
     const url = `${this.config.serverUrl}/api/v2/events`;
     const response = await this.apiFetch(url, {
       method: "POST",
-      body: JSON.stringify(events),
+      body: JSON.stringify(events)
     });
 
     await this.updateSettingsVersion(response.settingsVersion);
@@ -34,12 +33,11 @@ export class DefaultSubmissionClient implements ISubmissionClient {
   }
 
   public async submitUserDescription(referenceId: string, description: UserDescription): Promise<Response> {
-    const url = `${this.config.serverUrl}/api/v2/events/by-ref/${encodeURIComponent(referenceId)
-      }/user-description`;
+    const url = `${this.config.serverUrl}/api/v2/events/by-ref/${encodeURIComponent(referenceId)}/user-description`;
 
     const response = await this.apiFetch(url, {
       method: "POST",
-      body: JSON.stringify(description),
+      body: JSON.stringify(description)
     });
 
     await this.updateSettingsVersion(response.settingsVersion);
@@ -50,7 +48,7 @@ export class DefaultSubmissionClient implements ISubmissionClient {
   public async submitHeartbeat(sessionIdOrUserId: string, closeSession: boolean): Promise<Response<void>> {
     const url = `${this.config.heartbeatServerUrl}/api/v2/events/session/heartbeat?id=${sessionIdOrUserId}&close=${closeSession + ""}`;
     return await this.apiFetch<void>(url, {
-      method: "GET",
+      method: "GET"
     });
   }
 
@@ -67,9 +65,9 @@ export class DefaultSubmissionClient implements ISubmissionClient {
     const requestOptions: RequestInit = {
       method: options.method,
       headers: {
-        "Accept": "application/json",
-        "Authorization": `Bearer ${this.config.apiKey}`,
-        "User-Agent": this.config.userAgent,
+        Accept: "application/json",
+        Authorization: `Bearer ${this.config.apiKey}`,
+        "User-Agent": this.config.userAgent
       },
       body: options.body ?? null
     };
@@ -84,15 +82,9 @@ export class DefaultSubmissionClient implements ISubmissionClient {
     const settingsVersion: number = parseInt(response.headers.get(this.ConfigurationVersionHeader) || "", 10);
 
     const responseText = await response.text();
-    const data = responseText && responseText.length > 0 ? JSON.parse(responseText) as T : null;
+    const data = responseText && responseText.length > 0 ? (JSON.parse(responseText) as T) : null;
 
-    return new Response<T>(
-      response.status,
-      response.statusText,
-      rateLimitRemaining,
-      settingsVersion,
-      <T>data,
-    );
+    return new Response<T>(response.status, response.statusText, rateLimitRemaining, settingsVersion, <T>data);
   }
 
   private isHeaders(headers: HeadersInit | undefined): headers is Record<string, string> {

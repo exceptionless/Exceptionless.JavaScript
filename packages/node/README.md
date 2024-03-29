@@ -20,7 +20,7 @@ unhandled errors occurs.
 ```js
 import { Exceptionless } from "@exceptionless/node";
 
-await Exceptionless.startup(c => {
+await Exceptionless.startup((c) => {
   c.apiKey = "API_KEY_HERE";
 
   // set some default data

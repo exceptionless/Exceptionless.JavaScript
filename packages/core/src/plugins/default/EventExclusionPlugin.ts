@@ -73,7 +73,7 @@ export class EventExclusionPlugin implements IEventPlugin {
     configSettings: Record<string, string> = {},
     type: string | undefined,
     source: string | undefined,
-    defaultValue: string | boolean,
+    defaultValue: string | boolean
   ): string | boolean {
     if (!type) {
       return defaultValue;
@@ -92,9 +92,7 @@ export class EventExclusionPlugin implements IEventPlugin {
     }
 
     // sort object keys longest first, then alphabetically.
-    const sortedKeys = Object.keys(configSettings).sort((a, b) =>
-      b.length - a.length || a.localeCompare(b)
-    );
+    const sortedKeys = Object.keys(configSettings).sort((a, b) => b.length - a.length || a.localeCompare(b));
     for (const key of sortedKeys) {
       if (!startsWith(key.toLowerCase(), sourcePrefix)) {
         continue;

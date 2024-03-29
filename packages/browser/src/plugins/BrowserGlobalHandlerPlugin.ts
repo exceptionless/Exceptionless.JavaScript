@@ -1,11 +1,10 @@
-import {
-  ExceptionlessClient,
-  IEventPlugin,
-  PluginContext,
-  toError
-} from "@exceptionless/core";
+import { ExceptionlessClient, IEventPlugin, PluginContext, toError } from "@exceptionless/core";
 
-declare let $: (document: Document) => { ajaxError: { (document: (event: Event, xhr: { responseText: string; status: number; }, settings: { data: unknown; url: string; }, error: string) => void): void; }; };
+declare let $: (document: Document) => {
+  ajaxError: {
+    (document: (event: Event, xhr: { responseText: string; status: number }, settings: { data: unknown; url: string }, error: string) => void): void;
+  };
+};
 
 export class BrowserGlobalHandlerPlugin implements IEventPlugin {
   public priority: number = 100;
@@ -21,11 +20,11 @@ export class BrowserGlobalHandlerPlugin implements IEventPlugin {
     this._client = context.client;
 
     // TODO: Discus if we want to unwire this handler in suspend?
-    window.addEventListener("error", event => {
+    window.addEventListener("error", (event) => {
       void this._client?.submitUnhandledException(this.getError(event), "onerror");
     });
 
-    window.addEventListener("unhandledrejection", event => {
+    window.addEventListener("unhandledrejection", (event) => {
       let reason: unknown = event.reason;
       if (!(reason instanceof Error)) {
         try {
@@ -34,7 +33,9 @@ export class BrowserGlobalHandlerPlugin implements IEventPlugin {
           if (detailReason) {
             reason = detailReason;
           }
-        } catch (ex) { /* empty */ }
+        } catch (ex) {
+          /* empty */
+        }
       }
 
       if (!(reason instanceof Error)) {
@@ -43,22 +44,24 @@ export class BrowserGlobalHandlerPlugin implements IEventPlugin {
           if (error) {
             reason = error;
           }
-        } catch (ex) { /* empty */ }
+        } catch (ex) {
+          /* empty */
+        }
       }
 
-      const error: Error = toError(reason, "Unhandled rejection")
+      const error: Error = toError(reason, "Unhandled rejection");
       void this._client?.submitUnhandledException(error, "onunhandledrejection");
     });
 
-
     if (typeof $ !== "undefined" && $(document)) {
-      $(document).ajaxError((_: Event, xhr: { responseText: string, status: number }, settings: { data: unknown, url: string }, error: string) => {
+      $(document).ajaxError((_: Event, xhr: { responseText: string; status: number }, settings: { data: unknown; url: string }, error: string) => {
         if (xhr.status === 404) {
           // TODO: Handle async
           void this._client?.submitNotFound(settings.url);
         } else if (xhr.status !== 401) {
           // TODO: Handle async
-          void this._client?.createUnhandledException(toError(error), "JQuery.ajaxError")
+          void this._client
+            ?.createUnhandledException(toError(error), "JQuery.ajaxError")
             .setSource(settings.url)
             .setProperty("status", xhr.status)
             .setProperty("request", settings.data)

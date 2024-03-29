@@ -45,17 +45,17 @@ Exceptionless, you will still want to handle events that happen outside the
 components.
 
 Because the Exceptionless client is a singleton, it is available anywhere in
- your app where you import it. Here's an example from a file we'll call `utilities.js`.
+your app where you import it. Here's an example from a file we'll call `utilities.js`.
 
 ```js
 export const myUtilityFunction = async () => {
   try {
     //  Handle successful run of code
-  } catch(e) {
+  } catch (e) {
     //  If there's an error, send it to Exceptionless
     await Exceptionless.submitException(e);
   }
-}
+};
 ```
 
 You can also sent events and logs that are not errors by simply calling the

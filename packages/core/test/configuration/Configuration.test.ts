@@ -85,7 +85,7 @@ describe("Configuration", () => {
     expect(config.plugins[2].priority).toBe(3);
   });
 
-  test("should call subscribe handler", done => {
+  test("should call subscribe handler", (done) => {
     const config = new Configuration();
     expect(config.settings.someValue).toBeUndefined();
 
@@ -95,6 +95,6 @@ describe("Configuration", () => {
       done();
     });
 
-    config.applyServerSettings({ settings: { someValue: "UNIT_TEST_API_KEY" }, version: 2 })
+    config.applyServerSettings({ settings: { someValue: "UNIT_TEST_API_KEY" }, version: 2 });
   });
 });

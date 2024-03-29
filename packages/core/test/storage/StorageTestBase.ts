@@ -3,12 +3,7 @@ import { expect } from "expect";
 
 import { IStorage } from "../../src/storage/IStorage.js";
 
-export function describeStorage(
-  name: string,
-  storageFactory: () => IStorage,
-  afterEachCallback?: () => void,
-  beforeEachCallback?: () => void
-): void {
+export function describeStorage(name: string, storageFactory: () => IStorage, afterEachCallback?: () => void, beforeEachCallback?: () => void): void {
   describe(name, () => {
     if (beforeEachCallback) {
       beforeEach(beforeEachCallback);

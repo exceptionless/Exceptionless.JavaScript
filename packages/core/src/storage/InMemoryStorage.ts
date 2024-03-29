@@ -18,13 +18,11 @@ export class InMemoryStorage implements IStorage {
   }
 
   public async key(index: number): Promise<string | null> {
-    if (index < 0)
-      return Promise.resolve(null);
+    if (index < 0) return Promise.resolve(null);
 
     const keys = await this.keys();
 
-    if (index > keys.length)
-      return Promise.resolve(null);
+    if (index > keys.length) return Promise.resolve(null);
 
     const key = keys[index];
     return Promise.resolve(key ? key : null);

@@ -41,11 +41,11 @@ describe("ConfigurationDefaultsPlugin", () => {
       await plugin.run(context);
 
       return context.event;
-    }
+    };
 
     test("tags", async () => {
       const ev = await run();
-      expect(ev.tags).toStrictEqual(defaultTags)
+      expect(ev.tags).toStrictEqual(defaultTags);
     });
 
     test("user", async () => {
@@ -58,7 +58,7 @@ describe("ConfigurationDefaultsPlugin", () => {
       const ev = await run(["*password*"]);
       expect(ev.data).toBeDefined();
 
-      const expected = { "id": 1, "name": "Blake", "customValue": "Password", "value": {} };
+      const expected = { id: 1, name: "Blake", customValue: "Password", value: {} };
       expect(ev.data && ev.data[userDataKey]).toStrictEqual(expected);
     });
   });

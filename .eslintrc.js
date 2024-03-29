@@ -11,6 +11,7 @@ module.exports = {
     "plugin:@typescript-eslint/eslint-recommended",
     "plugin:@typescript-eslint/recommended",
     "plugin:@typescript-eslint/recommended-requiring-type-checking",
+    "prettier"
   ],
   globals: {
     MutationObserver: "readonly",
@@ -18,7 +19,7 @@ module.exports = {
     Atomics: "readonly",
     BigInt: "readonly",
     BigInt64Array: "readonly",
-    BigUint64Array: "readonly",
+    BigUint64Array: "readonly"
   },
   parser: "@typescript-eslint/parser",
   parserOptions: {
@@ -27,16 +28,8 @@ module.exports = {
     project: ["./tsconfig.eslint.json"],
     tsconfigRootDir: __dirname
   },
-  plugins: [
-    "@typescript-eslint",
-    "import",
-    "jest"
-  ],
-  ignorePatterns: [
-    "dist",
-    "node_modules",
-    "example"
-  ],
+  plugins: ["@typescript-eslint", "import", "jest"],
+  ignorePatterns: ["dist", "node_modules", "example"],
   rules: {
     "@typescript-eslint/no-inferrable-types": "off",
     "@typescript-eslint/no-unsafe-assignment": "off",
@@ -44,6 +37,6 @@ module.exports = {
     "@typescript-eslint/no-unsafe-member-access": "off",
     "@typescript-eslint/no-unsafe-return": "off",
     "@typescript-eslint/no-redundant-type-constituents": "off",
-    "@typescript-eslint/restrict-plus-operands": "off",
+    "@typescript-eslint/restrict-plus-operands": "off"
   }
 };

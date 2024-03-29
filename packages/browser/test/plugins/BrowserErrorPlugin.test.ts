@@ -1,14 +1,7 @@
 import { describe, test } from "@jest/globals";
 import { expect } from "expect";
 
-import {
-  ErrorInfo,
-  Event,
-  EventContext,
-  EventPluginContext,
-  ExceptionlessClient,
-  KnownEventDataKeys
-} from "@exceptionless/core";
+import { ErrorInfo, Event, EventContext, EventPluginContext, ExceptionlessClient, KnownEventDataKeys } from "@exceptionless/core";
 
 import { CapturedExceptions } from "./../../../core/test/plugins/default/exceptions.js";
 import { BrowserErrorPlugin } from "../../src/plugins/BrowserErrorPlugin.js";
@@ -94,7 +87,7 @@ describe("BrowserErrorPlugin", () => {
     test("should ignore functions", async () => {
       class ErrorWithFunction extends Error {
         constructor() {
-          super("Error with function")
+          super("Error with function");
         }
 
         public someFunction(): number {

@@ -1,8 +1,4 @@
-import {
-  ExceptionlessClient,
-  IEventPlugin,
-  PluginContext
-} from "@exceptionless/core";
+import { ExceptionlessClient, IEventPlugin, PluginContext } from "@exceptionless/core";
 
 export class NodeLifeCyclePlugin implements IEventPlugin {
   public priority: number = 105;
@@ -44,10 +40,10 @@ export class NodeLifeCyclePlugin implements IEventPlugin {
   }
 
   /**
-  * exit codes: https://nodejs.org/api/process.html#process_event_exit
-  * From now on, only synchronous code may run. As soon as this method
-  * ends, the application inevitably will exit.
-  */
+   * exit codes: https://nodejs.org/api/process.html#process_event_exit
+   * From now on, only synchronous code may run. As soon as this method
+   * ends, the application inevitably will exit.
+   */
   private getExitCodeReason(exitCode: number): string | null {
     if (exitCode === 1) {
       return "Uncaught Fatal Exception";

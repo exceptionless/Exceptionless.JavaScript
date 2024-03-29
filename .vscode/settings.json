@@ -9,7 +9,7 @@
     "test-data": true
   },
   "search.exclude": {
-    "**/node_modules": true,
+    "**/node_modules": true
   },
   "prettier.eslintIntegration": true,
   "javascript.preferences.quoteStyle": "double",
@@ -35,10 +35,7 @@
     "vitejs",
     "webcompat"
   ],
-  "eslint.validate": [
-    "javascript",
-    "typescript"
-  ],
+  "eslint.validate": ["javascript", "typescript"],
   "deno.enable": false,
   "jest.jestCommandLine": "npm test --"
 }

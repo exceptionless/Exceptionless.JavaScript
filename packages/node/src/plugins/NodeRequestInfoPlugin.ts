@@ -1,13 +1,4 @@
-import {
-  EventPluginContext,
-  getCookies,
-  IEventPlugin,
-  isEmpty,
-  isMatch,
-  KnownEventDataKeys,
-  RequestInfo,
-  stringify,
-} from "@exceptionless/core";
+import { EventPluginContext, getCookies, IEventPlugin, isEmpty, isMatch, KnownEventDataKeys, RequestInfo, stringify } from "@exceptionless/core";
 
 export class NodeRequestInfoPlugin implements IEventPlugin {
   public priority: number = 70;
@@ -40,14 +31,14 @@ export class NodeRequestInfoPlugin implements IEventPlugin {
     const exclusions = config.dataExclusions;
 
     type requestShape = {
-      method: string,
-      secure: boolean,
-      ip: string,
-      hostname: string,
-      path: string,
-      headers: Record<string, string>,
-      params: Record<string, unknown>,
-      body?: object
+      method: string;
+      secure: boolean;
+      ip: string;
+      hostname: string;
+      path: string;
+      headers: Record<string, string>;
+      params: Record<string, unknown>;
+      body?: object;
     };
 
     const request = context.eventContext[REQUEST_KEY] as requestShape;
@@ -61,7 +52,7 @@ export class NodeRequestInfoPlugin implements IEventPlugin {
     };
 
     const host = request.headers.host;
-    const port: number = host && parseInt(host.slice(host.indexOf(":") + 1), 10) || 0;
+    const port: number = (host && parseInt(host.slice(host.indexOf(":") + 1), 10)) || 0;
     if (port > 0) {
       requestInfo.port = port;
     }
@@ -75,23 +66,14 @@ export class NodeRequestInfoPlugin implements IEventPlugin {
     }
 
     if (config.includeHeaders) {
-      const ignoredHeaders = [
-        "Authorization",
-        "Cookie",
-        "Host",
-        "Method",
-        "Path",
-        "Proxy-Authorization",
-        "Referer",
-        "User-Agent"
-      ];
+      const ignoredHeaders = ["Authorization", "Cookie", "Host", "Method", "Path", "Proxy-Authorization", "Referer", "User-Agent"];
 
       const json = stringify(request.headers, [...ignoredHeaders, ...exclusions]);
       if (!isEmpty(json)) {
         const headers: Record<string, string[]> = {};
         const parsedHeaders = JSON.parse(json) as Record<string, string>;
         for (const key in parsedHeaders) {
-          headers[key] = parsedHeaders[key].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(value => value.trim());
+          headers[key] = parsedHeaders[key].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map((value) => value.trim());
         }
 
         requestInfo.headers = headers;

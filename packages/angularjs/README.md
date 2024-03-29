@@ -21,12 +21,12 @@ Add the following script tag at the very beginning of your page:
 
 ### npm
 
-  1. Install the package by running `npm install @exceptionless/angularjs --save`.
-  2. Add the following script tag at the very beginning of your page:
+1. Install the package by running `npm install @exceptionless/angularjs --save`.
+2. Add the following script tag at the very beginning of your page:
 
-  ```html
-  <script type="module" src="node_modules/@exceptionless/angularjs/dist/index.bundle.js"></script>
-  ```
+```html
+<script type="module" src="node_modules/@exceptionless/angularjs/dist/index.bundle.js"></script>
+```
 
 ## Configuration
 

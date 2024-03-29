@@ -1,8 +1,4 @@
-import {
-  ExceptionlessClient,
-  IEventPlugin,
-  PluginContext
-} from "@exceptionless/core";
+import { ExceptionlessClient, IEventPlugin, PluginContext } from "@exceptionless/core";
 
 export class NodeWrapFunctions implements IEventPlugin {
   public priority: number = 110;

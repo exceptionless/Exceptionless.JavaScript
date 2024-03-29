@@ -1,7 +1,4 @@
-import {
-  EventPluginContext,
-  IEventPlugin
-} from "@exceptionless/core";
+import { EventPluginContext, IEventPlugin } from "@exceptionless/core";
 
 export class BrowserIgnoreExtensionErrorsPlugin implements IEventPlugin {
   public priority = 15;

@@ -6,9 +6,12 @@ import { EventContext } from "../models/EventContext.js";
 export class EventPluginContext {
   public cancelled: boolean = false;
 
-  constructor(public client: ExceptionlessClient, public event: Event, public eventContext: EventContext) {
-    if (!this.eventContext)
-      this.eventContext = new EventContext();
+  constructor(
+    public client: ExceptionlessClient,
+    public event: Event,
+    public eventContext: EventContext
+  ) {
+    if (!this.eventContext) this.eventContext = new EventContext();
   }
 
   public get log(): ILog {

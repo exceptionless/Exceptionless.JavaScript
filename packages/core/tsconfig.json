@@ -3,11 +3,7 @@
   "compilerOptions": {
     "outDir": "dist",
     "rootDir": "src",
-    "types": [
-      "jest"
-    ],
+    "types": ["jest"]
   },
-  "include": [
-    "src"
-  ]
+  "include": ["src"]
 }

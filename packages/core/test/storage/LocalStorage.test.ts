@@ -6,9 +6,4 @@ function resetLocalStorage() {
   localStorage.clear();
 }
 
-describeStorage(
-  "LocalStorage",
-  (): IStorage => new LocalStorage(),
-  resetLocalStorage,
-  resetLocalStorage
-);
+describeStorage("LocalStorage", (): IStorage => new LocalStorage(), resetLocalStorage, resetLocalStorage);

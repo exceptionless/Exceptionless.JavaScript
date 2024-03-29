@@ -1,8 +1,4 @@
-import {
-  ExceptionlessClient,
-  IEventPlugin,
-  PluginContext
-} from "@exceptionless/core";
+import { ExceptionlessClient, IEventPlugin, PluginContext } from "@exceptionless/core";
 
 export class BrowserLifeCyclePlugin implements IEventPlugin {
   public priority: number = 105;
@@ -26,7 +22,7 @@ export class BrowserLifeCyclePlugin implements IEventPlugin {
     });
 
     document.addEventListener("visibilitychange", () => {
-      if (document.visibilityState === 'visible') {
+      if (document.visibilityState === "visible") {
         void this._client?.startup();
       } else {
         void this._client?.suspend();

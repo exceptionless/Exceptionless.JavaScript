@@ -50,7 +50,7 @@ describe("DefaultEventQueue", () => {
   });
 
   test("should suspend processing", async () => {
-    await config.services.queue.suspendProcessing(.0001);
+    await config.services.queue.suspendProcessing(0.0001);
 
     const event: Event = { type: "log", reference_id: "123454321" };
     await config.services.queue.enqueue(event);

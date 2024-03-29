@@ -1,4 +1,3 @@
-
 const enum KnownContextKeys {
   Exception = "@@_Exception",
   IsUnhandledError = "@@_IsUnhandledError",
@@ -9,7 +8,7 @@ export class EventContext implements Record<string, unknown> {
   [x: string]: unknown;
 
   public getException(): Error | null {
-    return this[KnownContextKeys.Exception] as Error || null;
+    return (this[KnownContextKeys.Exception] as Error) || null;
   }
 
   public setException(exception: Error): void {
@@ -31,7 +30,7 @@ export class EventContext implements Record<string, unknown> {
   }
 
   public getSubmissionMethod(): string | null {
-    return this[KnownContextKeys.SubmissionMethod] as string || null;
+    return (this[KnownContextKeys.SubmissionMethod] as string) || null;
   }
 
   public setSubmissionMethod(method: string): void {

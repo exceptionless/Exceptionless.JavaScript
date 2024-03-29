@@ -4,7 +4,7 @@ export class ServerSettings {
   constructor(
     public settings: Record<string, string>,
     public version: number
-  ) { }
+  ) {}
 }
 
 export class SettingsManager {
@@ -56,7 +56,7 @@ export class SettingsManager {
       await storage.setItem(SettingsManager.SettingsKey, JSON.stringify(response.data));
       log.trace(`Updated settings: v${response.data.version}`);
     } catch (ex) {
-      log.error(`Error updating settings: ${ex instanceof Error ? ex.message : ex + ''}`);
+      log.error(`Error updating settings: ${ex instanceof Error ? ex.message : ex + ""}`);
     } finally {
       this._isUpdatingSettings = false;
     }
@@ -66,9 +66,9 @@ export class SettingsManager {
     const { log, storage } = config.services;
     try {
       const settings = await storage.getItem(SettingsManager.SettingsKey);
-      return settings && JSON.parse(settings) as ServerSettings || new ServerSettings({}, 0);
+      return (settings && (JSON.parse(settings) as ServerSettings)) || new ServerSettings({}, 0);
     } catch (ex) {
-      log.error(`Error getting saved settings: ${ex instanceof Error ? ex.message : ex + ''}`);
+      log.error(`Error getting saved settings: ${ex instanceof Error ? ex.message : ex + ""}`);
       return new ServerSettings({}, 0);
     }
   }

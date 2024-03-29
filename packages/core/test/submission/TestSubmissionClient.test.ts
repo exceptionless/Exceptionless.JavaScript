@@ -6,7 +6,7 @@ import { ServerSettings } from "../../src/configuration/SettingsManager.js";
 import { Event } from "../../src/models/Event.js";
 import { UserDescription } from "../../src/models/data/UserDescription.js";
 import { Response } from "../../src/submission/Response.js";
-import { TestSubmissionClient } from "./TestSubmissionClient.js"
+import { TestSubmissionClient } from "./TestSubmissionClient.js";
 import { FetchOptions } from "../../src/submission/DefaultSubmissionClient.js";
 
 describe("TestSubmissionClient", () => {
@@ -17,7 +17,8 @@ describe("TestSubmissionClient", () => {
   config.heartbeatServerUrl = "http://heartbeat.localhost:5000";
 
   test("should submit events", async () => {
-    const apiFetchMock = jest.fn<(url: string, options: FetchOptions) => Promise<Response<undefined>>>()
+    const apiFetchMock = jest
+      .fn<(url: string, options: FetchOptions) => Promise<Response<undefined>>>()
       .mockReturnValueOnce(Promise.resolve(new Response(202, "", NaN, NaN, undefined)));
 
     const events: Event[] = [{ type: "log", message: "From js client", reference_id: "123454321" }];
@@ -32,15 +33,23 @@ describe("TestSubmissionClient", () => {
   });
 
   test("should submit invalid object data", async () => {
-    const apiFetchMock = jest.fn<(url: string, options: FetchOptions) => Promise<Response<undefined>>>()
+    const apiFetchMock = jest
+      .fn<(url: string, options: FetchOptions) => Promise<Response<undefined>>>()
       .mockReturnValueOnce(Promise.resolve(new Response(202, "", NaN, NaN, undefined)));
 
-    const events: Event[] = [{
-      type: "log", message: "From js client", reference_id: "123454321", data: {
-        name: "blake",
-        age: () => { throw new Error("Test"); }
+    const events: Event[] = [
+      {
+        type: "log",
+        message: "From js client",
+        reference_id: "123454321",
+        data: {
+          name: "blake",
+          age: () => {
+            throw new Error("Test");
+          }
+        }
       }
-    }];
+    ];
 
     const client = new TestSubmissionClient(config, apiFetchMock);
     await client.submitEvents(events);
@@ -53,7 +62,8 @@ describe("TestSubmissionClient", () => {
   });
 
   test("should submit user description", async () => {
-    const apiFetchMock = jest.fn<(url: string, options: FetchOptions) => Promise<Response<unknown>>>()
+    const apiFetchMock = jest
+      .fn<(url: string, options: FetchOptions) => Promise<Response<unknown>>>()
       .mockReturnValueOnce(Promise.resolve(new Response(202, "", NaN, 1, undefined)))
       .mockReturnValueOnce(Promise.resolve(new Response(202, "", NaN, NaN, JSON.stringify(new ServerSettings({}, 1)))));
 
@@ -62,7 +72,7 @@ describe("TestSubmissionClient", () => {
       description: "unit test"
     };
 
-    const client = config.services.submissionClient = new TestSubmissionClient(config, apiFetchMock);
+    const client = (config.services.submissionClient = new TestSubmissionClient(config, apiFetchMock));
     await client.submitUserDescription("123454321", description);
     expect(apiFetchMock).toHaveBeenCalledTimes(2);
     expect(apiFetchMock.mock.calls[0][0]).toBe(`${config.serverUrl}/api/v2/events/by-ref/123454321/user-description`);
@@ -75,7 +85,8 @@ describe("TestSubmissionClient", () => {
   });
 
   test("should submit heartbeat", async () => {
-    const apiFetchMock = jest.fn<(url: string, options: FetchOptions) => Promise<Response<undefined>>>()
+    const apiFetchMock = jest
+      .fn<(url: string, options: FetchOptions) => Promise<Response<undefined>>>()
       .mockReturnValueOnce(Promise.resolve(new Response(200, "", NaN, NaN, undefined)));
 
     const client = new TestSubmissionClient(config, apiFetchMock);
@@ -86,7 +97,8 @@ describe("TestSubmissionClient", () => {
   });
 
   test("should get project settings", async () => {
-    const apiFetchMock = jest.fn<(url: string, options: FetchOptions) => Promise<Response<unknown>>>()
+    const apiFetchMock = jest
+      .fn<(url: string, options: FetchOptions) => Promise<Response<unknown>>>()
       .mockReturnValueOnce(Promise.resolve(new Response(200, "", NaN, NaN, JSON.stringify(new ServerSettings({}, 1)))));
 
     const client = new TestSubmissionClient(config, apiFetchMock);
