@@ -53,6 +53,16 @@ describe("BrowserErrorPlugin", () => {
       });
     });
 
+    test("should add error cause", async () => {
+      const error = {
+        someProperty: "Test"
+      };
+      await processError(new Error("Error With Cause", { cause: error }));
+      const additionalData = getAdditionalData(context.event);
+      expect(additionalData).not.toBeNull();
+      expect(additionalData?.cause).toStrictEqual(error);
+    });
+
     test("should add custom properties to additional data", async () => {
       const error = {
         someProperty: "Test"
