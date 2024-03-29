@@ -6,7 +6,7 @@ type ErrorState = {
 };
 
 export class ExceptionlessErrorBoundary extends Component<PropsWithChildren, ErrorState> {
-  constructor(props: Readonly<{}> | {}) {
+  constructor(props: Readonly<Record<PropertyKey, unknown>> | Record<PropertyKey, unknown>) {
     super(props);
   }
 

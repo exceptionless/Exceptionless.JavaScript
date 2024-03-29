@@ -5,12 +5,13 @@ import { endsWith, isEmpty, isMatch, parseVersion, prune, startsWith, stringify,
 
 describe("Utils", () => {
   function getObjectWithInheritedProperties(): unknown {
-    // @ts-expect-error TS2683
     const Foo = function () {
+      // @ts-expect-error TS2683
       this.a = "a";
     };
-    // @ts-expect-error TS2683
+
     const Bar = function () {
+      // @ts-expect-error TS2683
       this.b = "b";
     };
     // @ts-expect-error TS7009

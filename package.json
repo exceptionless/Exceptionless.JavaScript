@@ -19,7 +19,7 @@
     "build": "npm run build --workspaces --if-present",
     "watch": "npm run watch --workspaces --if-present",
     "lint": "run-s -c lint:eslint lint:prettier",
-    "lint:eslint": "eslint . --ext .ts",
+    "lint:eslint": "eslint .",
     "lint:prettier": "prettier --check .",
     "lint:fix": "eslint . --ext .ts --fix",
     "format": "prettier --write .",

@@ -1,4 +1,5 @@
 .DS_Store
+.eslintrc.js
 node_modules
 example/svelte-kit/.svelte-kit
 

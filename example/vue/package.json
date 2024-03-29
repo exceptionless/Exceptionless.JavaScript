@@ -16,6 +16,7 @@
     "@vue/compiler-sfc": "^3.3.13",
     "vite": "^5.0.12"
   },
+  "type": "module",
   "publishConfig": {
     "access": "restricted"
   }
