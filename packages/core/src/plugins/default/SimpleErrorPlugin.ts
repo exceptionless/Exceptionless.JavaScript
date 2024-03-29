@@ -45,7 +45,7 @@ export class SimpleErrorPlugin implements IEventPlugin {
         const exclusions = context.client.config.dataExclusions.concat(IgnoredErrorProperties);
         const additionalData = stringify(exception, exclusions);
         if (!isEmpty(additionalData)) {
-          (error.data as Record<string, unknown>)["@ext"] = JSON.parse(additionalData);
+          error.data!["@ext"] = JSON.parse(additionalData);
         }
 
         context.event.data[KnownEventDataKeys.SimpleError] = error;
