@@ -1,5 +1,6 @@
 .DS_Store
 .eslintrc.js
+minver
 node_modules
 example/svelte-kit/.svelte-kit
 

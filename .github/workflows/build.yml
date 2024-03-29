@@ -11,27 +11,25 @@ jobs:
           - macos-latest
           - windows-latest
         node_version:
-          - 18
+          - 20
     name: Node ${{ matrix.node_version }} on ${{ matrix.os }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
       - name: Build Reason
         run: "echo ref: ${{github.ref}} event: ${{github.event_name}}"
       - name: Setup Node.js environment
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node_version }}
           registry-url: "https://registry.npmjs.org"
-      - name: Install latest NPM
-        run: npm install -g npm@9
       - name: Set Min Version
         uses: Stelzi79/action-minver@3.0.1
         id: version
         with:
-          minimum-major-minor: 2.0
+          minimum-major-minor: 3.0
           tag-prefix: v
       - name: Build Version
         run: |
@@ -52,7 +50,7 @@ jobs:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
       - name: Setup GitHub CI Node.js environment
         if: github.event_name != 'pull_request' && matrix.os == 'ubuntu-latest'
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node_version }}
           registry-url: "https://npm.pkg.github.com"
