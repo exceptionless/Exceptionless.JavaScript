@@ -9,7 +9,7 @@ The definition of the word exceptionless is: to be without exception. Exceptionl
 ## Browser
 
 You can install the npm package via `npm install @exceptionless/browser --save`
-or via cdn [`https://unpkg.com/@exceptionless/browser](https://unpkg.com/@exceptionless/browser).
+or via cdn [`https://unpkg.com/@exceptionless/browser`](https://unpkg.com/@exceptionless/browser).
 Next, you just need to call startup during your apps startup to automatically
 capture unhandled errors.
 
