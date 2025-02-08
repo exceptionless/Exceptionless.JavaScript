@@ -1,4 +1,4 @@
-import { describe, test } from "@jest/globals";
+import { beforeEach, describe, test } from "@jest/globals";
 import { expect } from "expect";
 
 import { DuplicateCheckerPlugin } from "../../../src/plugins/default/DuplicateCheckerPlugin.js";

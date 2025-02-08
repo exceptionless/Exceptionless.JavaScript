@@ -26,16 +26,16 @@
     ]
   },
   "devDependencies": {
-    "@testing-library/jest-dom": "^6.4.2",
-    "@testing-library/react": "^14.2.2",
-    "@testing-library/user-event": "^14.5.2",
-    "@vitejs/plugin-react": "^4.2.1",
-    "vite": "^5.2.6"
+    "@testing-library/jest-dom": "^6.6.3",
+    "@testing-library/react": "^16.2.0",
+    "@testing-library/user-event": "^14.6.1",
+    "@vitejs/plugin-react": "^4.3.4",
+    "vite": "^6.1.0"
   },
   "dependencies": {
     "@exceptionless/react": "3.0.0-dev",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
   },
   "type": "module",
   "publishConfig": {

@@ -1,4 +1,4 @@
-import { describe, test } from "@jest/globals";
+import { beforeEach, describe, test } from "@jest/globals";
 import { expect } from "expect";
 
 import { ErrorInfo, Event, EventContext, EventPluginContext, ExceptionlessClient, KnownEventDataKeys } from "@exceptionless/core";
