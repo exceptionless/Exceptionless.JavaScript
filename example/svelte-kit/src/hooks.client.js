@@ -9,7 +9,9 @@ Exceptionless.startup((c) => {
 });
 
 /** @type {import('@sveltejs/kit').HandleClientError} */
-export async function handleError({ error, event }) {
-  console.log("client error handler");
-  await Exceptionless.submitException(toError(error));
+export async function handleError({ error, event, message, status }) {
+  console.warn({ error, event, message, source: 'client error handler', status });
+  await Exceptionless.createException(toError(error ?? message))
+      .setProperty('status', status)
+      .submit();
 }

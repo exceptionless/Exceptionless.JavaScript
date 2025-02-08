@@ -1,12 +1,12 @@
 <script>
   import { Exceptionless } from "@exceptionless/browser";
 
-  let message = null;
-  let errorInfo = null;
+  let message = $state("");
+  let errorInfo = $state("");
 
   async function submitMessage() {
     await Exceptionless.submitLog("Hello, world!");
-    errorInfo = null;
+    errorInfo = "";
     message = "Hello, world!";
   };
 
@@ -14,9 +14,11 @@
     try {
       throw new Error("Caught in the try/catch");
     } catch (error) {
-      message = null;
-      errorInfo = error.message;
-      await Exceptionless.submitException(error);
+      message = "";
+      if (error instanceof Error) {
+        errorInfo = error.message;
+        await Exceptionless.submitException(error);
+      }
     }
   };
 
@@ -33,7 +35,7 @@
         <p>
           Throw an uncaught error and make sure Exceptionless tracks it.
         </p>
-        <button on:click={unhandledExceptionExample}>
+        <button onclick={unhandledExceptionExample}>
           Throw unhandled error
         </button>
       </div>
@@ -41,14 +43,14 @@
         The following buttons simulated handled events outside the
         component.
       </p>
-      <button on:click={submitMessage}>Submit Message</button>
+      <button onclick={submitMessage}>Submit Message</button>
       {#if message}
         <p>
           Message sent to Exceptionless:{" "}
           <code>{message}</code>
         </p>
       {/if}
-      <button on:click={tryCatchExample}>Try/Catch Example</button>
+      <button onclick={tryCatchExample}>Try/Catch Example</button>
       {#if errorInfo}
         <p>
           Error message sent to Exceptionless:{" "}
