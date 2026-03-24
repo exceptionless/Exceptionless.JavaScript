@@ -262,10 +262,10 @@ Before marking work complete, verify:
 
 ### Framework
 
-- **Jest** with **ts-jest** preset
-- **`@jest/globals`** for imports (`describe`, `test`, `expect`)
+- **Vitest** as the test runner
+- **`vitest`** for imports (`describe`, `test`, `expect`, `beforeEach`, `afterEach`)
 - **jsdom** test environment for browser packages, **node** for the node package
-- **jest-ts-webcompat-resolver** for ESM import resolution
+- **vitest.config.ts** at root defines test projects for each package
 
 ### Test Structure
 
@@ -288,8 +288,7 @@ packages/core/test/
 Follow the Arrange-Act-Assert pattern:
 
 ```typescript
-import { describe, test } from "@jest/globals";
-import { expect } from "expect";
+import { describe, test, expect } from "vitest";
 
 import { ExceptionlessClient } from "../src/ExceptionlessClient.js";
 
@@ -330,7 +329,7 @@ npm test --workspace=packages/browser
 npm run test:watch --workspace=packages/core
 
 # Run tests matching a pattern
-npx jest --testPathPattern="ExceptionlessClient"
+npx vitest --run --testNamePattern="ExceptionlessClient"
 ```
 
 ### Test Principles (FIRST)

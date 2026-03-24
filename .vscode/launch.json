@@ -14,13 +14,13 @@
       "name": "Test",
       "request": "launch",
       "type": "node",
-      "program": "${workspaceFolder}/node_modules/.bin/jest",
-      "args": ["--runInBand"],
+      "program": "${workspaceFolder}/node_modules/.bin/vitest",
+      "args": ["--run"],
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen",
       "disableOptimisticBPs": true,
       "windows": {
-        "program": "${workspaceFolder}/node_modules/jest/bin/jest"
+        "program": "${workspaceFolder}/node_modules/vitest/vitest.mjs"
       },
       "cwd": "${workspaceRoot}"
     },
@@ -28,13 +28,13 @@
       "name": "Test Current File",
       "request": "launch",
       "type": "node",
-      "program": "${workspaceFolder}/node_modules/.bin/jest",
-      "args": ["${fileBasenameNoExtension}"],
+      "program": "${workspaceFolder}/node_modules/.bin/vitest",
+      "args": ["--run", "${fileBasenameNoExtension}"],
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen",
       "disableOptimisticBPs": true,
       "windows": {
-        "program": "${workspaceFolder}/node_modules/jest/bin/jest"
+        "program": "${workspaceFolder}/node_modules/vitest/vitest.mjs"
       },
       "cwd": "${workspaceRoot}"
     }

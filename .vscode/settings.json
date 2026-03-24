@@ -36,6 +36,5 @@
     "webcompat"
   ],
   "eslint.validate": ["javascript", "typescript"],
-  "deno.enable": false,
-  "jest.jestCommandLine": "npm test --"
+  "deno.enable": false
 }

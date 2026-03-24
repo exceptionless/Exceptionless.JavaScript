@@ -146,7 +146,7 @@ Modified files: [list from Step 2]
 Run these checks:
 
 1. `npm run build` (builds all packages in dependency order via tsc + esbuild)
-2. `npm test` (runs Jest tests across all packages)
+2. `npm test` (runs Vitest tests across all packages)
 3. `npm run lint` (ESLint + Prettier check)
 
 For single-package changes, you may scope:
