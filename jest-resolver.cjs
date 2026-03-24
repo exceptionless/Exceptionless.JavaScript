@@ -21,7 +21,14 @@ module.exports = (request, options) => {
           if (base) {
             const prefix = base.replace("*", "");
             const suffix = request.slice(2);
-            const resolved = path.join(packageRoot, prefix, suffix);
+            if (suffix.includes("..") || path.isAbsolute(suffix)) {
+              throw new Error(`Unsafe import path: ${request}`);
+            }
+            const resolved = path.resolve(packageRoot, prefix, suffix);
+            const normalizedRoot = path.resolve(packageRoot) + path.sep;
+            if (!resolved.startsWith(normalizedRoot)) {
+              throw new Error(`Import escapes package root: ${request}`);
+            }
             return resolveWithExtensions(resolved);
           }
         }
