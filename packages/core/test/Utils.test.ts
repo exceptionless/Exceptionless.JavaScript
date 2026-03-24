@@ -803,7 +803,7 @@ describe("Utils", () => {
       expect(toBoolean("false")).toBe(false);
     });
 
-    test("input: false", () => {
+    test("input: false (boolean)", () => {
       expect(toBoolean(false)).toBe(false);
     });
 
@@ -827,7 +827,7 @@ describe("Utils", () => {
       expect(toBoolean("true")).toBe(true);
     });
 
-    test("input: true", () => {
+    test("input: true (boolean)", () => {
       expect(toBoolean(true)).toBe(true);
     });
   });
