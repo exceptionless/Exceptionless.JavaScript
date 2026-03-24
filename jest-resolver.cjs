@@ -19,7 +19,7 @@ module.exports = (request, options) => {
         if (mapping) {
           const base = typeof mapping === "string" ? mapping : mapping.source || mapping.default;
           if (base) {
-            const prefix = base.replace("*", "");
+            const prefix = base.replace(/\*$/, "");
             const suffix = request.slice(2);
             if (suffix.includes("..") || path.isAbsolute(suffix)) {
               throw new Error(`Unsafe import path: ${request}`);
