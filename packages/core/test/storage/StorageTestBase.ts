@@ -1,5 +1,4 @@
-import { afterEach, beforeEach, describe, test } from "@jest/globals";
-import { expect } from "expect";
+import { afterEach, beforeEach, describe, expect, test } from "vitest";
 
 import { IStorage } from "#/storage/IStorage.js";
 

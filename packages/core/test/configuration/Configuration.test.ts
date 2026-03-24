@@ -1,5 +1,4 @@
-import { describe, test } from "@jest/globals";
-import { expect } from "expect";
+import { describe, expect, test } from "vitest";
 
 import { Configuration } from "#/configuration/Configuration.js";
 
@@ -85,16 +84,18 @@ describe("Configuration", () => {
     expect(config.plugins[2].priority).toBe(3);
   });
 
-  test("should call subscribe handler", (done) => {
-    const config = new Configuration();
-    expect(config.settings.someValue).toBeUndefined();
+  test("should call subscribe handler", () => {
+    return new Promise<void>((resolve) => {
+      const config = new Configuration();
+      expect(config.settings.someValue).toBeUndefined();
 
-    config.subscribeServerSettingsChange((c: Configuration) => {
-      expect(c.settings.someValue).toBe("UNIT_TEST_API_KEY");
-      expect(config.settings.someValue).toBe("UNIT_TEST_API_KEY");
-      done();
+      config.subscribeServerSettingsChange((c: Configuration) => {
+        expect(c.settings.someValue).toBe("UNIT_TEST_API_KEY");
+        expect(config.settings.someValue).toBe("UNIT_TEST_API_KEY");
+        resolve();
+      });
+
+      config.applyServerSettings({ settings: { someValue: "UNIT_TEST_API_KEY" }, version: 2 });
     });
-
-    config.applyServerSettings({ settings: { someValue: "UNIT_TEST_API_KEY" }, version: 2 });
   });
 });

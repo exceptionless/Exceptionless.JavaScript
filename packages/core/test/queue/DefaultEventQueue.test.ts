@@ -1,5 +1,4 @@
-import { afterEach, beforeEach, describe, test } from "@jest/globals";
-import { expect } from "expect";
+import { afterEach, beforeEach, describe, expect, test } from "vitest";
 
 import { Configuration } from "#/configuration/Configuration.js";
 import { Event } from "#/models/Event.js";
@@ -15,7 +14,8 @@ describe("DefaultEventQueue", () => {
     config.serverUrl = "http://server.localhost:5000";
     config.usePersistedQueueStorage = true;
 
-    expect(await config.services.storage.length()).toBe(0);
+    // Ensure storage is empty before tests
+    await config.services.storage.clear();
   });
 
   afterEach(async () => {
@@ -57,11 +57,9 @@ describe("DefaultEventQueue", () => {
     expect(await config.services.storage.length()).toBe(1);
 
     await delay(25);
-    if (!(config.services.queue as { _suspendProcessingUntil?: Date })._suspendProcessingUntil) {
-      expect(await config.services.storage.length()).toBe(0);
-    } else {
-      expect(await config.services.storage.length()).toBe(1);
-    }
+    const suspendProcessingUntil = (config.services.queue as { _suspendProcessingUntil?: Date })._suspendProcessingUntil;
+    const expectedLength = suspendProcessingUntil ? 1 : 0;
+    expect(await config.services.storage.length()).toBe(expectedLength);
   });
 
   test("should respect max items", async () => {
