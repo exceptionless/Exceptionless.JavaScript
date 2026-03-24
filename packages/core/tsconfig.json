@@ -2,6 +2,9 @@
   "extends": "../../tsconfig.json",
   "compilerOptions": {
     "outDir": "dist",
+    "paths": {
+      "#/*": ["./src/*"]
+    },
     "rootDir": "src",
     "types": ["jest"]
   },

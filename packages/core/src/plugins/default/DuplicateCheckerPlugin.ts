@@ -1,8 +1,8 @@
-import { InnerErrorInfo } from "../../models/data/ErrorInfo.js";
-import { KnownEventDataKeys } from "../../models/Event.js";
-import { allowProcessToExitWithoutWaitingForTimerOrInterval, getHashCode } from "../../Utils.js";
-import { EventPluginContext } from "../EventPluginContext.js";
-import { IEventPlugin } from "../IEventPlugin.js";
+import { InnerErrorInfo } from "#/models/data/ErrorInfo.js";
+import { KnownEventDataKeys } from "#/models/Event.js";
+import { allowProcessToExitWithoutWaitingForTimerOrInterval, getHashCode } from "#/Utils.js";
+import { EventPluginContext } from "#/plugins/EventPluginContext.js";
+import { IEventPlugin } from "#/plugins/IEventPlugin.js";
 
 export class DuplicateCheckerPlugin implements IEventPlugin {
   public priority = 1010;

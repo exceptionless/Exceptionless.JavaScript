@@ -1,12 +1,12 @@
-import { Configuration } from "../configuration/Configuration.js";
-import { ConfigurationDefaultsPlugin } from "./default/ConfigurationDefaultsPlugin.js";
-import { DuplicateCheckerPlugin } from "./default/DuplicateCheckerPlugin.js";
-import { EventPluginContext } from "./EventPluginContext.js";
-import { EventExclusionPlugin } from "./default/EventExclusionPlugin.js";
-import { PluginContext } from "./PluginContext.js";
-import { ReferenceIdPlugin } from "./default/ReferenceIdPlugin.js";
-import { SimpleErrorPlugin } from "./default/SimpleErrorPlugin.js";
-import { SubmissionMethodPlugin } from "./default/SubmissionMethodPlugin.js";
+import { Configuration } from "#/configuration/Configuration.js";
+import { ConfigurationDefaultsPlugin } from "#/plugins/default/ConfigurationDefaultsPlugin.js";
+import { DuplicateCheckerPlugin } from "#/plugins/default/DuplicateCheckerPlugin.js";
+import { EventPluginContext } from "#/plugins/EventPluginContext.js";
+import { EventExclusionPlugin } from "#/plugins/default/EventExclusionPlugin.js";
+import { PluginContext } from "#/plugins/PluginContext.js";
+import { ReferenceIdPlugin } from "#/plugins/default/ReferenceIdPlugin.js";
+import { SimpleErrorPlugin } from "#/plugins/default/SimpleErrorPlugin.js";
+import { SubmissionMethodPlugin } from "#/plugins/default/SubmissionMethodPlugin.js";
 
 export class EventPluginManager {
   public static async startup(context: PluginContext): Promise<void> {

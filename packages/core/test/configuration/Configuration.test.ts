@@ -1,7 +1,7 @@
 import { describe, test } from "@jest/globals";
 import { expect } from "expect";
 
-import { Configuration } from "../../src/configuration/Configuration.js";
+import { Configuration } from "#/configuration/Configuration.js";
 
 describe("Configuration", () => {
   test("should override configuration defaults", () => {

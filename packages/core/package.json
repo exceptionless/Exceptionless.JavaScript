@@ -32,15 +32,22 @@
     ".": "./dist/index.js",
     "./package.json": "./package.json"
   },
+  "imports": {
+    "#/*": {
+      "source": "./src/*",
+      "default": "./dist/*"
+    }
+  },
   "jest": {
     "moduleFileExtensions": [
       "js",
       "ts"
     ],
     "moduleNameMapper": {
+      "^#/(.*)$": "<rootDir>/src/$1",
       "^@exceptionless/(.*)$": "<rootDir>/../$1/src"
     },
-    "resolver": "jest-ts-webcompat-resolver",
+    "resolver": "../../jest-resolver.cjs",
     "transform": {
       "^.+\\.tsx?$": [
         "ts-jest",
@@ -54,8 +61,8 @@
     "testEnvironment": "jsdom"
   },
   "scripts": {
-    "build": "tsc -p tsconfig.json && esbuild src/index.ts --bundle --sourcemap --target=es2022 --format=esm --outfile=dist/index.bundle.js && esbuild src/index.ts --bundle --minify --sourcemap --target=es2022 --format=esm --outfile=dist/index.bundle.min.js",
-    "watch": "tsc -p tsconfig.json -w --preserveWatchOutput & esbuild src/index.ts --bundle --sourcemap --target=es2022 --format=esm --watch --outfile=dist/index.bundle.js",
+    "build": "tsc -p tsconfig.json && esbuild src/index.ts --bundle --sourcemap --target=es2022 --format=esm --conditions=source --outfile=dist/index.bundle.js && esbuild src/index.ts --bundle --minify --sourcemap --target=es2022 --format=esm --conditions=source --outfile=dist/index.bundle.min.js",
+    "watch": "tsc -p tsconfig.json -w --preserveWatchOutput & esbuild src/index.ts --bundle --sourcemap --target=es2022 --format=esm --conditions=source --watch --outfile=dist/index.bundle.js",
     "test": "jest",
     "test:watch": "jest --watch"
   },
@@ -68,7 +75,6 @@
     "esbuild": "^0.27.4",
     "jest": "^30.3.0",
     "jest-environment-jsdom": "^30.3.0",
-    "jest-ts-webcompat-resolver": "^1.0.1",
     "ts-jest": "^29.4.6"
   }
 }

@@ -1,13 +1,13 @@
 import { describe, jest, test } from "@jest/globals";
 import { expect } from "expect";
 
-import { Configuration } from "../../src/configuration/Configuration.js";
-import { ServerSettings } from "../../src/configuration/SettingsManager.js";
-import { Event } from "../../src/models/Event.js";
-import { UserDescription } from "../../src/models/data/UserDescription.js";
-import { Response } from "../../src/submission/Response.js";
+import { Configuration } from "#/configuration/Configuration.js";
+import { ServerSettings } from "#/configuration/SettingsManager.js";
+import { Event } from "#/models/Event.js";
+import { UserDescription } from "#/models/data/UserDescription.js";
+import { Response } from "#/submission/Response.js";
 import { TestSubmissionClient } from "./TestSubmissionClient.js";
-import { FetchOptions } from "../../src/submission/DefaultSubmissionClient.js";
+import { FetchOptions } from "#/submission/DefaultSubmissionClient.js";
 
 describe("TestSubmissionClient", () => {
   const config: Configuration = new Configuration();

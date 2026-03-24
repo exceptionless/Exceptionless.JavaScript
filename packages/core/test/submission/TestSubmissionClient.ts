@@ -1,6 +1,6 @@
-import { Configuration } from "../../src/configuration/Configuration.js";
-import { DefaultSubmissionClient, FetchOptions } from "../../src/submission/DefaultSubmissionClient.js";
-import { Response } from "../../src/submission/Response.js";
+import { Configuration } from "#/configuration/Configuration.js";
+import { DefaultSubmissionClient, FetchOptions } from "#/submission/DefaultSubmissionClient.js";
+import { Response } from "#/submission/Response.js";
 
 export type ApiFetchMock = (url: string, options: FetchOptions) => Promise<Response<unknown>>;
 

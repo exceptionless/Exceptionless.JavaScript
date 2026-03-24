@@ -1,6 +1,6 @@
-import { guid } from "../../Utils.js";
-import { EventPluginContext } from "../EventPluginContext.js";
-import { IEventPlugin } from "../IEventPlugin.js";
+import { guid } from "#/Utils.js";
+import { EventPluginContext } from "#/plugins/EventPluginContext.js";
+import { IEventPlugin } from "#/plugins/IEventPlugin.js";
 
 export class ReferenceIdPlugin implements IEventPlugin {
   public priority = 20;

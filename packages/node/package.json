@@ -32,6 +32,12 @@
     ".": "./dist/index.js",
     "./package.json": "./package.json"
   },
+  "imports": {
+    "#/*": {
+      "source": "./src/*",
+      "default": "./dist/*"
+    }
+  },
   "engines": {
     "node": ">=18"
   },
@@ -43,7 +49,7 @@
     "moduleNameMapper": {
       "^@exceptionless/(.*)$": "<rootDir>/../$1/src"
     },
-    "resolver": "jest-ts-webcompat-resolver",
+    "resolver": "../../jest-resolver.cjs",
     "transform": {
       "^.+\\.tsx?$": [
         "ts-jest",
@@ -57,8 +63,8 @@
     "testEnvironment": "node"
   },
   "scripts": {
-    "build": "tsc -p tsconfig.json && esbuild src/index.ts --bundle --sourcemap --platform=node --format=esm --outfile=dist/index.bundle.js",
-    "watch": "tsc -p ../core/tsconfig.json -w --preserveWatchOutput & tsc -p tsconfig.json -w --preserveWatchOutput & esbuild src/index.ts --bundle --platform=node --sourcemap --format=esm --watch --outfile=dist/index.bundle.js",
+    "build": "tsc -p tsconfig.json && esbuild src/index.ts --bundle --sourcemap --platform=node --format=esm --conditions=source --outfile=dist/index.bundle.js",
+    "watch": "tsc -p ../core/tsconfig.json -w --preserveWatchOutput & tsc -p tsconfig.json -w --preserveWatchOutput & esbuild src/index.ts --bundle --platform=node --sourcemap --format=esm --conditions=source --watch --outfile=dist/index.bundle.js",
     "test": "jest",
     "test:watch": "jest --watch"
   },
@@ -73,7 +79,6 @@
     "@types/stack-trace": "^0.0.33",
     "esbuild": "^0.27.4",
     "jest": "^30.3.0",
-    "jest-ts-webcompat-resolver": "^1.0.1",
     "ts-jest": "^29.4.6"
   },
   "dependencies": {

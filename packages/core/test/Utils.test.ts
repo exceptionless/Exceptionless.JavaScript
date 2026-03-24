@@ -1,7 +1,7 @@
 import { describe, test } from "@jest/globals";
 import { expect } from "expect";
 
-import { endsWith, isEmpty, isMatch, parseVersion, prune, startsWith, stringify, toBoolean } from "../src/Utils.js";
+import { endsWith, isEmpty, isMatch, parseVersion, prune, startsWith, stringify, toBoolean } from "#/Utils.js";
 
 describe("Utils", () => {
   function getObjectWithInheritedProperties(): unknown {

@@ -1,4 +1,4 @@
-import { ILog } from "./ILog.js";
+import { ILog } from "#/logging/ILog.js";
 
 export class ConsoleLog implements ILog {
   public trace(message: string): void {

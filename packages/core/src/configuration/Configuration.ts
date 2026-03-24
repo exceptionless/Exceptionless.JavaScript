@@ -1,24 +1,24 @@
-import { DefaultLastReferenceIdManager } from "../lastReferenceIdManager/DefaultLastReferenceIdManager.js";
-import { ILastReferenceIdManager } from "../lastReferenceIdManager/ILastReferenceIdManager.js";
-import { ILog } from "../logging/ILog.js";
-import { ConsoleLog } from "../logging/ConsoleLog.js";
-import { NullLog } from "../logging/NullLog.js";
-import { UserInfo } from "../models/data/UserInfo.js";
-import { HeartbeatPlugin } from "../plugins/default/HeartbeatPlugin.js";
-import { SessionIdManagementPlugin } from "../plugins/default/SessionIdManagementPlugin.js";
-import { EventPluginContext } from "../plugins/EventPluginContext.js";
-import { EventPluginManager } from "../plugins/EventPluginManager.js";
-import { IEventPlugin } from "../plugins/IEventPlugin.js";
-import { DefaultEventQueue } from "../queue/DefaultEventQueue.js";
-import { IEventQueue } from "../queue/IEventQueue.js";
-import { ISubmissionClient } from "../submission/ISubmissionClient.js";
-import { DefaultSubmissionClient } from "../submission/DefaultSubmissionClient.js";
-import { guid } from "../Utils.js";
-import { KnownEventDataKeys } from "../models/Event.js";
-import { InMemoryStorage } from "../storage/InMemoryStorage.js";
-import { IStorage } from "../storage/IStorage.js";
-import { LocalStorage } from "../storage/LocalStorage.js";
-import { ServerSettings } from "./SettingsManager.js";
+import { DefaultLastReferenceIdManager } from "#/lastReferenceIdManager/DefaultLastReferenceIdManager.js";
+import { ILastReferenceIdManager } from "#/lastReferenceIdManager/ILastReferenceIdManager.js";
+import { ILog } from "#/logging/ILog.js";
+import { ConsoleLog } from "#/logging/ConsoleLog.js";
+import { NullLog } from "#/logging/NullLog.js";
+import { UserInfo } from "#/models/data/UserInfo.js";
+import { HeartbeatPlugin } from "#/plugins/default/HeartbeatPlugin.js";
+import { SessionIdManagementPlugin } from "#/plugins/default/SessionIdManagementPlugin.js";
+import { EventPluginContext } from "#/plugins/EventPluginContext.js";
+import { EventPluginManager } from "#/plugins/EventPluginManager.js";
+import { IEventPlugin } from "#/plugins/IEventPlugin.js";
+import { DefaultEventQueue } from "#/queue/DefaultEventQueue.js";
+import { IEventQueue } from "#/queue/IEventQueue.js";
+import { ISubmissionClient } from "#/submission/ISubmissionClient.js";
+import { DefaultSubmissionClient } from "#/submission/DefaultSubmissionClient.js";
+import { guid } from "#/Utils.js";
+import { KnownEventDataKeys } from "#/models/Event.js";
+import { InMemoryStorage } from "#/storage/InMemoryStorage.js";
+import { IStorage } from "#/storage/IStorage.js";
+import { LocalStorage } from "#/storage/LocalStorage.js";
+import { ServerSettings } from "#/configuration/SettingsManager.js";
 
 export class Configuration {
   constructor() {

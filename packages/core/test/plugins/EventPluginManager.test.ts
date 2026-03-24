@@ -1,10 +1,10 @@
 import { describe, test } from "@jest/globals";
 import { expect } from "expect";
 
-import { EventContext } from "../../src/models/EventContext.js";
-import { ExceptionlessClient } from "../../src/ExceptionlessClient.js";
-import { EventPluginContext } from "../../src/plugins/EventPluginContext.js";
-import { EventPluginManager } from "../../src/plugins/EventPluginManager.js";
+import { EventContext } from "#/models/EventContext.js";
+import { ExceptionlessClient } from "#/ExceptionlessClient.js";
+import { EventPluginContext } from "#/plugins/EventPluginContext.js";
+import { EventPluginManager } from "#/plugins/EventPluginManager.js";
 import { delay } from "../helpers.js";
 
 describe("EventPluginManager", () => {
