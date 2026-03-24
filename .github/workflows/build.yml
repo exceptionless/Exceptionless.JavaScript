@@ -11,7 +11,7 @@ jobs:
           - macos-latest
           - windows-latest
         node_version:
-          - 20
+          - 24
     name: Node ${{ matrix.node_version }} on ${{ matrix.os }}
     steps:
       - name: Checkout
@@ -41,7 +41,7 @@ jobs:
           npm install --global replace-in-files-cli
           replace-in-files --string="3.0.0-dev" --replacement=${{steps.version.outputs.version}} packages/core/src/configuration/Configuration.ts
           replace-in-files --string="3.0.0-dev" --replacement=${{steps.version.outputs.version}} **/package*.json
-          npm install
+          npm ci
       - name: Build
         run: npm run build
       - name: Lint

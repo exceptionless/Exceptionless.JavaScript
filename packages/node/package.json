@@ -39,7 +39,7 @@
     }
   },
   "engines": {
-    "node": ">=18"
+    "node": ">=24"
   },
   "jest": {
     "moduleFileExtensions": [
@@ -54,9 +54,7 @@
       "^.+\\.tsx?$": [
         "ts-jest",
         {
-          "tsconfig": {
-            "ignoreDeprecations": "6.0"
-          }
+          "diagnostics": false
         }
       ]
     },
