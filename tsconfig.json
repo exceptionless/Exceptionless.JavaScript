@@ -8,7 +8,7 @@
     "isolatedModules": true,
     "lib": ["DOM", "ES2022"],
     "module": "ESNext",
-    "moduleResolution": "Node",
+    "moduleResolution": "Bundler",
     "noImplicitAny": true,
     "noImplicitThis": true,
     "noImplicitReturns": true,

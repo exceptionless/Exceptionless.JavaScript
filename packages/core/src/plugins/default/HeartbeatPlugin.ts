@@ -1,7 +1,7 @@
-import { KnownEventDataKeys } from "../../models/Event.js";
-import { allowProcessToExitWithoutWaitingForTimerOrInterval } from "../../Utils.js";
-import { EventPluginContext } from "../EventPluginContext.js";
-import { IEventPlugin } from "../IEventPlugin.js";
+import { KnownEventDataKeys } from "#/models/Event.js";
+import { allowProcessToExitWithoutWaitingForTimerOrInterval } from "#/Utils.js";
+import { EventPluginContext } from "#/plugins/EventPluginContext.js";
+import { IEventPlugin } from "#/plugins/IEventPlugin.js";
 
 export class HeartbeatPlugin implements IEventPlugin {
   public priority = 100;

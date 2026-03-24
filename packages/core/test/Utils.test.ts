@@ -1,7 +1,7 @@
 import { describe, test } from "@jest/globals";
 import { expect } from "expect";
 
-import { endsWith, isEmpty, isMatch, parseVersion, prune, startsWith, stringify, toBoolean } from "../src/Utils.js";
+import { endsWith, isEmpty, isMatch, parseVersion, prune, startsWith, stringify, toBoolean } from "#/Utils.js";
 
 describe("Utils", () => {
   function getObjectWithInheritedProperties(): unknown {
@@ -803,7 +803,7 @@ describe("Utils", () => {
       expect(toBoolean("false")).toBe(false);
     });
 
-    test("input: false", () => {
+    test("input: false (boolean)", () => {
       expect(toBoolean(false)).toBe(false);
     });
 
@@ -827,7 +827,7 @@ describe("Utils", () => {
       expect(toBoolean("true")).toBe(true);
     });
 
-    test("input: true", () => {
+    test("input: true (boolean)", () => {
       expect(toBoolean(true)).toBe(true);
     });
   });

@@ -34,7 +34,7 @@ export class BrowserGlobalHandlerPlugin implements IEventPlugin {
             reason = detailReason;
           }
         } catch (ex) {
-          /* empty */
+          this._client?.config.services.log.trace(`Unable to get rejection detail reason: ${ex instanceof Error ? ex.message : ex + ""}`);
         }
       }
 
@@ -45,7 +45,7 @@ export class BrowserGlobalHandlerPlugin implements IEventPlugin {
             reason = error;
           }
         } catch (ex) {
-          /* empty */
+          this._client?.config.services.log.trace(`Unable to get rejection error: ${ex instanceof Error ? ex.message : ex + ""}`);
         }
       }
 

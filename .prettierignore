@@ -1,4 +1,5 @@
 .DS_Store
+.agents
 node_modules
 minver
 example/svelte-kit/.svelte-kit

@@ -1,9 +1,9 @@
-import { describe, test } from "@jest/globals";
+import { beforeEach, describe, test } from "@jest/globals";
 import { expect } from "expect";
 
 import { EventContext, EventPluginContext, ExceptionlessClient } from "@exceptionless/core";
 
-import { BrowserIgnoreExtensionErrorsPlugin } from "../../src/plugins/BrowserIgnoreExtensionErrorsPlugin.js";
+import { BrowserIgnoreExtensionErrorsPlugin } from "#/plugins/BrowserIgnoreExtensionErrorsPlugin.js";
 
 describe("BrowserIgnoreExtensionErrorsPlugin", () => {
   let client: ExceptionlessClient;

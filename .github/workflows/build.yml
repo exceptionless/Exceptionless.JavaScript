@@ -1,6 +1,10 @@
 name: Build
 on: [push, pull_request]
 
+permissions:
+  contents: read
+  packages: write
+
 jobs:
   build:
     runs-on: ${{ matrix.os }}
@@ -11,25 +15,29 @@ jobs:
           - macos-latest
           - windows-latest
         node_version:
-          - 20
+          - 24
     name: Node ${{ matrix.node_version }} on ${{ matrix.os }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
       - name: Build Reason
         run: "echo ref: ${{github.ref}} event: ${{github.event_name}}"
       - name: Setup Node.js environment
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: ${{ matrix.node_version }}
           registry-url: "https://registry.npmjs.org"
       - name: Cache node_modules
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: node_modules
           key: ${{ matrix.node_version }}-${{ runner.os }}-node-modules-${{ hashFiles('package-lock.json') }}
+      - name: Setup .NET SDK for MinVer
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: "8.0.x"
       - name: Set Min Version
         uses: Stelzi79/action-minver@3.0.1
         id: version
@@ -41,7 +49,7 @@ jobs:
           npm install --global replace-in-files-cli
           replace-in-files --string="3.0.0-dev" --replacement=${{steps.version.outputs.version}} packages/core/src/configuration/Configuration.ts
           replace-in-files --string="3.0.0-dev" --replacement=${{steps.version.outputs.version}} **/package*.json
-          npm install
+          npm ci
       - name: Build
         run: npm run build
       - name: Lint
@@ -55,7 +63,7 @@ jobs:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
       - name: Setup GitHub CI Node.js environment
         if: github.event_name != 'pull_request' && matrix.os == 'ubuntu-latest'
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: ${{ matrix.node_version }}
           registry-url: "https://npm.pkg.github.com"

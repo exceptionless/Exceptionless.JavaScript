@@ -1,7 +1,5 @@
-import express from "express";
-const app = express();
-
 import { Exceptionless, KnownEventDataKeys } from "@exceptionless/node";
+import express from "express";
 
 await Exceptionless.startup((c) => {
   c.apiKey = "LhhP1C9gijpSKCslHHCvwdSIz298twx271nTest";
@@ -27,6 +25,7 @@ await Exceptionless.startup((c) => {
   };
 });
 
+const app = express();
 app.get("/", async (req, res) => {
   await Exceptionless.submitLog("loading index content");
   res.send("Hello World!");

@@ -1,4 +1,4 @@
-import { IStorage } from "./IStorage.js";
+import { IStorage } from "#/storage/IStorage.js";
 
 export class LocalStorage implements IStorage {
   constructor(

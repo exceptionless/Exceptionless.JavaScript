@@ -8,13 +8,13 @@
     "serve": "vite preview"
   },
   "dependencies": {
-    "vue": "^3.4.21",
+    "vue": "^3.5.30",
     "@exceptionless/vue": "3.0.0-dev"
   },
   "devDependencies": {
-    "@vitejs/plugin-vue": "^5.0.4",
-    "@vue/compiler-sfc": "^3.4.21",
-    "vite": "^5.2.6"
+    "@vitejs/plugin-vue": "^6.0.5",
+    "@vue/compiler-sfc": "^3.5.30",
+    "vite": "^8.0.2"
   },
   "type": "module",
   "publishConfig": {

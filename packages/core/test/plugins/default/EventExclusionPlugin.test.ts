@@ -1,12 +1,12 @@
 import { describe, test } from "@jest/globals";
 import { expect } from "expect";
 
-import { ExceptionlessClient } from "../../../src/ExceptionlessClient.js";
-import { Event, EventType, KnownEventDataKeys, LogLevel } from "../../../src/models/Event.js";
-import { InnerErrorInfo } from "../../../src/models/data/ErrorInfo.js";
-import { EventExclusionPlugin } from "../../../src/plugins/default/EventExclusionPlugin.js";
-import { EventPluginContext } from "../../../src/plugins/EventPluginContext.js";
-import { EventContext } from "../../../src/models/EventContext.js";
+import { ExceptionlessClient } from "#/ExceptionlessClient.js";
+import { Event, EventType, KnownEventDataKeys, LogLevel } from "#/models/Event.js";
+import { InnerErrorInfo } from "#/models/data/ErrorInfo.js";
+import { EventExclusionPlugin } from "#/plugins/default/EventExclusionPlugin.js";
+import { EventPluginContext } from "#/plugins/EventPluginContext.js";
+import { EventContext } from "#/models/EventContext.js";
 
 describe("EventExclusionPlugin", () => {
   describe("should exclude log levels", () => {

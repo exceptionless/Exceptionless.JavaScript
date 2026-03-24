@@ -1,11 +1,11 @@
 import { describe, test } from "@jest/globals";
 import { expect } from "expect";
 
-import { ExceptionlessClient } from "../../../src/ExceptionlessClient.js";
-import { Event } from "../../../src/models/Event.js";
-import { ConfigurationDefaultsPlugin } from "../../../src/plugins/default/ConfigurationDefaultsPlugin.js";
-import { EventPluginContext } from "../../../src/plugins/EventPluginContext.js";
-import { EventContext } from "../../../src/models/EventContext.js";
+import { ExceptionlessClient } from "#/ExceptionlessClient.js";
+import { Event } from "#/models/Event.js";
+import { ConfigurationDefaultsPlugin } from "#/plugins/default/ConfigurationDefaultsPlugin.js";
+import { EventPluginContext } from "#/plugins/EventPluginContext.js";
+import { EventContext } from "#/models/EventContext.js";
 
 describe("ConfigurationDefaultsPlugin", () => {
   describe("should add default", () => {

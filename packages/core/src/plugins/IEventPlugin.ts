@@ -1,5 +1,5 @@
-import { EventPluginContext } from "./EventPluginContext.js";
-import { PluginContext } from "./PluginContext.js";
+import { EventPluginContext } from "#/plugins/EventPluginContext.js";
+import { PluginContext } from "#/plugins/PluginContext.js";
 
 export interface IEventPlugin {
   priority?: number;

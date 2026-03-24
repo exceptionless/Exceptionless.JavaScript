@@ -34,14 +34,14 @@
   },
   "scripts": {
     "build": "tsc -p tsconfig.json && esbuild src/index.ts --bundle --sourcemap --target=es2022 --format=esm --outfile=dist/index.bundle.js && esbuild src/index.ts --bundle --minify --sourcemap --target=es2022 --format=esm --outfile=dist/index.bundle.min.js",
-    "watch": "tsc -p tsconfig.json -w --preserveWatchOutput & && esbuild src/index.ts --bundle --sourcemap --target=es2022 --format=esm --watch --outfile=dist/index.bundle.js &"
+    "watch": "tsc -p tsconfig.json -w --preserveWatchOutput & esbuild src/index.ts --bundle --sourcemap --target=es2022 --format=esm --watch --outfile=dist/index.bundle.js"
   },
   "sideEffects": false,
   "publishConfig": {
     "access": "public"
   },
   "devDependencies": {
-    "esbuild": "^0.20.2"
+    "esbuild": "^0.27.4"
   },
   "dependencies": {
     "@exceptionless/browser": "3.0.0-dev"

@@ -1,12 +1,12 @@
-import { describe, test } from "@jest/globals";
+import { beforeEach, describe, test } from "@jest/globals";
 import { expect } from "expect";
 
-import { DuplicateCheckerPlugin } from "../../../src/plugins/default/DuplicateCheckerPlugin.js";
-import { ExceptionlessClient } from "../../../src/ExceptionlessClient.js";
-import { EventPluginContext } from "../../../src/plugins/EventPluginContext.js";
-import { InnerErrorInfo, StackFrameInfo } from "../../../src/models/data/ErrorInfo.js";
+import { DuplicateCheckerPlugin } from "#/plugins/default/DuplicateCheckerPlugin.js";
+import { ExceptionlessClient } from "#/ExceptionlessClient.js";
+import { EventPluginContext } from "#/plugins/EventPluginContext.js";
+import { InnerErrorInfo, StackFrameInfo } from "#/models/data/ErrorInfo.js";
 import { delay } from "../../helpers.js";
-import { EventContext } from "../../../src/models/EventContext.js";
+import { EventContext } from "#/models/EventContext.js";
 
 const Exception1StackTrace = [
   {

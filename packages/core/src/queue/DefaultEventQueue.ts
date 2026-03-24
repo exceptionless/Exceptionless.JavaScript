@@ -1,9 +1,9 @@
-import { Configuration } from "../configuration/Configuration.js";
-import { ILog } from "../logging/ILog.js";
-import { Event } from "../models/Event.js";
-import { IEventQueue } from "../queue/IEventQueue.js";
-import { Response } from "../submission/Response.js";
-import { allowProcessToExitWithoutWaitingForTimerOrInterval } from "../Utils.js";
+import { Configuration } from "#/configuration/Configuration.js";
+import { ILog } from "#/logging/ILog.js";
+import { Event } from "#/models/Event.js";
+import { IEventQueue } from "#/queue/IEventQueue.js";
+import { Response } from "#/submission/Response.js";
+import { allowProcessToExitWithoutWaitingForTimerOrInterval } from "#/Utils.js";
 
 interface EventQueueItem {
   file: string;

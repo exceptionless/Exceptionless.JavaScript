@@ -1,7 +1,7 @@
-import { describe, test } from "@jest/globals";
+import { afterEach, beforeEach, describe, test } from "@jest/globals";
 import { expect } from "expect";
 
-import { IStorage } from "../../src/storage/IStorage.js";
+import { IStorage } from "#/storage/IStorage.js";
 
 export function describeStorage(name: string, storageFactory: () => IStorage, afterEachCallback?: () => void, beforeEachCallback?: () => void): void {
   describe(name, () => {

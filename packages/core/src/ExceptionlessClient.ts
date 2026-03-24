@@ -1,13 +1,13 @@
-import { Configuration } from "./configuration/Configuration.js";
-import { SettingsManager } from "./configuration/SettingsManager.js";
-import { EventBuilder } from "./EventBuilder.js";
-import { Event, KnownEventDataKeys, LogLevel } from "./models/Event.js";
-import { UserDescription } from "./models/data/UserDescription.js";
-import { EventContext } from "./models/EventContext.js";
-import { EventPluginContext } from "./plugins/EventPluginContext.js";
-import { EventPluginManager } from "./plugins/EventPluginManager.js";
-import { PluginContext } from "./plugins/PluginContext.js";
-import { allowProcessToExitWithoutWaitingForTimerOrInterval } from "./Utils.js";
+import { Configuration } from "#/configuration/Configuration.js";
+import { SettingsManager } from "#/configuration/SettingsManager.js";
+import { EventBuilder } from "#/EventBuilder.js";
+import { Event, KnownEventDataKeys, LogLevel } from "#/models/Event.js";
+import { UserDescription } from "#/models/data/UserDescription.js";
+import { EventContext } from "#/models/EventContext.js";
+import { EventPluginContext } from "#/plugins/EventPluginContext.js";
+import { EventPluginManager } from "#/plugins/EventPluginManager.js";
+import { PluginContext } from "#/plugins/PluginContext.js";
+import { allowProcessToExitWithoutWaitingForTimerOrInterval } from "#/Utils.js";
 
 export class ExceptionlessClient {
   private _intervalId: ReturnType<typeof setInterval> | undefined;
