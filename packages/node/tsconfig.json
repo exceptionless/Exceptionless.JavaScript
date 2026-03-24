@@ -7,7 +7,7 @@
       "#/*": ["./src/*"]
     },
     "rootDir": "src",
-    "types": ["node", "jest"]
+    "types": ["node"]
   },
   "include": ["src"]
 }

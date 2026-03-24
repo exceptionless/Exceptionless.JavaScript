@@ -38,41 +38,18 @@
       "default": "./dist/*"
     }
   },
-  "jest": {
-    "moduleFileExtensions": [
-      "js",
-      "ts"
-    ],
-    "moduleNameMapper": {
-      "^@exceptionless/(.*)$": "<rootDir>/../$1/src"
-    },
-    "resolver": "../../jest-resolver.cjs",
-    "transform": {
-      "^.+\\.tsx?$": [
-        "ts-jest",
-        {
-          "diagnostics": false
-        }
-      ]
-    },
-    "testEnvironment": "jsdom"
-  },
   "scripts": {
     "build": "tsc -p tsconfig.json && esbuild src/index.ts --bundle --sourcemap --target=es2022 --format=esm --conditions=source --outfile=dist/index.bundle.js && esbuild src/index.ts --bundle --minify --sourcemap --target=es2022 --format=esm --conditions=source --outfile=dist/index.bundle.min.js",
     "watch": "tsc -p ../core/tsconfig.json -w --preserveWatchOutput & tsc -p tsconfig.json -w --preserveWatchOutput & esbuild src/index.ts --bundle --sourcemap --target=es2022 --format=esm --conditions=source --watch --outfile=dist/index.bundle.js",
-    "test": "jest",
-    "test:watch": "jest --watch"
+    "test": "cd ../.. && vitest run --project browser",
+    "test:watch": "cd ../.. && vitest --project browser"
   },
   "sideEffects": false,
   "publishConfig": {
     "access": "public"
   },
   "devDependencies": {
-    "@jest/globals": "^30.3.0",
-    "esbuild": "^0.27.4",
-    "jest": "^30.3.0",
-    "jest-environment-jsdom": "^30.3.0",
-    "ts-jest": "^29.4.6"
+    "esbuild": "^0.27.4"
   },
   "dependencies": {
     "@exceptionless/core": "3.0.0-dev",
