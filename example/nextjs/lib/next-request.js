@@ -37,9 +37,7 @@ function normalizeHeaders(headers) {
     return Object.fromEntries(Array.from(headers.entries()).map(([key, value]) => [key.toLowerCase(), value]));
   }
 
-  return Object.fromEntries(
-    Object.entries(headers).map(([key, value]) => [key.toLowerCase(), Array.isArray(value) ? value.join(", ") : String(value)])
-  );
+  return Object.fromEntries(Object.entries(headers).map(([key, value]) => [key.toLowerCase(), Array.isArray(value) ? value.join(", ") : String(value)]));
 }
 
 function getOrigin(headers) {

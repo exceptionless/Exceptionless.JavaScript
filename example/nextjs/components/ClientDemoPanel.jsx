@@ -84,8 +84,8 @@ export default function ClientDemoPanel() {
       <div className="panel-body">
         <h2>Try the integration</h2>
         <p>
-          The first four buttons stay in the browser. The next two go through a real Next route handler. The link at the bottom
-          opens a route that throws during server rendering.
+          The first four buttons stay in the browser. The next two go through a real Next route handler. The link at the bottom opens a route that throws during
+          server rendering.
         </p>
 
         <div className="button-grid">

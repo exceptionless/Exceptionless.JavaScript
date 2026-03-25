@@ -32,8 +32,7 @@ export default function GlobalError({ error, reset }) {
               <p className="eyebrow">Global Error Boundary</p>
               <h1>The root layout failed.</h1>
               <p>
-                This is the last-resort client boundary for the App Router. In normal server-rendered failures we still prefer the
-                richer `onRequestError` path.
+                This is the last-resort client boundary for the App Router. In normal server-rendered failures we still prefer the richer `onRequestError` path.
               </p>
               <div className="error-actions">
                 <button type="button" onClick={() => reset()}>

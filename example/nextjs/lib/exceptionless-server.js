@@ -40,7 +40,7 @@ export function startup() {
             framework: "Next.js",
             router: "App Router",
             runtime: "nodejs",
-            ...(process.env.VERCEL_ENV ?? process.env.NODE_ENV ? { deployment: process.env.VERCEL_ENV ?? process.env.NODE_ENV } : {}),
+            ...((process.env.VERCEL_ENV ?? process.env.NODE_ENV) ? { deployment: process.env.VERCEL_ENV ?? process.env.NODE_ENV } : {}),
             ...(process.env.VERCEL_REGION ? { region: process.env.VERCEL_REGION } : {}),
             ...(process.env.VERCEL_URL ? { url: process.env.VERCEL_URL } : {}),
             ...(process.env.VERCEL_GIT_COMMIT_SHA ? { commit: process.env.VERCEL_GIT_COMMIT_SHA } : {})

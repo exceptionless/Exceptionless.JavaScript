@@ -30,8 +30,8 @@ export default function ErrorPage({ error, reset }) {
           <p className="eyebrow">Route Error Boundary</p>
           <h1>Something inside this route broke.</h1>
           <p>
-            Client-only render errors are submitted here. Server-rendered failures already have a digest and are captured by
-            `instrumentation.js` through `onRequestError`.
+            Client-only render errors are submitted here. Server-rendered failures already have a digest and are captured by `instrumentation.js` through
+            `onRequestError`.
           </p>
           <div className="error-actions">
             <button type="button" onClick={() => reset()}>
