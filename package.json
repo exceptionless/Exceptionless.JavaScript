@@ -4,7 +4,7 @@
   "version": "3.0.0-dev",
   "license": "Apache-2.0",
   "scripts": {
-    "clean": "rimraf -g packages/*/dist example/*/dist",
+    "clean": "rimraf -g packages/*/dist example/*/dist example/*/.next",
     "build": "npm run build --workspaces --if-present",
     "watch": "npm run watch --workspaces --if-present",
     "lint": "run-s -c lint:eslint lint:prettier",

@@ -1,0 +1,21 @@
+{
+  "name": "nextjs-example",
+  "private": true,
+  "version": "3.0.0-dev",
+  "scripts": {
+    "dev": "next dev --webpack",
+    "build": "next build --webpack",
+    "start": "next start"
+  },
+  "dependencies": {
+    "@exceptionless/browser": "3.0.0-dev",
+    "@exceptionless/node": "3.0.0-dev",
+    "next": "^16.2.1",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4"
+  },
+  "type": "module",
+  "publishConfig": {
+    "access": "restricted"
+  }
+}
