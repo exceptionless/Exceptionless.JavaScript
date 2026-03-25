@@ -1,11 +1,14 @@
-import { Exceptionless, KnownEventDataKeys, toError } from "../../../packages/node/dist/index.bundle.js";
+import { ExceptionlessClient, KnownEventDataKeys, toError } from "@exceptionless/core";
 
-export { Exceptionless, KnownEventDataKeys, toError };
+export { KnownEventDataKeys, toError };
+
+export const Exceptionless = new ExceptionlessClient();
 
 let startupPromise;
 
-export function startup() {
-  startupPromise ??= Exceptionless.startup((config) => {
+export async function startup() {
+  startupPromise ??= (async () => {
+    await Exceptionless.startup((config) => {
     if (process.env.EXCEPTIONLESS_API_KEY ?? process.env.NEXT_PUBLIC_EXCEPTIONLESS_API_KEY) {
       config.apiKey = process.env.EXCEPTIONLESS_API_KEY ?? process.env.NEXT_PUBLIC_EXCEPTIONLESS_API_KEY;
     }
@@ -50,7 +53,9 @@ export function startup() {
         return Promise.resolve();
       }
     });
-  });
+
+    return { Exceptionless, KnownEventDataKeys, toError };
+  })();
 
   return startupPromise;
 }

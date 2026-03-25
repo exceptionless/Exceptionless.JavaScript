@@ -14,10 +14,10 @@ export async function onRequestError(error, request, context) {
     return;
   }
 
-  const { Exceptionless, KnownEventDataKeys, startup, toError } = await import("./lib/exceptionless-server.js");
+  const { startup } = await import("./lib/exceptionless-server.js");
   const digest = typeof error === "object" && error !== null && "digest" in error ? error.digest : undefined;
 
-  await startup();
+  const { Exceptionless, KnownEventDataKeys, toError } = await startup();
 
   const builder = Exceptionless.createUnhandledException(toError(error), `nextjs.${context.routeType}`).addTags("on-request-error");
 

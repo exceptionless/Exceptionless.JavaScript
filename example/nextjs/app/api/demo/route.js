@@ -1,6 +1,6 @@
 import { after } from "next/server";
 
-import { Exceptionless, KnownEventDataKeys, startup } from "../../../lib/exceptionless-server.js";
+import { startup } from "../../../lib/exceptionless-server.js";
 import { buildRequestContextFromRequest } from "../../../lib/next-request.js";
 
 export async function POST(request) {
@@ -12,7 +12,7 @@ export async function POST(request) {
     throw new Error("Route handler crash from the Exceptionless Next.js demo");
   }
 
-  await startup();
+  const { Exceptionless, KnownEventDataKeys } = await startup();
 
   const builder = Exceptionless.createLog("nextjs.route", "Route handler log from the demo page", "info").addTags("route-handler");
 
@@ -21,6 +21,7 @@ export async function POST(request) {
   await builder.submit();
 
   after(async () => {
+    const { Exceptionless } = await startup();
     await Exceptionless.processQueue();
   });
 

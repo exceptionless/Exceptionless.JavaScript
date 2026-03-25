@@ -1,4 +1,4 @@
-import { Exceptionless, KnownEventDataKeys } from "../../../packages/browser/dist/index.bundle.js";
+import { Exceptionless, KnownEventDataKeys } from "@exceptionless/browser";
 
 export { Exceptionless };
 
