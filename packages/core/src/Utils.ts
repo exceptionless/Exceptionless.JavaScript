@@ -265,10 +265,9 @@ export function prune(value: unknown, depth: number = 10): unknown {
         return Array.from(value);
       }
 
-      // Check for typed arrays
-      const TypedArray = Object.getPrototypeOf(Uint8Array);
-      if (value instanceof TypedArray) {
-        return Array.from(value as Iterable<unknown>);
+      // Handle all TypedArray variants, including BigInt typed arrays.
+      if (ArrayBuffer.isView(value) && !(value instanceof DataView)) {
+        return Array.from(value as unknown as ArrayLike<unknown>);
       }
 
       if (hasToJSONFunction(value)) {

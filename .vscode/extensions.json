@@ -1,14 +1,12 @@
 {
   "recommendations": [
-    "andys8.jest-snippets",
     "davidanson.vscode-markdownlint",
     "dbaeumer.vscode-eslint",
     "editorconfig.editorconfig",
     "esbenp.prettier-vscode",
-    "firsttris.vscode-jest-runner",
-    "hbenl.vscode-test-explorer",
     "juancasanova.awesometypescriptproblemmatcher",
     "ryanluker.vscode-coverage-gutters",
-    "streetsidesoftware.code-spell-checker"
+    "streetsidesoftware.code-spell-checker",
+    "vitest.explorer"
   ]
 }

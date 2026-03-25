@@ -1,5 +1,4 @@
-import { describe, jest, test } from "@jest/globals";
-import { expect } from "expect";
+import { describe, expect, test, vi } from "vitest";
 
 import { Configuration } from "#/configuration/Configuration.js";
 import { ServerSettings } from "#/configuration/SettingsManager.js";
@@ -17,7 +16,7 @@ describe("TestSubmissionClient", () => {
   config.heartbeatServerUrl = "http://heartbeat.localhost:5000";
 
   test("should submit events", async () => {
-    const apiFetchMock = jest
+    const apiFetchMock = vi
       .fn<(url: string, options: FetchOptions) => Promise<Response<undefined>>>()
       .mockReturnValueOnce(Promise.resolve(new Response(202, "", NaN, NaN, undefined)));
 
@@ -33,7 +32,7 @@ describe("TestSubmissionClient", () => {
   });
 
   test("should submit invalid object data", async () => {
-    const apiFetchMock = jest
+    const apiFetchMock = vi
       .fn<(url: string, options: FetchOptions) => Promise<Response<undefined>>>()
       .mockReturnValueOnce(Promise.resolve(new Response(202, "", NaN, NaN, undefined)));
 
@@ -62,7 +61,7 @@ describe("TestSubmissionClient", () => {
   });
 
   test("should submit user description", async () => {
-    const apiFetchMock = jest
+    const apiFetchMock = vi
       .fn<(url: string, options: FetchOptions) => Promise<Response<unknown>>>()
       .mockReturnValueOnce(Promise.resolve(new Response(202, "", NaN, 1, undefined)))
       .mockReturnValueOnce(Promise.resolve(new Response(202, "", NaN, NaN, JSON.stringify(new ServerSettings({}, 1)))));
@@ -85,7 +84,7 @@ describe("TestSubmissionClient", () => {
   });
 
   test("should submit heartbeat", async () => {
-    const apiFetchMock = jest
+    const apiFetchMock = vi
       .fn<(url: string, options: FetchOptions) => Promise<Response<undefined>>>()
       .mockReturnValueOnce(Promise.resolve(new Response(200, "", NaN, NaN, undefined)));
 
@@ -97,7 +96,7 @@ describe("TestSubmissionClient", () => {
   });
 
   test("should get project settings", async () => {
-    const apiFetchMock = jest
+    const apiFetchMock = vi
       .fn<(url: string, options: FetchOptions) => Promise<Response<unknown>>>()
       .mockReturnValueOnce(Promise.resolve(new Response(200, "", NaN, NaN, JSON.stringify(new ServerSettings({}, 1)))));
 

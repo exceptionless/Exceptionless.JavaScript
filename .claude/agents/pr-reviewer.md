@@ -67,7 +67,7 @@ Run the full build and test suite:
 # Build all packages (tsc + esbuild, respects dependency order)
 npm run build
 
-# Run all tests (Jest across all packages)
+# Run all tests (Vitest across all packages)
 npm test
 
 # Lint check (ESLint + Prettier)

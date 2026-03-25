@@ -23,7 +23,20 @@ jobs:
         with:
           fetch-depth: 0
       - name: Build Reason
-        run: "echo ref: ${{github.ref}} event: ${{github.event_name}}"
+        shell: bash
+        run: |
+          branch=${GITHUB_REF##*/}.
+          if [[ "$branch" = "main." ]]; then
+            branch=""
+          elif [[ "$branch" = "master." ]]; then
+            branch=""
+          elif [[ "${GITHUB_REF}" = refs/tags* ]]; then
+            branch=""
+          elif [[ "${GITHUB_REF}" = refs/pull* ]]; then
+            branch=""
+          fi
+          echo "GIT_BRANCH_SUFFIX=$branch" >> $GITHUB_ENV
+          echo "ref: $GITHUB_REF event: $GITHUB_EVENT_NAME branch_suffix: $branch"
       - name: Setup Node.js environment
         uses: actions/setup-node@v6
         with:
@@ -37,18 +50,29 @@ jobs:
       - name: Setup .NET SDK for MinVer
         uses: actions/setup-dotnet@v5
         with:
-          dotnet-version: "8.0.x"
-      - name: Set Min Version
-        uses: Stelzi79/action-minver@3.0.1
-        id: version
-        with:
-          minimum-major-minor: 3.0
-          tag-prefix: v
+          dotnet-version: "10.0.x"
       - name: Build Version
+        id: version
+        shell: bash
         run: |
+          dotnet tool install --global minver-cli --version 7.0.0
+          version=$(minver --tag-prefix v --default-pre-release-identifiers "preview.${GIT_BRANCH_SUFFIX}0" --minimum-major-minor 3.0)
+
+          # If on a non-main branch, insert branch name before the height (last numeric segment)
+          if [ -n "$GIT_BRANCH_SUFFIX" ]; then
+            branch_name="${GIT_BRANCH_SUFFIX%.}"
+            if [[ "$version" != *"$branch_name"* ]]; then
+              version=$(echo "$version" | sed -E "s/\.([0-9]+)$/.${GIT_BRANCH_SUFFIX}\1/")
+            fi
+          fi
+
+          echo "version=$version" >> $GITHUB_OUTPUT
+          echo "Version: $version"
+          echo "### Version: $version" >> $GITHUB_STEP_SUMMARY
+
           npm install --global replace-in-files-cli
-          replace-in-files --string="3.0.0-dev" --replacement=${{steps.version.outputs.version}} packages/core/src/configuration/Configuration.ts
-          replace-in-files --string="3.0.0-dev" --replacement=${{steps.version.outputs.version}} **/package*.json
+          replace-in-files --string="3.0.0-dev" --replacement=$version packages/core/src/configuration/Configuration.ts
+          replace-in-files --string="3.0.0-dev" --replacement=$version **/package*.json
           npm ci
       - name: Build
         run: npm run build
@@ -62,14 +86,19 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
       - name: Setup GitHub CI Node.js environment
-        if: github.event_name != 'pull_request' && matrix.os == 'ubuntu-latest'
+        if: github.event_name != 'pull_request' && startsWith(github.ref, 'refs/heads/') && matrix.os == 'ubuntu-latest' && contains(steps.version.outputs.version, '-')
         uses: actions/setup-node@v6
         with:
           node-version: ${{ matrix.node_version }}
           registry-url: "https://npm.pkg.github.com"
           scope: "@exceptionless"
       - name: Push GitHub CI Packages
-        if: github.event_name != 'pull_request' && matrix.os == 'ubuntu-latest'
-        run: npm publish --workspaces --access public
+        if: github.event_name != 'pull_request' && startsWith(github.ref, 'refs/heads/') && matrix.os == 'ubuntu-latest' && contains(steps.version.outputs.version, '-')
+        shell: bash
+        run: |
+          TAG_BRANCH="${GIT_BRANCH_SUFFIX%.}"
+          TAG_BRANCH="${TAG_BRANCH:-main}"
+          TAG_BRANCH="${TAG_BRANCH//\//-}"
+          npm publish --workspaces --access public --tag "ci-${TAG_BRANCH}" || true
         env:
           NODE_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}

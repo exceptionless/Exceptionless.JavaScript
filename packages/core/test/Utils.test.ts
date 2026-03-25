@@ -1,5 +1,4 @@
-import { describe, test } from "@jest/globals";
-import { expect } from "expect";
+import { describe, expect, test } from "vitest";
 
 import { endsWith, isEmpty, isMatch, parseVersion, prune, startsWith, stringify, toBoolean } from "#/Utils.js";
 
@@ -94,13 +93,9 @@ describe("Utils", () => {
       Object.entries(typedArrayValues).forEach(([key, value]) => {
         test(`for ${key}`, () => {
           const actual = prune(value, 1);
-
-          if (Array.isArray(actual)) {
-            expect(actual.length).toBe(1);
-            expect(actual).toContain(1);
-          } else {
-            throw new Error("actual is not an array");
-          }
+          expect(Array.isArray(actual)).toBe(true);
+          expect(actual).toHaveLength(1);
+          expect(actual).toContain(1);
         });
       });
 
@@ -112,13 +107,9 @@ describe("Utils", () => {
       Object.entries(bigIntTypedArrayValues).forEach(([key, value]) => {
         test(`for ${key}`, () => {
           const actual = prune(value, 1);
-
-          if (Array.isArray(actual)) {
-            expect(actual.length).toBe(1);
-            expect(actual).toContain("1n");
-          } else {
-            throw new Error("actual is not an array");
-          }
+          expect(Array.isArray(actual)).toBe(true);
+          expect(actual).toHaveLength(1);
+          expect(actual).toContain("1n");
         });
       });
 
@@ -166,15 +157,10 @@ describe("Utils", () => {
       });
 
       test("for Error", () => {
-        try {
-          throw new Error("error");
-        } catch (error) {
-          if (error instanceof Error) {
-            const expected = { message: error.message, stack: error.stack };
-            const actual = prune(error, 1);
-            expect(actual).toStrictEqual(expected);
-          }
-        }
+        const error = new Error("error");
+        const expected = { message: error.message, stack: error.stack };
+        const actual = prune(error, 1);
+        expect(actual).toStrictEqual(expected);
       });
 
       test("for Map", () => {
@@ -450,15 +436,10 @@ describe("Utils", () => {
       });
 
       test("for Error", () => {
-        try {
-          throw new Error("error");
-        } catch (error) {
-          if (error instanceof Error) {
-            const expected = JSON.stringify({ stack: error.stack, message: error.message });
-            const actual = stringify(error, [], 1);
-            expect(actual).toStrictEqual(expected);
-          }
-        }
+        const error = new Error("error");
+        const expected = JSON.stringify({ stack: error.stack, message: error.message });
+        const actual = stringify(error, [], 1);
+        expect(actual).toStrictEqual(expected);
       });
 
       test("for Map", () => {
@@ -619,11 +600,11 @@ describe("Utils", () => {
       });
 
       test("*password*", () => {
-        JSON.stringify(expect(stringify(user, ["*password*"])).toBe(JSON.stringify({ id: 1, name: "Blake", customValue: "Password", value: {} })));
+        expect(stringify(user, ["*password*"])).toBe(JSON.stringify({ id: 1, name: "Blake", customValue: "Password", value: {} }));
       });
 
       test("*Password*", () => {
-        JSON.stringify(expect(stringify(user, ["*Password*"])).toBe(JSON.stringify({ id: 1, name: "Blake", customValue: "Password", value: {} })));
+        expect(stringify(user, ["*Password*"])).toBe(JSON.stringify({ id: 1, name: "Blake", customValue: "Password", value: {} }));
       });
 
       test("*Address", () => {

@@ -47,12 +47,9 @@
     "access": "public"
   },
   "devDependencies": {
-    "@jest/globals": "^30.3.0",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
-    "esbuild": "^0.27.4",
-    "jest": "^30.3.0",
-    "ts-jest": "^29.4.6"
+    "esbuild": "^0.27.4"
   },
   "dependencies": {
     "@exceptionless/browser": "3.0.0-dev"

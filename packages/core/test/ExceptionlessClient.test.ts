@@ -1,5 +1,4 @@
-import { describe, test } from "@jest/globals";
-import { expect } from "expect";
+import { describe, expect, test } from "vitest";
 
 import { ExceptionlessClient } from "#/ExceptionlessClient.js";
 import { KnownEventDataKeys } from "#/models/Event.js";

@@ -1,13 +1,11 @@
 import eslint from "@eslint/js";
 import { defineConfig } from "eslint/config";
 import eslintConfigPrettier from "eslint-config-prettier";
-import jest from "eslint-plugin-jest";
+import vitest from "@vitest/eslint-plugin";
 import tseslint from "typescript-eslint";
 
 export default defineConfig(
-  {
-    ignores: ["**/dist/", "**/node_modules/", ".agents/", "example/", "jest-resolver.cjs"]
-  },
+  { ignores: ["**/dist/", "**/node_modules/", ".agents/", "example/"] },
   eslint.configs.recommended,
   {
     extends: tseslint.configs.recommendedTypeChecked,
@@ -36,12 +34,12 @@ export default defineConfig(
   eslintConfigPrettier,
   {
     files: ["**/test/**/*.ts"],
-    extends: [jest.configs["flat/recommended"]],
+    plugins: vitest.configs.recommended.plugins,
     rules: {
-      "jest/valid-title": "off",
-      "jest/valid-describe-callback": "off",
-      "jest/no-export": "off",
-      "jest/no-done-callback": "warn"
+      ...vitest.configs.recommended.rules,
+      "vitest/valid-title": "off",
+      "vitest/valid-describe-callback": "off",
+      "vitest/no-done-callback": "warn"
     }
   }
 );
