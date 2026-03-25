@@ -1,6 +1,6 @@
-import { describe, expect, test } from "vitest";
+import { describe, expect, test, vi } from "vitest";
 
-import { endsWith, isEmpty, isMatch, parseVersion, prune, startsWith, stringify, toBoolean } from "#/Utils.js";
+import { endsWith, guid, isEmpty, isMatch, parseVersion, prune, randomNumber, startsWith, stringify, toBoolean } from "#/Utils.js";
 
 describe("Utils", () => {
   function getObjectWithInheritedProperties(): unknown {
@@ -624,6 +624,38 @@ describe("Utils", () => {
     expect(parseVersion("https://cdnjs.cloudflare.com/BLAH/BLAH.min.js")).toBeNull();
   });
 
+  test("should parse semantic version labels without regex backtracking", () => {
+    expect(parseVersion("release/v1.2.3-rc.1+build.5/index.js")).toBe("v1.2.3-rc.1+build.5");
+    expect(parseVersion("release-1.2.3-.js")).toBe("1.2.3");
+  });
+
+  test("should generate guids without Math.random", () => {
+    const mathRandomSpy = vi.spyOn(Math, "random").mockImplementation(() => {
+      throw new Error("Math.random should not be used");
+    });
+
+    try {
+      expect(guid()).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/);
+    } finally {
+      mathRandomSpy.mockRestore();
+    }
+  });
+
+  test("should generate random numbers without Math.random", () => {
+    const mathRandomSpy = vi.spyOn(Math, "random").mockImplementation(() => {
+      throw new Error("Math.random should not be used");
+    });
+
+    try {
+      const value = randomNumber();
+      expect(Number.isSafeInteger(value)).toBe(true);
+      expect(value).toBeGreaterThanOrEqual(0);
+      expect(value).toBeLessThan(9007199254740992);
+    } finally {
+      mathRandomSpy.mockRestore();
+    }
+  });
+
   describe("isEmpty", () => {
     const emptyValues = {
       undefined: undefined,
@@ -720,6 +752,10 @@ describe("Utils", () => {
 
     test('input: myPassword patterns [" * pAssword * "]', () => {
       expect(isMatch("myPassword", ["*pAssword*"])).toBe(true);
+    });
+
+    test("should trim unicode whitespace without regex replacement", () => {
+      expect(isMatch("\uFEFF myPassword \u00A0", ["\uFEFF *password* \u00A0"])).toBe(true);
     });
   });
 

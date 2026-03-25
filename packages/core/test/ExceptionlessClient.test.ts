@@ -1,4 +1,4 @@
-import { describe, expect, test } from "vitest";
+import { describe, expect, test, vi } from "vitest";
 
 import { ExceptionlessClient } from "#/ExceptionlessClient.js";
 import { KnownEventDataKeys } from "#/models/Event.js";
@@ -90,6 +90,24 @@ describe("ExceptionlessClient", () => {
     await client.suspend();
     expect(client.config.apiKey).toBe("UNIT_TEST_API_KEY");
     expect(client.config.serverUrl).toBe("https://localhost:5100");
+  });
+
+  test("should create session identifiers without Math.random", async () => {
+    const client = new ExceptionlessClient();
+    client.config.apiKey = "UNIT_TEST_API_KEY";
+    client.config.useSessions(false, 60000, true);
+
+    const mathRandomSpy = vi.spyOn(Math, "random").mockImplementation(() => {
+      throw new Error("Math.random should not be used");
+    });
+
+    try {
+      const context = await client.submitSessionStart();
+      expect(client.config.currentSessionIdentifier).toMatch(/^[0-9a-f]{32}$/);
+      expect(context.event.reference_id).toBe(client.config.currentSessionIdentifier);
+    } finally {
+      mathRandomSpy.mockRestore();
+    }
   });
 
   function createException(): ReferenceError {

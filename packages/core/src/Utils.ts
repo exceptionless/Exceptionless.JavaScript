@@ -27,7 +27,39 @@ export function getCookies(cookies: string, exclusions?: string[]): Record<strin
   return !isEmpty(result) ? result : null;
 }
 
+function getSecureCrypto(): Crypto | null {
+  const { crypto } = globalThis;
+  if (!crypto || typeof crypto.getRandomValues !== "function") {
+    return null;
+  }
+
+  return crypto;
+}
+
+function toHex(bytes: Uint8Array, start: number, length: number): string {
+  let result = "";
+  for (let index = start; index < start + length; index++) {
+    result += bytes[index].toString(16).padStart(2, "0");
+  }
+
+  return result;
+}
+
 export function guid(): string {
+  const crypto = getSecureCrypto();
+  if (crypto) {
+    if (typeof crypto.randomUUID === "function") {
+      return crypto.randomUUID();
+    }
+
+    const bytes = new Uint8Array(16);
+    crypto.getRandomValues(bytes);
+    bytes[6] = (bytes[6] & 0x0f) | 0x40;
+    bytes[8] = (bytes[8] & 0x3f) | 0x80;
+
+    return `${toHex(bytes, 0, 4)}-${toHex(bytes, 4, 2)}-${toHex(bytes, 6, 2)}-${toHex(bytes, 8, 2)}-${toHex(bytes, 10, 6)}`;
+  }
+
   function s4() {
     return Math.floor((1 + Math.random()) * 0x10000)
       .toString(16)
@@ -37,15 +69,101 @@ export function guid(): string {
   return s4() + s4() + "-" + s4() + "-" + s4() + "-" + s4() + "-" + s4() + s4() + s4();
 }
 
+function isDigitCode(code: number): boolean {
+  return code >= 48 && code <= 57;
+}
+
+function isVersionIdentifierCode(code: number): boolean {
+  return isDigitCode(code) || (code >= 65 && code <= 90) || (code >= 97 && code <= 122) || code === 45;
+}
+
+function readDigits(input: string, start: number): number {
+  let index = start;
+  while (index < input.length && isDigitCode(input.charCodeAt(index))) {
+    index++;
+  }
+
+  return index > start ? index : -1;
+}
+
+function readVersionIdentifiers(input: string, start: number): number {
+  let index = start;
+  while (index < input.length) {
+    const segmentStart = index;
+    while (index < input.length && isVersionIdentifierCode(input.charCodeAt(index))) {
+      index++;
+    }
+
+    if (index === segmentStart) {
+      return -1;
+    }
+
+    if (input[index] !== ".") {
+      return index;
+    }
+
+    index++;
+  }
+
+  return index;
+}
+
 export function parseVersion(source: string): string | null {
   if (!source) {
     return null;
   }
 
-  const versionRegex = /(v?((\d+)\.(\d+)(\.(\d+))?)(?:-([\dA-Za-z-]+(?:\.[\dA-Za-z-]+)*))?(?:\+([\dA-Za-z-]+(?:\.[\dA-Za-z-]+)*))?)/;
-  const matches = versionRegex.exec(source);
-  if (matches && matches.length > 0) {
-    return matches[0];
+  for (let index = 0; index < source.length; ) {
+    const start = index;
+    let cursor = index;
+
+    if (source[cursor] === "v") {
+      if (!isDigitCode(source.charCodeAt(cursor + 1))) {
+        index++;
+        continue;
+      }
+
+      cursor++;
+    } else if (!isDigitCode(source.charCodeAt(cursor))) {
+      index++;
+      continue;
+    }
+
+    const majorEnd = readDigits(source, cursor);
+    if (source[majorEnd] !== ".") {
+      index = majorEnd;
+      continue;
+    }
+
+    const minorEnd = readDigits(source, majorEnd + 1);
+    if (minorEnd === -1) {
+      index = majorEnd + 1;
+      continue;
+    }
+
+    let end = minorEnd;
+    if (source[end] === ".") {
+      const patchEnd = readDigits(source, end + 1);
+      if (patchEnd !== -1) {
+        end = patchEnd;
+      }
+    }
+
+    if (source[end] === "-") {
+      const preReleaseEnd = readVersionIdentifiers(source, end + 1);
+      if (preReleaseEnd !== -1) {
+        end = preReleaseEnd;
+      }
+    }
+
+    if (source[end] === "+") {
+      const buildEnd = readVersionIdentifiers(source, end + 1);
+      if (buildEnd !== -1) {
+        end = buildEnd;
+      }
+    }
+
+    return source.slice(start, end);
   }
 
   return null;
@@ -73,6 +191,14 @@ export function parseQueryString(query: string, exclusions?: string[]): Record<s
 }
 
 export function randomNumber(): number {
+  const crypto = getSecureCrypto();
+  if (crypto) {
+    const values = new Uint32Array(2);
+    crypto.getRandomValues(values);
+
+    return (values[0] & 0x1fffff) * 0x100000000 + values[1];
+  }
+
   return Math.floor(Math.random() * 9007199254740992);
 }
 
@@ -86,8 +212,7 @@ export function isMatch(input: string | undefined, patterns: string[], ignoreCas
     return false;
   }
 
-  const trim = /^[\s\uFEFF\xA0]+|[\s\uFEFF\xA0]+$/g;
-  input = (ignoreCase ? input.toLowerCase() : input).replace(trim, "");
+  input = (ignoreCase ? input.toLowerCase() : input).trim();
 
   return (patterns || []).some((pattern) => {
     if (typeof pattern !== "string") {
@@ -95,7 +220,7 @@ export function isMatch(input: string | undefined, patterns: string[], ignoreCas
     }
 
     if (pattern) {
-      pattern = (ignoreCase ? pattern.toLowerCase() : pattern).replace(trim, "");
+      pattern = (ignoreCase ? pattern.toLowerCase() : pattern).trim();
     }
 
     if (!pattern) {
