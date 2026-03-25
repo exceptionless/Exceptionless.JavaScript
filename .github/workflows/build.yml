@@ -23,6 +23,7 @@ jobs:
         with:
           fetch-depth: 0
       - name: Build Reason
+        shell: bash
         run: |
           branch=${GITHUB_REF##*/}.
           if [[ "$branch" = "main." ]]; then
@@ -52,6 +53,7 @@ jobs:
           dotnet-version: "10.0.x"
       - name: Build Version
         id: version
+        shell: bash
         run: |
           dotnet tool install --global minver-cli --version 7.0.0
           version=$(minver --tag-prefix v --default-pre-release-identifiers "preview.${GIT_BRANCH_SUFFIX}0" --minimum-major-minor 3.0)
@@ -92,6 +94,7 @@ jobs:
           scope: "@exceptionless"
       - name: Push GitHub CI Packages
         if: github.event_name != 'pull_request' && startsWith(github.ref, 'refs/heads/') && matrix.os == 'ubuntu-latest' && contains(steps.version.outputs.version, '-')
+        shell: bash
         run: |
           TAG_BRANCH="${GIT_BRANCH_SUFFIX%.}"
           TAG_BRANCH="${TAG_BRANCH:-main}"
