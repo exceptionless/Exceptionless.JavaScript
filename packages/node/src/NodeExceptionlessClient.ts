@@ -2,12 +2,12 @@ import { Configuration, ExceptionlessClient, LocalStorage, SimpleErrorPlugin } f
 
 import { LocalStorage as LocalStoragePolyfill } from "node-localstorage";
 
-import { NodeErrorPlugin } from "#/plugins/NodeErrorPlugin.js";
-import { NodeEnvironmentInfoPlugin } from "#/plugins/NodeEnvironmentInfoPlugin.js";
-import { NodeGlobalHandlerPlugin } from "#/plugins/NodeGlobalHandlerPlugin.js";
-import { NodeLifeCyclePlugin } from "#/plugins/NodeLifeCyclePlugin.js";
-import { NodeRequestInfoPlugin } from "#/plugins/NodeRequestInfoPlugin.js";
-import { NodeWrapFunctions } from "#/plugins/NodeWrapFunctions.js";
+import { NodeErrorPlugin } from "./plugins/NodeErrorPlugin.js";
+import { NodeEnvironmentInfoPlugin } from "./plugins/NodeEnvironmentInfoPlugin.js";
+import { NodeGlobalHandlerPlugin } from "./plugins/NodeGlobalHandlerPlugin.js";
+import { NodeLifeCyclePlugin } from "./plugins/NodeLifeCyclePlugin.js";
+import { NodeRequestInfoPlugin } from "./plugins/NodeRequestInfoPlugin.js";
+import { NodeWrapFunctions } from "./plugins/NodeWrapFunctions.js";
 
 export class NodeExceptionlessClient extends ExceptionlessClient {
   public async startup(configurationOrApiKey?: (config: Configuration) => void | string): Promise<void> {

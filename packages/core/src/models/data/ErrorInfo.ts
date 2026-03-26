@@ -1,4 +1,4 @@
-import { ModuleInfo } from "#/models/data/ModuleInfo.js";
+import { ModuleInfo } from "../../models/data/ModuleInfo.js";
 
 export interface SimpleError {
   message?: string;

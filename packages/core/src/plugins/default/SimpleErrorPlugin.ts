@@ -1,8 +1,8 @@
-import { EventPluginContext } from "#/plugins/EventPluginContext.js";
-import { IEventPlugin } from "#/plugins/IEventPlugin.js";
-import { isEmpty, stringify } from "#/Utils.js";
-import { SimpleError } from "#/models/data/ErrorInfo.js";
-import { KnownEventDataKeys } from "#/models/Event.js";
+import { EventPluginContext } from "../../plugins/EventPluginContext.js";
+import { IEventPlugin } from "../../plugins/IEventPlugin.js";
+import { isEmpty, stringify } from "../../Utils.js";
+import { SimpleError } from "../../models/data/ErrorInfo.js";
+import { KnownEventDataKeys } from "../../models/Event.js";
 
 export const IgnoredErrorProperties: string[] = [
   "arguments",

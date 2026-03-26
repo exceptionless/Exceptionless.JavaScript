@@ -1,6 +1,6 @@
 import { IStorage } from "@exceptionless/core";
 import { describeStorage } from "../../../core/test/storage/StorageTestBase.js";
-import { NodeDirectoryStorage } from "#/storage/NodeDirectoryStorage.js";
+import { NodeDirectoryStorage } from "../../src/storage/NodeDirectoryStorage.js";
 import { mkdirSync, rmSync } from "fs";
 import path from "path";
 import { fileURLToPath } from "url";

@@ -1,6 +1,6 @@
 import { describe, expect, test, vi } from "vitest";
 
-import { endsWith, guid, isEmpty, isMatch, parseVersion, prune, randomNumber, startsWith, stringify, toBoolean } from "#/Utils.js";
+import { endsWith, guid, isEmpty, isMatch, parseVersion, prune, randomNumber, startsWith, stringify, toBoolean } from "../src/Utils.js";
 
 describe("Utils", () => {
   function getObjectWithInheritedProperties(): unknown {

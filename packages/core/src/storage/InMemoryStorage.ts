@@ -1,4 +1,4 @@
-import { IStorage } from "#/storage/IStorage.js";
+import { IStorage } from "../storage/IStorage.js";
 
 export class InMemoryStorage implements IStorage {
   private items = new Map<string, string>();

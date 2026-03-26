@@ -1,6 +1,6 @@
-import { isEmpty, stringify } from "#/Utils.js";
-import { EventPluginContext } from "#/plugins/EventPluginContext.js";
-import { IEventPlugin } from "#/plugins/IEventPlugin.js";
+import { isEmpty, stringify } from "../../Utils.js";
+import { EventPluginContext } from "../../plugins/EventPluginContext.js";
+import { IEventPlugin } from "../../plugins/IEventPlugin.js";
 
 export class ConfigurationDefaultsPlugin implements IEventPlugin {
   public priority = 10;

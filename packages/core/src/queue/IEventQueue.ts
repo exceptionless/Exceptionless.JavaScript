@@ -1,5 +1,5 @@
-import { Event } from "#/models/Event.js";
-import { Response } from "#/submission/Response.js";
+import { Event } from "../models/Event.js";
+import { Response } from "../submission/Response.js";
 
 export interface IEventQueue {
   /** Enqueue an event */

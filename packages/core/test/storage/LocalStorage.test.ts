@@ -1,6 +1,6 @@
-import { IStorage } from "#/storage/IStorage.js";
+import { IStorage } from "../../src/storage/IStorage.js";
 import { describeStorage } from "./StorageTestBase.js";
-import { LocalStorage } from "#/storage/LocalStorage.js";
+import { LocalStorage } from "../../src/storage/LocalStorage.js";
 
 function resetLocalStorage() {
   localStorage.clear();

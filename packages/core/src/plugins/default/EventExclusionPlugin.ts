@@ -1,7 +1,7 @@
-import { KnownEventDataKeys, LogLevel } from "#/models/Event.js";
-import { isMatch, startsWith, toBoolean } from "#/Utils.js";
-import { EventPluginContext } from "#/plugins/EventPluginContext.js";
-import { IEventPlugin } from "#/plugins/IEventPlugin.js";
+import { KnownEventDataKeys, LogLevel } from "../../models/Event.js";
+import { isMatch, startsWith, toBoolean } from "../../Utils.js";
+import { EventPluginContext } from "../../plugins/EventPluginContext.js";
+import { IEventPlugin } from "../../plugins/IEventPlugin.js";
 
 export class EventExclusionPlugin implements IEventPlugin {
   public priority = 45;

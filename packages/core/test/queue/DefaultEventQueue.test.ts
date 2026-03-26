@@ -1,8 +1,8 @@
 import { afterEach, beforeEach, describe, expect, test } from "vitest";
 
-import { Configuration } from "#/configuration/Configuration.js";
-import { Event } from "#/models/Event.js";
-import { DefaultEventQueue } from "#/queue/DefaultEventQueue.js";
+import { Configuration } from "../../src/configuration/Configuration.js";
+import { Event } from "../../src/models/Event.js";
+import { DefaultEventQueue } from "../../src/queue/DefaultEventQueue.js";
 import { delay } from "../helpers.js";
 
 describe("DefaultEventQueue", () => {

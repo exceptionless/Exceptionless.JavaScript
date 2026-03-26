@@ -32,15 +32,9 @@
     ".": "./dist/index.js",
     "./package.json": "./package.json"
   },
-  "imports": {
-    "#/*": {
-      "source": "./src/*",
-      "default": "./dist/*"
-    }
-  },
   "scripts": {
-    "build": "tsc -p tsconfig.json && esbuild src/index.ts --bundle --sourcemap --target=es2022 --format=esm --conditions=source --outfile=dist/index.bundle.js && esbuild src/index.ts --bundle --minify --sourcemap --target=es2022 --format=esm --conditions=source --outfile=dist/index.bundle.min.js",
-    "watch": "tsc -p tsconfig.json -w --preserveWatchOutput & esbuild src/index.ts --bundle --sourcemap --target=es2022 --format=esm --conditions=source --watch --outfile=dist/index.bundle.js",
+    "build": "tsc -p tsconfig.json && esbuild src/index.ts --bundle --sourcemap --target=es2022 --format=esm --outfile=dist/index.bundle.js && esbuild src/index.ts --bundle --minify --sourcemap --target=es2022 --format=esm --outfile=dist/index.bundle.min.js",
+    "watch": "tsc -p tsconfig.json -w --preserveWatchOutput & esbuild src/index.ts --bundle --sourcemap --target=es2022 --format=esm --watch --outfile=dist/index.bundle.js",
     "test": "cd ../.. && vitest run --project core",
     "test:watch": "cd ../.. && vitest --project core"
   },

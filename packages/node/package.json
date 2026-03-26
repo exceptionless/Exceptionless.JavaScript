@@ -32,18 +32,12 @@
     ".": "./dist/index.js",
     "./package.json": "./package.json"
   },
-  "imports": {
-    "#/*": {
-      "source": "./src/*",
-      "default": "./dist/*"
-    }
-  },
   "engines": {
     "node": ">=18"
   },
   "scripts": {
-    "build": "tsc -p tsconfig.json && esbuild src/index.ts --bundle --sourcemap --platform=node --format=esm --conditions=source --outfile=dist/index.bundle.js",
-    "watch": "tsc -p ../core/tsconfig.json -w --preserveWatchOutput & tsc -p tsconfig.json -w --preserveWatchOutput & esbuild src/index.ts --bundle --platform=node --sourcemap --format=esm --conditions=source --watch --outfile=dist/index.bundle.js",
+    "build": "tsc -p tsconfig.json && esbuild src/index.ts --bundle --sourcemap --platform=node --format=esm --outfile=dist/index.bundle.js",
+    "watch": "tsc -p ../core/tsconfig.json -w --preserveWatchOutput & tsc -p tsconfig.json -w --preserveWatchOutput & esbuild src/index.ts --bundle --platform=node --sourcemap --format=esm --watch --outfile=dist/index.bundle.js",
     "test": "cd ../.. && vitest run --project node",
     "test:watch": "cd ../.. && vitest --project node"
   },

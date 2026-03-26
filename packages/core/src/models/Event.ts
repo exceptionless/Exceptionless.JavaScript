@@ -1,9 +1,9 @@
-import { ErrorInfo, SimpleError } from "#/models/data/ErrorInfo.js";
-import { EnvironmentInfo } from "#/models/data/EnvironmentInfo.js";
-import { RequestInfo } from "#/models/data/RequestInfo.js";
-import { UserInfo } from "#/models/data/UserInfo.js";
-import { UserDescription } from "#/models/data/UserDescription.js";
-import { ManualStackingInfo } from "#/models/data/ManualStackingInfo.js";
+import { ErrorInfo, SimpleError } from "../models/data/ErrorInfo.js";
+import { EnvironmentInfo } from "../models/data/EnvironmentInfo.js";
+import { RequestInfo } from "../models/data/RequestInfo.js";
+import { UserInfo } from "../models/data/UserInfo.js";
+import { UserDescription } from "../models/data/UserDescription.js";
+import { ManualStackingInfo } from "../models/data/ManualStackingInfo.js";
 
 export type EventType = "error" | "usage" | "log" | "404" | "session" | string;
 

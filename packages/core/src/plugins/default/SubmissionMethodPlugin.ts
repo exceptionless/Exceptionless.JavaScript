@@ -1,6 +1,6 @@
-import { KnownEventDataKeys } from "#/models/Event.js";
-import { EventPluginContext } from "#/plugins/EventPluginContext.js";
-import { IEventPlugin } from "#/plugins/IEventPlugin.js";
+import { KnownEventDataKeys } from "../../models/Event.js";
+import { EventPluginContext } from "../../plugins/EventPluginContext.js";
+import { IEventPlugin } from "../../plugins/IEventPlugin.js";
 
 export class SubmissionMethodPlugin implements IEventPlugin {
   public priority = 100;

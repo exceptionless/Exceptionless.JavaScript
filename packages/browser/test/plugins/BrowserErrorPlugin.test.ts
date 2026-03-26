@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, test } from "vitest";
 import { ErrorInfo, Event, EventContext, EventPluginContext, ExceptionlessClient, KnownEventDataKeys } from "@exceptionless/core";
 
 import { CapturedExceptions } from "./../../../core/test/plugins/default/exceptions.js";
-import { BrowserErrorPlugin } from "#/plugins/BrowserErrorPlugin.js";
+import { BrowserErrorPlugin } from "../../src/plugins/BrowserErrorPlugin.js";
 
 class BaseTestError extends Error {
   public name = "NotImplementedError";

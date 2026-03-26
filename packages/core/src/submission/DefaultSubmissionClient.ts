@@ -1,9 +1,9 @@
-import { Configuration } from "#/configuration/Configuration.js";
-import { ServerSettings, SettingsManager } from "#/configuration/SettingsManager.js";
-import { Event } from "#/models/Event.js";
-import { UserDescription } from "#/models/data/UserDescription.js";
-import { ISubmissionClient } from "#/submission/ISubmissionClient.js";
-import { Response } from "#/submission/Response.js";
+import { Configuration } from "../configuration/Configuration.js";
+import { ServerSettings, SettingsManager } from "../configuration/SettingsManager.js";
+import { Event } from "../models/Event.js";
+import { UserDescription } from "../models/data/UserDescription.js";
+import { ISubmissionClient } from "../submission/ISubmissionClient.js";
+import { Response } from "../submission/Response.js";
 
 export class DefaultSubmissionClient implements ISubmissionClient {
   protected readonly RateLimitRemainingHeader: string = "x-ratelimit-remaining";

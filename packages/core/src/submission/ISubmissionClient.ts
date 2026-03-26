@@ -1,7 +1,7 @@
-import { ServerSettings } from "#/configuration/SettingsManager.js";
-import { Event } from "#/models/Event.js";
-import { UserDescription } from "#/models/data/UserDescription.js";
-import { Response } from "#/submission/Response.js";
+import { ServerSettings } from "../configuration/SettingsManager.js";
+import { Event } from "../models/Event.js";
+import { UserDescription } from "../models/data/UserDescription.js";
+import { Response } from "../submission/Response.js";
 
 export interface ISubmissionClient {
   getSettings(version: number): Promise<Response<ServerSettings>>;

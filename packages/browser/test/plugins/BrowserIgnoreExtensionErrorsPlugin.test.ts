@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, test } from "vitest";
 
 import { EventContext, EventPluginContext, ExceptionlessClient } from "@exceptionless/core";
 
-import { BrowserIgnoreExtensionErrorsPlugin } from "#/plugins/BrowserIgnoreExtensionErrorsPlugin.js";
+import { BrowserIgnoreExtensionErrorsPlugin } from "../../src/plugins/BrowserIgnoreExtensionErrorsPlugin.js";
 
 describe("BrowserIgnoreExtensionErrorsPlugin", () => {
   let client: ExceptionlessClient;

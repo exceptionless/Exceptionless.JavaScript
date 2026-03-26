@@ -1,8 +1,8 @@
 import { describe, expect, test, vi } from "vitest";
 
-import { ExceptionlessClient } from "#/ExceptionlessClient.js";
-import { KnownEventDataKeys } from "#/models/Event.js";
-import { ReferenceIdPlugin } from "#/plugins/default/ReferenceIdPlugin.js";
+import { ExceptionlessClient } from "../src/ExceptionlessClient.js";
+import { KnownEventDataKeys } from "../src/models/Event.js";
+import { ReferenceIdPlugin } from "../src/plugins/default/ReferenceIdPlugin.js";
 
 describe("ExceptionlessClient", () => {
   test("should use event reference ids", async () => {

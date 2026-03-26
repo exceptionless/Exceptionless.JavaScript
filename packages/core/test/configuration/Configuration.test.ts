@@ -1,6 +1,6 @@
 import { describe, expect, test } from "vitest";
 
-import { Configuration } from "#/configuration/Configuration.js";
+import { Configuration } from "../../src/configuration/Configuration.js";
 
 describe("Configuration", () => {
   test("should override configuration defaults", () => {

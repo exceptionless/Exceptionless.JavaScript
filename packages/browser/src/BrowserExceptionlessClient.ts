@@ -1,11 +1,11 @@
 import { Configuration, ExceptionlessClient, SimpleErrorPlugin } from "@exceptionless/core";
 
-import { BrowserErrorPlugin } from "#/plugins/BrowserErrorPlugin.js";
-import { BrowserGlobalHandlerPlugin } from "#/plugins/BrowserGlobalHandlerPlugin.js";
-import { BrowserIgnoreExtensionErrorsPlugin } from "#/plugins/BrowserIgnoreExtensionErrorsPlugin.js";
-import { BrowserLifeCyclePlugin } from "#/plugins/BrowserLifeCyclePlugin.js";
-import { BrowserModuleInfoPlugin } from "#/plugins/BrowserModuleInfoPlugin.js";
-import { BrowserRequestInfoPlugin } from "#/plugins/BrowserRequestInfoPlugin.js";
+import { BrowserErrorPlugin } from "./plugins/BrowserErrorPlugin.js";
+import { BrowserGlobalHandlerPlugin } from "./plugins/BrowserGlobalHandlerPlugin.js";
+import { BrowserIgnoreExtensionErrorsPlugin } from "./plugins/BrowserIgnoreExtensionErrorsPlugin.js";
+import { BrowserLifeCyclePlugin } from "./plugins/BrowserLifeCyclePlugin.js";
+import { BrowserModuleInfoPlugin } from "./plugins/BrowserModuleInfoPlugin.js";
+import { BrowserRequestInfoPlugin } from "./plugins/BrowserRequestInfoPlugin.js";
 
 export class BrowserExceptionlessClient extends ExceptionlessClient {
   public async startup(configurationOrApiKey?: (config: Configuration) => void | string): Promise<void> {

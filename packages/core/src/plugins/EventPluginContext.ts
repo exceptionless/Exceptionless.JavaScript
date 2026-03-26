@@ -1,7 +1,7 @@
-import { ExceptionlessClient } from "#/ExceptionlessClient.js";
-import { ILog } from "#/logging/ILog.js";
-import { Event } from "#/models/Event.js";
-import { EventContext } from "#/models/EventContext.js";
+import { ExceptionlessClient } from "../ExceptionlessClient.js";
+import { ILog } from "../logging/ILog.js";
+import { Event } from "../models/Event.js";
+import { EventContext } from "../models/EventContext.js";
 
 export class EventPluginContext {
   public cancelled: boolean = false;

@@ -1,4 +1,4 @@
-import { Configuration } from "#/configuration/Configuration.js";
+import { Configuration } from "../configuration/Configuration.js";
 
 export class ServerSettings {
   constructor(

@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, test } from "vitest";
 
-import { IStorage } from "#/storage/IStorage.js";
+import { IStorage } from "../../src/storage/IStorage.js";
 
 export function describeStorage(name: string, storageFactory: () => IStorage, afterEachCallback?: () => void, beforeEachCallback?: () => void): void {
   describe(name, () => {
