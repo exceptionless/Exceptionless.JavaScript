@@ -31,8 +31,8 @@ This sticks to the native Next.js file boundaries instead of inventing another f
 
 - The server helper flushes the Exceptionless queue explicitly. That matters for short-lived serverless runtimes where a background timer may not get enough time to send queued events.
 - The route handler uses `after()` so normal server logs flush after the response is sent.
-- The example locally aliases `source-map` to `false` in `next.config.mjs` so an unused `stacktrace-gps` AMD branch does not leak a `source-map` dependency into `@exceptionless/browser`.
-- The helper files import the built ESM bundles from `packages/browser/dist/index.bundle.js` and `packages/node/dist/index.bundle.js` because the package entrypoints still re-export internal `#/*` imports. The example also uses `--webpack` because Turbopack currently rejects the node bundle during page data collection on `node-localstorage`'s dynamic `require`.
+- The example imports `@exceptionless/browser` and `@exceptionless/node` directly and uses the default Next.js bundler behavior, which is Turbopack on Next 16.
+- Because this is a workspace example, you still need the root `npm run build` step before starting it locally so the SDK packages have fresh `dist/` output.
 - If we later package this for production ergonomics, the clean split is likely a very thin `@exceptionless/nextjs` helper for framework hooks plus an optional `@exceptionless/vercel` add-on for `@vercel/otel`, deployment metadata, and queue-flush helpers.
 
 ### Environment variables
