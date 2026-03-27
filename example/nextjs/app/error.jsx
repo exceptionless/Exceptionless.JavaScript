@@ -11,10 +11,7 @@ export default function ErrorPage({ error, reset }) {
       void (async () => {
         try {
           await startup();
-          await Exceptionless.createException(error)
-            .addTags("error-boundary")
-            .setProperty("handledBy", "app/error.jsx")
-            .submit();
+          await Exceptionless.createException(error).addTags("error-boundary").setProperty("handledBy", "app/error.jsx").submit();
         } catch (submitError) {
           console.error("Exceptionless route boundary capture failed", submitError);
         }
