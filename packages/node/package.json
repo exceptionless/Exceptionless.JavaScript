@@ -24,14 +24,12 @@
   },
   "license": "Apache-2.0",
   "type": "module",
-  "main": "dist/index.bundle.js",
+  "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "unpkg": "dist/index.bundle.min.js",
+  "jsdelivr": "dist/index.bundle.min.js",
   "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "source": "./src/index.ts",
-      "default": "./dist/index.bundle.js"
-    },
+    ".": "./dist/index.js",
     "./package.json": "./package.json"
   },
   "engines": {
