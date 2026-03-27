@@ -12,3 +12,5 @@ packages/node/test-data
 
 yarn.lock
 .exceptionless
+
+example/nextjs/.next/

@@ -58,6 +58,13 @@ export default defineConfig({
             "@exceptionless/core": path.resolve(__dirname, "packages/core/src")
           }
         }
+      },
+      {
+        test: {
+          name: "nextjs-example",
+          root: "example/nextjs",
+          environment: "node"
+        }
       }
     ]
   }
