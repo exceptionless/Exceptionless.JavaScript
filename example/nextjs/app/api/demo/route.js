@@ -15,9 +15,7 @@ export async function POST(request) {
   const { Exceptionless, KnownEventDataKeys } = await startup();
 
   const builder = Exceptionless.createLog("nextjs.route", "Route handler log from the demo page", "info").addTags("route-handler");
-
   builder.setContextProperty(KnownEventDataKeys.RequestInfo, buildRequestContextFromRequest(request, body));
-
   await builder.submit();
 
   after(async () => {
