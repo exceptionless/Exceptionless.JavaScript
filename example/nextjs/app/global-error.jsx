@@ -14,7 +14,6 @@ export default function GlobalError({ error, reset }) {
           await Exceptionless.createException(error)
             .addTags("error-boundary")
             .setProperty("handledBy", "app/global-error.jsx")
-            .setProperty("digest", error.digest)
             .submit();
         } catch (submitError) {
           console.error("Exceptionless global boundary capture failed", submitError);

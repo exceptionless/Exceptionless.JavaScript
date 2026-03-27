@@ -6,12 +6,14 @@ let startupPromise;
 
 export async function startup() {
   startupPromise ??= Exceptionless.startup((config) => {
-    if (process.env.EXCEPTIONLESS_API_KEY ?? process.env.NEXT_PUBLIC_EXCEPTIONLESS_API_KEY) {
-      config.apiKey = process.env.EXCEPTIONLESS_API_KEY ?? process.env.NEXT_PUBLIC_EXCEPTIONLESS_API_KEY;
+    const apiKey = (process.env.EXCEPTIONLESS_API_KEY || process.env.NEXT_PUBLIC_EXCEPTIONLESS_API_KEY || "").trim();
+    if (apiKey) {
+      config.apiKey = apiKey;
     }
 
-    if (process.env.EXCEPTIONLESS_SERVER_URL ?? process.env.NEXT_PUBLIC_EXCEPTIONLESS_SERVER_URL) {
-      config.serverUrl = process.env.EXCEPTIONLESS_SERVER_URL ?? process.env.NEXT_PUBLIC_EXCEPTIONLESS_SERVER_URL;
+    const serverUrl = (process.env.EXCEPTIONLESS_SERVER_URL || process.env.NEXT_PUBLIC_EXCEPTIONLESS_SERVER_URL || "").trim();
+    if (serverUrl) {
+      config.serverUrl = serverUrl;
     }
 
     if (process.env.NODE_ENV !== "production") {

@@ -14,7 +14,6 @@ export default function ErrorPage({ error, reset }) {
           await Exceptionless.createException(error)
             .addTags("error-boundary")
             .setProperty("handledBy", "app/error.jsx")
-            .setProperty("digest", error.digest)
             .submit();
         } catch (submitError) {
           console.error("Exceptionless route boundary capture failed", submitError);
