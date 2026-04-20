@@ -627,6 +627,10 @@ describe("Utils", () => {
   test("should parse semantic version labels without regex backtracking", () => {
     expect(parseVersion("release/v1.2.3-rc.1+build.5/index.js")).toBe("v1.2.3-rc.1+build.5");
     expect(parseVersion("release-1.2.3-.js")).toBe("1.2.3");
+    expect(parseVersion("1.2.3-")).toBe("1.2.3");
+    expect(parseVersion("1.2.3+")).toBe("1.2.3");
+    expect(parseVersion("1.2.3-rc.")).toBe("1.2.3-rc");
+    expect(parseVersion("1.2.3-rc.1+build.")).toBe("1.2.3-rc.1+build");
   });
 
   test("should generate guids without Math.random", () => {

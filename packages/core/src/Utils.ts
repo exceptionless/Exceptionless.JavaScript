@@ -88,6 +88,7 @@ function readDigits(input: string, start: number): number {
 
 function readVersionIdentifiers(input: string, start: number): number {
   let index = start;
+  let lastValidEnd = -1;
   while (index < input.length) {
     const segmentStart = index;
     while (index < input.length && isVersionIdentifierCode(input.charCodeAt(index))) {
@@ -95,8 +96,10 @@ function readVersionIdentifiers(input: string, start: number): number {
     }
 
     if (index === segmentStart) {
-      return -1;
+      return lastValidEnd;
     }
+
+    lastValidEnd = index;
 
     if (input[index] !== ".") {
       return index;
@@ -105,7 +108,7 @@ function readVersionIdentifiers(input: string, start: number): number {
     index++;
   }
 
-  return index;
+  return lastValidEnd;
 }
 
 export function parseVersion(source: string): string | null {
