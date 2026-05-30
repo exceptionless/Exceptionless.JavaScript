@@ -5,7 +5,7 @@ import vitest from "@vitest/eslint-plugin";
 import tseslint from "typescript-eslint";
 
 export default defineConfig(
-  { ignores: ["**/dist/", "**/node_modules/", ".agents/", "example/"] },
+  { ignores: ["**/dist/", "**/node_modules/", ".agents/", "example/", "**/expo-plugin/", "**/react-native.config.*"] },
   eslint.configs.recommended,
   {
     extends: tseslint.configs.recommendedTypeChecked,

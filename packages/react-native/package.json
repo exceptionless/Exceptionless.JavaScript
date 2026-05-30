@@ -1,0 +1,63 @@
+{
+  "name": "@exceptionless/react-native",
+  "version": "3.0.0-dev",
+  "description": "React Native client for Exceptionless with native iOS crash reporting",
+  "author": {
+    "name": "exceptionless",
+    "url": "https://exceptionless.com"
+  },
+  "keywords": [
+    "exceptionless",
+    "error",
+    "crash",
+    "reporting",
+    "react-native",
+    "expo",
+    "ios"
+  ],
+  "repository": {
+    "url": "git://github.com/exceptionless/Exceptionless.JavaScript.git",
+    "type": "git"
+  },
+  "bugs": {
+    "url": "https://github.com/exceptionless/Exceptionless.JavaScript/issues"
+  },
+  "license": "Apache-2.0",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": "./dist/index.js",
+    "./expo-plugin": "./expo-plugin/index.cjs",
+    "./package.json": "./package.json"
+  },
+  "react-native": "dist/index.js",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "watch": "tsc -p tsconfig.json -w --preserveWatchOutput",
+    "test": "cd ../.. && vitest run --project react-native",
+    "test:watch": "cd ../.. && vitest --project react-native"
+  },
+  "files": [
+    "dist",
+    "ios",
+    "expo-plugin",
+    "exceptionless-react-native.podspec",
+    "react-native.config.cjs"
+  ],
+  "sideEffects": false,
+  "publishConfig": {
+    "access": "public"
+  },
+  "peerDependencies": {
+    "react": ">=18.0.0",
+    "react-native": ">=0.71.0",
+    "@react-native-async-storage/async-storage": ">=1.19.0"
+  },
+  "dependencies": {
+    "@exceptionless/core": "3.0.0-dev"
+  },
+  "devDependencies": {
+    "@types/react": "^19.2.14"
+  }
+}

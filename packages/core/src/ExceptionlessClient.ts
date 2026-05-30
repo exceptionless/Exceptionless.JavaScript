@@ -17,7 +17,7 @@ export class ExceptionlessClient {
   public constructor(public config: Configuration = new Configuration()) {}
 
   /** Resume background submission, resume any timers. */
-  public async startup(configurationOrApiKey?: (config: Configuration) => void | string): Promise<void> {
+  public async startup(configurationOrApiKey?: ((config: Configuration) => void) | string): Promise<void> {
     if (configurationOrApiKey && !this._initialized) {
       this._initialized = true;
 

@@ -1,6 +1,6 @@
 ---
 name: exceptionless-javascript
-description: Use this skill when a developer wants to install, configure, troubleshoot, or integrate Exceptionless JavaScript clients for browser, Node.js, React, Vue, AngularJS, Express, Next.js, SvelteKit, or custom runtimes. Use it for API keys, startup, self-hosting, sending errors/logs/feature usage/404/custom events, indexed event properties, sessions, heartbeats, user identity, PII/data exclusions, plugins, runtime client configuration values, queues, and production setup even if they only ask "how do I wire up Exceptionless?"
+description: Use this skill when a developer wants to install, configure, troubleshoot, or integrate Exceptionless JavaScript clients for browser, Node.js, React, React Native, Expo, Vue, AngularJS, Express, Next.js, SvelteKit, or custom runtimes. Use it for API keys, startup, self-hosting, sending errors/logs/feature usage/404/custom events, indexed event properties, sessions, heartbeats, user identity, PII/data exclusions, plugins, runtime client configuration values, queues, native crash reporting, and production setup even if they only ask "how do I wire up Exceptionless?"
 ---
 
 # Exceptionless JavaScript SDK
@@ -38,6 +38,7 @@ Read only the reference that matches the user's runtime, then add shared referen
 - `@exceptionless/browser`: [references/client-browser.md](references/client-browser.md)
 - `@exceptionless/node`: [references/client-node.md](references/client-node.md)
 - `@exceptionless/react`: [references/client-react.md](references/client-react.md)
+- `@exceptionless/react-native`: [references/client-react-native.md](references/client-react-native.md)
 - `@exceptionless/vue`: [references/client-vue.md](references/client-vue.md)
 - `@exceptionless/angularjs`: [references/client-angularjs.md](references/client-angularjs.md)
 - Sending events: [references/sending-events.md](references/sending-events.md)
@@ -52,6 +53,8 @@ Read only the reference that matches the user's runtime, then add shared referen
 
 - Use `Exceptionless.startup(...)` once during app startup. `startup()` with no args is used later by lifecycle plugins to resume timers/queue processing.
 - Use the singleton from the platform package when automatic capture matters. Create `ExceptionlessClient` manually only for custom pipelines or tests.
+- For React Native or Expo apps, use `@exceptionless/react-native`; do not substitute `@exceptionless/browser` or `@exceptionless/react`.
+- In Expo, add `@exceptionless/react-native/expo-plugin` when native iOS crash reporting is expected. Expo Go can report JavaScript errors but cannot load the native crash reporter.
 - `submitException` and `createException` take an `Error`. For unknown caught values, use exported `toError(value)` when available.
 - `markAsCritical()` marks the event critical; `markAsCritical(false)` leaves tags unchanged.
 - `config.serverUrl` also sets `configServerUrl` and `heartbeatServerUrl`; assign custom endpoint overrides after setting `serverUrl`.
@@ -80,4 +83,7 @@ Verify behavior in:
 - `packages/core/src/submission/DefaultSubmissionClient.ts`
 - `packages/browser/src/BrowserExceptionlessClient.ts`
 - `packages/node/src/NodeExceptionlessClient.ts`
+- `packages/react-native/src/ReactNativeExceptionlessClient.ts`
+- `packages/react-native/src/plugins/ReactNativeErrorPlugin.ts`
+- `packages/react-native/src/plugins/NativeCrashPlugin.ts`
 - Package READMEs and `example/` apps.

@@ -3,6 +3,9 @@
 node_modules
 minver
 example/svelte-kit/.svelte-kit
+example/expo/.expo
+example/expo/android
+example/expo/ios
 
 # Ignore files for PNPM, NPM and YARN
 package-lock.json

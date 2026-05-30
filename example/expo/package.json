@@ -1,0 +1,45 @@
+{
+  "name": "expo-example",
+  "private": true,
+  "version": "3.0.0-dev",
+  "main": "./index.js",
+  "scripts": {
+    "start": "expo start --dev-client --localhost",
+    "start:ios": "expo start --dev-client --ios --localhost",
+    "start:web": "expo start --web",
+    "ios": "REACT_NATIVE_PACKAGER_HOSTNAME=localhost expo run:ios",
+    "web": "expo export --platform web",
+    "prebuild": "expo prebuild --clean --no-install",
+    "android": "expo run:android"
+  },
+  "dependencies": {
+    "@exceptionless/react-native": "3.0.0-dev",
+    "@expo/metro-runtime": "~56.0.13",
+    "@react-native-async-storage/async-storage": "2.2.0",
+    "@react-navigation/bottom-tabs": "^7.15.9",
+    "@react-navigation/native": "^7.1.8",
+    "expo": "~56.0.8",
+    "expo-application": "~56.0.3",
+    "expo-constants": "~56.0.16",
+    "expo-dev-client": "~56.0.18",
+    "expo-device": "~56.0.4",
+    "expo-glass-effect": "~56.0.4",
+    "expo-splash-screen": "~56.0.10",
+    "expo-status-bar": "~56.0.4",
+    "react": "19.2.3",
+    "react-dom": "19.2.3",
+    "react-native": "0.85.3",
+    "react-native-safe-area-context": "~5.7.0",
+    "react-native-screens": "4.25.2",
+    "react-native-web": "^0.21.0"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.26.0",
+    "@react-native/js-polyfills": "^0.79.6",
+    "@types/react": "~19.2.10",
+    "typescript": "~6.0.3"
+  },
+  "publishConfig": {
+    "access": "restricted"
+  }
+}

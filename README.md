@@ -10,7 +10,7 @@ The definition of the word exceptionless is: to be without exception. Exceptionl
 
 You can install the npm package via `npm install @exceptionless/browser --save`
 or via cdn [`https://unpkg.com/@exceptionless/browser`](https://unpkg.com/@exceptionless/browser).
-Next, you just need to call startup during your apps startup to automatically
+Next, you just need to call startup during your app's startup to automatically
 capture unhandled errors.
 
 ```js
@@ -38,7 +38,7 @@ try {
 ## Node
 
 You can install the npm package via `npm install @exceptionless/node --save`.
-Next, you just need to call startup during your apps startup to automatically
+Next, you just need to call startup during your app's startup to automatically
 capture unhandled errors.
 
 ```js
@@ -60,6 +60,29 @@ try {
   throw new Error("test");
 } catch (error) {
   await Exceptionless.submitException(error);
+}
+```
+
+## React Native / Expo
+
+You can install the npm package via
+`npm install @exceptionless/react-native @react-native-async-storage/async-storage`.
+Next, you just need to call startup during your apps startup to automatically
+capture unhandled errors, promise rejections, and native iOS crashes.
+
+```tsx
+import { Exceptionless, toError } from "@exceptionless/react-native";
+
+await Exceptionless.startup((c) => {
+  c.apiKey = "API_KEY_HERE";
+  c.setUserIdentity("12345678", "Blake");
+  c.defaultTags.push("Example", "React Native");
+});
+
+try {
+  throw new Error("test");
+} catch (error) {
+  await Exceptionless.submitException(toError(error));
 }
 ```
 

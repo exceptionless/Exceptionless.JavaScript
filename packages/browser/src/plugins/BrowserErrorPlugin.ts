@@ -12,6 +12,9 @@ import {
 
 import { fromError, StackFrame } from "stacktrace-js";
 
+const ReactComponentStackContextKey = "@@_ComponentStack";
+const ReactComponentStackDataKey = "@component_stack";
+
 export class BrowserErrorPlugin implements IEventPlugin {
   public priority = 30;
   public name = "BrowserErrorPlugin";
@@ -34,6 +37,12 @@ export class BrowserErrorPlugin implements IEventPlugin {
             }
 
             result.data["@ext"] = JSON.parse(additionalData);
+          }
+
+          const componentStack = context.eventContext[ReactComponentStackContextKey];
+          if (typeof componentStack === "string" && componentStack) {
+            result.data = result.data ?? {};
+            result.data[ReactComponentStackDataKey] = componentStack;
           }
 
           context.event.data[KnownEventDataKeys.Error] = result;

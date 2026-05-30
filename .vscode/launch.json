@@ -2,6 +2,17 @@
   "version": "0.2.0",
   "configurations": [
     {
+      "name": "Expo iOS Example",
+      "request": "launch",
+      "type": "node",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "ios", "--workspace=example/expo"],
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen",
+      "cwd": "${workspaceRoot}",
+      "skipFiles": ["<node_internals>/**"]
+    },
+    {
       "name": "Express",
       "program": "${workspaceRoot}/example/express/app.js",
       "request": "launch",

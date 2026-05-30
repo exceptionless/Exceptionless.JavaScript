@@ -111,6 +111,16 @@ describe("BrowserErrorPlugin", () => {
       const additionalData = getAdditionalData(context.event);
       expect(additionalData).toBeUndefined();
     });
+
+    test("should attach React component stack to error data", async () => {
+      const componentStack = "\n    at CrashyComponent (http://localhost:3000/index.js:10:20)";
+      context.eventContext["@@_ComponentStack"] = componentStack;
+
+      await processError(new Error("Component crashed"));
+
+      expect(getError(context.event)?.data?.["@component_stack"]).toBe(componentStack);
+      expect(context.event.data?.componentStack).toBeUndefined();
+    });
   });
 });
 

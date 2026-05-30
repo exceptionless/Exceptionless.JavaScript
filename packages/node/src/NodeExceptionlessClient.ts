@@ -10,7 +10,7 @@ import { NodeRequestInfoPlugin } from "./plugins/NodeRequestInfoPlugin.js";
 import { NodeWrapFunctions } from "./plugins/NodeWrapFunctions.js";
 
 export class NodeExceptionlessClient extends ExceptionlessClient {
-  public async startup(configurationOrApiKey?: (config: Configuration) => void | string): Promise<void> {
+  public async startup(configurationOrApiKey?: ((config: Configuration) => void) | string): Promise<void> {
     const config = this.config;
 
     if (configurationOrApiKey && !this._initialized) {
