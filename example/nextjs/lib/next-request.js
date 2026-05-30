@@ -15,7 +15,7 @@ export function buildRequestContextFromOnRequestError(request) {
   });
 }
 
-export function buildRequestContext({ method, pathOrUrl, headers, body }) {
+function buildRequestContext({ method, pathOrUrl, headers, body }) {
   const normalizedHeaders = normalizeHeaders(headers);
   const origin = getOrigin(normalizedHeaders);
   const url = new URL(pathOrUrl, origin);

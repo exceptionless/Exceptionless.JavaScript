@@ -33,7 +33,7 @@ describe("ConfigurationDefaultsPlugin", () => {
         client.config.addDataExclusions(...dataExclusions);
       }
 
-      const ev: Event = <Event>{ type: "log", source: "test", data: {} };
+      const ev: Event = { type: "log", source: "test", data: {} };
 
       const context = new EventPluginContext(client, ev, new EventContext());
       const plugin = new ConfigurationDefaultsPlugin();

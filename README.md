@@ -150,9 +150,9 @@ import { Exceptionless } from "@exceptionless/browser";
 await Exceptionless.submitLog("Logging made easy");
 
 // You can also specify the log source and log level.
-// We recommend specifying one of the following log levels: Trace, Debug, Info, Warn, Error
-await Exceptionless.submitLog("app.logger", "This is so easy", "Info");
-await Exceptionless.createLog("app.logger", "This is so easy", "Info").addTags("Exceptionless").submit();
+// We recommend specifying one of the following log levels: trace, debug, info, warn, error
+await Exceptionless.submitLog("app.logger", "This is so easy", "info");
+await Exceptionless.createLog("app.logger", "This is so easy", "info").addTags("Exceptionless").submit();
 
 // Submit feature usages
 await Exceptionless.submitFeatureUsage("MyFeature");
@@ -163,7 +163,7 @@ await Exceptionless.submitNotFound("/somepage");
 await Exceptionless.createNotFound("/somepage").addTags("Exceptionless").submit();
 
 // Submit a custom event type
-await Exceptionless.submitEvent({ message = "Low Fuel", type = "racecar", source = "Fuel System" });
+await Exceptionless.submitEvent({ message: "Low Fuel", type: "racecar", source: "Fuel System" });
 ```
 
 #### Manually submitting Errors

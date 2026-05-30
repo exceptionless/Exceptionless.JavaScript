@@ -2,7 +2,6 @@ import { describe, expect, test } from "vitest";
 
 import { ExceptionlessClient } from "../../../src/ExceptionlessClient.js";
 import { Event, EventType, KnownEventDataKeys, LogLevel } from "../../../src/models/Event.js";
-import { InnerErrorInfo } from "../../../src/models/data/ErrorInfo.js";
 import { EventExclusionPlugin } from "../../../src/plugins/default/EventExclusionPlugin.js";
 import { EventPluginContext } from "../../../src/plugins/EventPluginContext.js";
 import { EventContext } from "../../../src/models/EventContext.js";
@@ -199,7 +198,7 @@ describe("EventExclusionPlugin", () => {
         {
           type: "error",
           data: {
-            "@error": <InnerErrorInfo>{
+            "@error": {
               type: "ReferenceError",
               message: "This is a test",
               stack_trace: []

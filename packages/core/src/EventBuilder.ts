@@ -194,7 +194,7 @@ export class EventBuilder {
     return this;
   }
 
-  public markAsCritical(critical: boolean): EventBuilder {
+  public markAsCritical(critical: boolean = true): EventBuilder {
     if (critical) {
       this.addTags("Critical");
     }

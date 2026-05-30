@@ -1,6 +1,6 @@
 ## Exceptionless React Example
 
-This example shows how to use the `@exceptionless/react` package. There is both a class component example (App.js) and a function component example with hooks (HooksExampleApp.js).
+This example shows how to use the `@exceptionless/react` package with an error boundary around a component that can throw during render.
 
 The package includes [error boundary support](https://reactjs.org/docs/error-boundaries.html) which means uncaught errors inside your components will automatically be sent to Exceptionless.
 

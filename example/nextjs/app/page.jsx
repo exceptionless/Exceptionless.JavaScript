@@ -1,5 +1,10 @@
 import ClientDemoPanel from "../components/ClientDemoPanel.jsx";
 
+export const metadata = {
+  title: "Exceptionless Next.js Example",
+  description: "Client and server Exceptionless integration demo for the Next.js App Router."
+};
+
 export default function HomePage() {
   const deploymentTarget = process.env.VERCEL_ENV ?? "local";
 
