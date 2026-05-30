@@ -223,7 +223,7 @@ instance. This is configured by setting the `serverUrl` on the default
 ```js
 await Exceptionless.startup((c) => {
   c.apiKey = "API_KEY_HERE";
-  c.serverUrl = "https://localhost:5100";
+  c.serverUrl = "https://ex.dev.localhost:7111";
 });
 ```
 

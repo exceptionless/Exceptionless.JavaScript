@@ -72,10 +72,10 @@ describe("ExceptionlessClient", () => {
   test("should allow construction via a configuration object", () => {
     const client = new ExceptionlessClient();
     client.config.apiKey = "UNIT_TEST_API_KEY";
-    client.config.serverUrl = "https://localhost:5100";
+    client.config.serverUrl = "https://ex.dev.localhost:7111";
 
     expect(client.config.apiKey).toBe("UNIT_TEST_API_KEY");
-    expect(client.config.serverUrl).toBe("https://localhost:5100");
+    expect(client.config.serverUrl).toBe("https://ex.dev.localhost:7111");
   });
 
   test("should allow construction via a constructor", async () => {
@@ -83,13 +83,13 @@ describe("ExceptionlessClient", () => {
 
     await client.startup((c) => {
       c.apiKey = "UNIT_TEST_API_KEY";
-      c.serverUrl = "https://localhost:5100";
+      c.serverUrl = "https://ex.dev.localhost:7111";
       c.updateSettingsWhenIdleInterval = -1;
     });
 
     await client.suspend();
     expect(client.config.apiKey).toBe("UNIT_TEST_API_KEY");
-    expect(client.config.serverUrl).toBe("https://localhost:5100");
+    expect(client.config.serverUrl).toBe("https://ex.dev.localhost:7111");
   });
 
   test("should create session identifiers without Math.random", async () => {
