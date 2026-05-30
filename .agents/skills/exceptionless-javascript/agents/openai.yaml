@@ -1,0 +1,4 @@
+interface:
+  display_name: "Exceptionless JavaScript"
+  short_description: "Configure Exceptionless JavaScript clients"
+  default_prompt: "Use $exceptionless-javascript to configure, document, or troubleshoot an Exceptionless JavaScript client."

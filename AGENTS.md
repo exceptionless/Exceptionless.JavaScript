@@ -137,6 +137,12 @@ All framework packages (`react`, `vue`, `angularjs`) depend on `browser`, which 
 - **Zero runtime dependencies in core**: The core package has no production `dependencies`
 - **CDN bundles**: Each package produces esbuild bundles (`dist/index.bundle.js`, `dist/index.bundle.min.js`) for unpkg/jsdelivr
 
+### Agent Skill Documentation
+
+- Treat `.agents/skills/exceptionless-javascript/` as part of the developer-facing documentation surface for third-party integrators.
+- When adding or changing public client features, configuration options, event APIs, plugins, session behavior, privacy/data exclusion behavior, framework setup, or troubleshooting guidance, update the skill and its references in the same change.
+- Keep skill examples complete, copyable, and source-accurate. Verify referenced APIs exist and prefer links to official docs for broad product concepts.
+
 ### Code Quality
 
 - Write complete, runnable code—no placeholders, TODOs, or `// existing code...` comments
