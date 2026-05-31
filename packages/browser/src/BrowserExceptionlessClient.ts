@@ -8,7 +8,7 @@ import { BrowserModuleInfoPlugin } from "./plugins/BrowserModuleInfoPlugin.js";
 import { BrowserRequestInfoPlugin } from "./plugins/BrowserRequestInfoPlugin.js";
 
 export class BrowserExceptionlessClient extends ExceptionlessClient {
-  public async startup(configurationOrApiKey?: (config: Configuration) => void | string): Promise<void> {
+  public async startup(configurationOrApiKey?: ((config: Configuration) => void) | string): Promise<void> {
     const config = this.config;
     if (configurationOrApiKey && !this._initialized) {
       config.useLocalStorage();

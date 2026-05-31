@@ -61,6 +61,27 @@ export default defineConfig({
       },
       {
         test: {
+          name: "react-native",
+          root: "packages/react-native",
+          environment: "jsdom",
+          environmentOptions: {
+            jsdom: {
+              url: "http://localhost/"
+            }
+          }
+        },
+        resolve: {
+          conditions: ["source"],
+          alias: {
+            "@exceptionless/core": path.resolve(__dirname, "packages/core/src"),
+            "@exceptionless/react-native": path.resolve(__dirname, "packages/react-native/src"),
+            "react-native": path.resolve(__dirname, "packages/react-native/test/__mocks__/react-native.ts"),
+            "@react-native-async-storage/async-storage": path.resolve(__dirname, "packages/react-native/test/__mocks__/async-storage.ts")
+          }
+        }
+      },
+      {
+        test: {
           name: "nextjs-example",
           root: "example/nextjs",
           environment: "node"

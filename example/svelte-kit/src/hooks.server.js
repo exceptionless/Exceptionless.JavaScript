@@ -2,7 +2,7 @@ import { Exceptionless, toError } from "@exceptionless/node";
 
 Exceptionless.startup((c) => {
   c.apiKey = "LhhP1C9gijpSKCslHHCvwdSIz298twx271nTest";
-  c.serverUrl = "https://localhost:5100";
+  c.serverUrl = "https://ex.dev.localhost:7111";
   c.useDebugLogger();
 
   c.defaultTags.push("Example", "svelte-kit", "server");
