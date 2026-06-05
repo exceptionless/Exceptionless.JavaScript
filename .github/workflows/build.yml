@@ -19,7 +19,7 @@ jobs:
     name: Node ${{ matrix.node_version }} on ${{ matrix.os }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v6.0.2
         with:
           fetch-depth: 0
       - name: Build Reason
