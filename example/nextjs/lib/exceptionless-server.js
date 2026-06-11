@@ -2,19 +2,15 @@ import { Exceptionless, KnownEventDataKeys, toError } from "@exceptionless/node"
 
 export { Exceptionless, KnownEventDataKeys, toError };
 
+const DEFAULT_API_KEY = "LhhP1C9gijpSKCslHHCvwdSIz298twx271nTest";
+const DEFAULT_SERVER_URL = "https://ex.dev.localhost:7111";
+
 let startupPromise;
 
 export async function startup() {
   startupPromise ??= Exceptionless.startup((config) => {
-    const apiKey = (process.env.EXCEPTIONLESS_API_KEY || process.env.NEXT_PUBLIC_EXCEPTIONLESS_API_KEY || "").trim();
-    if (apiKey) {
-      config.apiKey = apiKey;
-    }
-
-    const serverUrl = (process.env.EXCEPTIONLESS_SERVER_URL || process.env.NEXT_PUBLIC_EXCEPTIONLESS_SERVER_URL || "").trim();
-    if (serverUrl) {
-      config.serverUrl = serverUrl;
-    }
+    config.apiKey = (process.env.EXCEPTIONLESS_API_KEY || process.env.NEXT_PUBLIC_EXCEPTIONLESS_API_KEY || DEFAULT_API_KEY).trim();
+    config.serverUrl = (process.env.EXCEPTIONLESS_SERVER_URL || process.env.NEXT_PUBLIC_EXCEPTIONLESS_SERVER_URL || DEFAULT_SERVER_URL).trim();
 
     if (process.env.NODE_ENV !== "production") {
       config.useDebugLogger();

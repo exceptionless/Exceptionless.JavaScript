@@ -1,5 +1,5 @@
 import { Exceptionless, prune } from "../../node_modules/@exceptionless/browser/dist/index.bundle.js";
-import "/node_modules/jquery/dist/jquery.js";
+import "../../node_modules/jquery/dist/jquery.js";
 
 import { divide } from "./math.js";
 import { TextAreaLogger } from "./text-area-logger.js";

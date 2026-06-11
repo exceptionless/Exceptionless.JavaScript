@@ -1,13 +1,11 @@
-import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import { NavigationContainer } from "@react-navigation/native";
 import Constants from "expo-constants";
 import * as Device from "expo-device";
-import { GlassView } from "expo-glass-effect";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
 import { useEffect, useMemo, useState } from "react";
-import { Platform, StyleSheet, Text, View } from "react-native";
+import { Platform, Pressable, StyleSheet, Text, View } from "react-native";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
+import { Tabs, type TabSelectedEvent } from "react-native-screens";
 import { Exceptionless } from "@exceptionless/react-native";
 
 import { callbackLog, getLogEntries, subscribeToLogs } from "./logging";
@@ -15,19 +13,15 @@ import ErrorsScreen from "./screens/ErrorsScreen";
 import EventsScreen from "./screens/EventsScreen";
 import LogsScreen from "./screens/LogsScreen";
 
-type TabParamList = {
-  Errors: undefined;
-  Events: undefined;
-  Logs: undefined;
-};
+type TabKey = "Errors" | "Events" | "Logs";
 
-const Tab = createBottomTabNavigator<TabParamList>();
+const appTabs: Array<{ icon: string; key: TabKey; title: string }> = [
+  { icon: "exclamationmark.triangle", key: "Errors", title: "Errors" },
+  { icon: "tray.and.arrow.up", key: "Events", title: "Events" },
+  { icon: "list.bullet.rectangle", key: "Logs", title: "Logs" }
+];
 
 const serverUrl = getServerUrl();
-
-function TabIcon({ label, focused }: { label: string; focused: boolean }) {
-  return <Text style={[styles.tabIcon, focused && styles.tabIconFocused]}>{label}</Text>;
-}
 
 /**
  * Resolves the dev server URL based on the current platform.
@@ -87,6 +81,67 @@ function TopDiagnostics() {
   );
 }
 
+function NativeTabs() {
+  const [selectedTab, setSelectedTab] = useState<TabKey>("Errors");
+  const [baseProvenance, setBaseProvenance] = useState(0);
+  const navStateRequest = useMemo(() => ({ baseProvenance, selectedScreenKey: selectedTab }), [baseProvenance, selectedTab]);
+
+  const handleTabSelected = (event: { nativeEvent: TabSelectedEvent }) => {
+    setSelectedTab(event.nativeEvent.selectedScreenKey as TabKey);
+    setBaseProvenance(event.nativeEvent.provenance);
+  };
+
+  if (Platform.OS === "web") {
+    const ActiveScreen = selectedTab === "Errors" ? ErrorsScreen : selectedTab === "Events" ? EventsScreen : LogsScreen;
+
+    return (
+      <View style={styles.webTabs}>
+        <View style={styles.webTabContent}>
+          <ActiveScreen />
+        </View>
+        <View style={styles.webTabBar}>
+          {appTabs.map((tab) => (
+            <Pressable
+              key={tab.key}
+              accessibilityRole="tab"
+              accessibilityState={{ selected: selectedTab === tab.key }}
+              onPress={() => setSelectedTab(tab.key)}
+              style={styles.webTabButton}
+            >
+              <Text style={[styles.webTabLabel, selectedTab === tab.key && styles.webTabLabelActive]}>{tab.title}</Text>
+            </Pressable>
+          ))}
+        </View>
+      </View>
+    );
+  }
+
+  return (
+    <Tabs.Host
+      colorScheme="light"
+      ios={{
+        tabBarControllerMode: "tabBar",
+        tabBarMinimizeBehavior: "never",
+        tabBarTintColor: "#0f172a"
+      }}
+      nativeContainerStyle={styles.nativeTabsContainer}
+      navStateRequest={navStateRequest}
+      onTabSelected={handleTabSelected}
+      rejectStaleNavStateUpdates
+    >
+      {appTabs.map((tab) => {
+        const Screen = tab.key === "Errors" ? ErrorsScreen : tab.key === "Events" ? EventsScreen : LogsScreen;
+
+        return (
+          <Tabs.Screen ios={{ icon: { name: tab.icon, type: "sfSymbol" } }} key={tab.key} screenKey={tab.key} style={styles.nativeTabScreen} title={tab.title}>
+            <Screen />
+          </Tabs.Screen>
+        );
+      })}
+    </Tabs.Host>
+  );
+}
+
 export default function App() {
   useEffect(() => {
     void Exceptionless.startup((config) => {
@@ -101,47 +156,11 @@ export default function App() {
 
   return (
     <SafeAreaProvider>
-      <NavigationContainer>
-        <View style={styles.appShell}>
-          <TopDiagnostics />
-          <Tab.Navigator
-            screenOptions={{
-              headerShown: false,
-              tabBarActiveTintColor: "#0f172a",
-              tabBarInactiveTintColor: "#64748b",
-              tabBarLabelStyle: styles.tabLabel,
-              tabBarStyle: styles.tabBar,
-              tabBarBackground: () => <GlassView glassEffectStyle="regular" isInteractive style={StyleSheet.absoluteFill} tintColor="rgba(255,255,255,0.58)" />
-            }}
-          >
-            <Tab.Screen
-              name="Errors"
-              component={ErrorsScreen}
-              options={{
-                title: "Errors",
-                tabBarIcon: ({ focused }) => <TabIcon label="!" focused={focused} />
-              }}
-            />
-            <Tab.Screen
-              name="Events"
-              component={EventsScreen}
-              options={{
-                title: "Events",
-                tabBarIcon: ({ focused }) => <TabIcon label="|" focused={focused} />
-              }}
-            />
-            <Tab.Screen
-              name="Logs"
-              component={LogsScreen}
-              options={{
-                title: "Logs",
-                tabBarIcon: ({ focused }) => <TabIcon label="#" focused={focused} />
-              }}
-            />
-          </Tab.Navigator>
-        </View>
-        <StatusBar style="auto" />
-      </NavigationContainer>
+      <View style={styles.appShell}>
+        <TopDiagnostics />
+        <NativeTabs />
+      </View>
+      <StatusBar style="auto" />
     </SafeAreaProvider>
   );
 }
@@ -210,31 +229,40 @@ const styles = StyleSheet.create({
     lineHeight: 15,
     marginTop: 8
   },
-  tabBar: {
-    backgroundColor: "rgba(255,255,255,0.5)",
-    borderTopColor: "rgba(148,163,184,0.22)",
+  nativeTabsContainer: {
+    backgroundColor: "#fff"
+  },
+  nativeTabScreen: {
+    backgroundColor: "#fff"
+  },
+  webTabs: {
+    flex: 1
+  },
+  webTabBar: {
+    alignItems: "center",
+    backgroundColor: "rgba(255,255,255,0.92)",
+    borderTopColor: "#e5e7eb",
     borderTopWidth: StyleSheet.hairlineWidth,
-    elevation: 0,
-    height: 78,
-    paddingBottom: 14,
-    paddingTop: 8,
-    position: "absolute",
-    shadowColor: "#0f172a",
-    shadowOffset: { height: -4, width: 0 },
-    shadowOpacity: 0.08,
-    shadowRadius: 18
+    flexDirection: "row",
+    minHeight: 72,
+    paddingBottom: 12,
+    paddingTop: 8
   },
-  tabIcon: {
+  webTabButton: {
+    alignItems: "center",
+    flex: 1,
+    justifyContent: "center",
+    minHeight: 44
+  },
+  webTabContent: {
+    flex: 1
+  },
+  webTabLabel: {
     color: "#64748b",
-    fontSize: 18,
-    fontWeight: "800",
-    lineHeight: 20
-  },
-  tabIconFocused: {
-    color: "#0f172a"
-  },
-  tabLabel: {
     fontSize: 12,
     fontWeight: "700"
+  },
+  webTabLabelActive: {
+    color: "#0f172a"
   }
 });

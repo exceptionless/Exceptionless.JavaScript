@@ -37,7 +37,14 @@ This sticks to the native Next.js file boundaries instead of inventing another f
 
 ### Environment variables
 
-Set the env vars you want the example to use:
+By default, the example uses the same local development Exceptionless project as the other samples:
+
+```js
+c.apiKey = "LhhP1C9gijpSKCslHHCvwdSIz298twx271nTest";
+c.serverUrl = "https://ex.dev.localhost:7111";
+```
+
+Set these env vars if you want the example to use a different project or server:
 
 - `NEXT_PUBLIC_EXCEPTIONLESS_API_KEY`
 - `NEXT_PUBLIC_EXCEPTIONLESS_SERVER_URL`
