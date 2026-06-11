@@ -3,6 +3,7 @@ on: [push, pull_request]
 
 permissions:
   contents: read
+  id-token: write
   packages: write
 
 jobs:
@@ -83,8 +84,6 @@ jobs:
       - name: Publish Release Packages
         if: startsWith(github.ref, 'refs/tags/v') && matrix.os == 'ubuntu-latest'
         run: npm publish --workspaces --access public
-        env:
-          NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
       - name: Setup GitHub CI Node.js environment
         if: github.event_name != 'pull_request' && startsWith(github.ref, 'refs/heads/') && matrix.os == 'ubuntu-latest' && contains(steps.version.outputs.version, '-')
         uses: actions/setup-node@v6
