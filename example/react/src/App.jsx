@@ -37,13 +37,29 @@ function ExceptionlessExampleContent({ error, message, errorInfo, onThrowCompone
   );
 }
 
+function ErrorFallback({ onReset }) {
+  return (
+    <div className="App">
+      <header className="App-header">
+        <div className="container error-container">
+          <p className="error-eyebrow">Component error captured</p>
+          <h1 className="App-title">Something went wrong</h1>
+          <p>The error was submitted to Exceptionless. You can reset this sample and keep testing without refreshing the page.</p>
+          <button onClick={onReset}>Try again</button>
+        </div>
+      </header>
+    </div>
+  );
+}
+
 class App extends Component {
   constructor(props) {
     super(props);
     this.state = {
       error: false,
-      message: "",
-      errorInfo: ""
+      errorBoundaryKey: 0,
+      errorInfo: "",
+      message: ""
     };
   }
   async componentDidMount() {
@@ -58,6 +74,13 @@ class App extends Component {
 
   throwErrorInComponent = () => {
     this.setState({ error: true });
+  };
+
+  resetComponentError = () => {
+    this.setState((state) => ({
+      error: false,
+      errorBoundaryKey: state.errorBoundaryKey + 1
+    }));
   };
 
   submitMessage = async () => {
@@ -83,7 +106,7 @@ class App extends Component {
 
   render() {
     return (
-      <ExceptionlessErrorBoundary>
+      <ExceptionlessErrorBoundary key={this.state.errorBoundaryKey} fallback={<ErrorFallback onReset={this.resetComponentError} />}>
         <ExceptionlessExampleContent
           error={this.state.error}
           message={this.state.message}

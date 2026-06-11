@@ -27,7 +27,7 @@ class App extends Component {
 
   render() {
     return (
-      <ExceptionlessErrorBoundary>
+      <ExceptionlessErrorBoundary fallback={<div>Something went wrong.</div>}>
         <div>Application content</div>
       </ExceptionlessErrorBoundary>
     );

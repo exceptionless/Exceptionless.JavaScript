@@ -1,14 +1,18 @@
-import { Component, type ErrorInfo as ReactErrorInfo, type PropsWithChildren } from "react";
+import { Component, type ErrorInfo as ReactErrorInfo, type PropsWithChildren, type ReactNode } from "react";
 import { Exceptionless } from "@exceptionless/browser";
 
 const ReactComponentStackContextKey = "@@_ComponentStack";
 
-type ErrorState = {
-  hasError: boolean;
-};
+interface ErrorBoundaryProps {
+  fallback?: ReactNode;
+}
 
-export class ExceptionlessErrorBoundary extends Component<PropsWithChildren, ErrorState> {
-  constructor(props: Readonly<Record<PropertyKey, unknown>> | Record<PropertyKey, unknown>) {
+interface ErrorState {
+  hasError: boolean;
+}
+
+export class ExceptionlessErrorBoundary extends Component<PropsWithChildren<ErrorBoundaryProps>, ErrorState> {
+  constructor(props: Readonly<PropsWithChildren<ErrorBoundaryProps>>) {
     super(props);
     this.state = { hasError: false };
   }
@@ -17,7 +21,7 @@ export class ExceptionlessErrorBoundary extends Component<PropsWithChildren, Err
     return { hasError: true };
   }
 
-  async componentDidCatch(error: Error, errorInfo: ReactErrorInfo) {
+  async componentDidCatch(error: Error, errorInfo: ReactErrorInfo): Promise<void> {
     const builder = Exceptionless.createException(error);
     if (errorInfo.componentStack) {
       builder.setContextProperty(ReactComponentStackContextKey, errorInfo.componentStack);
@@ -26,9 +30,9 @@ export class ExceptionlessErrorBoundary extends Component<PropsWithChildren, Err
     await builder.submit();
   }
 
-  render() {
+  render(): ReactNode {
     if (this.state.hasError) {
-      return null;
+      return this.props.fallback ?? null;
     }
 
     return this.props.children;

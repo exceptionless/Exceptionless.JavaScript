@@ -33,6 +33,19 @@
   margin: auto;
 }
 
+.error-container {
+  max-width: 720px;
+}
+
+.error-eyebrow {
+  color: #61dafb;
+  font-size: 0.7em;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  margin-bottom: 0;
+  text-transform: uppercase;
+}
+
 @keyframes App-logo-spin {
   from {
     transform: rotate(0deg);
