@@ -10,10 +10,12 @@ import {
   isEmpty
 } from "@exceptionless/core";
 
-import { fromError, StackFrame } from "stacktrace-js";
+import StackTrace from "stacktrace-js";
+import type { StackFrame } from "stacktrace-js";
 
 const ReactComponentStackContextKey = "@@_ComponentStack";
 const ReactComponentStackDataKey = "@component_stack";
+const { fromError } = StackTrace;
 
 export class BrowserErrorPlugin implements IEventPlugin {
   public priority = 30;

@@ -14,16 +14,13 @@
   },
   "dependencies": {
     "@exceptionless/react-native": "3.0.0-dev",
-    "@expo/metro-runtime": "~56.0.13",
+    "@expo/metro-runtime": "~56.0.15",
     "@react-native-async-storage/async-storage": "2.2.0",
-    "@react-navigation/bottom-tabs": "^7.15.9",
-    "@react-navigation/native": "^7.1.8",
-    "expo": "~56.0.8",
+    "expo": "~56.0.11",
     "expo-application": "~56.0.3",
     "expo-constants": "~56.0.16",
-    "expo-dev-client": "~56.0.18",
+    "expo-dev-client": "~56.0.20",
     "expo-device": "~56.0.4",
-    "expo-glass-effect": "~56.0.4",
     "expo-splash-screen": "~56.0.10",
     "expo-status-bar": "~56.0.4",
     "react": "19.2.3",
@@ -34,7 +31,7 @@
     "react-native-web": "^0.21.0"
   },
   "devDependencies": {
-    "@babel/core": "^7.26.0",
+    "@babel/core": "^7.29.7",
     "@react-native/js-polyfills": "^0.79.6",
     "@types/react": "~19.2.10",
     "typescript": "~6.0.3"

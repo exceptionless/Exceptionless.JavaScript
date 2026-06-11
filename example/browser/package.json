@@ -7,8 +7,17 @@
   "type": "module",
   "author": "Exceptionless",
   "license": "Apache-2.0",
+  "scripts": {
+    "dev": "vite",
+    "start": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
   "publishConfig": {
     "access": "restricted"
+  },
+  "devDependencies": {
+    "vite": "^8.0.16"
   },
   "dependencies": {
     "@exceptionless/browser": "3.0.0-dev",

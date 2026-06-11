@@ -50,14 +50,15 @@
     "access": "public"
   },
   "peerDependencies": {
+    "@react-native-async-storage/async-storage": ">=1.19.0",
     "react": ">=18.0.0",
-    "react-native": ">=0.71.0",
-    "@react-native-async-storage/async-storage": ">=1.19.0"
+    "react-native": ">=0.71.0"
   },
   "dependencies": {
     "@exceptionless/core": "3.0.0-dev"
   },
   "devDependencies": {
-    "@types/react": "^19.2.14"
+    "@react-native-async-storage/async-storage": "^2.2.0",
+    "@types/react": "^19.2.16"
   }
 }

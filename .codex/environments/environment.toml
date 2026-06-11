@@ -1,0 +1,45 @@
+version = 1
+name = "Exceptionless.JavaScript"
+
+[setup]
+script = "npm ci"
+
+[[actions]]
+name = "Run Express Sample"
+icon = "run"
+command = "npm run dev --workspace=example/express"
+
+[[actions]]
+name = "Run Browser Sample"
+icon = "run"
+command = "npm run dev --workspace=example/browser"
+
+[[actions]]
+name = "Run Next.js Sample"
+icon = "run"
+command = "npm run dev --workspace=example/nextjs"
+
+[[actions]]
+name = "Run React Sample"
+icon = "run"
+command = "npm run start --workspace=example/react"
+
+[[actions]]
+name = "Run SvelteKit Sample"
+icon = "run"
+command = "npm run dev --workspace=example/svelte-kit"
+
+[[actions]]
+name = "Run Vue Sample"
+icon = "run"
+command = "npm run dev --workspace=example/vue"
+
+[[actions]]
+name = "Build All Packages"
+icon = "tool"
+command = "npm run build"
+
+[[actions]]
+name = "Run Tests"
+icon = "tool"
+command = "npm test"

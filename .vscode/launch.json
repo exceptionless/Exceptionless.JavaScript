@@ -2,7 +2,18 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Expo iOS Example",
+      "name": "Example: Browser",
+      "type": "node",
+      "request": "launch",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev", "--workspace=example/browser"],
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen",
+      "cwd": "${workspaceRoot}",
+      "skipFiles": ["<node_internals>/**"]
+    },
+    {
+      "name": "Example: Expo iOS",
       "request": "launch",
       "type": "node",
       "runtimeExecutable": "npm",
@@ -13,13 +24,56 @@
       "skipFiles": ["<node_internals>/**"]
     },
     {
-      "name": "Express",
+      "name": "Example: Express",
       "program": "${workspaceRoot}/example/express/app.js",
       "request": "launch",
-      "preLaunchTask": "npm: build",
       "cwd": "${workspaceRoot}/example/express",
       "skipFiles": ["<node_internals>/**"],
-      "type": "pwa-node"
+      "type": "node"
+    },
+    {
+      "name": "Example: Next.js",
+      "type": "node",
+      "request": "launch",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev", "--workspace=example/nextjs"],
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen",
+      "cwd": "${workspaceRoot}",
+      "skipFiles": ["<node_internals>/**"]
+    },
+    {
+      "name": "Example: React",
+      "type": "node",
+      "request": "launch",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "start", "--workspace=example/react"],
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen",
+      "cwd": "${workspaceRoot}",
+      "skipFiles": ["<node_internals>/**"]
+    },
+    {
+      "name": "Example: SvelteKit",
+      "type": "node",
+      "request": "launch",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev", "--workspace=example/svelte-kit"],
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen",
+      "cwd": "${workspaceRoot}",
+      "skipFiles": ["<node_internals>/**"]
+    },
+    {
+      "name": "Example: Vue",
+      "type": "node",
+      "request": "launch",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev", "--workspace=example/vue"],
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen",
+      "cwd": "${workspaceRoot}",
+      "skipFiles": ["<node_internals>/**"]
     },
     {
       "name": "Test",
@@ -29,7 +83,6 @@
       "args": ["--run"],
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen",
-      "disableOptimisticBPs": true,
       "windows": {
         "program": "${workspaceFolder}/node_modules/vitest/vitest.mjs"
       },
@@ -43,7 +96,6 @@
       "args": ["--run", "${fileBasenameNoExtension}"],
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen",
-      "disableOptimisticBPs": true,
       "windows": {
         "program": "${workspaceFolder}/node_modules/vitest/vitest.mjs"
       },
