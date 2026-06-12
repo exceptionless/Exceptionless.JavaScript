@@ -11,8 +11,8 @@
     "@exceptionless/browser": "3.0.0-dev",
     "@exceptionless/node": "3.0.0-dev",
     "next": "^16.2.7",
-    "react": "19.2.3",
-    "react-dom": "19.2.3"
+    "react": "19.2.7",
+    "react-dom": "19.2.7"
   },
   "type": "module",
   "publishConfig": {
