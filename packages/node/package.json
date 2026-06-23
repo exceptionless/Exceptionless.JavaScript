@@ -49,7 +49,7 @@
     "@types/node": "^25.9.1",
     "@types/node-localstorage": "^1.3.3",
     "@types/stack-trace": "^0.0.33",
-    "esbuild": "^0.28.0"
+    "esbuild": "^0.28.1"
   },
   "dependencies": {
     "@exceptionless/core": "3.0.0-dev",
