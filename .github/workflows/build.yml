@@ -20,7 +20,7 @@ jobs:
     name: Node ${{ matrix.node_version }} on ${{ matrix.os }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
       - name: Build Reason
@@ -44,12 +44,12 @@ jobs:
           node-version: ${{ matrix.node_version }}
           registry-url: "https://registry.npmjs.org"
       - name: Cache node_modules
-        uses: actions/cache@v5
+        uses: actions/cache@v5.0.5
         with:
           path: node_modules
           key: ${{ matrix.node_version }}-${{ runner.os }}-node-modules-${{ hashFiles('package-lock.json') }}
       - name: Setup .NET SDK for MinVer
-        uses: actions/setup-dotnet@v5
+        uses: actions/setup-dotnet@v5.3.0
         with:
           dotnet-version: "10.0.x"
       - name: Build Version
