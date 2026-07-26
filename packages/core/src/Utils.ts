@@ -116,7 +116,7 @@ export function parseVersion(source: string): string | null {
     return null;
   }
 
-  for (let index = 0; index < source.length; ) {
+  for (let index = 0; index < source.length;) {
     const start = index;
     let cursor = index;
 

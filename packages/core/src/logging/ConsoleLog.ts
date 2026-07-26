@@ -20,7 +20,7 @@ export class ConsoleLog implements ILog {
   private log(level: keyof Console, message: string) {
     if (console) {
       const msg = `Exceptionless:${new Date().toISOString()} [${level}] ${message}`;
-      const logFn = console[level] as (msg: string) => void;
+      const logFn = (console[level] as ((msg: string) => void) | undefined)?.bind(console);
       if (logFn) {
         logFn(msg);
       } else if (console["log"]) {
