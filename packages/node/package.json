@@ -46,7 +46,7 @@
     "access": "public"
   },
   "devDependencies": {
-    "@types/node": "^26.1.1",
+    "@types/node": "^26.1.2",
     "@types/node-localstorage": "^1.3.3",
     "@types/stack-trace": "^0.0.33",
     "esbuild": "^0.28.1"

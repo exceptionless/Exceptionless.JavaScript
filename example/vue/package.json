@@ -14,7 +14,7 @@
   "devDependencies": {
     "@vitejs/plugin-vue": "^6.0.8",
     "@vue/compiler-sfc": "^3.5.40",
-    "vite": "^8.1.5"
+    "vite": "^8.2.0"
   },
   "type": "module",
   "publishConfig": {
