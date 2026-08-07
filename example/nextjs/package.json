@@ -10,9 +10,9 @@
   "dependencies": {
     "@exceptionless/browser": "3.0.0-dev",
     "@exceptionless/node": "3.0.0-dev",
-    "next": "^16.2.7",
-    "react": "19.2.3",
-    "react-dom": "19.2.3"
+    "next": "^16.2.12",
+    "react": "19.2.8",
+    "react-dom": "19.2.8"
   },
   "type": "module",
   "publishConfig": {
