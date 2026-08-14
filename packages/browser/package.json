@@ -43,7 +43,7 @@
     "access": "public"
   },
   "devDependencies": {
-    "esbuild": "^0.28.0"
+    "esbuild": "^0.28.1"
   },
   "dependencies": {
     "@exceptionless/core": "3.0.0-dev",
