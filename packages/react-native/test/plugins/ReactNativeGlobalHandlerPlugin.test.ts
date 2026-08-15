@@ -23,10 +23,7 @@ describe("ReactNativeGlobalHandlerPlugin", () => {
 
   afterEach(async () => {
     const { Platform } = await import("react-native");
-    Object.defineProperty(Platform, "OS", {
-      value: "ios",
-      writable: true
-    });
+    Object.defineProperty(Platform, "OS", { value: "ios", writable: true });
     console.error = originalConsoleError;
     delete globalWithHandlers.ErrorUtils;
     delete globalWithHandlers.RN$handleException;
@@ -43,16 +40,10 @@ describe("ReactNativeGlobalHandlerPlugin", () => {
 
   test("should setup web handlers on web platform", async () => {
     const { Platform } = await import("react-native");
-    Object.defineProperty(Platform, "OS", {
-      value: "web",
-      writable: true
-    });
+    Object.defineProperty(Platform, "OS", { value: "web", writable: true });
 
     const addEventListenerSpy = vi.spyOn(window, "addEventListener");
-    await plugin.startup({
-      client,
-      log: client.config.services.log
-    });
+    await plugin.startup({ client, log: client.config.services.log });
 
     expect(addEventListenerSpy).toHaveBeenCalledWith("error", expect.any(Function));
     expect(addEventListenerSpy).toHaveBeenCalledWith("unhandledrejection", expect.any(Function));
@@ -60,20 +51,11 @@ describe("ReactNativeGlobalHandlerPlugin", () => {
 
   test("should not register handlers twice", async () => {
     const { Platform } = await import("react-native");
-    Object.defineProperty(Platform, "OS", {
-      value: "web",
-      writable: true
-    });
+    Object.defineProperty(Platform, "OS", { value: "web", writable: true });
 
     const addEventListenerSpy = vi.spyOn(window, "addEventListener");
-    await plugin.startup({
-      client,
-      log: client.config.services.log
-    });
-    await plugin.startup({
-      client,
-      log: client.config.services.log
-    });
+    await plugin.startup({ client, log: client.config.services.log });
+    await plugin.startup({ client, log: client.config.services.log });
 
     const errorCalls = addEventListenerSpy.mock.calls.filter(([event]) => event === "error");
     expect(errorCalls).toHaveLength(1);
@@ -81,10 +63,7 @@ describe("ReactNativeGlobalHandlerPlugin", () => {
 
   test("should preserve existing native ErrorUtils handler", async () => {
     const { Platform } = await import("react-native");
-    Object.defineProperty(Platform, "OS", {
-      value: "ios",
-      writable: true
-    });
+    Object.defineProperty(Platform, "OS", { value: "ios", writable: true });
 
     let registeredHandler: ((error: Error, isFatal?: boolean) => void) | undefined;
     const previousHandler = vi.fn();
@@ -96,10 +75,7 @@ describe("ReactNativeGlobalHandlerPlugin", () => {
     };
     const submitSpy = vi.spyOn(client, "submitUnhandledException").mockResolvedValue(undefined as never);
 
-    await plugin.startup({
-      client,
-      log: client.config.services.log
-    });
+    await plugin.startup({ client, log: client.config.services.log });
 
     const error = new Error("Unhandled native error");
     registeredHandler?.(error, true);
@@ -110,10 +86,7 @@ describe("ReactNativeGlobalHandlerPlugin", () => {
 
   test("should capture React Native promise rejections without swallowing the native handler", async () => {
     const { Platform } = await import("react-native");
-    Object.defineProperty(Platform, "OS", {
-      value: "ios",
-      writable: true
-    });
+    Object.defineProperty(Platform, "OS", { value: "ios", writable: true });
 
     globalWithHandlers.ErrorUtils = {
       getGlobalHandler: vi.fn(() => vi.fn()),
@@ -123,15 +96,10 @@ describe("ReactNativeGlobalHandlerPlugin", () => {
     globalWithHandlers.RN$handleException = previousNativeHandler;
     const submitSpy = vi.spyOn(client, "submitUnhandledException").mockResolvedValue(undefined as never);
 
-    await plugin.startup({
-      client,
-      log: client.config.services.log
-    });
+    await plugin.startup({ client, log: client.config.services.log });
 
     const rejection = new Error("Rejected from async work");
-    const reactNativeError = new Error('Uncaught (in promise, id: 0): "Error: Rejected from async work"', {
-      cause: rejection
-    });
+    const reactNativeError = new Error('Uncaught (in promise, id: 0): "Error: Rejected from async work"', { cause: rejection });
     const handled = globalWithHandlers.RN$handleException?.(reactNativeError, false, true);
 
     expect(submitSpy).toHaveBeenCalledWith(rejection, "ReactNative.promiseRejectionTracking");
@@ -141,10 +109,7 @@ describe("ReactNativeGlobalHandlerPlugin", () => {
 
   test("should wrap configurable React Native promise rejection handler when it is read-only", async () => {
     const { Platform } = await import("react-native");
-    Object.defineProperty(Platform, "OS", {
-      value: "ios",
-      writable: true
-    });
+    Object.defineProperty(Platform, "OS", { value: "ios", writable: true });
 
     globalWithHandlers.ErrorUtils = {
       getGlobalHandler: vi.fn(() => vi.fn()),
@@ -158,17 +123,10 @@ describe("ReactNativeGlobalHandlerPlugin", () => {
     });
     const submitSpy = vi.spyOn(client, "submitUnhandledException").mockResolvedValue(undefined as never);
 
-    await expect(
-      plugin.startup({
-        client,
-        log: client.config.services.log
-      })
-    ).resolves.toBeUndefined();
+    await expect(plugin.startup({ client, log: client.config.services.log })).resolves.toBeUndefined();
 
     const rejection = new Error("Rejected from async work");
-    const reactNativeError = new Error('Uncaught (in promise, id: 0): "Error: Rejected from async work"', {
-      cause: rejection
-    });
+    const reactNativeError = new Error('Uncaught (in promise, id: 0): "Error: Rejected from async work"', { cause: rejection });
     const handled = globalWithHandlers.RN$handleException?.(reactNativeError, false, true);
 
     expect(submitSpy).toHaveBeenCalledWith(rejection, "ReactNative.promiseRejectionTracking");
@@ -178,10 +136,7 @@ describe("ReactNativeGlobalHandlerPlugin", () => {
 
   test("should capture React Native promise rejections through console fallback when native handler cannot be wrapped", async () => {
     const { Platform } = await import("react-native");
-    Object.defineProperty(Platform, "OS", {
-      value: "ios",
-      writable: true
-    });
+    Object.defineProperty(Platform, "OS", { value: "ios", writable: true });
 
     globalWithHandlers.ErrorUtils = {
       getGlobalHandler: vi.fn(() => vi.fn()),
@@ -205,15 +160,10 @@ describe("ReactNativeGlobalHandlerPlugin", () => {
     const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
     const submitSpy = vi.spyOn(client, "submitUnhandledException").mockResolvedValue(undefined as never);
 
-    await plugin.startup({
-      client,
-      log: client.config.services.log
-    });
+    await plugin.startup({ client, log: client.config.services.log });
 
     const rejection = new Error("Rejected from async work");
-    const reactNativeError = new Error('Uncaught (in promise, id: 0): "Error: Rejected from async work"', {
-      cause: rejection
-    });
+    const reactNativeError = new Error('Uncaught (in promise, id: 0): "Error: Rejected from async work"', { cause: rejection });
     console.error(reactNativeError);
 
     expect(submitSpy).toHaveBeenCalledWith(rejection, "ReactNative.promiseRejectionTracking");
@@ -222,10 +172,7 @@ describe("ReactNativeGlobalHandlerPlugin", () => {
 
   test("should not capture every React Native nonfatal exception as a promise rejection", async () => {
     const { Platform } = await import("react-native");
-    Object.defineProperty(Platform, "OS", {
-      value: "ios",
-      writable: true
-    });
+    Object.defineProperty(Platform, "OS", { value: "ios", writable: true });
 
     globalWithHandlers.ErrorUtils = {
       getGlobalHandler: vi.fn(() => vi.fn()),
@@ -233,10 +180,7 @@ describe("ReactNativeGlobalHandlerPlugin", () => {
     };
     const submitSpy = vi.spyOn(client, "submitUnhandledException").mockResolvedValue(undefined as never);
 
-    await plugin.startup({
-      client,
-      log: client.config.services.log
-    });
+    await plugin.startup({ client, log: client.config.services.log });
 
     globalWithHandlers.RN$handleException?.(new Error("console.error from React Native"), false, false);
 

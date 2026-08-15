@@ -61,15 +61,9 @@ describe("documentation examples", () => {
     expect(builder.target.reference_id).toBe("order-12345678");
     expect(builder.target.tags).toEqual(["orders", "Critical"]);
     expect(builder.target.geo).toBe("43.595089,-88.444602");
-    expect(builder.target.data?.Order).toEqual({
-      id: "order-123",
-      quoteId: 123
-    });
+    expect(builder.target.data?.Order).toEqual({ id: "order-123", quoteId: 123 });
     expect(builder.target.data?.Quote).toBe(123);
-    expect(builder.target.data?.[KnownEventDataKeys.UserInfo]).toEqual({
-      identity: "user-123",
-      name: "Jane Doe"
-    });
+    expect(builder.target.data?.[KnownEventDataKeys.UserInfo]).toEqual({ identity: "user-123", name: "Jane Doe" });
     expect(builder.target.data?.[KnownEventDataKeys.UserDescription]).toEqual({
       email_address: "jane@example.com",
       description: "The submit button returned a blank page."

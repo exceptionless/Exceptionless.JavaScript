@@ -14,12 +14,8 @@ test("uses the build version environment variable", async () => {
   const version = "3.1.0-preview.feature.1";
 
   try {
-    await mkdir(path.join(rootDirectory, "packages/core/src/configuration"), {
-      recursive: true
-    });
-    await mkdir(path.join(rootDirectory, "example/browser"), {
-      recursive: true
-    });
+    await mkdir(path.join(rootDirectory, "packages/core/src/configuration"), { recursive: true });
+    await mkdir(path.join(rootDirectory, "example/browser"), { recursive: true });
 
     const files = [
       "package.json",
@@ -32,10 +28,7 @@ test("uses the build version environment variable", async () => {
 
     const { stdout } = await execFileAsync(process.execPath, [scriptPath], {
       cwd: rootDirectory,
-      env: {
-        ...process.env,
-        BUILD_VERSION: version
-      }
+      env: { ...process.env, BUILD_VERSION: version }
     });
 
     expect(stdout).toContain("Updated 5 version references");
@@ -46,9 +39,6 @@ test("uses the build version environment variable", async () => {
       })
     );
   } finally {
-    await rm(rootDirectory, {
-      recursive: true,
-      force: true
-    });
+    await rm(rootDirectory, { recursive: true, force: true });
   }
 });

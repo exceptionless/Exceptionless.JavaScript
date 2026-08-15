@@ -46,11 +46,7 @@ export class CallbackLog implements ILog {
   }
 
   private _emit(level: LogEntry["level"], message: string): void {
-    const entry: LogEntry = {
-      timestamp: new Date(),
-      level,
-      message
-    };
+    const entry: LogEntry = { timestamp: new Date(), level, message };
     for (const cb of this._callbacks) {
       try {
         cb(entry);

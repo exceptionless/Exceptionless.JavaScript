@@ -7,12 +7,7 @@ import type { LogEntry } from "../../src/logging/CallbackLog.js";
 
 describe("CallbackLog", () => {
   test("should forward messages to inner logger", () => {
-    const inner = {
-      trace: vi.fn(),
-      info: vi.fn(),
-      warn: vi.fn(),
-      error: vi.fn()
-    };
+    const inner = { trace: vi.fn(), info: vi.fn(), warn: vi.fn(), error: vi.fn() };
     const log = new CallbackLog(inner);
 
     log.trace("t");
@@ -55,12 +50,7 @@ describe("CallbackLog", () => {
   });
 
   test("should not break if subscriber throws", () => {
-    const inner = {
-      trace: vi.fn(),
-      info: vi.fn(),
-      warn: vi.fn(),
-      error: vi.fn()
-    };
+    const inner = { trace: vi.fn(), info: vi.fn(), warn: vi.fn(), error: vi.fn() };
     const log = new CallbackLog(inner);
     const good: LogEntry[] = [];
 

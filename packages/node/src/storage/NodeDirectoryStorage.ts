@@ -15,9 +15,7 @@ export class NodeDirectoryStorage implements IStorage {
       this.directory = resolve(directory);
     }
 
-    mkdirSync(this.directory, {
-      recursive: true
-    });
+    mkdirSync(this.directory, { recursive: true });
   }
 
   public async length(): Promise<number> {

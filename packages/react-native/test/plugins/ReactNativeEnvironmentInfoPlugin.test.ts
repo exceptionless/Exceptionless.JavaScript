@@ -7,14 +7,8 @@ import { ReactNativeEnvironmentInfoPlugin } from "../../src/plugins/ReactNativeE
 describe("ReactNativeEnvironmentInfoPlugin", () => {
   afterEach(async () => {
     const { Platform } = await import("react-native");
-    Object.defineProperty(Platform, "OS", {
-      value: "ios",
-      writable: true
-    });
-    Object.defineProperty(Platform, "Version", {
-      value: "18.0",
-      writable: true
-    });
+    Object.defineProperty(Platform, "OS", { value: "ios", writable: true });
+    Object.defineProperty(Platform, "Version", { value: "18.0", writable: true });
     Object.defineProperty(Platform, "constants", {
       value: {
         interfaceIdiom: "phone",
@@ -52,14 +46,8 @@ describe("ReactNativeEnvironmentInfoPlugin", () => {
 
   test("should add Android environment info without requiring Expo modules", async () => {
     const { Platform } = await import("react-native");
-    Object.defineProperty(Platform, "OS", {
-      value: "android",
-      writable: true
-    });
-    Object.defineProperty(Platform, "Version", {
-      value: 35,
-      writable: true
-    });
+    Object.defineProperty(Platform, "OS", { value: "android", writable: true });
+    Object.defineProperty(Platform, "Version", { value: 35, writable: true });
     Object.defineProperty(Platform, "constants", {
       value: {
         Brand: "google",
@@ -98,9 +86,7 @@ describe("ReactNativeEnvironmentInfoPlugin", () => {
 
   test("should not overwrite existing environment info", async () => {
     const plugin = new ReactNativeEnvironmentInfoPlugin();
-    const existing: EnvironmentInfo = {
-      o_s_name: "custom"
-    };
+    const existing: EnvironmentInfo = { o_s_name: "custom" };
     const context = createContext(existing);
 
     await plugin.run(context);
@@ -113,11 +99,7 @@ function createContext(environmentInfo?: EnvironmentInfo): EventPluginContext {
   return new EventPluginContext(
     new ExceptionlessClient(),
     {
-      data: environmentInfo
-        ? {
-            [KnownEventDataKeys.EnvironmentInfo]: environmentInfo
-          }
-        : {}
+      data: environmentInfo ? { [KnownEventDataKeys.EnvironmentInfo]: environmentInfo } : {}
     },
     new EventContext()
   );

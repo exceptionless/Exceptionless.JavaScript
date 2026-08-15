@@ -19,11 +19,7 @@ describe("EventExclusionPlugin", () => {
         client.config.settings[settingKey] = settingValue as string;
       }
 
-      const ev: Event = <Event>{
-        type: "log",
-        source,
-        data: {}
-      };
+      const ev: Event = <Event>{ type: "log", source, data: {} };
       if (ev.data && level) {
         ev.data[KnownEventDataKeys.Level] = level;
       }
@@ -71,11 +67,7 @@ describe("EventExclusionPlugin", () => {
         client.config.settings[settingKey] = settingValue as string;
       }
 
-      const ev: Event = <Event>{
-        type: "log",
-        source,
-        data: {}
-      };
+      const ev: Event = <Event>{ type: "log", source, data: {} };
       if (ev.data && level) {
         ev.data[KnownEventDataKeys.Level] = level;
       }
@@ -97,10 +89,7 @@ describe("EventExclusionPlugin", () => {
 
   describe("should resolve null and undefined log source levels in reverse settings order", () => {
     const plugin = new EventExclusionPlugin();
-    const settings: Record<string, string> = {
-      "@@log:": "info",
-      "@@log:*": "debug"
-    };
+    const settings: Record<string, string> = { "@@log:": "info", "@@log:*": "debug" };
 
     test("<undefined> (global min level: info)", () => expect(plugin.getMinLogLevel(settings, undefined)).toBe(2));
     test("<empty> (source min level: info)", () => expect(plugin.getMinLogLevel(settings, "")).toBe(2));
@@ -109,10 +98,7 @@ describe("EventExclusionPlugin", () => {
 
   describe("should resolve log source levels and respect settings order", () => {
     const plugin = new EventExclusionPlugin();
-    const settings = {
-      "@@log:*": "debug",
-      "@@log:": "info"
-    };
+    const settings = { "@@log:*": "debug", "@@log:": "info" };
 
     test("<empty> (source min level: info)", () => expect(plugin.getMinLogLevel(settings, "")).toBe(2));
     test("* (global min level: debug)", () => expect(plugin.getMinLogLevel(settings, "*")).toBe(1));
@@ -176,15 +162,7 @@ describe("EventExclusionPlugin", () => {
         client.config.settings[settingKey] = settingValue as string;
       }
 
-      const context = new EventPluginContext(
-        client,
-        <Event>{
-          type: <string>type,
-          source,
-          data: {}
-        },
-        new EventContext()
-      );
+      const context = new EventPluginContext(client, <Event>{ type: <string>type, source, data: {} }, new EventContext());
       const plugin = new EventExclusionPlugin();
       await plugin.run(context);
 

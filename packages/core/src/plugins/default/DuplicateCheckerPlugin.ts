@@ -39,7 +39,6 @@ export class DuplicateCheckerPlugin implements IEventPlugin {
         if (error.message && error.message.length) {
           hash += (hash * 397) ^ getHashCode(error.message);
         }
-
         if (error.stack_trace && error.stack_trace.length) {
           hash += (hash * 397) ^ getHashCode(JSON.stringify(error.stack_trace));
         }
@@ -71,10 +70,7 @@ export class DuplicateCheckerPlugin implements IEventPlugin {
 
       if (!context.cancelled) {
         context.log.trace(`Enqueueing event with hash: ${hashCode} to cache`);
-        this._processedHashCodes.push({
-          hash: hashCode,
-          timestamp: now
-        });
+        this._processedHashCodes.push({ hash: hashCode, timestamp: now });
 
         // Only keep the last 50 recent errors.
         while (this._processedHashCodes.length > 50) {

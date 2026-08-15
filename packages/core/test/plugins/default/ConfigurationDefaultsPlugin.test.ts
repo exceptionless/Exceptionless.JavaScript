@@ -33,11 +33,7 @@ describe("ConfigurationDefaultsPlugin", () => {
         client.config.addDataExclusions(...dataExclusions);
       }
 
-      const ev: Event = {
-        type: "log",
-        source: "test",
-        data: {}
-      };
+      const ev: Event = { type: "log", source: "test", data: {} };
 
       const context = new EventPluginContext(client, ev, new EventContext());
       const plugin = new ConfigurationDefaultsPlugin();
@@ -61,12 +57,7 @@ describe("ConfigurationDefaultsPlugin", () => {
       const ev = await run(["*password*"]);
       expect(ev.data).toBeDefined();
 
-      const expected = {
-        id: 1,
-        name: "Blake",
-        customValue: "Password",
-        value: {}
-      };
+      const expected = { id: 1, name: "Blake", customValue: "Password", value: {} };
       expect(ev.data && ev.data[userDataKey]).toStrictEqual(expected);
     });
   });

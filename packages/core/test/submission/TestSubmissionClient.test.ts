@@ -20,13 +20,7 @@ describe("TestSubmissionClient", () => {
       .fn<(url: string, options: FetchOptions) => Promise<Response<undefined>>>()
       .mockReturnValueOnce(Promise.resolve(new Response(202, "", NaN, NaN, undefined)));
 
-    const events: Event[] = [
-      {
-        type: "log",
-        message: "From js client",
-        reference_id: "123454321"
-      }
-    ];
+    const events: Event[] = [{ type: "log", message: "From js client", reference_id: "123454321" }];
     const client = new TestSubmissionClient(config, apiFetchMock);
     await client.submitEvents(events);
     expect(apiFetchMock).toHaveBeenCalledTimes(1);
@@ -86,9 +80,7 @@ describe("TestSubmissionClient", () => {
       body: JSON.stringify(description)
     });
     expect(apiFetchMock.mock.calls[1][0]).toBe(`${config.serverUrl}/api/v2/projects/config?v=0`);
-    expect(apiFetchMock.mock.calls[1][1]).toEqual({
-      method: "GET"
-    });
+    expect(apiFetchMock.mock.calls[1][1]).toEqual({ method: "GET" });
   });
 
   test("should submit heartbeat", async () => {
@@ -100,9 +92,7 @@ describe("TestSubmissionClient", () => {
     await client.submitHeartbeat("sessionId", true);
     expect(apiFetchMock).toHaveBeenCalledTimes(1);
     expect(apiFetchMock.mock.calls[0][0]).toBe(`${config.heartbeatServerUrl}/api/v2/events/session/heartbeat?id=sessionId&close=true`);
-    expect(apiFetchMock.mock.calls[0][1]).toEqual({
-      method: "GET"
-    });
+    expect(apiFetchMock.mock.calls[0][1]).toEqual({ method: "GET" });
   });
 
   test("should get project settings", async () => {
@@ -114,8 +104,6 @@ describe("TestSubmissionClient", () => {
     await client.getSettings(0);
     expect(apiFetchMock).toHaveBeenCalledTimes(1);
     expect(apiFetchMock.mock.calls[0][0]).toBe(`${config.serverUrl}/api/v2/projects/config?v=0`);
-    expect(apiFetchMock.mock.calls[0][1]).toEqual({
-      method: "GET"
-    });
+    expect(apiFetchMock.mock.calls[0][1]).toEqual({ method: "GET" });
   });
 });
