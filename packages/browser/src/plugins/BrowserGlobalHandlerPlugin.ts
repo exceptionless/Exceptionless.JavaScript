@@ -2,7 +2,20 @@ import { ExceptionlessClient, IEventPlugin, PluginContext, toError } from "@exce
 
 declare let $: (document: Document) => {
   ajaxError: {
-    (document: (event: Event, xhr: { responseText: string; status: number }, settings: { data: unknown; url: string }, error: string) => void): void;
+    (
+      document: (
+        event: Event,
+        xhr: {
+          responseText: string;
+          status: number;
+        },
+        settings: {
+          data: unknown;
+          url: string;
+        },
+        error: string
+      ) => void
+    ): void;
   };
 };
 
@@ -29,7 +42,13 @@ export class BrowserGlobalHandlerPlugin implements IEventPlugin {
       if (!(reason instanceof Error)) {
         try {
           // Check for reason in legacy CustomEvents (https://developer.mozilla.org/en-US/docs/Web/API/CustomEvent)
-          const detailReason = (<{ detail?: { reason: string } }>event).detail?.reason;
+          const detailReason = (<
+            {
+              detail?: {
+                reason: string;
+              };
+            }
+          >event).detail?.reason;
           if (detailReason) {
             reason = detailReason;
           }
@@ -54,21 +73,34 @@ export class BrowserGlobalHandlerPlugin implements IEventPlugin {
     });
 
     if (typeof $ !== "undefined" && $(document)) {
-      $(document).ajaxError((_: Event, xhr: { responseText: string; status: number }, settings: { data: unknown; url: string }, error: string) => {
-        if (xhr.status === 404) {
-          // TODO: Handle async
-          void this._client?.submitNotFound(settings.url);
-        } else if (xhr.status !== 401) {
-          // TODO: Handle async
-          void this._client
-            ?.createUnhandledException(toError(error), "JQuery.ajaxError")
-            .setSource(settings.url)
-            .setProperty("status", xhr.status)
-            .setProperty("request", settings.data)
-            .setProperty("response", xhr.responseText?.slice(0, 1024))
-            .submit();
+      $(document).ajaxError(
+        (
+          _: Event,
+          xhr: {
+            responseText: string;
+            status: number;
+          },
+          settings: {
+            data: unknown;
+            url: string;
+          },
+          error: string
+        ) => {
+          if (xhr.status === 404) {
+            // TODO: Handle async
+            void this._client?.submitNotFound(settings.url);
+          } else if (xhr.status !== 401) {
+            // TODO: Handle async
+            void this._client
+              ?.createUnhandledException(toError(error), "JQuery.ajaxError")
+              .setSource(settings.url)
+              .setProperty("status", xhr.status)
+              .setProperty("request", settings.data)
+              .setProperty("response", xhr.responseText?.slice(0, 1024))
+              .submit();
+          }
         }
-      });
+      );
     }
 
     return Promise.resolve();
@@ -90,6 +122,7 @@ export class BrowserGlobalHandlerPlugin implements IEventPlugin {
         if (errorName) {
           name = errorName;
         }
+
         if (errorMessage) {
           msg = errorMessage;
         }

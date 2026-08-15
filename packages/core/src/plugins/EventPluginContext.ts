@@ -11,7 +11,9 @@ export class EventPluginContext {
     public event: Event,
     public eventContext: EventContext
   ) {
-    if (!this.eventContext) this.eventContext = new EventContext();
+    if (!this.eventContext) {
+      this.eventContext = new EventContext();
+    }
   }
 
   public get log(): ILog {

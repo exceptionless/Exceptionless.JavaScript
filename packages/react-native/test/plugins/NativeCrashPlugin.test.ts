@@ -36,36 +36,67 @@ describe("NativeCrashPlugin", () => {
 
   test("should be a no-op on non-iOS platforms", async () => {
     const { Platform } = await import("react-native");
-    Object.defineProperty(Platform, "OS", { value: "web", writable: true });
+    Object.defineProperty(Platform, "OS", {
+      value: "web",
+      writable: true
+    });
 
-    await expect(plugin.startup({ client, log: client.config.services.log })).resolves.toBeUndefined();
+    await expect(
+      plugin.startup({
+        client,
+        log: client.config.services.log
+      })
+    ).resolves.toBeUndefined();
 
-    Object.defineProperty(Platform, "OS", { value: "android", writable: true });
+    Object.defineProperty(Platform, "OS", {
+      value: "android",
+      writable: true
+    });
     const warnSpy = vi.spyOn(client.config.services.log, "warn");
 
-    await expect(plugin.startup({ client, log: client.config.services.log })).resolves.toBeUndefined();
+    await expect(
+      plugin.startup({
+        client,
+        log: client.config.services.log
+      })
+    ).resolves.toBeUndefined();
 
     expect(warnSpy).not.toHaveBeenCalled();
 
-    Object.defineProperty(Platform, "OS", { value: "ios", writable: true });
+    Object.defineProperty(Platform, "OS", {
+      value: "ios",
+      writable: true
+    });
   });
 
   test("should log warning when native module is unavailable on iOS", async () => {
     const { Platform } = await import("react-native");
-    Object.defineProperty(Platform, "OS", { value: "ios", writable: true });
+    Object.defineProperty(Platform, "OS", {
+      value: "ios",
+      writable: true
+    });
 
     const warnSpy = vi.spyOn(client.config.services.log, "warn");
-    await plugin.startup({ client, log: client.config.services.log });
+    await plugin.startup({
+      client,
+      log: client.config.services.log
+    });
 
     expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining("Native crash reporter module not available"));
 
     warnSpy.mockRestore();
-    Object.defineProperty(Platform, "OS", { value: "ios", writable: true });
+    Object.defineProperty(Platform, "OS", {
+      value: "ios",
+      writable: true
+    });
   });
 
   test("should submit pending native crash reports and clear them after successful submission", async () => {
     const { Platform } = await import("react-native");
-    Object.defineProperty(Platform, "OS", { value: "ios", writable: true });
+    Object.defineProperty(Platform, "OS", {
+      value: "ios",
+      writable: true
+    });
 
     const report = createCrashReport();
     const nativeModule = createNativeModule([report]);
@@ -78,7 +109,10 @@ describe("NativeCrashPlugin", () => {
       submit
     } as never);
 
-    await plugin.startup({ client, log: client.config.services.log });
+    await plugin.startup({
+      client,
+      log: client.config.services.log
+    });
 
     expect(nativeModule.install).toHaveBeenCalledOnce();
     expect(nativeModule.hasPendingCrashReport).toHaveBeenCalledOnce();
@@ -108,7 +142,10 @@ describe("NativeCrashPlugin", () => {
 
   test("should not clear pending native crash reports when a pending marker returns no reports", async () => {
     const { Platform } = await import("react-native");
-    Object.defineProperty(Platform, "OS", { value: "ios", writable: true });
+    Object.defineProperty(Platform, "OS", {
+      value: "ios",
+      writable: true
+    });
 
     const nativeModule = createNativeModule([]);
     nativeModuleMock.current = nativeModule;
@@ -116,7 +153,10 @@ describe("NativeCrashPlugin", () => {
     const warnSpy = vi.spyOn(client.config.services.log, "warn");
     const createUnhandledException = vi.spyOn(client, "createUnhandledException");
 
-    await plugin.startup({ client, log: client.config.services.log });
+    await plugin.startup({
+      client,
+      log: client.config.services.log
+    });
 
     expect(nativeModule.install).toHaveBeenCalledOnce();
     expect(nativeModule.hasPendingCrashReport).toHaveBeenCalledOnce();

@@ -6,7 +6,10 @@ import { ReactNativeExceptionlessClient } from "../src/ReactNativeExceptionlessC
 describe("ReactNativeExceptionlessClient", () => {
   afterEach(async () => {
     const { Platform } = await import("react-native");
-    Object.defineProperty(Platform, "OS", { value: "ios", writable: true });
+    Object.defineProperty(Platform, "OS", {
+      value: "ios",
+      writable: true
+    });
   });
 
   test("should configure documented react native plugins and persisted queue storage", async () => {
@@ -48,7 +51,10 @@ describe("ReactNativeExceptionlessClient", () => {
 
   test("should not configure native crash reporting on Android", async () => {
     const { Platform } = await import("react-native");
-    Object.defineProperty(Platform, "OS", { value: "android", writable: true });
+    Object.defineProperty(Platform, "OS", {
+      value: "android",
+      writable: true
+    });
     const client = new ReactNativeExceptionlessClient();
 
     await client.startup((config) => {
