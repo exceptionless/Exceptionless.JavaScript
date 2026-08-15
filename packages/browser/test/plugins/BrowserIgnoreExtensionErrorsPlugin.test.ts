@@ -22,7 +22,13 @@ describe("BrowserIgnoreExtensionErrorsPlugin", () => {
     const eventContext = new EventContext();
     eventContext.setException(error);
 
-    const context = new EventPluginContext(client, { type: "error" }, eventContext);
+    const context = new EventPluginContext(
+      client,
+      {
+        type: "error"
+      },
+      eventContext
+    );
 
     await plugin.run(context);
     return context;

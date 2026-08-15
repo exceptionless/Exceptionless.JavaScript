@@ -12,7 +12,9 @@ export async function setBuildVersion(version, rootDirectory = process.cwd()) {
 
   const packageFiles = ["package.json", "package-lock.json"];
   for (const directory of ["packages", "example"]) {
-    const entries = await readdir(path.join(rootDirectory, directory), { withFileTypes: true });
+    const entries = await readdir(path.join(rootDirectory, directory), {
+      withFileTypes: true
+    });
     for (const entry of entries) {
       if (!entry.isDirectory()) {
         continue;

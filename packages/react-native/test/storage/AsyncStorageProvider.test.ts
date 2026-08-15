@@ -8,13 +8,17 @@ describe("AsyncStorageProvider", () => {
   let storage: AsyncStorageProvider;
 
   beforeEach(() => {
-    const mock = AsyncStorage as unknown as { __reset: () => void };
+    const mock = AsyncStorage as unknown as {
+      __reset: () => void;
+    };
     mock.__reset();
     storage = new AsyncStorageProvider();
   });
 
   afterEach(() => {
-    const mock = AsyncStorage as unknown as { __reset: () => void };
+    const mock = AsyncStorage as unknown as {
+      __reset: () => void;
+    };
     mock.__reset();
   });
 

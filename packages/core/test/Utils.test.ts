@@ -21,38 +21,79 @@ describe("Utils", () => {
 
   describe("prune", () => {
     test("circular reference", () => {
-      type Circular = { property: string; circularRef?: Circular };
-      const circular: Circular = { property: "string" };
+      type Circular = {
+        property: string;
+        circularRef?: Circular;
+      };
+      const circular: Circular = {
+        property: "string"
+      };
       circular.circularRef = circular;
 
-      const expected = { property: "string", circularRef: undefined };
+      const expected = {
+        property: "string",
+        circularRef: undefined
+      };
       const actual = prune(circular);
       expect(actual).toStrictEqual(expected);
     });
 
     test("circular array reference", () => {
-      type Circular = { property: string; circularRef?: Circular; list?: Circular[] };
-      const circular: Circular = { property: "string" };
+      type Circular = {
+        property: string;
+        circularRef?: Circular;
+        list?: Circular[];
+      };
+      const circular: Circular = {
+        property: "string"
+      };
       circular.circularRef = circular;
       circular.list = [circular];
 
-      const expected = { property: "string", circularRef: undefined, list: [undefined] };
+      const expected = {
+        property: "string",
+        circularRef: undefined,
+        list: [undefined]
+      };
       const actual = prune(circular);
       expect(actual).toStrictEqual(expected);
     });
 
     test("array reference removes duplicated object references", () => {
-      type PropertyObject = { property: string };
-      const propObject: PropertyObject = { property: "string" };
+      type PropertyObject = {
+        property: string;
+      };
+      const propObject: PropertyObject = {
+        property: "string"
+      };
 
-      const expected = [{ property: "string" }, undefined];
+      const expected = [
+        {
+          property: "string"
+        },
+        undefined
+      ];
       const actual = prune([propObject, propObject]);
       expect(actual).toStrictEqual(expected);
     });
 
     test("array cloned no object references", () => {
-      const expected = [{ property: "string" }, { property: "string" }];
-      const actual = prune([{ property: "string" }, { property: "string" }]);
+      const expected = [
+        {
+          property: "string"
+        },
+        {
+          property: "string"
+        }
+      ];
+      const actual = prune([
+        {
+          property: "string"
+        },
+        {
+          property: "string"
+        }
+      ]);
       expect(actual).toStrictEqual(expected);
     });
 
@@ -139,8 +180,25 @@ describe("Utils", () => {
       });
 
       test("for Array", () => {
-        const expected = [{ a: undefined }, [undefined], 1];
-        const actual = prune([{ a: { b: 2 } }, [[]], 1], 1);
+        const expected = [
+          {
+            a: undefined
+          },
+          [undefined],
+          1
+        ];
+        const actual = prune(
+          [
+            {
+              a: {
+                b: 2
+              }
+            },
+            [[]],
+            1
+          ],
+          1
+        );
         expect(actual).toStrictEqual(expected);
       });
 
@@ -158,7 +216,10 @@ describe("Utils", () => {
 
       test("for Error", () => {
         const error = new Error("error");
-        const expected = { message: error.message, stack: error.stack };
+        const expected = {
+          message: error.message,
+          stack: error.stack
+        };
         const actual = prune(error, 1);
         expect(actual).toStrictEqual(expected);
       });
@@ -177,8 +238,28 @@ describe("Utils", () => {
         const actual = prune(
           new Map<unknown, unknown>([
             // NOTE: this value is lost due to being converted to ["[object Object]", { a: { b: 2 }, b: 1 }]
-            [{ id: 1 }, { a: { b: 2 }, b: 1 }],
-            [{ id: 2 }, { a2: { b2: 2 }, b2: 1 }],
+            [
+              {
+                id: 1
+              },
+              {
+                a: {
+                  b: 2
+                },
+                b: 1
+              }
+            ],
+            [
+              {
+                id: 2
+              },
+              {
+                a2: {
+                  b2: 2
+                },
+                b2: 1
+              }
+            ],
             ["string key", "string key"],
             [123, 123],
             [Symbol("symbol"), ["symbol key"]]
@@ -190,8 +271,19 @@ describe("Utils", () => {
       });
 
       test("for Object", () => {
-        const expected = { a: undefined, b: 1 };
-        const actual = prune({ a: { b: 2 }, b: 1 }, 1);
+        const expected = {
+          a: undefined,
+          b: 1
+        };
+        const actual = prune(
+          {
+            a: {
+              b: 2
+            },
+            b: 1
+          },
+          1
+        );
         expect(actual).toStrictEqual(expected);
       });
 
@@ -202,8 +294,25 @@ describe("Utils", () => {
       });
 
       test("for Set", () => {
-        const expected = [{ a: undefined, b: 1 }, 1];
-        const actual = prune(new Set([{ a: { b: 2 }, b: 1 }, 1]), 1);
+        const expected = [
+          {
+            a: undefined,
+            b: 1
+          },
+          1
+        ];
+        const actual = prune(
+          new Set([
+            {
+              a: {
+                b: 2
+              },
+              b: 1
+            },
+            1
+          ]),
+          1
+        );
         expect(actual).toStrictEqual(expected);
       });
 
@@ -214,17 +323,40 @@ describe("Utils", () => {
       });
 
       test("for WeakMap", () => {
-        const actual = prune(new WeakMap([[{}, { a: { b: 2 } }]]), 2);
+        const actual = prune(
+          new WeakMap([
+            [
+              {},
+              {
+                a: {
+                  b: 2
+                }
+              }
+            ]
+          ]),
+          2
+        );
         expect(actual).toBeUndefined();
       });
 
       test("for WeakSet", () => {
-        const actual = prune(new WeakSet([{ a: { b: 2 } }]), 2);
+        const actual = prune(
+          new WeakSet([
+            {
+              a: {
+                b: 2
+              }
+            }
+          ]),
+          2
+        );
         expect(actual).toBeUndefined();
       });
 
       test("should handle toJSON", () => {
-        const expected = { test: "test" };
+        const expected = {
+          test: "test"
+        };
         const actual = prune({
           number: 1,
           toJSON() {
@@ -259,11 +391,69 @@ describe("Utils", () => {
         }
       };
 
-      expect(prune(value, 1)).toStrictEqual({ ao: undefined });
-      expect(prune(value, 2)).toStrictEqual({ ao: { bo: undefined, ba: undefined, bn: 1 } });
-      expect(prune(value, 3)).toStrictEqual({ ao: { bo: { cn: 1, co: undefined }, ba: [{ cn: 1, co: undefined }], bn: 1 } });
-      expect(prune(value, 4)).toStrictEqual({ ao: { bo: { cn: 1, co: { do: undefined } }, ba: [{ cn: 1, co: { do: undefined } }], bn: 1 } });
-      expect(prune(value, 5)).toStrictEqual({ ao: { bo: { cn: 1, co: { do: {} } }, ba: [{ cn: 1, co: { do: {} } }], bn: 1 } });
+      expect(prune(value, 1)).toStrictEqual({
+        ao: undefined
+      });
+      expect(prune(value, 2)).toStrictEqual({
+        ao: {
+          bo: undefined,
+          ba: undefined,
+          bn: 1
+        }
+      });
+      expect(prune(value, 3)).toStrictEqual({
+        ao: {
+          bo: {
+            cn: 1,
+            co: undefined
+          },
+          ba: [
+            {
+              cn: 1,
+              co: undefined
+            }
+          ],
+          bn: 1
+        }
+      });
+      expect(prune(value, 4)).toStrictEqual({
+        ao: {
+          bo: {
+            cn: 1,
+            co: {
+              do: undefined
+            }
+          },
+          ba: [
+            {
+              cn: 1,
+              co: {
+                do: undefined
+              }
+            }
+          ],
+          bn: 1
+        }
+      });
+      expect(prune(value, 5)).toStrictEqual({
+        ao: {
+          bo: {
+            cn: 1,
+            co: {
+              do: {}
+            }
+          },
+          ba: [
+            {
+              cn: 1,
+              co: {
+                do: {}
+              }
+            }
+          ],
+          bn: 1
+        }
+      });
     });
 
     test("should prune inherited properties", () => {
@@ -318,22 +508,40 @@ describe("Utils", () => {
     });
 
     test("circular reference", () => {
-      type Circular = { property: string; circularRef?: Circular };
-      const circular: Circular = { property: "string" };
+      type Circular = {
+        property: string;
+        circularRef?: Circular;
+      };
+      const circular: Circular = {
+        property: "string"
+      };
       circular.circularRef = circular;
 
-      const expected = JSON.stringify({ property: "string", circularRef: undefined });
+      const expected = JSON.stringify({
+        property: "string",
+        circularRef: undefined
+      });
       const actual = stringify(circular);
       expect(actual).toStrictEqual(expected);
     });
 
     test("circular array reference", () => {
-      type Circular = { property: string; circularRef?: Circular; list?: Circular[] };
-      const circular: Circular = { property: "string" };
+      type Circular = {
+        property: string;
+        circularRef?: Circular;
+        list?: Circular[];
+      };
+      const circular: Circular = {
+        property: "string"
+      };
       circular.circularRef = circular;
       circular.list = [circular];
 
-      const expected = JSON.stringify({ property: "string", circularRef: undefined, list: [undefined] });
+      const expected = JSON.stringify({
+        property: "string",
+        circularRef: undefined,
+        list: [undefined]
+      });
       const actual = stringify(circular);
       expect(actual).toStrictEqual(expected);
     });
@@ -417,8 +625,26 @@ describe("Utils", () => {
       });
 
       test("for Array", () => {
-        const expected = JSON.stringify([{ a: undefined }, [undefined], 1]);
-        const actual = stringify([{ a: { b: 2 } }, [[]], 1], [], 1);
+        const expected = JSON.stringify([
+          {
+            a: undefined
+          },
+          [undefined],
+          1
+        ]);
+        const actual = stringify(
+          [
+            {
+              a: {
+                b: 2
+              }
+            },
+            [[]],
+            1
+          ],
+          [],
+          1
+        );
         expect(actual).toStrictEqual(expected);
       });
 
@@ -437,7 +663,10 @@ describe("Utils", () => {
 
       test("for Error", () => {
         const error = new Error("error");
-        const expected = JSON.stringify({ stack: error.stack, message: error.message });
+        const expected = JSON.stringify({
+          stack: error.stack,
+          message: error.message
+        });
         const actual = stringify(error, [], 1);
         expect(actual).toStrictEqual(expected);
       });
@@ -456,8 +685,28 @@ describe("Utils", () => {
         const actual = stringify(
           new Map<unknown, unknown>([
             // NOTE: this value is lost due to being converted to ["[object Object]", { a: { b: 2 }, b: 1 }]
-            [{ id: 1 }, { a: { b: 2 }, b: 1 }],
-            [{ id: 2 }, { a2: { b2: 2 }, b2: 1 }],
+            [
+              {
+                id: 1
+              },
+              {
+                a: {
+                  b: 2
+                },
+                b: 1
+              }
+            ],
+            [
+              {
+                id: 2
+              },
+              {
+                a2: {
+                  b2: 2
+                },
+                b2: 1
+              }
+            ],
             ["string key", "string key"],
             [123, 123],
             [Symbol("symbol"), ["symbol key"]]
@@ -470,8 +719,20 @@ describe("Utils", () => {
       });
 
       test("for Object", () => {
-        const expected = JSON.stringify({ a: undefined, b: 1 });
-        const actual = stringify({ a: { b: 2 }, b: 1 }, [], 1);
+        const expected = JSON.stringify({
+          a: undefined,
+          b: 1
+        });
+        const actual = stringify(
+          {
+            a: {
+              b: 2
+            },
+            b: 1
+          },
+          [],
+          1
+        );
         expect(actual).toStrictEqual(expected);
       });
 
@@ -482,8 +743,26 @@ describe("Utils", () => {
       });
 
       test("for Set", () => {
-        const expected = JSON.stringify([{ a: undefined, b: 1 }, 1]);
-        const actual = stringify(new Set([{ a: { b: 2 }, b: 1 }, 1]), [], 1);
+        const expected = JSON.stringify([
+          {
+            a: undefined,
+            b: 1
+          },
+          1
+        ]);
+        const actual = stringify(
+          new Set([
+            {
+              a: {
+                b: 2
+              },
+              b: 1
+            },
+            1
+          ]),
+          [],
+          1
+        );
         expect(actual).toStrictEqual(expected);
       });
 
@@ -494,12 +773,35 @@ describe("Utils", () => {
       });
 
       test("for WeakMap", () => {
-        const actual = stringify(new WeakMap([[{}, { a: { b: 2 } }]]), [], 2);
+        const actual = stringify(
+          new WeakMap([
+            [
+              {},
+              {
+                a: {
+                  b: 2
+                }
+              }
+            ]
+          ]),
+          [],
+          2
+        );
         expect(actual).toBeUndefined();
       });
 
       test("for WeakSet", () => {
-        const actual = stringify(new WeakSet([{ a: { b: 2 } }]), [], 2);
+        const actual = stringify(
+          new WeakSet([
+            {
+              a: {
+                b: 2
+              }
+            }
+          ]),
+          [],
+          2
+        );
         expect(actual).toBeUndefined();
       });
     });
@@ -540,13 +842,79 @@ describe("Utils", () => {
         }
       };
 
-      expect(stringify(value, [], 1)).toStrictEqual(JSON.stringify({ ao: undefined }));
-      expect(stringify(value, [], 2)).toStrictEqual(JSON.stringify({ ao: { bo: undefined, ba: undefined, bn: 1 } }));
-      expect(stringify(value, [], 3)).toStrictEqual(JSON.stringify({ ao: { bo: { cn: 1, co: undefined }, ba: [{ cn: 1, co: undefined }], bn: 1 } }));
-      expect(stringify(value, [], 4)).toStrictEqual(
-        JSON.stringify({ ao: { bo: { cn: 1, co: { do: undefined } }, ba: [{ cn: 1, co: { do: undefined } }], bn: 1 } })
+      expect(stringify(value, [], 1)).toStrictEqual(
+        JSON.stringify({
+          ao: undefined
+        })
       );
-      expect(stringify(value, [], 5)).toStrictEqual(JSON.stringify({ ao: { bo: { cn: 1, co: { do: {} } }, ba: [{ cn: 1, co: { do: {} } }], bn: 1 } }));
+      expect(stringify(value, [], 2)).toStrictEqual(
+        JSON.stringify({
+          ao: {
+            bo: undefined,
+            ba: undefined,
+            bn: 1
+          }
+        })
+      );
+      expect(stringify(value, [], 3)).toStrictEqual(
+        JSON.stringify({
+          ao: {
+            bo: {
+              cn: 1,
+              co: undefined
+            },
+            ba: [
+              {
+                cn: 1,
+                co: undefined
+              }
+            ],
+            bn: 1
+          }
+        })
+      );
+      expect(stringify(value, [], 4)).toStrictEqual(
+        JSON.stringify({
+          ao: {
+            bo: {
+              cn: 1,
+              co: {
+                do: undefined
+              }
+            },
+            ba: [
+              {
+                cn: 1,
+                co: {
+                  do: undefined
+                }
+              }
+            ],
+            bn: 1
+          }
+        })
+      );
+      expect(stringify(value, [], 5)).toStrictEqual(
+        JSON.stringify({
+          ao: {
+            bo: {
+              cn: 1,
+              co: {
+                do: {}
+              }
+            },
+            ba: [
+              {
+                cn: 1,
+                co: {
+                  do: {}
+                }
+              }
+            ],
+            bn: 1
+          }
+        })
+      );
     });
 
     test("should serialize inherited properties", () => {
@@ -589,26 +957,57 @@ describe("Utils", () => {
 
       test("*password", () => {
         expect(stringify(user, ["*password"])).toBe(
-          JSON.stringify({ id: 1, name: "Blake", passwordResetToken: "a reset token", myPasswordValue: "123456", customValue: "Password", value: {} })
+          JSON.stringify({
+            id: 1,
+            name: "Blake",
+            passwordResetToken: "a reset token",
+            myPasswordValue: "123456",
+            customValue: "Password",
+            value: {}
+          })
         );
       });
 
       test("password*", () => {
         expect(stringify(user, ["password*"])).toBe(
-          JSON.stringify({ id: 1, name: "Blake", myPassword: "123456", myPasswordValue: "123456", customValue: "Password", value: {} })
+          JSON.stringify({
+            id: 1,
+            name: "Blake",
+            myPassword: "123456",
+            myPasswordValue: "123456",
+            customValue: "Password",
+            value: {}
+          })
         );
       });
 
       test("*password*", () => {
-        expect(stringify(user, ["*password*"])).toBe(JSON.stringify({ id: 1, name: "Blake", customValue: "Password", value: {} }));
+        expect(stringify(user, ["*password*"])).toBe(
+          JSON.stringify({
+            id: 1,
+            name: "Blake",
+            customValue: "Password",
+            value: {}
+          })
+        );
       });
 
       test("*Password*", () => {
-        expect(stringify(user, ["*Password*"])).toBe(JSON.stringify({ id: 1, name: "Blake", customValue: "Password", value: {} }));
+        expect(stringify(user, ["*Password*"])).toBe(
+          JSON.stringify({
+            id: 1,
+            name: "Blake",
+            customValue: "Password",
+            value: {}
+          })
+        );
       });
 
       test("*Address", () => {
-        const event = { type: "usage", source: "about" };
+        const event = {
+          type: "usage",
+          source: "about"
+        };
         expect(stringify(event, ["*Address"])).toBe(JSON.stringify(event));
       });
     });
@@ -682,7 +1081,9 @@ describe("Utils", () => {
       Date: new Date(),
       number: 1,
       string: "string",
-      object: { a: 1 },
+      object: {
+        a: 1
+      },
       array: [1]
     };
 

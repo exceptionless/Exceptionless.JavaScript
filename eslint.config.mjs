@@ -1,11 +1,14 @@
 import eslint from "@eslint/js";
+import stylistic from "@stylistic/eslint-plugin";
 import { defineConfig } from "eslint/config";
 import eslintConfigPrettier from "eslint-config-prettier";
 import vitest from "@vitest/eslint-plugin";
 import tseslint from "typescript-eslint";
 
 export default defineConfig(
-  { ignores: ["**/dist/", "**/node_modules/", ".agents/", "example/", "**/expo-plugin/", "**/react-native.config.*"] },
+  {
+    ignores: ["**/dist/", "**/node_modules/", ".agents/", "example/", "**/expo-plugin/", "**/react-native.config.*"]
+  },
   eslint.configs.recommended,
   {
     extends: tseslint.configs.recommendedTypeChecked,
@@ -27,8 +30,18 @@ export default defineConfig(
       "@typescript-eslint/no-duplicate-type-constituents": "off",
       "@typescript-eslint/restrict-plus-operands": "off",
       "@typescript-eslint/no-unused-vars": "error",
-      "@typescript-eslint/no-unused-expressions": ["error", { allowShortCircuit: true }],
-      "@typescript-eslint/no-misused-promises": ["error", { checksVoidReturn: false }]
+      "@typescript-eslint/no-unused-expressions": [
+        "error",
+        {
+          allowShortCircuit: true
+        }
+      ],
+      "@typescript-eslint/no-misused-promises": [
+        "error",
+        {
+          checksVoidReturn: false
+        }
+      ]
     }
   },
   {
@@ -43,6 +56,37 @@ export default defineConfig(
     }
   },
   eslintConfigPrettier,
+  {
+    plugins: {
+      "@stylistic": stylistic
+    },
+    rules: {
+      curly: ["error", "all"],
+      "@stylistic/object-curly-newline": [
+        "error",
+        {
+          ObjectExpression: {
+            minProperties: 1
+          }
+        }
+      ],
+      "@stylistic/brace-style": [
+        "error",
+        "1tbs",
+        {
+          allowSingleLine: false
+        }
+      ],
+      "padding-line-between-statements": [
+        "error",
+        {
+          blankLine: "always",
+          prev: "block-like",
+          next: ["if", "while", "for", "do"]
+        }
+      ]
+    }
+  },
   {
     files: ["**/test/**/*.ts"],
     plugins: vitest.configs.recommended.plugins,
