@@ -95,7 +95,12 @@ describe("Configuration", () => {
         resolve();
       });
 
-      config.applyServerSettings({ settings: { someValue: "UNIT_TEST_API_KEY" }, version: 2 });
+      config.applyServerSettings({
+        settings: {
+          someValue: "UNIT_TEST_API_KEY"
+        },
+        version: 2
+      });
     });
   });
 });

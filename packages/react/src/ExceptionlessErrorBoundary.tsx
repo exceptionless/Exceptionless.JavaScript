@@ -14,11 +14,15 @@ interface ErrorState {
 export class ExceptionlessErrorBoundary extends Component<PropsWithChildren<ErrorBoundaryProps>, ErrorState> {
   constructor(props: Readonly<PropsWithChildren<ErrorBoundaryProps>>) {
     super(props);
-    this.state = { hasError: false };
+    this.state = {
+      hasError: false
+    };
   }
 
   static getDerivedStateFromError(): ErrorState {
-    return { hasError: true };
+    return {
+      hasError: true
+    };
   }
 
   async componentDidCatch(error: Error, errorInfo: ReactErrorInfo): Promise<void> {

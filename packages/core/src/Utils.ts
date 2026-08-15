@@ -359,8 +359,18 @@ export function prune(value: unknown, depth: number = 10): unknown {
   }
 
   function normalizeValue(value: unknown): unknown {
-    function hasToJSONFunction(value: unknown): value is { toJSON: () => unknown } {
-      return value !== null && typeof value === "object" && typeof (value as { toJSON?: unknown }).toJSON === "function";
+    function hasToJSONFunction(value: unknown): value is {
+      toJSON: () => unknown;
+    } {
+      return (
+        value !== null &&
+        typeof value === "object" &&
+        typeof (
+          value as {
+            toJSON?: unknown;
+          }
+        ).toJSON === "function"
+      );
     }
 
     if (typeof value === "bigint") {
@@ -469,7 +479,11 @@ export function prune(value: unknown, depth: number = 10): unknown {
         // Normalize the key so Symbols are converted to strings.
         const normalizedKey = normalizeValue(key) as NonSymbolPropertyKey;
 
-        const objectValue = (normalizedValue as { [index: PropertyKey]: unknown })[key];
+        const objectValue = (
+          normalizedValue as {
+            [index: PropertyKey]: unknown;
+          }
+        )[key];
         result[normalizedKey] = pruneImpl(objectValue, maxDepth, currentDepth + 1, seen);
       }
 
@@ -556,6 +570,10 @@ export function toError(errorOrMessage: unknown, defaultMessage = "Unknown Error
  */
 export function allowProcessToExitWithoutWaitingForTimerOrInterval(timeoutOrIntervalId: ReturnType<typeof setTimeout> | undefined): void {
   if (typeof timeoutOrIntervalId === "object" && "unref" in timeoutOrIntervalId) {
-    (timeoutOrIntervalId as { unref: () => ReturnType<typeof setTimeout> }).unref();
+    (
+      timeoutOrIntervalId as {
+        unref: () => ReturnType<typeof setTimeout>;
+      }
+    ).unref();
   }
 }

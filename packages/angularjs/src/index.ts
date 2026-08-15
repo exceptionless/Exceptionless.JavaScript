@@ -10,7 +10,11 @@ angular
     "$ExceptionlessClient",
     ($location: ng.ILocationService, $q: ng.IQService, $ExceptionlessClient: BrowserExceptionlessClient) => {
       return {
-        responseError: function responseError(response: ng.IHttpResponse<{ Message?: string }>) {
+        responseError: function responseError(
+          response: ng.IHttpResponse<{
+            Message?: string;
+          }>
+        ) {
           if (response.status === 404) {
             void $ExceptionlessClient.submitNotFound(response.config.url);
           } else if (response.status !== 401) {
@@ -48,7 +52,13 @@ angular
           function decorateRegularCall(property: string, logLevel: string) {
             const previousFn = $delegate[property];
             return ($delegate[property] = (...args: string[]) => {
-              if ((angular as { mock?: unknown }).mock) {
+              if (
+                (
+                  angular as {
+                    mock?: unknown;
+                  }
+                ).mock
+              ) {
                 $delegate[property].logs = [];
               }
 
