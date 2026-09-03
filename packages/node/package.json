@@ -46,10 +46,10 @@
     "access": "public"
   },
   "devDependencies": {
-    "@types/node": "^26.1.2",
+    "@types/node": "^26.4.0",
     "@types/node-localstorage": "^1.3.3",
     "@types/stack-trace": "^0.0.33",
-    "esbuild": "^0.28.1"
+    "esbuild": "^0.28.2"
   },
   "dependencies": {
     "@exceptionless/core": "3.0.0-dev",
