@@ -31,6 +31,17 @@ export default defineConfig(
       "@typescript-eslint/no-misused-promises": ["error", { checksVoidReturn: false }]
     }
   },
+  {
+    files: ["scripts/**/*.mjs"],
+    ...tseslint.configs.disableTypeChecked,
+    languageOptions: {
+      ...tseslint.configs.disableTypeChecked.languageOptions,
+      globals: {
+        console: "readonly",
+        process: "readonly"
+      }
+    }
+  },
   eslintConfigPrettier,
   {
     files: ["**/test/**/*.ts"],
