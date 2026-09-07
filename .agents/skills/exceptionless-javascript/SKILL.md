@@ -1,6 +1,6 @@
 ---
 name: exceptionless-javascript
-description: Use this skill when a developer wants to install, configure, troubleshoot, or integrate Exceptionless JavaScript clients for browser, Node.js, React, React Native, Expo, Vue, AngularJS, Express, Next.js, SvelteKit, or custom runtimes. Use it for API keys, startup, self-hosting, sending errors/logs/feature usage/404/custom events, indexed event properties, sessions, heartbeats, user identity, PII/data exclusions, plugins, runtime client configuration values, queues, native crash reporting, and production setup even if they only ask "how do I wire up Exceptionless?"
+description: Configure, integrate, document, or troubleshoot Exceptionless JavaScript SDKs using the appropriate runtime and API references.
 ---
 
 # Exceptionless JavaScript SDK
@@ -9,36 +9,15 @@ Use this skill to produce source-accurate setup code, integration guidance, and 
 
 Keep answers compact. Prefer pointing to official docs for broad product behavior, and use local package READMEs/source to correct stale snippets or repo-specific package details.
 
-## Official Docs
-
-Primary docs:
-
-- JavaScript overview: https://exceptionless.com/docs/clients/javascript/
-- Configuration: https://exceptionless.com/docs/clients/javascript/client-configuration/
-- Client configuration values: https://exceptionless.com/docs/clients/javascript/client-configuration-values/
-- Sending events: https://exceptionless.com/docs/clients/javascript/sending-events/
-- Filtering and indexed data: https://exceptionless.com/docs/filtering-and-searching/
-- User sessions: https://exceptionless.com/docs/user-sessions/
-- Troubleshooting: https://exceptionless.com/docs/clients/javascript/troubleshooting/
-- Self-hosting: https://exceptionless.com/docs/self-hosting/
-
-Framework docs:
-
-- React: https://exceptionless.com/docs/clients/javascript/guides/react/
-- Vue: https://exceptionless.com/docs/clients/javascript/guides/vue/
-- Angular: https://exceptionless.com/docs/clients/javascript/guides/angular/
-- Node: https://exceptionless.com/docs/clients/javascript/node-example/
-- Express: https://exceptionless.com/docs/clients/javascript/guides/express/
-
 ## Pick References
 
-Read only the reference that matches the user's runtime, then add shared references as needed:
+Read only the references needed for the request. Start with the runtime for setup or the topic for an API question; add others only when relevant. Each reference contains focused examples and official documentation links. Use the [JavaScript overview](https://exceptionless.com/docs/clients/javascript/) for broader product context.
 
 - `@exceptionless/core`: [references/client-core.md](references/client-core.md)
 - `@exceptionless/browser`: [references/client-browser.md](references/client-browser.md)
-- `@exceptionless/node`: [references/client-node.md](references/client-node.md)
+- `@exceptionless/node`, Express, Next.js server, and SvelteKit server: [references/client-node.md](references/client-node.md)
 - `@exceptionless/react`: [references/client-react.md](references/client-react.md)
-- `@exceptionless/react-native`: [references/client-react-native.md](references/client-react-native.md)
+- `@exceptionless/react-native` and Expo: [references/client-react-native.md](references/client-react-native.md)
 - `@exceptionless/vue`: [references/client-vue.md](references/client-vue.md)
 - `@exceptionless/angularjs`: [references/client-angularjs.md](references/client-angularjs.md)
 - Sending events: [references/sending-events.md](references/sending-events.md)
@@ -74,16 +53,4 @@ Read only the reference that matches the user's runtime, then add shared referen
 
 ## Source Anchors
 
-Verify behavior in:
-
-- `packages/core/src/ExceptionlessClient.ts`
-- `packages/core/src/configuration/Configuration.ts`
-- `packages/core/src/EventBuilder.ts`
-- `packages/core/src/plugins/default/EventExclusionPlugin.ts`
-- `packages/core/src/submission/DefaultSubmissionClient.ts`
-- `packages/browser/src/BrowserExceptionlessClient.ts`
-- `packages/node/src/NodeExceptionlessClient.ts`
-- `packages/react-native/src/ReactNativeExceptionlessClient.ts`
-- `packages/react-native/src/plugins/ReactNativeErrorPlugin.ts`
-- `packages/react-native/src/plugins/NativeCrashPlugin.ts`
-- Package READMEs and `example/` apps.
+Resolve implementation questions against the affected package's README, `src/`, and relevant `example/` app. Shared client behavior lives in `packages/core/src/ExceptionlessClient.ts`, configuration in `packages/core/src/configuration/Configuration.ts`, and fluent event APIs in `packages/core/src/EventBuilder.ts`. Inspect the relevant plugin or submission implementation when its behavior matters; these are lookup pointers, not a mandatory reading list.
