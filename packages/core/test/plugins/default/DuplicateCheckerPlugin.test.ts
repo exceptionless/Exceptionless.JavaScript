@@ -86,14 +86,16 @@ describe("DuplicateCheckerPlugin", () => {
 
   test("should merge duplicates only within the same environment", async () => {
     const enqueue = vi.spyOn(client.config.services.queue, "enqueue");
+    expect((await run(Exception1StackTrace, "Production")).cancelled).not.toBe(true);
     expect((await run(Exception1StackTrace, "production")).cancelled).not.toBe(true);
     expect((await run(Exception1StackTrace, "staging")).cancelled).not.toBe(true);
     expect((await run(Exception1StackTrace)).cancelled).not.toBe(true);
+    expect((await run(Exception1StackTrace, "Production")).cancelled).toBe(true);
     expect((await run(Exception1StackTrace, "production")).cancelled).toBe(true);
     expect((await run(Exception1StackTrace, "staging")).cancelled).toBe(true);
     expect((await run(Exception1StackTrace)).cancelled).toBe(true);
     await plugin.suspend();
-    expect(enqueue.mock.calls.map(([event]) => event.environment).sort()).toEqual(["production", "staging", undefined]);
+    expect(enqueue.mock.calls.map(([event]) => event.environment).sort()).toEqual(["Production", "production", "staging", undefined]);
   });
 
   test("should ignore error without stack", async () => {

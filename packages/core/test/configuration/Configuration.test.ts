@@ -3,13 +3,15 @@ import { describe, expect, test } from "vitest";
 import { Configuration } from "../../src/configuration/Configuration.js";
 
 describe("Configuration", () => {
-  test("should normalize deployment environments and allow clearing the default", () => {
+  test("should trim deployment environments, preserve casing, and allow clearing the default", () => {
     const config = new Configuration();
     expect(config.environment).toBeUndefined();
     config.setEnvironment(" Production ");
-    expect(config.environment).toBe("production");
+    expect(config.environment).toBe("Production");
     config.environment = "Staging";
-    expect(config.environment).toBe("staging");
+    expect(config.environment).toBe("Staging");
+    config.environment = "İ".repeat(64);
+    expect(config.environment).toBe("İ".repeat(64));
     config.setEnvironment("");
     expect(config.environment).toBeUndefined();
     config.setEnvironment("x".repeat(65));

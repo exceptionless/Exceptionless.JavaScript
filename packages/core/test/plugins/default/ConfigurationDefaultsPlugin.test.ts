@@ -14,17 +14,17 @@ describe("ConfigurationDefaultsPlugin", () => {
     for (const type of ["error", "log", "usage", "session"]) {
       const event: Event = { type, data: { "@environment": { machine_name: "worker-1" } } };
       await plugin.run(new EventPluginContext(client, event, new EventContext()));
-      expect(event.environment).toBe("production");
+      expect(event.environment).toBe("Production");
       expect(event.data?.["@environment"]?.machine_name).toBe("worker-1");
     }
 
     const builder = client.createLog("test", "message").setEnvironment(" Staging ");
     await plugin.run(new EventPluginContext(client, builder.target, new EventContext()));
-    expect(builder.target.environment).toBe("staging");
-    expect(JSON.parse(JSON.stringify(builder.target)).environment).toBe("staging");
+    expect(builder.target.environment).toBe("Staging");
+    expect(JSON.parse(JSON.stringify(builder.target)).environment).toBe("Staging");
   });
 
-  test.each(["", " ", "x".repeat(65), "prod\ninvalid", "İ".repeat(64)])("should keep invalid override %j unspecified", async (environment) => {
+  test.each(["", " ", "x".repeat(65), "prod\ninvalid"])("should keep invalid override %j unspecified", async (environment) => {
     const client = new ExceptionlessClient();
     client.config.environment = "production";
     const builder = client.createLog("test", "message").setEnvironment(environment);

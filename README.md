@@ -8,7 +8,7 @@ The definition of the word exceptionless is: to be without exception. Exceptionl
 
 ## Browser
 
-Set a deployment environment in startup configuration with `config.environment = "production"` (or `config.setEnvironment("production")`). Override it on an event with `Exceptionless.createLog("Example").setEnvironment("staging").submit()`. Names are trimmed, lowercased, and limited to 64 characters. Missing or invalid names remain unspecified. The top-level `environment` is separate from machine/runtime diagnostics in `data.@environment`; stacks and fixed versions remain shared across environments.
+Set a deployment environment in startup configuration with `config.environment = "production"` (or `config.setEnvironment("production")`). Override it on an event with `Exceptionless.createLog("Example").setEnvironment("staging").submit()`. Names are trimmed and limited to 64 characters, preserving the supplied casing. The server filters case-insensitively and normalizes aggregation keys. Missing or invalid names remain unspecified. The top-level `environment` is separate from machine/runtime diagnostics in `data.@environment`; stacks and fixed versions remain shared across environments.
 
 You can install the npm package via `npm install @exceptionless/browser --save`
 or via cdn [`https://unpkg.com/@exceptionless/browser`](https://unpkg.com/@exceptionless/browser).

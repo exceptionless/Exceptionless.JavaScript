@@ -563,7 +563,7 @@ export function normalizeEnvironment(value: string | null | undefined): string |
   if (typeof value !== "string") {
     return undefined;
   }
-  const name = value.trim().toLowerCase();
+  const name = value.trim();
   // eslint-disable-next-line no-control-regex -- Deployment names cannot contain control characters.
   return name && name.length <= 64 && !/[\u0000-\u001f\u007f-\u009f]/u.test(name) ? name : undefined;
 }
