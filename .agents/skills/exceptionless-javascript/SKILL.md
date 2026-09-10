@@ -9,6 +9,8 @@ Use this skill to produce source-accurate setup code, integration guidance, and 
 
 Keep answers compact. Prefer pointing to official docs for broad product behavior, and use local package READMEs/source to correct stale snippets or repo-specific package details.
 
+Deployment environments use `config.environment` or `config.setEnvironment(name)` as the default, and `builder.setEnvironment(name)` for overrides. They serialize as top-level `environment`, separately from `data.@environment`. See [configuration.md](references/configuration.md).
+
 ## Official Docs
 
 Primary docs:

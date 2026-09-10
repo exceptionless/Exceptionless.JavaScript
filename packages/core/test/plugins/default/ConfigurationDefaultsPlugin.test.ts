@@ -7,6 +7,23 @@ import { EventPluginContext } from "../../../src/plugins/EventPluginContext.js";
 import { EventContext } from "../../../src/models/EventContext.js";
 
 describe("ConfigurationDefaultsPlugin", () => {
+  test("should apply deployment defaults to all event types and preserve overrides and runtime metadata", async () => {
+    const client = new ExceptionlessClient();
+    client.config.setEnvironment(" Production ");
+    const plugin = new ConfigurationDefaultsPlugin();
+    for (const type of ["error", "log", "usage", "session"]) {
+      const event: Event = { type, data: { "@environment": { machine_name: "worker-1" } } };
+      await plugin.run(new EventPluginContext(client, event, new EventContext()));
+      expect(event.environment).toBe("production");
+      expect(event.data?.["@environment"]?.machine_name).toBe("worker-1");
+    }
+
+    const builder = client.createLog("test", "message").setEnvironment(" Staging ");
+    await plugin.run(new EventPluginContext(client, builder.target, new EventContext()));
+    expect(builder.target.environment).toBe("staging");
+    expect(JSON.parse(JSON.stringify(builder.target)).environment).toBe("staging");
+  });
+
   describe("should add default", () => {
     const userDataKey: string = "user";
     const user = {
