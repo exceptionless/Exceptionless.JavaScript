@@ -24,6 +24,14 @@ describe("ConfigurationDefaultsPlugin", () => {
     expect(JSON.parse(JSON.stringify(builder.target)).environment).toBe("staging");
   });
 
+  test.each(["", " ", "x".repeat(65), "prod\ninvalid", "İ".repeat(64)])("should keep invalid override %j unspecified", async (environment) => {
+    const client = new ExceptionlessClient();
+    client.config.environment = "production";
+    const builder = client.createLog("test", "message").setEnvironment(environment);
+    await new ConfigurationDefaultsPlugin().run(new EventPluginContext(client, builder.target, new EventContext()));
+    expect(builder.target.environment).toBeUndefined();
+  });
+
   describe("should add default", () => {
     const userDataKey: string = "user";
     const user = {

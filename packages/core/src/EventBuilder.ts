@@ -3,14 +3,13 @@ import { Event, EventType, KnownEventDataKeys } from "./models/Event.js";
 import { ManualStackingInfo } from "./models/data/ManualStackingInfo.js";
 import { UserInfo } from "./models/data/UserInfo.js";
 import { EventContext } from "./models/EventContext.js";
-import { isEmpty, normalizeEnvironment, stringify } from "./Utils.js";
+import { isEmpty, stringify } from "./Utils.js";
 import { EventPluginContext } from "./plugins/EventPluginContext.js";
 
 export class EventBuilder {
   public setEnvironment(value: string | null | undefined): EventBuilder {
-    const environment = normalizeEnvironment(value);
-    if (environment) {
-      this.target.environment = environment;
+    if (value != null) {
+      this.target.environment = value;
     } else {
       delete this.target.environment;
     }
