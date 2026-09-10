@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, test } from "vitest";
+import { beforeEach, describe, expect, test, vi } from "vitest";
 
 import { DuplicateCheckerPlugin } from "../../../src/plugins/default/DuplicateCheckerPlugin.js";
 import { ExceptionlessClient } from "../../../src/ExceptionlessClient.js";
@@ -51,7 +51,7 @@ describe("DuplicateCheckerPlugin", () => {
     plugin = new DuplicateCheckerPlugin(() => now, 50);
   });
 
-  const run = async (stackTrace?: StackFrameInfo[]): Promise<EventPluginContext> => {
+  const run = async (stackTrace?: StackFrameInfo[], environment?: string): Promise<EventPluginContext> => {
     // TODO: Generate unique stack traces based on test data.
     const context = new EventPluginContext(
       client,
@@ -68,6 +68,7 @@ describe("DuplicateCheckerPlugin", () => {
       new EventContext()
     );
 
+    if (environment) context.event.environment = environment;
     await plugin.run(context);
     return context;
   };
@@ -81,6 +82,20 @@ describe("DuplicateCheckerPlugin", () => {
     setTimeout(() => {
       expect(contextOfSecondRun.event.count).toBe(1);
     }, 100);
+  });
+
+  test("should merge duplicates only within the same environment", async () => {
+    const enqueue = vi.spyOn(client.config.services.queue, "enqueue");
+    expect((await run(Exception1StackTrace, "Production")).cancelled).not.toBe(true);
+    expect((await run(Exception1StackTrace, "production")).cancelled).not.toBe(true);
+    expect((await run(Exception1StackTrace, "staging")).cancelled).not.toBe(true);
+    expect((await run(Exception1StackTrace)).cancelled).not.toBe(true);
+    expect((await run(Exception1StackTrace, "Production")).cancelled).toBe(true);
+    expect((await run(Exception1StackTrace, "production")).cancelled).toBe(true);
+    expect((await run(Exception1StackTrace, "staging")).cancelled).toBe(true);
+    expect((await run(Exception1StackTrace)).cancelled).toBe(true);
+    await plugin.suspend();
+    expect(enqueue.mock.calls.map(([event]) => event.environment).sort()).toEqual(["Production", "production", "staging", undefined]);
   });
 
   test("should ignore error without stack", async () => {

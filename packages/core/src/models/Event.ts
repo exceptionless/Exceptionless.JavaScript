@@ -8,6 +8,8 @@ import { ManualStackingInfo } from "../models/data/ManualStackingInfo.js";
 export type EventType = "error" | "usage" | "log" | "404" | "session" | string;
 
 export interface Event {
+  /** The deployment environment, such as production or staging. */
+  environment?: string;
   /** The event type (ie. error, log message, feature usage). */
   type?: EventType;
   /** The event source (ie. machine name, log name, feature name). */

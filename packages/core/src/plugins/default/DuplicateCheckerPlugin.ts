@@ -50,11 +50,12 @@ export class DuplicateCheckerPlugin implements IEventPlugin {
 
     const error = context.event.data?.[KnownEventDataKeys.Error];
     const hashCode = calculateHashCode(error);
+    const environment = context.event.environment;
     if (hashCode) {
       const count = context.event.count || 1;
       const now = this._getCurrentTime();
 
-      const merged = this._mergedEvents.filter((s) => s.hashCode === hashCode)[0];
+      const merged = this._mergedEvents.find((s) => s.hashCode === hashCode && s.environment === environment);
       if (merged) {
         merged.incrementCount(count);
         merged.updateDate(context.event.date);
@@ -62,7 +63,10 @@ export class DuplicateCheckerPlugin implements IEventPlugin {
         context.cancelled = true;
       }
 
-      if (!context.cancelled && this._processedHashCodes.some((h) => h.hash === hashCode && h.timestamp >= now - this._interval)) {
+      if (
+        !context.cancelled &&
+        this._processedHashCodes.some((h) => h.hash === hashCode && h.environment === environment && h.timestamp >= now - this._interval)
+      ) {
         context.log.trace("Adding event with hash: " + hashCode);
         this._mergedEvents.push(new MergedEvent(hashCode, context, count));
         context.cancelled = true;
@@ -70,7 +74,7 @@ export class DuplicateCheckerPlugin implements IEventPlugin {
 
       if (!context.cancelled) {
         context.log.trace(`Enqueueing event with hash: ${hashCode} to cache`);
-        this._processedHashCodes.push({ hash: hashCode, timestamp: now });
+        this._processedHashCodes.push({ hash: hashCode, environment, timestamp: now });
 
         // Only keep the last 50 recent errors.
         while (this._processedHashCodes.length > 50) {
@@ -91,16 +95,19 @@ export class DuplicateCheckerPlugin implements IEventPlugin {
 
 interface TimestampedHash {
   hash: number;
+  environment: string | undefined;
   timestamp: number;
 }
 
 class MergedEvent {
   public hashCode: number;
+  public readonly environment: string | undefined;
   private _count: number;
   private _context: EventPluginContext;
 
   constructor(hashCode: number, context: EventPluginContext, count: number) {
     this.hashCode = hashCode;
+    this.environment = context.event.environment;
     this._context = context;
     this._count = count;
   }

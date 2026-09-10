@@ -559,3 +559,11 @@ export function allowProcessToExitWithoutWaitingForTimerOrInterval(timeoutOrInte
     (timeoutOrIntervalId as { unref: () => ReturnType<typeof setTimeout> }).unref();
   }
 }
+export function normalizeEnvironment(value: string | null | undefined): string | undefined {
+  if (typeof value !== "string") {
+    return undefined;
+  }
+  const name = value.trim();
+  // eslint-disable-next-line no-control-regex -- Deployment names cannot contain control characters.
+  return name && name.length <= 64 && !/[\u0000-\u001f\u007f-\u009f]/u.test(name) ? name : undefined;
+}

@@ -7,6 +7,15 @@ import { isEmpty, stringify } from "./Utils.js";
 import { EventPluginContext } from "./plugins/EventPluginContext.js";
 
 export class EventBuilder {
+  public setEnvironment(value: string | null | undefined): EventBuilder {
+    if (value != null) {
+      this.target.environment = value;
+    } else {
+      delete this.target.environment;
+    }
+    return this;
+  }
+
   public target: Event;
   public client: ExceptionlessClient;
   public context: EventContext;
