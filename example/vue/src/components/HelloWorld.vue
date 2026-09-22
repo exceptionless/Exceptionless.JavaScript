@@ -16,7 +16,7 @@
 </template>
 
 <script setup>
-import { defineProps, reactive } from "vue";
+import { reactive } from "vue";
 import { Exceptionless } from "@exceptionless/vue";
 
 defineProps({

@@ -11,7 +11,7 @@ export class TextAreaLogger {
     } else {
       document.addEventListener("DOMContentLoaded", () => {
         this.element = document.getElementById(elementId);
-        this.element.innerHTML = this.messageBuffer.join("\n") + this.element.innerHTML;
+        this.element.value = this.messageBuffer.join("\n") + this.element.value;
         this.messageBuffer = [];
       });
     }
@@ -37,7 +37,7 @@ export class TextAreaLogger {
   log(level, message) {
     const formattedMessage = `${new Date().toISOString()} [${level}] ${message}`;
     if (this.element) {
-      this.element.innerHTML += `\n${formattedMessage}`;
+      this.element.value += `\n${formattedMessage}`;
     } else {
       this.messageBuffer.push(formattedMessage);
     }

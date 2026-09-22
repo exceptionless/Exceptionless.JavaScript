@@ -63,7 +63,7 @@ function TopDiagnostics() {
       <View style={styles.diagnostics}>
         <View style={styles.diagnosticsTitleRow}>
           <Text style={styles.diagnosticsTitle}>Exceptionless Expo</Text>
-          <Text style={styles.diagnosticsPill}>SDK 56</Text>
+          <Text style={styles.diagnosticsPill}>SDK 57</Text>
         </View>
         <Text style={styles.diagnosticsServer} numberOfLines={1}>
           {serverUrl}
