@@ -195,7 +195,13 @@ export class ExceptionlessClient {
   }
 
   public createEvent(context?: EventContext): EventBuilder {
-    return new EventBuilder({ date: new Date() }, this, context);
+    return new EventBuilder(
+      {
+        date: new Date()
+      },
+      this,
+      context
+    );
   }
 
   /**
@@ -264,7 +270,10 @@ export class ExceptionlessClient {
       return;
     }
 
-    const userDescription: UserDescription = { email_address: email, description };
+    const userDescription: UserDescription = {
+      email_address: email,
+      description
+    };
     const response = await this.config.services.submissionClient.submitUserDescription(referenceId, userDescription);
     if (!response.success) {
       this.config.services.log.error(`Failed to submit user email and description for event "${referenceId}": ${response.status} ${response.message}`);

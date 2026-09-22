@@ -32,7 +32,7 @@ npm test
 # Lint (ESLint + Prettier check)
 npm run lint
 
-# Auto-format with Prettier
+# Auto-format with ESLint fixes followed by Prettier
 npm run format
 
 # Clean all build outputs
@@ -107,7 +107,7 @@ All framework packages (`react`, `vue`, `angularjs`) depend on `browser`, which 
 
 ### Style & Formatting
 
-- Run `npm run format` (Prettier) to auto-format code
+- Run `npm run format` (ESLint fixes followed by Prettier) to auto-format code
 - Run `npm run lint` (ESLint + Prettier check) to verify
 - Match existing file style; minimize diffs
 - No code comments unless necessary—code should be self-explanatory

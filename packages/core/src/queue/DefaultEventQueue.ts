@@ -265,7 +265,12 @@ export class DefaultEventQueue implements IEventQueue {
         for (const file of files) {
           if (file?.startsWith(this.QUEUE_PREFIX)) {
             const json = await storage.getItem(file);
-            if (json) this._queue.push({ file, event: JSON.parse(json) as Event });
+            if (json) {
+              this._queue.push({
+                file,
+                event: JSON.parse(json) as Event
+              });
+            }
           }
         }
       } catch (ex) {
@@ -280,7 +285,12 @@ export class DefaultEventQueue implements IEventQueue {
 
     const { log, storage } = this.config.services;
     const useStorage: boolean = this.config.usePersistedQueueStorage;
-    if (this._queue.push({ file, event }) > this.maxItems) {
+    if (
+      this._queue.push({
+        file,
+        event
+      }) > this.maxItems
+    ) {
       log.trace("Removing oldest queue entry: maxItems exceeded");
       const item = this._queue.shift();
       if (useStorage && item) {

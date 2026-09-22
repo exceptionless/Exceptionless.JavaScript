@@ -378,7 +378,13 @@ export class Configuration {
    */
   public addPlugin(name: string | undefined, priority: number, pluginAction: (context: EventPluginContext) => Promise<void>): void;
   public addPlugin(pluginOrName: IEventPlugin | string | undefined, priority?: number, pluginAction?: (context: EventPluginContext) => Promise<void>): void {
-    const plugin: IEventPlugin = pluginAction ? <IEventPlugin>{ name: pluginOrName as string, priority, run: pluginAction } : (pluginOrName as IEventPlugin);
+    const plugin: IEventPlugin = pluginAction
+      ? <IEventPlugin>{
+          name: pluginOrName as string,
+          priority,
+          run: pluginAction
+        }
+      : (pluginOrName as IEventPlugin);
 
     if (!plugin || !(plugin.startup || plugin.run)) {
       this.services.log.error("Add plugin failed: startup or run method not defined");
@@ -442,7 +448,13 @@ export class Configuration {
   public setUserIdentity(identity: string): void;
   public setUserIdentity(identity: string, name: string): void;
   public setUserIdentity(userInfoOrIdentity: UserInfo | string, name?: string): void {
-    const userInfo: UserInfo = typeof userInfoOrIdentity !== "string" ? userInfoOrIdentity : <UserInfo>{ identity: userInfoOrIdentity, name };
+    const userInfo: UserInfo =
+      typeof userInfoOrIdentity !== "string"
+        ? userInfoOrIdentity
+        : <UserInfo>{
+            identity: userInfoOrIdentity,
+            name
+          };
 
     const shouldRemove: boolean = !userInfo || (!userInfo.identity && !userInfo.name);
     if (shouldRemove) {

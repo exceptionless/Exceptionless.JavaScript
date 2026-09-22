@@ -15,7 +15,13 @@ describe("ReactNativeErrorPlugin", () => {
 
   beforeEach(() => {
     plugin = new ReactNativeErrorPlugin();
-    context = new EventPluginContext(new ExceptionlessClient(), { data: {} }, new EventContext());
+    context = new EventPluginContext(
+      new ExceptionlessClient(),
+      {
+        data: {}
+      },
+      new EventContext()
+    );
   });
 
   test("should parse Hermes Metro stack frames into error info", async () => {
