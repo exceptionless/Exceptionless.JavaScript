@@ -42,13 +42,7 @@ describe("DefaultEventQueue", () => {
     await config.services.queue.process();
 
     config.services.queue.onEventsPosted(async () => {
-      expect(
-        (
-          config.services.queue as {
-            _suspendProcessingUntil?: Date;
-          }
-        )._suspendProcessingUntil
-      ).toBeUndefined();
+      expect((config.services.queue as { _suspendProcessingUntil?: Date })._suspendProcessingUntil).toBeUndefined();
       expect(await config.services.storage.length()).toBe(0);
     });
   });
@@ -75,11 +69,7 @@ describe("DefaultEventQueue", () => {
     expect(await config.services.storage.length()).toBe(1);
 
     await delay(25);
-    const suspendProcessingUntil = (
-      config.services.queue as {
-        _suspendProcessingUntil?: Date;
-      }
-    )._suspendProcessingUntil;
+    const suspendProcessingUntil = (config.services.queue as { _suspendProcessingUntil?: Date })._suspendProcessingUntil;
     const expectedLength = suspendProcessingUntil ? 1 : 0;
     expect(await config.services.storage.length()).toBe(expectedLength);
   });

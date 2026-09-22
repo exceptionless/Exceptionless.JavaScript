@@ -21,10 +21,7 @@ describe("Utils", () => {
 
   describe("prune", () => {
     test("circular reference", () => {
-      type Circular = {
-        property: string;
-        circularRef?: Circular;
-      };
+      type Circular = { property: string; circularRef?: Circular };
       const circular: Circular = {
         property: "string"
       };
@@ -39,11 +36,7 @@ describe("Utils", () => {
     });
 
     test("circular array reference", () => {
-      type Circular = {
-        property: string;
-        circularRef?: Circular;
-        list?: Circular[];
-      };
+      type Circular = { property: string; circularRef?: Circular; list?: Circular[] };
       const circular: Circular = {
         property: "string"
       };
@@ -60,9 +53,7 @@ describe("Utils", () => {
     });
 
     test("array reference removes duplicated object references", () => {
-      type PropertyObject = {
-        property: string;
-      };
+      type PropertyObject = { property: string };
       const propObject: PropertyObject = {
         property: "string"
       };
@@ -508,10 +499,7 @@ describe("Utils", () => {
     });
 
     test("circular reference", () => {
-      type Circular = {
-        property: string;
-        circularRef?: Circular;
-      };
+      type Circular = { property: string; circularRef?: Circular };
       const circular: Circular = {
         property: "string"
       };
@@ -526,11 +514,7 @@ describe("Utils", () => {
     });
 
     test("circular array reference", () => {
-      type Circular = {
-        property: string;
-        circularRef?: Circular;
-        list?: Circular[];
-      };
+      type Circular = { property: string; circularRef?: Circular; list?: Circular[] };
       const circular: Circular = {
         property: "string"
       };
