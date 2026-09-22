@@ -1,6 +1,7 @@
 import { ESLint } from "eslint";
 import { expect, test } from "vitest";
 import path from "node:path";
+import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { format, resolveConfig } from "prettier";
 
@@ -122,4 +123,22 @@ if (NODE_ENV) { console.log(basename(NODE_ENV), value); } else { console.log(emp
   });
   expect((await lint(formatted)).messages).toHaveLength(0);
   expect((await lint(formatted, true)).output).toBeUndefined();
+});
+
+test("the documented format command fixes inline objects before running Prettier", async () => {
+  const manifest = JSON.parse(readFileSync(path.join(repositoryRoot, "package.json"), "utf8"));
+  expect(manifest.scripts.format).toBe("npm run lint:fix && prettier --write .");
+
+  const options = await resolveConfig(eslintConfigPath);
+  const source = await format("console.log({ key: 1 });", {
+    ...options,
+    parser: "babel"
+  });
+  expect((await lint(source)).messages.map((message) => message.ruleId)).toContain("@stylistic/object-curly-newline");
+  const fixed = await lint(source, true);
+  const formatted = await format(fixed.output, {
+    ...options,
+    parser: "babel"
+  });
+  expect((await lint(formatted)).messages).toHaveLength(0);
 });

@@ -11,7 +11,7 @@
     "lint:eslint": "eslint .",
     "lint:prettier": "prettier --check .",
     "lint:fix": "eslint . --fix",
-    "format": "prettier --write .",
+    "format": "npm run lint:fix && prettier --write .",
     "test": "vitest run",
     "test:watch": "vitest",
     "version": "npm --no-git-tag-version --workspaces=true version",
