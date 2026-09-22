@@ -156,9 +156,6 @@ jobs:
           registry-url: "https://npm.pkg.github.com"
           scope: "@exceptionless"
       - name: Push GitHub CI Packages
-        shell: bash
-        run: | # zizmor: ignore[use-trusted-publishing] GitHub Packages uses GITHUB_TOKEN.
-          TAG_BRANCH="${GITHUB_REF##*/}"
-          npm publish --workspaces --access public --tag "ci-${TAG_BRANCH}"
+        run: node scripts/publish-ci-packages.mjs # zizmor: ignore[use-trusted-publishing] GitHub Packages uses GITHUB_TOKEN.
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
