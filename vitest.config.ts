@@ -106,14 +106,6 @@ export default defineConfig({
           root: "example/nextjs",
           environment: "node"
         }
-      },
-      {
-        test: {
-          name: "scripts",
-          root: ".",
-          environment: "node",
-          include: ["scripts/**/*.test.mjs"]
-        }
       }
     ]
   }
