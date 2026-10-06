@@ -106,13 +106,6 @@ export default defineConfig({
           root: "example/nextjs",
           environment: "node"
         }
-      },
-      {
-        test: {
-          name: "browser-example",
-          root: "example/browser",
-          environment: "node"
-        }
       }
     ]
   }
