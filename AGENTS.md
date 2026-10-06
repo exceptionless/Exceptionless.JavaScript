@@ -42,6 +42,7 @@ Use focused checks while iterating. Run broader build, test, and lint checks for
 | Full workspace build      | `npm run build`                             |
 | Full test suite           | `npm test`                                  |
 | Lint and formatting check | `npm run lint`                              |
+| ESLint then Prettier      | `npm run format`                            |
 | Focused package tests     | `npm test --workspace=packages/<name>`      |
 | Focused package build     | `npm run build --workspace=packages/<name>` |
 | Package watch             | `npm run watch --workspace=packages/<name>` |
