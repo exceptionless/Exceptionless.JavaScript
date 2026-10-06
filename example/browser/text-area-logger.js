@@ -6,7 +6,7 @@ export class TextAreaLogger {
 
     this.logger = logger;
     this.messageBuffer = [];
-    if (document.readyState === "complete") {
+    if (document.readyState !== "loading") {
       this.element = document.getElementById(elementId);
     } else {
       document.addEventListener("DOMContentLoaded", () => {

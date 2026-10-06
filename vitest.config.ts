@@ -109,10 +109,9 @@ export default defineConfig({
       },
       {
         test: {
-          name: "scripts",
-          root: ".",
-          environment: "node",
-          include: ["scripts/**/*.test.mjs"]
+          name: "browser-example",
+          root: "example/browser",
+          environment: "node"
         }
       }
     ]
