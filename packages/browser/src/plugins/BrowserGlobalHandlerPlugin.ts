@@ -90,6 +90,7 @@ export class BrowserGlobalHandlerPlugin implements IEventPlugin {
         if (errorName) {
           name = errorName;
         }
+
         if (errorMessage) {
           msg = errorMessage;
         }

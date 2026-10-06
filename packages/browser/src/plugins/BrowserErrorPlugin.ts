@@ -59,7 +59,9 @@ export class BrowserErrorPlugin implements IEventPlugin {
 
       const items: ParameterInfo[] = [];
       for (const param of params) {
-        items.push({ name: param });
+        items.push({
+          name: param
+        });
       }
 
       return items;
