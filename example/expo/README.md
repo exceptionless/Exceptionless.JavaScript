@@ -4,7 +4,7 @@ This example exercises `@exceptionless/react-native` from an Expo app. It covers
 
 Native iOS crash reporting uses the package's custom native module, so it requires an Expo development build or a standalone app. Expo Go can run JavaScript reporting paths only; it cannot load the native crash reporter.
 
-This app tracks Expo SDK 56.
+This app tracks Expo SDK 57.
 
 ## Prerequisites
 

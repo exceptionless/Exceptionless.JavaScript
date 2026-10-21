@@ -7,11 +7,6 @@
     "icon": "./assets/icon.png",
     "scheme": "exceptionless-expo",
     "userInterfaceStyle": "light",
-    "splash": {
-      "image": "./assets/splash.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
-    },
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.exceptionless.expo.example",

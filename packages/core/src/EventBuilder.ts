@@ -96,7 +96,13 @@ export class EventBuilder {
   public setUserIdentity(identity: string): EventBuilder;
   public setUserIdentity(identity: string, name: string): EventBuilder;
   public setUserIdentity(userInfoOrIdentity: UserInfo | string, name?: string): EventBuilder {
-    const userInfo = typeof userInfoOrIdentity !== "string" ? userInfoOrIdentity : { identity: userInfoOrIdentity, name };
+    const userInfo =
+      typeof userInfoOrIdentity !== "string"
+        ? userInfoOrIdentity
+        : {
+            identity: userInfoOrIdentity,
+            name
+          };
     if (!userInfo || (!userInfo.identity && !userInfo.name)) {
       return this;
     }
@@ -130,7 +136,9 @@ export class EventBuilder {
    */
   public setManualStackingInfo(signatureData: Record<string, string>, title?: string): EventBuilder {
     if (signatureData) {
-      const stack: ManualStackingInfo = { signature_data: signatureData };
+      const stack: ManualStackingInfo = {
+        signature_data: signatureData
+      };
       if (title) {
         stack.title = title;
       }
@@ -148,7 +156,9 @@ export class EventBuilder {
    */
   public setManualStackingKey(manualStackingKey: string, title?: string): EventBuilder {
     if (manualStackingKey) {
-      const data = { ManualStackingKey: manualStackingKey };
+      const data = {
+        ManualStackingKey: manualStackingKey
+      };
       this.setManualStackingInfo(data, title);
     }
 
