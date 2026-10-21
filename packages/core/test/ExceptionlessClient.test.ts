@@ -37,6 +37,25 @@ describe("ExceptionlessClient", () => {
     expect(context.event.reference_id).toBe(lastReferenceIdManager.getLast());
   });
 
+  test.each([
+    [" QA\t", "QA"],
+    ["x".repeat(65), undefined]
+  ])("should normalize environment %j assigned by a later plugin", async (environment, expected) => {
+    const client = new ExceptionlessClient();
+    client.config.apiKey = "UNIT_TEST_API_KEY";
+    client.config.environment = "production";
+    client.config.addPlugin("late-environment", 90, (context) => {
+      context.event.environment = environment;
+      return Promise.resolve();
+    });
+    const enqueue = vi.spyOn(client.config.services.queue, "enqueue").mockResolvedValue();
+
+    await client.submitLog("test");
+
+    expect(enqueue).toHaveBeenCalledOnce();
+    expect(enqueue.mock.calls[0]?.[0].environment).toBe(expected);
+  });
+
   test("should accept undefined source", () => {
     const client = new ExceptionlessClient();
     client.config.apiKey = "UNIT_TEST_API_KEY";
