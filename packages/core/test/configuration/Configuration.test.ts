@@ -18,6 +18,8 @@ describe("Configuration", () => {
     expect(config.environment).toBeUndefined();
     config.setEnvironment("prod\ninvalid");
     expect(config.environment).toBeUndefined();
+    config.setEnvironment("\tProduction\n");
+    expect(config.environment).toBe("Production");
   });
 
   test("should override configuration defaults", () => {

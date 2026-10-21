@@ -12,7 +12,14 @@ describe("ConfigurationDefaultsPlugin", () => {
     client.config.setEnvironment(" Production ");
     const plugin = new ConfigurationDefaultsPlugin();
     for (const type of ["error", "log", "usage", "session"]) {
-      const event: Event = { type, data: { "@environment": { machine_name: "worker-1" } } };
+      const event: Event = {
+        type,
+        data: {
+          "@environment": {
+            machine_name: "worker-1"
+          }
+        }
+      };
       await plugin.run(new EventPluginContext(client, event, new EventContext()));
       expect(event.environment).toBe("Production");
       expect(event.data?.["@environment"]?.machine_name).toBe("worker-1");
@@ -30,6 +37,30 @@ describe("ConfigurationDefaultsPlugin", () => {
     const builder = client.createLog("test", "message").setEnvironment(environment);
     await new ConfigurationDefaultsPlugin().run(new EventPluginContext(client, builder.target, new EventContext()));
     expect(builder.target.environment).toBeUndefined();
+  });
+
+  test.each([null, undefined])("should apply the default when the override is cleared with %j", async (environment) => {
+    const client = new ExceptionlessClient();
+    client.config.environment = "production";
+    const builder = client.createLog("test", "message").setEnvironment("staging").setEnvironment(environment);
+    await new ConfigurationDefaultsPlugin().run(new EventPluginContext(client, builder.target, new EventContext()));
+    expect(builder.target.environment).toBe("production");
+  });
+
+  test("should trim surrounding control whitespace from an override", async () => {
+    const client = new ExceptionlessClient();
+    client.config.environment = "production";
+    const builder = client.createLog("test", "message").setEnvironment("\tStaging\n");
+    await new ConfigurationDefaultsPlugin().run(new EventPluginContext(client, builder.target, new EventContext()));
+    expect(builder.target.environment).toBe("Staging");
+  });
+
+  test("should omit an unspecified environment from the serialized event", async () => {
+    const client = new ExceptionlessClient();
+    const builder = client.createLog("test", "message");
+    await new ConfigurationDefaultsPlugin().run(new EventPluginContext(client, builder.target, new EventContext()));
+    const serialized = JSON.parse(JSON.stringify(builder.target)) as Record<string, unknown>;
+    expect(Object.keys(serialized)).not.toContain("environment");
   });
 
   describe("should add default", () => {

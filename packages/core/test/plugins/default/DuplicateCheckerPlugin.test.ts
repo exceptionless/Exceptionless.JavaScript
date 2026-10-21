@@ -68,7 +68,9 @@ describe("DuplicateCheckerPlugin", () => {
       new EventContext()
     );
 
-    if (environment) context.event.environment = environment;
+    if (environment) {
+      context.event.environment = environment;
+    }
     await plugin.run(context);
     return context;
   };
