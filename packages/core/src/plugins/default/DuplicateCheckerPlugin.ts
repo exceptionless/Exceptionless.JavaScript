@@ -1,6 +1,6 @@
 import { InnerErrorInfo } from "../../models/data/ErrorInfo.js";
 import { KnownEventDataKeys } from "../../models/Event.js";
-import { allowProcessToExitWithoutWaitingForTimerOrInterval, getHashCode } from "../../Utils.js";
+import { allowProcessToExitWithoutWaitingForTimerOrInterval, getHashCode, setNormalizedEnvironment } from "../../Utils.js";
 import { EventPluginContext } from "../../plugins/EventPluginContext.js";
 import { IEventPlugin } from "../../plugins/IEventPlugin.js";
 
@@ -123,6 +123,8 @@ class MergedEvent {
 
   public async resubmit(): Promise<void> {
     this._context.event.count = this._count;
+    // Plugins between the defaults and this one can assign any value.
+    setNormalizedEnvironment(this._context.event, this._context.event.environment);
     await this._context.client.config.services.queue.enqueue(this._context.event);
   }
 

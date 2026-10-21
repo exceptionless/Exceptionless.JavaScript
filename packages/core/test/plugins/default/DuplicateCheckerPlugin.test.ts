@@ -100,6 +100,14 @@ describe("DuplicateCheckerPlugin", () => {
     expect(enqueue.mock.calls.map(([event]) => event.environment).sort()).toEqual(["Production", "production", "staging", undefined]);
   });
 
+  test("should normalize the environment of a resubmitted duplicate", async () => {
+    const enqueue = vi.spyOn(client.config.services.queue, "enqueue").mockResolvedValue();
+    await run(Exception1StackTrace, " staging\n");
+    expect((await run(Exception1StackTrace, " staging\n")).cancelled).toBe(true);
+    await plugin.suspend();
+    expect(enqueue.mock.calls.map(([event]) => event.environment)).toEqual(["staging"]);
+  });
+
   test("should ignore error without stack", async () => {
     await run();
     const contextOfSecondRun = await run();

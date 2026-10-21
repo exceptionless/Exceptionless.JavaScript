@@ -1,3 +1,5 @@
+import type { Event } from "./models/Event.js";
+
 export function getHashCode(source: string): number {
   if (!source || source.length === 0) {
     return 0;
@@ -566,4 +568,16 @@ export function normalizeEnvironment(value: string | null | undefined): string |
   const name = value.trim();
   // eslint-disable-next-line no-control-regex -- Deployment names cannot contain control characters.
   return name && name.length <= 64 && !/[\u0000-\u001f\u007f-\u009f]/u.test(name) ? name : undefined;
+}
+
+/**
+ * Sets the event's environment to the normalized value, or removes it when the value is not a valid name.
+ */
+export function setNormalizedEnvironment(event: Event, value: string | null | undefined): void {
+  const environment = normalizeEnvironment(value);
+  if (environment) {
+    event.environment = environment;
+  } else {
+    delete event.environment;
+  }
 }
