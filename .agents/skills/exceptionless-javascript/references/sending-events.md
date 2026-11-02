@@ -9,6 +9,14 @@ Use the platform package's `Exceptionless` singleton unless the user is building
 
 ## Common Events
 
+Deployment environments can be overridden per event:
+
+```js
+await Exceptionless.createLog("Deployment complete").setEnvironment("staging").submit();
+```
+
+Without an override, the event uses `config.environment`. Repeated errors from different environments are queued separately; the server still groups the same error into one stack.
+
 ```js
 import { Exceptionless } from "@exceptionless/browser";
 

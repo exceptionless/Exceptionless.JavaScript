@@ -156,6 +156,10 @@ await Exceptionless.startup((c) => {
 Please see the [docs](https://exceptionless.com/docs/clients/javascript/) for
 more information on configuring the client.
 
+#### Deployment environments
+
+Set a deployment environment in startup configuration with `config.environment = "production"` (or `config.setEnvironment("production")`). Override it on an event with `Exceptionless.createLog("Example").setEnvironment("staging").submit()`. Names are trimmed and limited to 64 characters, preserving the supplied casing. The server filters case-insensitively and normalizes aggregation keys. Missing or invalid names remain unspecified, and an invalid per-event name does not fall back to the configured default; pass `null` or `undefined` to `setEnvironment` to use the default. The top-level `environment` is separate from machine/runtime diagnostics in `data.@environment`; stacks and fixed versions remain shared across environments.
+
 ### Submitting Events and Errors
 
 Once configured, Exceptionless will automatically submit any unhandled exceptions

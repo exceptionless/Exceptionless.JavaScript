@@ -30,24 +30,24 @@ await Exceptionless.startup((config) => {
 import type { EventPluginContext, IEventPlugin, PluginContext } from "@exceptionless/core";
 import { Exceptionless } from "@exceptionless/browser";
 
-class DeploymentPlugin implements IEventPlugin {
+class BuildInfoPlugin implements IEventPlugin {
   priority = 90;
-  name = "DeploymentPlugin";
+  name = "BuildInfoPlugin";
 
   startup(context: PluginContext): Promise<void> {
-    context.log.info("Deployment plugin started");
+    context.log.info("Build information plugin started");
     return Promise.resolve();
   }
 
   run(context: EventPluginContext): Promise<void> {
     context.event.data ??= {};
-    context.event.data["deployment"] = "production";
+    context.event.data["build"] = "build-123";
     return Promise.resolve();
   }
 }
 await Exceptionless.startup((config) => {
   config.apiKey = "API_KEY_HERE";
-  config.addPlugin(new DeploymentPlugin());
+  config.addPlugin(new BuildInfoPlugin());
 });
 ```
 
