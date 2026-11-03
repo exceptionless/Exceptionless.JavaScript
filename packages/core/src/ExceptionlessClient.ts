@@ -7,7 +7,7 @@ import { EventContext } from "./models/EventContext.js";
 import { EventPluginContext } from "./plugins/EventPluginContext.js";
 import { EventPluginManager } from "./plugins/EventPluginManager.js";
 import { PluginContext } from "./plugins/PluginContext.js";
-import { allowProcessToExitWithoutWaitingForTimerOrInterval } from "./Utils.js";
+import { allowProcessToExitWithoutWaitingForTimerOrInterval, setNormalizedEnvironment } from "./Utils.js";
 
 export class ExceptionlessClient {
   private _intervalId: ReturnType<typeof setInterval> | undefined;
@@ -247,6 +247,9 @@ export class ExceptionlessClient {
     if (!ev.date) {
       ev.date = new Date();
     }
+
+    // Plugins that run after the defaults can assign any value.
+    setNormalizedEnvironment(ev, ev.environment);
 
     await this.config.services.queue.enqueue(ev);
 

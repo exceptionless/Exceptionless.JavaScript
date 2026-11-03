@@ -1,6 +1,6 @@
 import { describe, expect, test, vi } from "vitest";
 
-import { endsWith, guid, isEmpty, isMatch, parseVersion, prune, randomNumber, startsWith, stringify, toBoolean } from "../src/Utils.js";
+import { endsWith, guid, isEmpty, isMatch, normalizeEnvironment, parseVersion, prune, randomNumber, startsWith, stringify, toBoolean } from "../src/Utils.js";
 
 describe("Utils", () => {
   function getObjectWithInheritedProperties(): unknown {
@@ -1235,6 +1235,50 @@ describe("Utils", () => {
 
     test("input: true (boolean)", () => {
       expect(toBoolean(true)).toBe(true);
+    });
+  });
+
+  describe("normalizeEnvironment", () => {
+    test.each([
+      ["production", "production"],
+      ["Staging-EU", "Staging-EU"],
+      ["qa.2", "qa.2"],
+      ["dev_local", "dev_local"],
+      ["a", "a"],
+      ["0", "0"],
+      ["  Production \t", "Production"],
+      ["\u00a0Production\u2003", "Production"],
+      ["a" + "b".repeat(63), "a" + "b".repeat(63)],
+      ["  " + "a".repeat(64) + "  ", "a".repeat(64)]
+    ])("should accept %j", (value, expected) => {
+      expect(normalizeEnvironment(value)).toBe(expected);
+    });
+
+    test.each([
+      null,
+      undefined,
+      "",
+      " ",
+      " \t\r\n ",
+      "Staging West",
+      "prod/eu",
+      "prod:eu",
+      "-prod",
+      ".prod",
+      "_prod",
+      "produção",
+      "İ".repeat(64),
+      "a".repeat(65),
+      "  " + "a".repeat(65) + "  ",
+      "prod\ninvalid",
+      "prod\tinvalid",
+      "pro\u0000d",
+      "prod\u007f",
+      "pro\u0085d",
+      "prod\u200b",
+      "prod\n\u2028x"
+    ])("should reject %j", (value) => {
+      expect(normalizeEnvironment(value)).toBeUndefined();
     });
   });
 });

@@ -22,7 +22,7 @@ await client.startup((config) => {
   config.version = "1.2.3";
   config.setUserIdentity("12345678", "Blake");
   config.defaultTags.push("Example", "JavaScript", "Core");
-  config.defaultData["deployment"] = { environment: "production" };
+  config.environment = "production";
 });
 ```
 

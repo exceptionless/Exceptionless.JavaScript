@@ -13,7 +13,7 @@ import { DefaultEventQueue } from "../queue/DefaultEventQueue.js";
 import { IEventQueue } from "../queue/IEventQueue.js";
 import { ISubmissionClient } from "../submission/ISubmissionClient.js";
 import { DefaultSubmissionClient } from "../submission/DefaultSubmissionClient.js";
-import { guid } from "../Utils.js";
+import { guid, normalizeEnvironment } from "../Utils.js";
 import { KnownEventDataKeys } from "../models/Event.js";
 import { InMemoryStorage } from "../storage/InMemoryStorage.js";
 import { IStorage } from "../storage/IStorage.js";
@@ -21,6 +21,21 @@ import { LocalStorage } from "../storage/LocalStorage.js";
 import { ServerSettings } from "../configuration/SettingsManager.js";
 
 export class Configuration {
+  private _environment: string | undefined;
+
+  /** The default deployment environment for every event. */
+  public get environment(): string | undefined {
+    return this._environment;
+  }
+
+  public set environment(value: string | null | undefined) {
+    this._environment = normalizeEnvironment(value);
+  }
+
+  public setEnvironment(value: string | null | undefined): void {
+    this.environment = value;
+  }
+
   constructor() {
     this.services = {
       lastReferenceIdManager: new DefaultLastReferenceIdManager(),

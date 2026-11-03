@@ -1,4 +1,4 @@
-import { isEmpty, stringify } from "../../Utils.js";
+import { isEmpty, setNormalizedEnvironment, stringify } from "../../Utils.js";
 import { EventPluginContext } from "../../plugins/EventPluginContext.js";
 import { IEventPlugin } from "../../plugins/IEventPlugin.js";
 
@@ -9,6 +9,7 @@ export class ConfigurationDefaultsPlugin implements IEventPlugin {
   public run(context: EventPluginContext): Promise<void> {
     const { dataExclusions, defaultData, defaultTags } = context.client.config;
     const ev = context.event;
+    setNormalizedEnvironment(ev, ev.environment ?? context.client.config.environment);
 
     if (defaultTags) {
       ev.tags = [...(ev.tags || []), ...defaultTags];

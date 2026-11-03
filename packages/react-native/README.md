@@ -78,8 +78,8 @@ await Exceptionless.startup((c) => {
   // Optional: add default tags
   c.defaultTags.push("react-native", "ios");
 
-  // Optional: add default data
-  c.defaultData["environment"] = "production";
+  // Optional: set the deployment environment
+  c.environment = "production";
 });
 ```
 

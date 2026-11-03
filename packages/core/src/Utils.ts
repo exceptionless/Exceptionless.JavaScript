@@ -1,3 +1,5 @@
+import type { Event } from "./models/Event.js";
+
 export function getHashCode(source: string): number {
   if (!source || source.length === 0) {
     return 0;
@@ -557,5 +559,30 @@ export function toError(errorOrMessage: unknown, defaultMessage = "Unknown Error
 export function allowProcessToExitWithoutWaitingForTimerOrInterval(timeoutOrIntervalId: ReturnType<typeof setTimeout> | undefined): void {
   if (typeof timeoutOrIntervalId === "object" && "unref" in timeoutOrIntervalId) {
     (timeoutOrIntervalId as { unref: () => ReturnType<typeof setTimeout> }).unref();
+  }
+}
+const validEnvironment = /^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$/;
+
+/**
+ * Trims the name and returns it with its casing preserved, or undefined when it is not a valid
+ * deployment environment name: ASCII letters, digits, `.`, `_` and `-`, starting with a letter or digit, at most 64 characters.
+ */
+export function normalizeEnvironment(value: string | null | undefined): string | undefined {
+  if (typeof value !== "string") {
+    return undefined;
+  }
+  const name = value.trim();
+  return validEnvironment.test(name) ? name : undefined;
+}
+
+/**
+ * Sets the event's environment to the normalized value, or removes it when the value is not a valid name.
+ */
+export function setNormalizedEnvironment(event: Event, value: string | null | undefined): void {
+  const environment = normalizeEnvironment(value);
+  if (environment) {
+    event.environment = environment;
+  } else {
+    delete event.environment;
   }
 }

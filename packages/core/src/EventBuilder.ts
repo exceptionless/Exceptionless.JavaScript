@@ -62,6 +62,15 @@ export class EventBuilder {
     return this;
   }
 
+  public setEnvironment(value: string | null | undefined): EventBuilder {
+    if (value != null) {
+      this.target.environment = value;
+    } else {
+      delete this.target.environment;
+    }
+    return this;
+  }
+
   public setMessage(message: string | null | undefined): EventBuilder {
     if (message) {
       this.target.message = message;
