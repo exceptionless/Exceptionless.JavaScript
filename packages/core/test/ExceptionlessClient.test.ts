@@ -39,7 +39,9 @@ describe("ExceptionlessClient", () => {
 
   test.each([
     [" QA\t", "QA"],
-    ["x".repeat(65), undefined]
+    ["x".repeat(65), undefined],
+    ["Staging West", undefined],
+    ["prod/eu", undefined]
   ])("should normalize environment %j assigned by a later plugin", async (environment, expected) => {
     const client = new ExceptionlessClient();
     client.config.apiKey = "UNIT_TEST_API_KEY";

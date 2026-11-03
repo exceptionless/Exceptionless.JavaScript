@@ -561,13 +561,18 @@ export function allowProcessToExitWithoutWaitingForTimerOrInterval(timeoutOrInte
     (timeoutOrIntervalId as { unref: () => ReturnType<typeof setTimeout> }).unref();
   }
 }
+const validEnvironment = /^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$/;
+
+/**
+ * Trims the name and returns it with its casing preserved, or undefined when it is not a valid
+ * deployment environment name: ASCII letters, digits, `.`, `_` and `-`, starting with a letter or digit, at most 64 characters.
+ */
 export function normalizeEnvironment(value: string | null | undefined): string | undefined {
   if (typeof value !== "string") {
     return undefined;
   }
   const name = value.trim();
-  // eslint-disable-next-line no-control-regex -- Deployment names cannot contain control characters.
-  return name && name.length <= 64 && !/[\u0000-\u001f\u007f-\u009f]/u.test(name) ? name : undefined;
+  return validEnvironment.test(name) ? name : undefined;
 }
 
 /**

@@ -31,13 +31,16 @@ describe("ConfigurationDefaultsPlugin", () => {
     expect(JSON.parse(JSON.stringify(builder.target)).environment).toBe("Staging");
   });
 
-  test.each(["", " ", "x".repeat(65), "prod\ninvalid"])("should keep invalid override %j unspecified", async (environment) => {
-    const client = new ExceptionlessClient();
-    client.config.environment = "production";
-    const builder = client.createLog("test", "message").setEnvironment(environment);
-    await new ConfigurationDefaultsPlugin().run(new EventPluginContext(client, builder.target, new EventContext()));
-    expect(builder.target.environment).toBeUndefined();
-  });
+  test.each(["", " ", "x".repeat(65), "prod\ninvalid", "Staging West", "prod/eu", "prod:eu", "-prod", ".prod", "produção"])(
+    "should keep invalid override %j unspecified",
+    async (environment) => {
+      const client = new ExceptionlessClient();
+      client.config.environment = "production";
+      const builder = client.createLog("test", "message").setEnvironment(environment);
+      await new ConfigurationDefaultsPlugin().run(new EventPluginContext(client, builder.target, new EventContext()));
+      expect(builder.target.environment).toBeUndefined();
+    }
+  );
 
   test.each([null, undefined])("should apply the default when the override is cleared with %j", async (environment) => {
     const client = new ExceptionlessClient();

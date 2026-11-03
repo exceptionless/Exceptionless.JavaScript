@@ -31,7 +31,7 @@ await Exceptionless.startup((config) => {
 
 ## Deployment environment
 
-Set `config.environment = "production"` or call `config.setEnvironment("production")`. Per-event `setEnvironment("staging")` overrides the default. Names are trimmed and retain their supplied casing; empty names, names longer than 64 characters, and names with control characters are unspecified. An invalid per-event name stays unspecified instead of using the default; pass `null` or `undefined` to `setEnvironment` to use the default. Missing values remain unspecified. The server filters case-insensitively and normalizes aggregation keys. This property is independent of `data.@environment` runtime metadata and of the application version. It does not change server stack grouping or create per-environment status.
+Set `config.environment = "production"` or call `config.setEnvironment("production")`. Per-event `setEnvironment("staging")` overrides the default. Names are trimmed and retain their supplied casing, then must match `^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$` (ASCII letters, digits, `.`, `_` and `-`, starting with a letter or digit, at most 64 characters). Anything else, such as `Staging West`, `prod/eu`, `produção`, empty or over-long names, is unspecified and never rewritten. An invalid per-event name stays unspecified instead of using the default; pass `null` or `undefined` to `setEnvironment` to use the default. Missing values remain unspecified. The server filters case-insensitively and normalizes aggregation keys. This property is independent of `data.@environment` runtime metadata and of the application version. It does not change server stack grouping or create per-environment status.
 
 ## Privacy
 
