@@ -37,7 +37,7 @@ export class NodeRequestInfoPlugin implements IEventPlugin {
       hostname: string;
       path: string;
       headers: Record<string, string>;
-      params: Record<string, unknown>;
+      query?: Record<string, unknown>;
       body?: object;
     };
 
@@ -81,7 +81,7 @@ export class NodeRequestInfoPlugin implements IEventPlugin {
     }
 
     if (config.includeQueryString) {
-      const json = stringify(request.params, exclusions);
+      const json = stringify(request.query, exclusions);
       if (!isEmpty(json)) {
         requestInfo.query_string = JSON.parse(json) as Record<string, string>;
       }

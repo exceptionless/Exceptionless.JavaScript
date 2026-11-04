@@ -17,7 +17,7 @@ npm install @exceptionless/react-native @react-native-async-storage/async-storag
 cd ios && pod install
 ```
 
-For Expo development or standalone builds, add the config plugin:
+No config plugin is required: the native crash reporter pod is linked by autolinking. The optional config plugin currently makes no native changes:
 
 ```json
 {
@@ -104,7 +104,7 @@ await Exceptionless.createException(new Error("Checkout failed"))
 
 ## Troubleshooting
 
-- If native crashes do not appear in Expo, verify the app is not running in Expo Go and that the config plugin is present before rebuilding the native app.
+- If native crashes do not appear in Expo, verify the app is not running in Expo Go, rebuild the native app after installing the package, and check that `ios/Podfile.lock` includes `exceptionless-react-native` (autolinking).
 - If simulator submissions cannot reach a local Exceptionless server, use `http://localhost:<port>` for iOS Simulator and make sure Metro is not running in Expo's default LAN mode. Physical devices need a reachable LAN host.
 - For malformed or unexpected stacks, verify behavior in `ReactNativeErrorPlugin` tests before changing parser logic.
 - For native crash report loss concerns, verify `NativeCrashPlugin` only clears pending reports after at least one report is retrieved and submitted.

@@ -13,7 +13,8 @@ export class ReactNativeExceptionlessClient extends ExceptionlessClient {
     const config = this.config;
 
     if (configurationOrApiKey && !this._initialized) {
-      this.configureStorage(config);
+      config.services.storage = new AsyncStorageProvider();
+      config.usePersistedQueueStorage = true;
 
       if (Platform.OS === "ios") {
         config.addPlugin(new NativeCrashPlugin());
@@ -27,15 +28,5 @@ export class ReactNativeExceptionlessClient extends ExceptionlessClient {
     }
 
     await super.startup(configurationOrApiKey);
-  }
-
-  private configureStorage(config: Configuration): void {
-    try {
-      const storage = new AsyncStorageProvider();
-      config.services.storage = storage;
-      config.usePersistedQueueStorage = true;
-    } catch {
-      config.services.log.info("AsyncStorage provider failed to initialize. Using in-memory storage. Events will not persist across app restarts.");
-    }
   }
 }

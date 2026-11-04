@@ -38,7 +38,7 @@ That's it. Unhandled errors, promise rejections, and native iOS crashes are now 
 npx expo install @exceptionless/react-native @react-native-async-storage/async-storage
 ```
 
-Add the config plugin to `app.json` when using development or standalone builds:
+The native crash reporter is linked by autolinking, so no config plugin is required. The package ships an optional config plugin that currently makes no native changes; you can add it to `app.json` so future native configuration is applied automatically:
 
 ```json
 {
