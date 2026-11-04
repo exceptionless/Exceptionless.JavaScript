@@ -81,6 +81,25 @@ export default defineConfig({
       },
       {
         test: {
+          name: "vue",
+          root: "packages/vue",
+          environment: "jsdom",
+          environmentOptions: {
+            jsdom: {
+              url: "http://localhost/"
+            }
+          }
+        },
+        resolve: {
+          conditions: ["source"],
+          alias: {
+            "@exceptionless/core": path.resolve(__dirname, "packages/core/src"),
+            "@exceptionless/browser": path.resolve(__dirname, "packages/browser/src")
+          }
+        }
+      },
+      {
+        test: {
           name: "react-native",
           root: "packages/react-native",
           environment: "jsdom",

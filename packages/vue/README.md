@@ -38,6 +38,9 @@ app.config.errorHandler = ExceptionlessErrorHandler;
 app.mount("#app");
 ```
 
+`ExceptionlessErrorHandler` adds the component name (`component`) and Vue's error source (`info`) to each
+error. It does not include the component instance.
+
 ## Handling Events
 
 While errors within the components themselves are automatically sent to
