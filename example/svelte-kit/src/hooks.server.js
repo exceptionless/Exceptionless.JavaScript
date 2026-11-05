@@ -8,8 +8,8 @@ Exceptionless.startup((c) => {
   c.defaultTags.push("Example", "svelte-kit", "server");
 });
 
-/** @type {import("@sveltejs/kit").HandleServerError} */
-export async function handleError({ error, event }) {
+/** @type {import("@sveltejs/kit/hooks").HandleServerError} */
+export const handleError = async ({ error, event }) => {
   console.log("server error handler");
   await Exceptionless.submitException(toError(error));
-}
+};

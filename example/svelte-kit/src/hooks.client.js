@@ -8,10 +8,12 @@ Exceptionless.startup((c) => {
   c.defaultTags.push("Example", "svelte-kit", "client");
 });
 
-/** @type {import('@sveltejs/kit').HandleClientError} */
-export async function handleError({ error, event, message, status }) {
-  console.warn({ error, event, message, source: "client error handler", status });
-  await Exceptionless.createException(toError(error ?? message))
-    .setProperty("status", status)
-    .submit();
-}
+/** @type {import('@sveltejs/kit/hooks').HandleClientError} */
+export const handleError = async ({ error, event, kind }) => {
+  console.warn({ error, event, kind, source: "client error handler" });
+  const builder = Exceptionless.createException(toError(error));
+  if (kind !== "unknown" && error.status != null) {
+    builder.setProperty("status", error.status);
+  }
+  await builder.submit();
+};
