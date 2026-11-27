@@ -17,10 +17,10 @@
     "access": "restricted"
   },
   "devDependencies": {
-    "vite": "^8.3.1"
+    "vite": "^8.3.8"
   },
   "dependencies": {
     "@exceptionless/browser": "3.0.0-dev",
-    "jquery": "^4.0.0"
+    "jquery": "^4.1.0"
   }
 }
